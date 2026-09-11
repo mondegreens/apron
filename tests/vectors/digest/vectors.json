@@ -1,0 +1,35 @@
+{
+  "_provenance": "Apron project digest test vectors. Canonical form is RFC 8785, digest is SHA-256 with multihash prefix 0x1220. Each vector was verified against Python hashlib.sha256 over the canonical UTF-8 bytes.",
+  "vectors": [
+    {
+      "description": "empty object",
+      "input": {},
+      "canonical_utf8_hex": "7b7d",
+      "digest_hex": "122044136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "description": "simple string fields, sorted keys",
+      "input": {"b": "2", "a": "1"},
+      "canonical_utf8_hex": "7b2261223a2231222c2262223a2232227d",
+      "digest_hex": "122021f76dfbfe6dfe21f762080ef484112cf2952974cef30741fd1931e1c6d92112"
+    },
+    {
+      "description": "integer and boolean values",
+      "input": {"flag": true, "count": 42},
+      "canonical_utf8_hex": "7b22636f756e74223a34322c22666c6167223a747275657d",
+      "digest_hex": "12206265577b8899e768c03eab663dc05db53eeb7ced50298d280ab47835433067dd"
+    },
+    {
+      "description": "null value",
+      "input": {"key": null},
+      "canonical_utf8_hex": "7b226b6579223a6e756c6c7d",
+      "digest_hex": "1220059c12e9b015b4ac525b4016e72f003640ffee220ede6d488caca2672e3c4650"
+    },
+    {
+      "description": "nested object",
+      "input": {"outer": {"inner": 1}},
+      "canonical_utf8_hex": "7b226f75746572223a7b22696e6e6572223a317d7d",
+      "digest_hex": "12209a6cf8d2196cd66cf51f6cf8cac87113874b183f23f03d4958922dff12ec4ee9"
+    }
+  ]
+}
