@@ -49,4 +49,4 @@ AI-assisted work is welcome; say which tool, explain the change yourself, and an
 
 ## Contact
 
-Maintained by Vlad Ryzhkov. Design challenges and questions go to [Discussions](../../discussions). Vulnerabilities go through private vulnerability reporting.
+Maintained by Vlad Ryzhkov. Design challenges and questions go to [Discussions](../../discussions), not Issues.
