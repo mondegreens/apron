@@ -1,0 +1,11 @@
+# Claim-bearing paths require maintainer review.
+# A merge on any of these can make a published claim false.
+
+/docs/adr/                          @data-mission
+/docs/framework-spec.md             @data-mission
+/docs/target-architecture.md        @data-mission
+/docs/engineering-standards.md       @data-mission
+/src/apron/domain/schemas/          @data-mission
+/conformance/                       @data-mission
+/rules/                             @data-mission
+/records/                           @data-mission
