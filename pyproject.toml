@@ -1,0 +1,101 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "apron"
+version = "0.0.0"
+description = "Decision and evidence system for LLM inference deployment"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE", "docs/LICENSE", "records/LICENSE"]
+requires-python = ">=3.12"
+authors = [{ name = "Vlad Ryzhkov" }]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: System :: Systems Administration",
+    "Typing :: Typed",
+]
+dependencies = [
+    "typer>=0.12",
+    "rich>=13",
+    "pydantic>=2",
+    "httpx>=0.27",
+    "mcp>=1",
+]
+
+[project.urls]
+Homepage = "https://apron.dev"
+Documentation = "https://apron.dev"
+Repository = "https://github.com/mondegreens/apron"
+Issues = "https://github.com/mondegreens/apron/issues"
+Changelog = "https://github.com/mondegreens/apron/releases"
+
+[project.scripts]
+apron = "apron.interfaces.cli:app"
+
+[project.entry-points."apron.engines"]
+
+[project.entry-points."apron.artifact_sources"]
+
+[project.entry-points."apron.render_targets"]
+
+[project.entry-points."apron.evidence_sources"]
+
+[project.entry-points."apron.planning_sources"]
+
+[project.entry-points."apron.evaluation_adapters"]
+
+[project.entry-points."apron.execution_targets"]
+
+[project.entry-points."apron.signal_sources"]
+
+[project.entry-points."apron.authority_sources"]
+
+[project.entry-points."apron.publishers"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 99
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "TCH", "RUF"]
+
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"
+
+[tool.import-linter]
+root_packages = ["apron"]
+
+[[tool.import-linter.contracts]]
+name = "domain imports nothing from application, adapters or interfaces"
+type = "forbidden"
+source_modules = ["apron.domain"]
+forbidden_modules = ["apron.application", "apron.adapters", "apron.interfaces"]
+
+[[tool.import-linter.contracts]]
+name = "application imports nothing from adapters or interfaces"
+type = "forbidden"
+source_modules = ["apron.application"]
+forbidden_modules = ["apron.adapters", "apron.interfaces"]
+
+[[tool.import-linter.contracts]]
+name = "adapters import nothing from interfaces"
+type = "forbidden"
+source_modules = ["apron.adapters"]
+forbidden_modules = ["apron.interfaces"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

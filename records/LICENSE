@@ -1,0 +1,67 @@
+Community Data License Agreement - Permissive - Version 2.0
+
+This is the Community Data License Agreement - Permissive, Version 2.0
+("Agreement"). Data is provided to You under this Agreement by each of
+the Data Providers. Your exercise of any of the rights and permissions
+granted below constitutes Your acceptance and agreement to be bound by
+the terms and conditions of this Agreement.
+
+The benefits that each Data Provider receives from making Data available
+and that You receive from Data or Output is sufficient consideration to
+form this Agreement.
+
+Section 1. Definitions
+
+1.1 "Data" means the material provided to You under this Agreement.
+
+1.2 "Data Provider" means any person who is the source of Data provided
+    to You under this Agreement and in compliance with Section 2.
+
+1.3 "Output" means any artifact that is created by You from Data or
+    through the use of Data, to the extent it does not include more than
+    a de minimis portion of the Data on which the Output is based. Output
+    may include, but is not limited to, models trained on Data.
+
+1.4 "You" or "Your" means any natural or legal person who exercises the
+    rights or permissions granted by this Agreement, and any person that
+    You permit to have access to the Data.
+
+Section 2. Right and License
+
+2.1 Subject to the terms of this Agreement, each Data Provider hereby
+    grants to You a worldwide, non-exclusive, irrevocable (except as
+    provided in Section 5) right to: (a) use, modify, and share the Data;
+    and (b) use, modify, and share Output.
+
+2.2 To the extent that the Data or Output is protected by any law or
+    regulation, including any sui generis right, each Data Provider
+    hereby waives and/or agrees not to assert any rights that would
+    otherwise prevent or inhibit the exercise of rights under Section
+    2.1.
+
+Section 3. Conditions
+
+3.1 If You share Data, You must (a) include with the Data a copy of, or
+    a URI for, this Agreement, and (b) not modify this Agreement.
+
+Section 4. No Warranties
+
+4.1 All Data is provided on an "AS IS" basis. EACH DATA PROVIDER
+    DISCLAIMS ALL WARRANTIES, WHETHER EXPRESS, IMPLIED, OR STATUTORY, OF
+    ANY KIND WITH RESPECT TO THE DATA, INCLUDING WITHOUT LIMITATION,
+    TITLE, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, COMPLETENESS,
+    QUALITY, MERCHANTABILITY, AND NONINFRINGEMENT.
+
+4.2 EACH DATA PROVIDER DISCLAIMS ALL LIABILITY FOR ANY LOSSES, DAMAGES,
+    CLAIMS, EXPENSES, OR OTHER COSTS THAT RESULT FROM, ARISE OUT OF, OR
+    RELATE IN ANY WAY TO ANY DATA.
+
+Section 5. Termination
+
+5.1 All of Your rights under this Agreement will terminate if You fail
+    to comply with any of the terms of this Agreement.
+
+5.2 If Your rights under this Agreement terminate, You agree to cease
+    use and sharing of the Data. However, Your right under Section 2.1(b)
+    to use, modify, and share Output will survive termination of this
+    Agreement.
