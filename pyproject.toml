@@ -89,22 +89,22 @@ typeCheckingMode = "standard"
 venvPath = "."
 venv = ".venv"
 
-[tool.import-linter]
+[tool.importlinter]
 root_packages = ["apron"]
 
-[[tool.import-linter.contracts]]
+[[tool.importlinter.contracts]]
 name = "domain imports nothing from application, adapters or interfaces"
 type = "forbidden"
 source_modules = ["apron.domain"]
 forbidden_modules = ["apron.application", "apron.adapters", "apron.interfaces"]
 
-[[tool.import-linter.contracts]]
+[[tool.importlinter.contracts]]
 name = "application imports nothing from adapters or interfaces"
 type = "forbidden"
 source_modules = ["apron.application"]
 forbidden_modules = ["apron.adapters", "apron.interfaces"]
 
-[[tool.import-linter.contracts]]
+[[tool.importlinter.contracts]]
 name = "adapters import nothing from interfaces"
 type = "forbidden"
 source_modules = ["apron.adapters"]
