@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from apron.domain.canonical import (
     MULTIHASH_SHA2_256,
     canonicalize,
@@ -95,9 +94,7 @@ def _load_rfc8785_file_vectors() -> list[dict]:
     return data["vectors"]
 
 
-@pytest.mark.parametrize(
-    "vector", _load_rfc8785_file_vectors(), ids=lambda v: v["name"]
-)
+@pytest.mark.parametrize("vector", _load_rfc8785_file_vectors(), ids=lambda v: v["name"])
 def test_rfc8785_from_data_file(vector: dict) -> None:
     result = canonicalize(vector["input"])
     assert result == vector["expected"].encode("utf-8")

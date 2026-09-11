@@ -8,45 +8,68 @@ independent implementation.
 from __future__ import annotations
 
 import hashlib
-import json
 import math
-import struct
 from typing import Any
 
 MULTIHASH_SHA2_256: bytes = b"\x12\x20"
 
 
 def _serialize_float(value: float) -> str:
-    """Serialize a float per RFC 8785 §3.2.2.3 (ES6 Number serialization)."""
+    """Serialize a float per RFC 8785 §3.2.2.3 (ES6 Number.prototype.toString).
+
+    ES6 finds the shortest decimal s with k digits and exponent n such that
+    s * 10^(n-k) equals the IEEE 754 value, then picks notation by n:
+      k <= n <= 21        →  integer form (digits + trailing zeros)
+      0 < n < k           →  decimal with dot inside the digits
+      -6 < n <= 0         →  0.000...digits
+      otherwise           →  exponential
+    """
     if math.isnan(value) or math.isinf(value):
         raise ValueError(f"RFC 8785 does not permit NaN or Infinity: {value}")
 
     if value == 0.0:
-        # Both +0.0 and -0.0 serialize as "0"
         return "0"
 
-    # Use ES6 Number serialization rules via repr, then normalize
-    # Python's repr of floats matches ES6 for most values
     r = repr(value)
+    sign = "-" if r.startswith("-") else ""
+    abs_r = r.lstrip("-")
 
-    # Ensure no trailing .0 for integers representable as such
-    # ES6: if the number is an integer in [-2^53, 2^53], use integer form
-    if value == math.floor(value) and abs(value) < 2**53:
-        int_val = int(value)
-        return str(int_val)
-
-    # Python repr uses 'e+' / 'e-' notation matching ES6 for extreme values
-    # Normalize: ES6 uses e+ without leading zeros in exponent
-    if "e" in r or "E" in r:
-        r = r.lower()
-        parts = r.split("e")
-        mantissa = parts[0].rstrip("0").rstrip(".")
+    if "e" in abs_r or "E" in abs_r:
+        parts = abs_r.lower().split("e")
+        mant = parts[0]
         exp = int(parts[1])
-        if mantissa == "0":
-            return "0"
-        return f"{mantissa}e+{exp}" if exp > 0 else f"{mantissa}e{exp}"
+    else:
+        mant = abs_r
+        exp = 0
 
-    return r
+    if "." in mant:
+        int_part, frac_part = mant.split(".")
+        frac_part = frac_part.rstrip("0")
+    else:
+        int_part, frac_part = mant, ""
+
+    digits = int_part.lstrip("0") + frac_part
+    if not digits:
+        return "0"
+    k = len(digits)
+    n = exp + len(int_part.lstrip("0") or "0")
+    if int_part == "0":
+        n = exp - (len(mant.split(".")[1]) - len(mant.split(".")[1].lstrip("0")))
+        digits = mant.split(".")[1].lstrip("0").rstrip("0")
+        k = len(digits)
+
+    if k <= n <= 21:
+        return sign + digits + "0" * (n - k)
+    if 0 < n < k:
+        return sign + digits[:n] + "." + digits[n:]
+    if -6 < n <= 0:
+        return sign + "0." + "0" * (-n) + digits
+    if k == 1:
+        m = digits
+    else:
+        m = digits[0] + "." + digits[1:].rstrip("0")
+    e = n - 1
+    return sign + m + ("e+" if e > 0 else "e") + str(e)
 
 
 def _serialize_string(value: str) -> str:

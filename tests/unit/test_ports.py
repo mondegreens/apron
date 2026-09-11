@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from apron.domain.ports import (
     Clock,
@@ -64,14 +64,14 @@ class FixedRng:
 
 
 def test_fixed_implementations_satisfy_protocols():
-    dt = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    dt = datetime(2026, 1, 1, tzinfo=UTC)
     assert isinstance(FixedClock(dt), Clock)
     assert isinstance(FixedIdGenerator("abc"), IdGenerator)
     assert isinstance(FixedRng(0.5), Rng)
 
 
 def test_determinism_with_fixed_ports():
-    dt = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    dt = datetime(2026, 1, 1, tzinfo=UTC)
     clock = FixedClock(dt)
     gen = FixedIdGenerator("deadbeef")
     rng = FixedRng(0.42)
