@@ -1,0 +1,64 @@
+name: Deployment failure
+description: Report a deployment or startup failure for the diagnosis knowledge base
+labels: ["diagnosis", "hypothesis"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This report enters the rule table as a **hypothesis** until a proving
+        record exists. The fields below are what a diagnosis rule needs.
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Traceback or shortest error
+      description: The error message or traceback from the failure.
+      placeholder: "Engine core initialization failed: ..."
+    validations:
+      required: true
+
+  - type: input
+    id: artifact
+    attributes:
+      label: Artifact
+      description: Repository ID and revision (e.g. Qwen/Qwen3-8B @ abc1234).
+      placeholder: "org/model-name @ commit or tag"
+    validations:
+      required: true
+
+  - type: input
+    id: engine
+    attributes:
+      label: Engine tag or image digest
+      description: The vLLM (or other engine) version or container image digest.
+      placeholder: "vllm/vllm-openai:v0.8.5 or sha256:..."
+    validations:
+      required: true
+
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU
+      description: GPU model and count.
+      placeholder: "1x RTX 4090 24GB"
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Exact command
+      description: The full command or Compose file that produced the failure.
+      placeholder: "vllm serve org/model --dtype auto --tensor-parallel-size 1"
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Redacted log
+      description: |
+        Optional. Attach as a file or paste a redacted excerpt. Remove any
+        tokens, API keys, file paths or personal information.
+    validations:
+      required: false
