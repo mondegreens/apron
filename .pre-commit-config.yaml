@@ -4,7 +4,6 @@ repos:
     hooks:
       - id: ruff-check
         alias: format
-        args: [--fix]
       - id: ruff-format
         alias: format
 
@@ -19,7 +18,7 @@ repos:
 
       - id: boundaries
         name: boundaries
-        entry: uv run lint-imports
+        entry: uv run lint-imports --config pyproject.toml
         language: system
         types: [python]
         pass_filenames: false
