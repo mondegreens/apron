@@ -18,7 +18,7 @@ repos:
 
       - id: boundaries
         name: boundaries
-        entry: uv run lint-imports --config pyproject.toml
+        entry: bash -c 'cd "$(git rev-parse --show-toplevel)" && uv run lint-imports'
         language: system
         types: [python]
         pass_filenames: false
@@ -39,7 +39,7 @@ repos:
 
       - id: supply-chain
         name: supply-chain
-        entry: bash -c 'uv export --format pylock.toml --no-hashes -o pylock.check.toml && diff pylock.toml pylock.check.toml && rm pylock.check.toml'
+        entry: bash -c 'uv export --format pylock.toml --no-hashes -o pylock.toml && git diff --exit-code pylock.toml'
         language: system
         pass_filenames: false
         files: '(pyproject\.toml|uv\.lock|pylock\.toml)'

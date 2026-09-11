@@ -64,10 +64,7 @@ def _serialize_float(value: float) -> str:
         return sign + digits[:n] + "." + digits[n:]
     if -6 < n <= 0:
         return sign + "0." + "0" * (-n) + digits
-    if k == 1:
-        m = digits
-    else:
-        m = digits[0] + "." + digits[1:].rstrip("0")
+    m = digits if k == 1 else digits[0] + "." + digits[1:].rstrip("0")
     e = n - 1
     return sign + m + ("e+" if e > 0 else "e") + str(e)
 
