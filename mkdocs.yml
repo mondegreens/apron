@@ -5,7 +5,7 @@ repo_url: https://github.com/mondegreens/apron
 repo_name: mondegreens/apron
 
 theme:
-  name: zensical
+  name: material
 
 plugins:
   - search

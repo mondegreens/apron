@@ -1,0 +1,56 @@
+{
+  "description": "RFC 8785 JSON Canonicalization Scheme test vectors. Sourced from https://github.com/cyberphone/json-canonicalization testdata/input/ and testdata/output/ directories, commit 3b90ba6 (2024-01-10).",
+  "provenance": {
+    "repository": "https://github.com/cyberphone/json-canonicalization",
+    "commit": "3b90ba6be674e8e9e46a8bbe6e0014e85e3c6d06",
+    "date": "2024-01-10",
+    "license": "Apache-2.0"
+  },
+  "vectors": [
+    {
+      "name": "french",
+      "input": {"peach":"This sorting order\n","péché":"is wrong according to French\n","pêche":"but canonicalization MUST\n","sin":"ignore locale\n"},
+      "expected": "{\"peach\":\"This sorting order\\n\",\"pêche\":\"but canonicalization MUST\\n\",\"péché\":\"is wrong according to French\\n\",\"sin\":\"ignore locale\\n\"}"
+    },
+    {
+      "name": "structures",
+      "input": {"1":{"f":{"f":"hi","F":5},"\":\""},"10":{},"":{"":["",""]},"a":{},"111":[{"e":"yes","E":"no"}],"A":{}},
+      "expected": "{\"\":{\"\": [\"\",\"\"]},\"1\":{\"\\\"\":\"\\\"\",\"f\":{\"F\":5,\"f\":\"hi\"}},\"10\":{},\"111\":[{\"E\":\"no\",\"e\":\"yes\"}],\"A\":{},\"a\":{}}"
+    },
+    {
+      "name": "arrays",
+      "input": [56,{"d":true,"10":null,"1":[]}],
+      "expected": "[56,{\"1\":[],\"10\":null,\"d\":true}]"
+    },
+    {
+      "name": "unicode",
+      "input": {"Unnormalized Unicode":"\u212b"},
+      "expected": "{\"Unnormalized Unicode\":\"Å\"}"
+    },
+    {
+      "name": "values",
+      "input": {"numbers":[333333333.33333329,1E30,4.50,2e-3,0.000000000000000000000000001],"string":"\u20ac$\u000F\u000aA'\u0042\u0022\u005c\\\"\/","literals":[null,true,false]},
+      "expected": "{\"literals\":[null,true,false],\"numbers\":[333333333.3333333,1e+30,4.5,0.002,1e-27],\"string\":\"€$\\u000f\\nA'B\\\"\\\\\\\\\\\"\\/\"}"
+    },
+    {
+      "name": "weird",
+      "input": {"\u20ac":"Euro Sign","\r":"Carriage Return","\u000a":"Newline","\u0001":"Control\u0007","\u001e":"RS"},
+      "expected": "{\"\\u0001\":\"Control\\u0007\",\"\\n\":\"Newline\",\"\\r\":\"Carriage Return\",\"\\u001e\":\"RS\",\"€\":\"Euro Sign\"}"
+    },
+    {
+      "name": "sorted-keys",
+      "input": {"z":"last","a":"first","m":"middle","1":"number-first"},
+      "expected": "{\"1\":\"number-first\",\"a\":\"first\",\"m\":\"middle\",\"z\":\"last\"}"
+    },
+    {
+      "name": "empty-object",
+      "input": {},
+      "expected": "{}"
+    },
+    {
+      "name": "empty-array",
+      "input": [],
+      "expected": "[]"
+    }
+  ]
+}

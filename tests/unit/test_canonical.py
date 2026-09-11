@@ -84,6 +84,26 @@ def test_infinity_raises() -> None:
 
 
 # ---------------------------------------------------------------------------
+# RFC 8785 vectors from data file (cross-language consumable, INV-43)
+# ---------------------------------------------------------------------------
+
+RFC8785_VECTOR_FILE = Path(__file__).parent.parent / "vectors" / "rfc8785" / "input-output.json"
+
+
+def _load_rfc8785_file_vectors() -> list[dict]:
+    data = json.loads(RFC8785_VECTOR_FILE.read_text())
+    return data["vectors"]
+
+
+@pytest.mark.parametrize(
+    "vector", _load_rfc8785_file_vectors(), ids=lambda v: v["name"]
+)
+def test_rfc8785_from_data_file(vector: dict) -> None:
+    result = canonicalize(vector["input"])
+    assert result == vector["expected"].encode("utf-8")
+
+
+# ---------------------------------------------------------------------------
 # Digest vectors (project-owned)
 # ---------------------------------------------------------------------------
 
