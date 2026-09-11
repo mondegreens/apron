@@ -5,7 +5,7 @@
 
 ## Context
 
-Phase 1 as written in v1.3 is a team-year at the stated 8 to 20 hours per month, and the architecture freeze forbids narrowing the component set. Narrowing the evidence domain is permitted. Verification found that the only component with no prior art anywhere is log-driven diagnosis producing a corrected plan; that aiconfigurator already spans TRT-LLM, vLLM and SGLang, so engine neutrality is table stakes rather than a moat; and that the consumer and professional hardware class has no published evidence from any lab.
+Phase 1 as written in v1.3 is a team-year at the stated 8 to 20 hours per month, and the architecture freeze forbids narrowing the component set. Narrowing the evidence domain is permitted. Verification found that the only component with no prior art anywhere is log-driven diagnosis producing a corrected plan; that aiconfigurator already spans TRT-LLM, vLLM and SGLang, so engine neutrality is a baseline expectation rather than a differentiator; and that the consumer and professional hardware class has no published evidence from any lab.
 
 ## Decision
 

@@ -5,7 +5,7 @@
 
 ## 1. Purpose
 
-The knowledge base transforms individual failure observations into reusable diagnostic intelligence. Not a dumb lookup table ("this error → this fix") but a graph of relationships: what breaks together, what fixes what, how confidently, at what cost, and on which engine version. Every boot — successful or failed — feeds it. The agent reads it before every dispatch and applies all known fixes at once, not one at a time.
+The knowledge base transforms individual failure observations into reusable diagnostic intelligence. Not a flat lookup table ("this error → this fix") but a graph of relationships: what breaks together, what fixes what, how confidently, at what cost, and on which engine version. Every boot — successful or failed — feeds it. The agent reads it before every dispatch and applies all known fixes at once, not one at a time.
 
 ## 2. The failure landscape — 5 layers
 
