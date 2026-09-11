@@ -1,0 +1,43 @@
+site_name: Apron
+site_url: https://apron.dev
+site_description: Decision and evidence system for LLM inference deployment
+repo_url: https://github.com/mondegreens/apron
+repo_name: mondegreens/apron
+
+theme:
+  name: zensical
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+
+nav:
+  - Home: index.md
+  - Product Definition: product-definition.md
+  - Target Architecture: target-architecture.md
+  - Phase Plan: phase-plan.md
+  - Framework Specification: framework-spec.md
+  - Engineering Standards: engineering-standards.md
+  - Cost Model: cost-model.md
+  - Failure Knowledge Base: failure-knowledge-base.md
+  - Distribution: distribution.md
+  - Architecture Dispatch Proof: architecture-dispatch-proof.md
+  - Architecture Decision Records:
+      - ADR-001 Execution Environment: adr/ADR-001-execution-environment.md
+      - ADR-002 External Evidence: adr/ADR-002-external-evidence-and-interop.md
+      - ADR-003 Engine-Native Computation: adr/ADR-003-engine-native-computation.md
+      - ADR-004 Acquisition Surfaces: adr/ADR-004-acquisition-surfaces.md
+      - ADR-005 Delivery Restructuring: adr/ADR-005-delivery-restructuring.md
+      - ADR-006 Phase 0 Primitives: adr/ADR-006-phase0-primitives.md
+      - ADR-007 Modality-Agnostic Specs: adr/ADR-007-modality-agnostic-specs.md
+      - ADR-008 Upstream First: adr/ADR-008-upstream-first.md
+      - ADR-009 Repository Governance: adr/ADR-009-repo-governance-from-ecc.md
+      - ADR-010 Automation Authority: adr/ADR-010-automation-authority-and-publication.md
+      - ADR-011 Task-to-Solution: adr/ADR-011-task-to-inference-solution.md
+      - ADR-012 GitHub Surfaces: adr/ADR-012-github-product-and-distribution-surfaces.md
+      - ADR-013 Routed Topology: adr/ADR-013-routed-serving-topology.md

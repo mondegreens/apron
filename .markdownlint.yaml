@@ -1,0 +1,23 @@
+default: true
+
+MD013:
+  line_length: 120
+  tables: false
+  code_blocks: false
+  headings: false
+
+MD024:
+  siblings_only: true
+
+MD033:
+  allowed_elements:
+    - p
+    - h1
+    - img
+    - picture
+    - source
+    - br
+    - details
+    - summary
+
+MD041: false

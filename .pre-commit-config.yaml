@@ -1,0 +1,45 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.10
+    hooks:
+      - id: ruff-check
+        alias: format
+        args: [--fix]
+      - id: ruff-format
+        alias: format
+
+  - repo: local
+    hooks:
+      - id: types
+        name: types
+        entry: uv run pyright
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: boundaries
+        name: boundaries
+        entry: uv run lint-imports
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: identity
+        name: identity
+        entry: uv run pytest tests/unit/test_canonical.py -v
+        language: system
+        pass_filenames: false
+        files: '(src/apron/domain/.*|tests/unit/test_canonical\.py|tests/vectors/)'
+
+      - id: determinism
+        name: determinism
+        entry: uv run pytest tests/unit/test_ports.py -v
+        language: system
+        pass_filenames: false
+        files: '(src/apron/domain/.*|tests/unit/test_ports\.py)'
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.0
+    hooks:
+      - id: gitleaks
+        alias: secrets
