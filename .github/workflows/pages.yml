@@ -32,9 +32,12 @@ jobs:
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
       - run: uv sync --frozen --group docs
       - run: uv run zensical build --strict
-      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+      - name: Package site for Pages
+        run: tar -cf site.tar -C site .
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          path: site/
+          name: github-pages
+          path: site.tar
 
   deploy:
     name: Deploy to Pages
