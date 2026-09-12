@@ -1,5 +1,7 @@
 # Contributing to Apron
 
+Read [how development works](docs/development-process.md) first — it explains phases, briefs, tasks and where contributions land.
+
 ## Before you commit
 
 Run the full check suite from the working tree:
