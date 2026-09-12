@@ -833,7 +833,9 @@ def test_deterministic_plan(fixed_clock, fixed_id_gen, fixed_rng):
     """Same inputs + same injected ports = byte-identical plan."""
     plan1 = generate_plan(request, clock=fixed_clock, id_gen=fixed_id_gen, rng=fixed_rng)
     plan2 = generate_plan(request, clock=fixed_clock, id_gen=fixed_id_gen, rng=fixed_rng)
-    assert canonicalize(plan1.model_dump(mode="json")) == canonicalize(plan2.model_dump(mode="json"))
+    assert canonicalize(plan1.model_dump(mode="json")) == canonicalize(
+        plan2.model_dump(mode="json")
+    )
 ```
 
 ### 3.5 Export tests (ADR-002 §4)
@@ -844,11 +846,14 @@ For each golden self-hosted `DeploymentPlan`:
 def test_export_to_recipes(plan, recipes_fixture):
     """Plan exports to recipes YAML; shared fields match."""
 
+
 def test_export_to_aiconfigurator(plan, aiconfigurator_fixture):
     """Plan exports to aiconfigurator estimate request; shared fields match."""
 
+
 def test_export_to_inferencex(plan, inferencex_fixture):
     """Plan exports to InferenceX row shape; config fields match."""
+
 
 def test_round_trip_recipes(plan):
     """Export to recipes, import back, export again. Shared fields identical."""
@@ -888,11 +893,14 @@ second export. Non-shared fields are absent or defaulted.
 def test_unknown_mechanism_explicit():
     """A component with no implemented calculator returns unknown, not a fallback."""
 
+
 def test_unsupported_adapter_explicit():
     """A quantization method with no adapter returns unsupported, not a silent skip."""
 
+
 def test_opaque_managed_api():
     """A managed API solution has provider_opaque for boot/memory, not fabricated evidence."""
+
 
 def test_estimated_values_labeled():
     """Every estimated value carries epistemic_status=predicted with uncertainty."""
@@ -904,11 +912,14 @@ def test_estimated_values_labeled():
 def test_solution_fingerprint_changes_on_member_change():
     """Changing a model, routing rule or modality transition changes the solution fingerprint."""
 
+
 def test_solution_fingerprint_stable_on_irrelevant_change():
     """Changing display metadata does not change the fingerprint."""
 
+
 def test_topology_fingerprint_distinct():
     """direct_endpoint, replica_pool and distributed_execution_group have distinct fingerprints."""
+
 
 def test_replica_not_sharded():
     """Two replicas cannot satisfy a per-request memory requirement exceeding each replica."""
@@ -920,8 +931,10 @@ def test_replica_not_sharded():
 def test_private_task_rejected_from_unauthorized_destination():
     """A task classified private cannot be sent to an unauthorized external destination."""
 
+
 def test_cross_fingerprint_score_not_measurement():
     """A task score from a different solution fingerprint is a prediction, not a measurement."""
+
 
 def test_failed_attempts_preserved():
     """Failed and retried attempts appear in economics aggregates."""
@@ -933,8 +946,10 @@ def test_failed_attempts_preserved():
 def test_capability_combination_semantics():
     """T+I (required together) != T/I (either alone). Schema preserves the distinction."""
 
+
 def test_result_shape_preserved():
     """Each capability fixture preserves its declared result shape through serialization."""
+
 
 def test_capability_state_separate():
     """artifact_declared, engine_resolved, endpoint_exposed and evidence states are independent."""
@@ -946,14 +961,18 @@ def test_capability_state_separate():
 def test_quantization_candidate_api():
     """Every quantization fixture resolves through the same candidate API."""
 
+
 def test_artifact_identity_survives_round_trip():
     """Artifact, transform and execution identities survive serialization round-trip."""
+
 
 def test_unsupported_adapter_fails_explicitly():
     """An unsupported quantization adapter raises a typed error, not a silent fallback."""
 
+
 def test_name_similarity_cannot_promote_lineage():
     """Two artifacts with matching names but different manifests remain different."""
+
 
 def test_actual_tensor_bytes_for_memory():
     """Memory calculation uses actual tensor headers and auxiliary-scale bytes, not nominal bit width."""
@@ -966,9 +985,11 @@ def test_no_recommended_without_task_and_serving_evidence():
     """An endpoint cannot reach Recommended without accepted task and
     serving evidence for the exact endpoint/application fingerprint."""
 
+
 def test_no_qualified_without_exact_reproduction():
     """A solution cannot reach Qualified without exact-solution task
     reproduction plus every applicable SLO."""
+
 
 def test_single_solution_not_optimal():
     """A single measured solution cannot be labeled best or optimal."""
@@ -980,8 +1001,10 @@ def test_single_solution_not_optimal():
 def test_replay_no_duplicate_paid_attempt():
     """Replaying a job cannot duplicate a paid task attempt or judge call."""
 
+
 def test_teardown_convergence():
     """Cancellation, timeout, crash and target loss converge on idempotent teardown."""
+
 
 def test_duplicate_event_no_duplicate_publication():
     """Replayed events cannot duplicate paid executions or external publications."""
@@ -994,9 +1017,11 @@ def test_contested_evidence():
     """Two records at different levels that disagree are marked contested;
     nothing auto-resolves (INV-4)."""
 
+
 def test_lifecycle_correction():
     """Corrected record has lifecycle superseded; original stays visible with
     lifecycle observed (INV-12)."""
+
 
 def test_epistemic_proven_constraint():
     """At least one fixture uses proven_constraint status — e.g. a
