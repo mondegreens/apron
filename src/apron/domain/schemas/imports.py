@@ -17,7 +17,6 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, ConfigDict
 
 from apron.domain.fingerprints import DISPLAY, IDENTITY
-from apron.domain.protocols import EvidenceSource
 
 ImportStatus = Literal["owner_attested_boot"]
 

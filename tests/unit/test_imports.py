@@ -114,9 +114,7 @@ def test_entries_seed_candidates_gemma_excluded():
 
 
 def test_empty_registry_produces_nothing():
-    source = CatalogueImportSource(
-        {}, source_name="empty", provenance="none"
-    )
+    source = CatalogueImportSource({}, source_name="empty", provenance="none")
     assert source.collect() == []
 
 

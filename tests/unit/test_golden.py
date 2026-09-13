@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 
+from apron.domain.artifacts.identity import ArtifactIdentity
 from apron.domain.canonical import canonicalize, record_digest_hex
 from apron.domain.capabilities import CapabilitySignature
 from apron.domain.fingerprints import fingerprint_hex
@@ -42,11 +42,8 @@ from apron.domain.schemas.tasks import (
 from apron.domain.solutions import (
     DirectEndpoint,
     InferenceSolution,
-    LogicalRoute,
     RoleBinding,
 )
-
-from apron.domain.artifacts.identity import ArtifactIdentity
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "golden"
 
@@ -135,9 +132,7 @@ def _build_self_hosted() -> dict[str, Any]:
         repository="Qwen/Qwen3-8B",
         immutable_revision="abc123def456",
         license="Apache-2.0",
-        components=(
-            ComponentMechanism(mechanism="autoregressive_decode", role="decoder"),
-        ),
+        components=(ComponentMechanism(mechanism="autoregressive_decode", role="decoder"),),
         component_bytes_dtype={"decoder": "bf16"},
     )
     execution_spec = ExecutionSpec(
@@ -263,9 +258,7 @@ def _build_managed_api() -> dict[str, Any]:
     application = ApplicationSpec(name="managed-qa", version="1.0")
 
     model_spec = ModelSpec(
-        components=(
-            ComponentMechanism(mechanism="autoregressive_decode", role="decoder"),
-        ),
+        components=(ComponentMechanism(mechanism="autoregressive_decode", role="decoder"),),
         publisher_claims=("gpt-4o-2024-08-06",),
     )
 
@@ -398,10 +391,14 @@ def _build_remediation() -> dict[str, Any]:
     )
 
     original_plan = DeploymentPlan(
-        tensor_parallel=1, dtype="bf16", batch_size=64,
+        tensor_parallel=1,
+        dtype="bf16",
+        batch_size=64,
     )
     corrected_plan = DeploymentPlan(
-        tensor_parallel=1, dtype="bf16", batch_size=32,
+        tensor_parallel=1,
+        dtype="bf16",
+        batch_size=32,
     )
 
     corrected_vr = VerificationReport(
@@ -490,7 +487,9 @@ def _assert_all_round_trip(fixtures: dict[str, Any]) -> None:
             continue
         canonical = canonicalize(obj.model_dump(mode="json"))
         restored = type(obj).model_validate_json(canonical)
-        assert canonicalize(restored.model_dump(mode="json")) == canonical, f"{name} failed round-trip"
+        assert canonicalize(restored.model_dump(mode="json")) == canonical, (
+            f"{name} failed round-trip"
+        )
 
 
 def test_self_hosted_round_trip():
@@ -527,10 +526,18 @@ def test_self_hosted_verification_15_fields():
     vr = fixtures["verification"]
     dumped = vr.model_dump(mode="json")
     memory_fields = [
-        "initial_total_memory", "initial_free_memory", "requested_memory",
-        "model_weight_memory", "persistent_consumption", "transient_peak_headroom",
-        "non_pytorch_increase", "cuda_graph_estimate", "cuda_graph_applied",
-        "cuda_graph_actual", "available_kv_cache_memory", "safety_buffer",
+        "initial_total_memory",
+        "initial_free_memory",
+        "requested_memory",
+        "model_weight_memory",
+        "persistent_consumption",
+        "transient_peak_headroom",
+        "non_pytorch_increase",
+        "cuda_graph_estimate",
+        "cuda_graph_applied",
+        "cuda_graph_actual",
+        "available_kv_cache_memory",
+        "safety_buffer",
     ]
     for f in memory_fields:
         assert dumped[f] is not None, f"missing: {f}"
@@ -615,13 +622,19 @@ def test_remediation_derivation_fixed():
 def test_remediation_derivation_tradeoff():
     fixtures = _build_remediation()
     r = fixtures["tradeoff"]
-    assert derive_remediation_result(r.mechanism_outcome, r.request_outcome) == "Alternative with trade-offs"
+    assert (
+        derive_remediation_result(r.mechanism_outcome, r.request_outcome)
+        == "Alternative with trade-offs"
+    )
 
 
 def test_remediation_derivation_unverified():
     fixtures = _build_remediation()
     r = fixtures["unverified"]
-    assert derive_remediation_result(r.mechanism_outcome, r.request_outcome) == "Unverified suggestion"
+    assert (
+        derive_remediation_result(r.mechanism_outcome, r.request_outcome)
+        == "Unverified suggestion"
+    )
 
 
 def test_remediation_corrects_chain():
@@ -746,7 +759,9 @@ def test_write_self_hosted_fixtures():
     for name, obj in fixtures.items():
         if isinstance(obj, str):
             continue
-        _write_fixture("self-hosted", f"{name.replace('_', '-')}.json", obj.model_dump(mode="json"))
+        _write_fixture(
+            "self-hosted", f"{name.replace('_', '-')}.json", obj.model_dump(mode="json")
+        )
 
 
 def test_write_remediation_fixtures():
@@ -754,4 +769,6 @@ def test_write_remediation_fixtures():
     for name, obj in fixtures.items():
         if isinstance(obj, str):
             continue
-        _write_fixture("remediation", f"{name.replace('_', '-')}.json", obj.model_dump(mode="json"))
+        _write_fixture(
+            "remediation", f"{name.replace('_', '-')}.json", obj.model_dump(mode="json")
+        )
