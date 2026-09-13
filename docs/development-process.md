@@ -135,7 +135,7 @@ every time. The surface grows as phases complete.
 - **Adapters.** Engine, artifact source, evaluation, execution target
   and every other extension point. Write the adapter in your own
   repository, run the conformance suite there, propose it here only
-  after it passes. See [`CONTRIBUTING.md`](../CONTRIBUTING.md) for the
+  after it passes. See [`CONTRIBUTING.md`](https://github.com/mondegreens/apron/blob/main/CONTRIBUTING.md) for the
   reading list.
 - **Diagnosis rules with a proving record.** A hypothesis promoted to
   `mechanism_verified` by a corrected-boot record.
@@ -149,7 +149,7 @@ every time. The surface grows as phases complete.
 - Architecture decision amendment
 
 The scope boundaries are enforced by convention and by the acceptance
-criteria in [`AGENTS.md`](../AGENTS.md), not by access controls.
+criteria in [`AGENTS.md`](https://github.com/mondegreens/apron/blob/main/AGENTS.md), not by access controls.
 
 ## How the trail gets cleared
 
@@ -175,7 +175,7 @@ is a normal contribution, not a violation.
 ## AI-assisted development
 
 AI tools are welcome at every phase. The contract is in
-[`AI_POLICY.md`](../AI_POLICY.md): disclose the tool, explain the
+[`AI_POLICY.md`](https://github.com/mondegreens/apron/blob/main/AI_POLICY.md): disclose the tool, explain the
 change yourself, answer reviewers yourself. Unattended agents do not
 open pull requests or issues.
 
