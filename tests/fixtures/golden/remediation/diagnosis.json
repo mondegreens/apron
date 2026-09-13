@@ -1,0 +1,1 @@
+{"correction_spec":{"batch_size":"32"},"engine_callsite_module":"vllm.worker","error_family":"oom","exception_class":"OutOfMemoryError","promoting_verification_fingerprint":null,"schema_version":1,"status":"hypothesis"}

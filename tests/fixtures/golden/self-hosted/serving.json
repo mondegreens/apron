@@ -1,0 +1,1 @@
+{"availability_target":null,"burstiness":null,"capacity_horizon":null,"concurrency":4,"duration_hours":null,"input_shape_distribution":null,"latency_p99_ms":2000,"lora_usage":null,"output_shape_distribution":null,"prefix_cache_behavior":null,"request_distribution":null,"schema_version":1,"throughput_target_rps":10}
