@@ -1,0 +1,1 @@
+{"batch_size":32,"data_parallel":1,"disaggregated_decode":false,"disaggregated_prefill":false,"docker_compose":null,"dtype":"bf16","engine_configuration":{},"expert_parallel":1,"pipeline_parallel":1,"resource_allocation":{},"schema_version":1,"serve_command":null,"tensor_parallel":1}

@@ -22,6 +22,8 @@ nav:
   - Target Architecture: target-architecture.md
   - Phase Plan: phase-plan.md
   - Framework Specification: framework-spec.md
+  - Development Process: development-process.md
+  - Phase 0 Brief: phase-0-brief.md
   - Engineering Standards: engineering-standards.md
   - Cost Model: cost-model.md
   - Failure Knowledge Base: failure-knowledge-base.md

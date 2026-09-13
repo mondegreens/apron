@@ -1,5 +1,8 @@
 # Agent instructions for Apron
 
+Read [`docs/development-process.md`](docs/development-process.md) for how phases,
+briefs and tasks work.
+
 ## Check command
 
 Run before every commit:

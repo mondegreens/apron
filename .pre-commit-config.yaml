@@ -51,6 +51,12 @@ repos:
         pass_filenames: false
         files: '\.md$'
 
+      - id: no-agent-branding
+        name: no-agent-branding
+        entry: bash -c '! grep -qiE "(Co-Authored-By|Co-authored-by).*(Claude|GPT|Copilot|Anthropic|OpenAI|noreply@anthropic)|Generated.with.*Claude|claude\.ai/code/session|Claude (Opus|Sonnet|Haiku|Code|Fable)|generated-by.*[Cc]laude" "$1"'
+        language: system
+        stages: [commit-msg]
+
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.30.1
     hooks:

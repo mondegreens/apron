@@ -66,7 +66,7 @@ docs = [
 requires-dist = [
     { name = "httpx", specifier = ">=0.27" },
     { name = "mcp", specifier = ">=1" },
-    { name = "pydantic", specifier = ">=2" },
+    { name = "pydantic", specifier = ">=2,<3" },
     { name = "rich", specifier = ">=13" },
     { name = "typer", specifier = ">=0.12" },
 ]

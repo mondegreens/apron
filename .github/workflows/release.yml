@@ -23,6 +23,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+      - name: Run conformance checks
+        run: uv run prek run --all-files
       - name: Build apron
         run: uv build
       - name: Build apron-conformance
