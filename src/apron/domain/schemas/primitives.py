@@ -5,7 +5,6 @@ ClaimScope, and ExecutionTarget Protocol.  CapabilitySignature lives in
 ``apron.domain.capabilities``.
 """
 
-
 from typing import Annotated, Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -18,6 +17,7 @@ from apron.domain.fingerprints import (
 # ---------------------------------------------------------------------------
 # HardwareSpec
 # ---------------------------------------------------------------------------
+
 
 class HardwareSpec(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -35,6 +35,7 @@ class HardwareSpec(BaseModel):
 # ArtifactLocator
 # ---------------------------------------------------------------------------
 
+
 class ArtifactLocator(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -47,6 +48,7 @@ class ArtifactLocator(BaseModel):
 # ---------------------------------------------------------------------------
 # EpistemicStatus  (discriminated union)
 # ---------------------------------------------------------------------------
+
 
 class DerivedStatus(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -102,6 +104,7 @@ ClaimScope = Literal[
 # ---------------------------------------------------------------------------
 # ExecutionTarget Protocol
 # ---------------------------------------------------------------------------
+
 
 @runtime_checkable
 class ExecutionTarget(Protocol):

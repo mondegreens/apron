@@ -9,7 +9,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex  # noqa: TC001
+from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex
 
 QualificationStatus = Literal[
     "candidate",
@@ -128,16 +128,13 @@ def can_promote(
     if tgt_idx <= cur_idx:
         return False
 
-    if target in ("task_evaluated", "serving_verified", "task_reproduced", "qualified"):
-        if not has_task_evidence:
-            return False
-    if target in ("serving_verified", "task_reproduced", "qualified"):
-        if not has_serving_evidence:
-            return False
-    if target in ("task_reproduced", "qualified"):
-        if not has_exact_reproduction:
-            return False
-    if target == "measured_efficient":
-        if not has_comparable_set:
-            return False
-    return True
+    if (
+        target in ("task_evaluated", "serving_verified", "task_reproduced", "qualified")
+        and not has_task_evidence
+    ):
+        return False
+    if target in ("serving_verified", "task_reproduced", "qualified") and not has_serving_evidence:
+        return False
+    if target in ("task_reproduced", "qualified") and not has_exact_reproduction:
+        return False
+    return not (target == "measured_efficient" and not has_comparable_set)

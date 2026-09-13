@@ -182,10 +182,18 @@ def test_verification_report_memory_fields_non_overlapping():
     )
     dumped = vr.model_dump(mode="json")
     memory_fields = [
-        "initial_total_memory", "initial_free_memory", "requested_memory",
-        "model_weight_memory", "persistent_consumption", "transient_peak_headroom",
-        "non_pytorch_increase", "cuda_graph_estimate", "cuda_graph_applied",
-        "cuda_graph_actual", "available_kv_cache_memory", "safety_buffer",
+        "initial_total_memory",
+        "initial_free_memory",
+        "requested_memory",
+        "model_weight_memory",
+        "persistent_consumption",
+        "transient_peak_headroom",
+        "non_pytorch_increase",
+        "cuda_graph_estimate",
+        "cuda_graph_applied",
+        "cuda_graph_actual",
+        "available_kv_cache_memory",
+        "safety_buffer",
     ]
     for f in memory_fields:
         assert f in dumped

@@ -9,10 +9,9 @@ from apron.domain.artifacts import (
     ModelLineage,
 )
 from apron.domain.artifacts.identity import ArtifactIdentity
-from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex  # noqa: TC001
+from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex
 from apron.domain.mechanisms import ComponentMechanism
 from apron.domain.schemas.primitives import ArtifactLocator
-
 
 # ---------------------------------------------------------------------------
 # ArtifactSpec (ADR-006)

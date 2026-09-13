@@ -9,9 +9,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex  # noqa: TC001
+from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex
 from apron.domain.schemas.primitives import ClaimScope
-
 
 # ---------------------------------------------------------------------------
 # TaskAttemptRecord (ADR-011 §7, ADR-010 §15)

@@ -10,8 +10,7 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict
 
 from apron.domain.capabilities import CapabilitySignature
-from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex  # noqa: TC001
-
+from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex
 
 # ---------------------------------------------------------------------------
 # TaskSuiteSpec (ADR-011 §2)

@@ -12,7 +12,7 @@ silently drops metadata from them.
 
 from __future__ import annotations
 
-from typing import Annotated, Any
+from typing import Annotated
 
 from pydantic import BaseModel, StringConstraints
 
@@ -20,9 +20,7 @@ from apron.domain.canonical import canonicalize, digest_hex
 
 MULTIHASH_SHA256_PATTERN = r"^1220[0-9a-f]{64}$"
 
-FingerprintHex = Annotated[
-    str, StringConstraints(pattern=MULTIHASH_SHA256_PATTERN)
-]
+FingerprintHex = Annotated[str, StringConstraints(pattern=MULTIHASH_SHA256_PATTERN)]
 
 
 class _Marker:
@@ -56,9 +54,7 @@ def assert_fully_classified(cls: type[BaseModel]) -> None:
         if not any(m is IDENTITY or m is DISPLAY for m in info.metadata)
     ]
     if unclassified:
-        raise AssertionError(
-            f"{cls.__name__}: unclassified fields {unclassified}"
-        )
+        raise AssertionError(f"{cls.__name__}: unclassified fields {unclassified}")
 
 
 def fingerprint_hex(record: BaseModel) -> str:
@@ -71,7 +67,4 @@ def fingerprint_hex(record: BaseModel) -> str:
 
 def _has_display_fields(cls: type[BaseModel]) -> bool:
     """True if *cls* has at least one DISPLAY field."""
-    return any(
-        any(m is DISPLAY for m in info.metadata)
-        for info in cls.model_fields.values()
-    )
+    return any(any(m is DISPLAY for m in info.metadata) for info in cls.model_fields.values())

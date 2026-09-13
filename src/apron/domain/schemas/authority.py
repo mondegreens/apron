@@ -8,8 +8,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex  # noqa: TC001
-
+from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex
 
 # ---------------------------------------------------------------------------
 # DecisionRequest (ADR-011 §1)

@@ -2,7 +2,7 @@
 
 from pydantic import TypeAdapter
 
-from apron.domain.canonical import canonicalize, record_digest_hex
+from apron.domain.canonical import canonicalize
 from apron.domain.fingerprints import assert_fully_classified, fingerprint_hex
 from apron.domain.schemas.solutions import DeploymentPlan, EvaluationProtocol
 from apron.domain.solutions import (

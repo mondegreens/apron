@@ -10,9 +10,9 @@ from apron.domain.schemas.authority import (
     ActionAttempt,
     ActionRequest,
     AnomalyCase,
+    AuthorityContribution,
     AuthorizationDecision,
     AuthorizationEnvelope,
-    AuthorityContribution,
     DecisionRequest,
     EvaluationAttempt,
     ExecutionAttempt,
@@ -106,15 +106,11 @@ def test_orchestration_decision_round_trip():
 
 def test_action_attempt_discriminated_union():
     adapter = TypeAdapter(ActionAttempt)
-    ea = EvaluationAttempt(
-        attempt_type="evaluation", protocol_fingerprint=_FP, status="completed"
-    )
+    ea = EvaluationAttempt(attempt_type="evaluation", protocol_fingerprint=_FP, status="completed")
     parsed = adapter.validate_json(canonicalize(ea.model_dump(mode="json")))
     assert isinstance(parsed, EvaluationAttempt)
 
-    pa = PublicationAttempt(
-        attempt_type="publication", destination="recipes", status="pending"
-    )
+    pa = PublicationAttempt(attempt_type="publication", destination="recipes", status="pending")
     parsed = adapter.validate_json(canonicalize(pa.model_dump(mode="json")))
     assert isinstance(parsed, PublicationAttempt)
 

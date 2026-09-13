@@ -1,7 +1,7 @@
 """Step 5 tests: Layer 3 — task, application, serving independence and INV-24."""
 
-from apron.domain.capabilities import CapabilitySignature
 from apron.domain.canonical import canonicalize
+from apron.domain.capabilities import CapabilitySignature
 from apron.domain.fingerprints import assert_fully_classified, fingerprint_hex
 from apron.domain.schemas.tasks import (
     ApplicationSpec,

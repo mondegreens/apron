@@ -6,11 +6,6 @@ from typing import Any
 
 from pydantic import TypeAdapter
 
-from apron.domain.artifacts import (
-    ArtifactSourceObservation,
-    FileDigest,
-    ModelLineage,
-)
 from apron.domain.artifacts.identity import ArtifactIdentity
 from apron.domain.canonical import canonicalize
 from apron.domain.fingerprints import assert_fully_classified
@@ -152,9 +147,7 @@ def test_model_spec_round_trip():
     ms = ModelSpec(
         repository="Qwen/Qwen3-8B",
         immutable_revision="abc123",
-        components=(
-            ComponentMechanism(mechanism="autoregressive_decode", role="decoder"),
-        ),
+        components=(ComponentMechanism(mechanism="autoregressive_decode", role="decoder"),),
     )
     _round_trip(ModelSpec, ms)
 

@@ -11,7 +11,6 @@ from apron.domain.canonical import canonicalize, record_digest_hex
 from apron.domain.fingerprints import (
     DISPLAY,
     IDENTITY,
-    FingerprintHex,
     assert_fully_classified,
     fingerprint_hex,
     identity_field_names,

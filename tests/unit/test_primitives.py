@@ -139,7 +139,11 @@ def test_epistemic_measured_round_trip():
 def test_epistemic_discriminated_union():
     adapter = TypeAdapter(EpistemicStatus)
 
-    measured_json = '{"kind":"measured","measurement_method":"boot","execution_fingerprint":"1220' + "ab" * 32 + '"}'
+    measured_json = (
+        '{"kind":"measured","measurement_method":"boot","execution_fingerprint":"1220'
+        + "ab" * 32
+        + '"}'
+    )
     parsed = adapter.validate_json(measured_json)
     assert isinstance(parsed, MeasuredStatus)
 
@@ -150,7 +154,15 @@ def test_epistemic_discriminated_union():
 
 def test_claim_scope_values():
     adapter = TypeAdapter(ClaimScope)
-    for scope in ("config", "boot", "memory", "remediation", "serving_performance", "task_outcome", "outcome_economics"):
+    for scope in (
+        "config",
+        "boot",
+        "memory",
+        "remediation",
+        "serving_performance",
+        "task_outcome",
+        "outcome_economics",
+    ):
         assert adapter.validate_python(scope) == scope
 
 

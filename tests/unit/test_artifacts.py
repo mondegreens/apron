@@ -64,9 +64,7 @@ def _make_observation(source_kind: str, revision: str, files: list[tuple[str, st
     return ArtifactSourceObservation(
         source_kind=source_kind,
         resolved_revision=revision,
-        file_digests=tuple(
-            FileDigest(path=p, sha256=h, size_bytes=s) for p, h, s in files
-        ),
+        file_digests=tuple(FileDigest(path=p, sha256=h, size_bytes=s) for p, h, s in files),
     )
 
 
@@ -162,9 +160,7 @@ def test_identity_ignores_source_metadata():
     obs2 = ArtifactSourceObservation(
         source_kind="local",
         resolved_revision="different_rev",
-        file_digests=tuple(
-            FileDigest(path=p, sha256=h, size_bytes=s) for p, h, s in _FILES_A
-        ),
+        file_digests=tuple(FileDigest(path=p, sha256=h, size_bytes=s) for p, h, s in _FILES_A),
         license_observed="Apache-2.0",
         gating_observed="manual",
         publisher_metadata={"org": "Qwen"},

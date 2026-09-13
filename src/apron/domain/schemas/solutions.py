@@ -4,9 +4,8 @@ from typing import Annotated, Any
 
 from pydantic import BaseModel, ConfigDict
 
-from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex  # noqa: TC001
+from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex
 from apron.domain.schemas.primitives import ClaimScope
-
 
 # ---------------------------------------------------------------------------
 # PlanningClaim (ADR-002 §10)
