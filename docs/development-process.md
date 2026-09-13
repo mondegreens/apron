@@ -159,7 +159,7 @@ path shorter:
 
 | phase | what it opens for others |
 |---|---|
-| Phase 0 | Frozen schemas, golden fixtures, conformance suites. A contributor can now write an adapter and test it independently. |
+| Phase 0 | Frozen schemas, golden fixtures, extension-point Protocol definitions with fake-adapter test clients. Full conformance suites are built as a Phase 1a prerequisite. A contributor can now write an adapter against the Protocol contracts and test it independently once the suites ship. |
 | Phase 1a | A working CLI and MCP server. A contributor can run `apron plan` and file a bug against real output. |
 | Phase 1b | Evidence breadth, diagnosis rules, the GitHub Action. External repositories can consume the Action. |
 | Phase 2 | Structured API, remote MCP, evaluation adapters. External tools can integrate. |

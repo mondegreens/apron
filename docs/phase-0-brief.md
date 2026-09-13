@@ -40,7 +40,7 @@ architectural consequence:
 - **InferenceX fixture row:** check for a public `agg_bmk.json` workflow
   artifact and use a real row if available. If not, synthesize from the
   documented schema in `results-and-ingestion.md` and
-  `process_result.py`, both pinned.
+  `fixed_sequence.py`, both pinned.
 
 ---
 
@@ -55,27 +55,59 @@ Each directory contains:
 - `provenance.json` — metadata envelope
 - One or more pinned files copied verbatim from the source
 
-Provenance schema (the first contract this brief produces):
+Provenance schema (the first contract this brief produces). This is a
+frozen Pydantic model in the domain layer
+(`src/apron/domain/schemas/provenance.py`):
 
-```json
-{
-  "source_name": "vllm-recipes",
-  "repository": "https://github.com/vllm-project/recipes",
-  "commit": "f050a17eec51c7093727ddbc765c005647bc92f3",
-  "retrieval_date": "2026-09-12",
-  "license": "Apache-2.0",
-  "has_formal_schema": false,
-  "schema_description": "Convention-based YAML; no published JSON Schema or validator",
-  "pinned_files": [
-    {
-      "source_path": "models/Qwen/Qwen3-8B.yaml",
-      "local_path": "qwen3-8b.yaml",
-      "sha256": "<computed at pin time>"
-    }
-  ],
-  "notes": "Representative dense model recipe. Schema derived from convention, not a formal spec."
-}
+```python
+class PinnedFileEntry(FrozenModel):
+    source_path: str
+    local_path: str
+    sha256: str
+    size_bytes: int
+    role: str  # conventions: "formal_schema", "consumer_code",
+    # "example", "documentation", "representative_content",
+    # "field_mapping_adapter". Open str — adding a role
+    # does not require a schema change.
+
+
+class SourceLocation(FrozenModel):
+    repository: str | None  # None for owner-provided sources
+    revision: str | None  # git SHA, HF revision SHA, or None
+    retrieval_method: Literal[
+        "git_clone",
+        "git_fetch_shallow",
+        "huggingface_hub_api",
+        "http_download",
+        "owner_provided",
+    ]
+
+
+class ExternalFormatProvenance(FrozenModel):
+    schema_version: int  # starts at 1
+    source_name: str
+    locations: list[SourceLocation]  # multiple for multi-repo sources
+    retrieval_date: str  # ISO 8601
+    license: str  # SPDX identifier
+    has_formal_schema: bool
+    formal_schema_file: str | None  # local_path of the schema file
+    schema_description: str
+    pinned_files: list[PinnedFileEntry]
+    notes: str
 ```
+
+Key design decisions:
+
+- `locations` is a list, not a single pair — handles HF Hub (2 repos)
+  and vLLM (2 commits via 2 location entries with same repo, different
+  revision)
+- `repository` and `revision` are `Optional` — handles owner-provided
+  sources (both None, `retrieval_method: "owner_provided"`)
+- `formal_schema_file` points to the specific pinned file that IS the
+  schema — connects `has_formal_schema: true` to the actual file
+- `role` per file answers "exact schema/example/validator or consumer
+  code used" (phase-plan start condition)
+- `size_bytes` satisfies ADR-002 §8's "sizes" requirement
 
 ### 1.2 Sources to pin
 
@@ -97,15 +129,19 @@ records the digest of each pinned file.
 | license | Apache-2.0 |
 | formal schema | No. Convention-based YAML. |
 
-**Pin two files:**
+**Pin three files:**
 
 1. `models/Qwen/Qwen3-8B.yaml` — dense model, single variant (bf16),
    hardware overrides, features, compatible strategies. Proves the common
-   case.
+   case. Role: `representative_content`.
 2. `models/deepseek-ai/DeepSeek-V3.yaml` — MoE model with multiple
    variants (bf16, fp8), MLA architecture, MoE-specific strategies
    (TEP, DEP, PD), quantization variants with separate `model_id`.
-   Proves the complex case.
+   Proves the complex case. Role: `representative_content`.
+3. `models/deepseek-ai/DeepSeek-V4-Flash.yaml` — exercises `modes`,
+   `default_modes`, `strategy_hardware`, `hardware_overrides`,
+   `strategy_overrides` — fields the other two never touch. Role:
+   `representative_content`.
 
 **What Apron maps:** `deployment-plan.json` round-trips losslessly for
 shared fields to a recipes YAML entry. Shared fields: `model_id` ↔
@@ -126,16 +162,24 @@ measurement provenance, task and serving evidence, economics.
 | license | Apache-2.0 |
 | formal schema | **Yes.** `estimate-request-v1.schema.json`, version `aic-estimate-request/1.0.0` |
 
-**Pin three files:**
+**Pin four files:**
 
 1. `src/aiconfigurator/sdk/config_adapter/schemas/estimate-request-v1.schema.json`
-   — the published JSON Schema for estimate requests.
+   — the published JSON Schema for estimate requests. Role:
+   `formal_schema`.
 2. `src/aiconfigurator/sdk/config_adapter/schema.py` — Pydantic request
    models (`EstimateRequestV1`, `ModelSettingsV1`, `BackendSettingsV1`,
    `SystemSettingsV1`, `WorkloadSettingsV1`, topology discriminated union,
    `QuantizationSettingsV1`, `RuntimeSettingsV1`, `SourceProvenanceV1`).
-3. `src/aiconfigurator/cli/example.yaml` — representative estimate request
-   examples (aggregated and disaggregated topologies).
+   Role: `consumer_code`.
+3. A valid `EstimateRequestV1` JSON instance extracted from
+   `tests/unit/sdk/config_adapter/test_schema.py` `_request()` fixture
+   — representative estimate request proving the schema's shape with
+   real data. Role: `example`. (Replaces the previous `example.yaml`
+   which was a CLI Task config, not an estimate request.)
+4. `src/aiconfigurator/sdk/config_adapter/inferencex.py` — real field
+   mapping between InferenceX and aiconfigurator, showing the two
+   InferenceX result shapes. Role: `field_mapping_adapter`.
 
 **What Apron maps:** `deployment-plan.json` round-trips losslessly for
 shared fields to an aiconfigurator estimate request. Shared fields:
@@ -161,13 +205,18 @@ convention.
 | license | Apache-2.0 |
 | formal schema | No. Schema defined by ingestion code and documentation. |
 
-**Pin two files:**
+**Pin three files:**
 
 1. `docs/results-and-ingestion.md` — the throughput row schema
-   documentation, including identity keys and field groups.
-2. `utils/process_result.py` — the throughput result transformer that
-   defines the derived per-GPU metrics, latency conversions and field
-   names.
+   documentation, including identity keys and field groups. Role:
+   `documentation`.
+2. `infx/results/fixed_sequence.py` — the actual throughput result
+   transformer that defines derived per-GPU metrics, latency conversions
+   and field names. Role: `consumer_code`. (Replaces the previous
+   `utils/process_result.py` which was a 12-line shim, not the real
+   transformer.)
+3. `infx/results/topology.py` — DCP/PCP field definitions for
+   disaggregated parallelism. Role: `consumer_code`.
 
 **If a public `agg_bmk.json` workflow artifact is accessible** (owner
 input §3), also pin one representative throughput row as
@@ -196,19 +245,26 @@ The architecture dispatch proof and ADR-007 are written against this
 commit. For Phase 0 schema definition, the configuration surface at this
 commit is authoritative.
 
-**Pin five files** (at the pinned commit, not HEAD):
+**Pin seven files** (at the pinned commit, not HEAD):
 
 1. `vllm/engine/arg_utils.py` — `EngineArgs` and `AsyncEngineArgs`
-   dataclasses defining the complete vLLM configuration surface.
+   dataclasses defining the complete vLLM configuration surface. Role:
+   `consumer_code`.
 2. `vllm/v1/kv_cache_interface.py` — `FullAttentionSpec`,
    `MLAAttentionSpec`, `SlidingWindowSpec`, `MambaSpec` and the KV cache
-   mechanism registry.
+   mechanism registry. Role: `consumer_code`.
 3. `vllm/tasks.py` — task registry (`generate`, `embed`, `classify`,
-   `score`, `reward`, `transcription`, `transcription_streaming`).
+   `score`, `reward`, `transcription`, `transcription_streaming`). Role:
+   `consumer_code`.
 4. `vllm/transformers_utils/model_arch_config_convertor.py` — architecture
-   normalization, MLA detection, KV head count extraction.
+   normalization, MLA detection, KV head count extraction. Role:
+   `consumer_code`.
 5. `docs/models/supported_models.md` — the model support matrix with
-   capability columns.
+   capability columns. Role: `documentation`.
+6. `vllm/config/mamba.py` — backs `MambaSpec` mechanism fixture. Role:
+   `consumer_code`.
+7. `vllm/config/multimodal.py` — backs `media_encoder`/`projector`
+   mechanism fixtures. Role: `consumer_code`.
 
 **Note:** a shallow clone at HEAD does not contain this commit. The
 implementer must either do a full clone or use `git fetch --depth 1
@@ -231,21 +287,37 @@ schemas. The fixture uses real model repository files.
 1. `config.json` — transformer model configuration (the fields
    `ModelConfig` reads: `architectures`, `model_type`, `hidden_size`,
    `num_hidden_layers`, `num_attention_heads`, `num_key_value_heads`,
-   `vocab_size`, `max_position_embeddings`, `torch_dtype`, etc.).
+   `vocab_size`, `max_position_embeddings`, `torch_dtype`, etc.). Role:
+   `representative_content`.
 2. `model.safetensors.index.json` — the shard index with
    `metadata.total_size` and `weight_map` (tensor name → shard file).
+   Role: `representative_content`.
 3. The YAML frontmatter from `README.md` — model card metadata
    (`pipeline_tag`, `library_name`, `license`, `tags`, `base_model`,
-   `model-index` with eval results).
+   `model-index` with eval results). Role: `representative_content`.
 
 **Also pin from a MoE model** (`deepseek-ai/DeepSeek-V3`):
 
 4. `config.json` — proves MLA fields (`kv_lora_rank`, `model_type:
    deepseek_v3`) and MoE fields (`num_experts`, `num_experts_per_tok`).
+   Role: `representative_content`.
+
+**Also capture the API response:**
+
+5. `model_info.json` — saved `huggingface_hub` API response for
+   Qwen3-8B with `gated`, `sha`, `created_at`,
+   `safetensors.parameters` — fields that exist only in the API
+   response, not in any downloadable file. This is what
+   `ArtifactSourceObservation` maps from. Role: `example`.
 
 **Retrieval method:** `huggingface_hub` Python API with `revision` pinned
 to the commit SHA visible in the Hub UI at retrieval time. Record the
-revision SHA, retrieval date and file SHA-256.
+revision SHA, retrieval date and file SHA-256. `huggingface_hub` is not
+a project dependency — install for pinning only (`uv pip install
+huggingface_hub` into the project venv, or use `uvx`). Do not add to
+`pyproject.toml` production dependencies. Provenance uses two
+`SourceLocation` entries (one per HF repo), each with
+`retrieval_method: "huggingface_hub_api"` and the resolved revision SHA.
 
 **What Apron maps:** `ArtifactLocator` names the source kind (`huggingface`)
 and requested revision. `ArtifactSourceObservation` carries the resolved
@@ -315,22 +387,29 @@ Exit-gate pins (blocking):
 
 1. Create `tests/fixtures/external-formats/` and the `provenance.json`
    schema (a small frozen Pydantic model in the domain layer).
-2. Pin vllm-recipes (two YAML files from `.sources/recipes/`).
-3. Pin aiconfigurator (three files from `.sources/aiconfigurator/` at the
+2. Pin vllm-recipes (three YAML files from `.sources/recipes/`).
+3. Pin aiconfigurator (four files from `.sources/aiconfigurator/` at the
    already-pinned commit).
-4. Pin InferenceX (two files from `.sources/InferenceX/`; add example row
-   if available).
-5. Pin vLLM configuration surface (five files; resolve the commit
+4. Pin InferenceX (three files from `.sources/InferenceX/`; add example
+   row if available).
+5. Pin vLLM configuration surface (seven files; resolve the commit
    question per §1.2.4 note).
 6. Pin HF Hub artifacts (download via `huggingface_hub` API with pinned
-   revisions for Qwen3-8B and DeepSeek-V3).
+   revisions for Qwen3-8B and DeepSeek-V3; save API response as
+   `model_info.json`).
 7. Pin llmcalc legacy catalogue. Source: the 101 unique non-Gemma entries
-   (phase-plan.md line 37). Pin the catalogue with provenance as
-   `owner_attested_legacy_boot` evidence level. Record original empirical
-   VRAM, configuration and provider fields; mark absent artifact revision,
-   engine/image digest, exact hardware, workload, log and date explicitly
-   unknown. Do not carry forward llmcalc's generic KV, activation, MoE
-   or quantization fallback formulas.
+   (phase-plan.md line 37). Pin the catalogue with provenance
+   (`repository: null`, `revision: null`,
+   `retrieval_method: "owner_provided"`). The evidence level is a
+   separate `import_status` field on imported records — not an
+   `EpistemicStatus` variant (those are for Apron-produced claims) and
+   not a position in the ADR-006 §8 total order. `import_status` marks
+   entries as pre-existing data that seeds candidates but cannot satisfy
+   any verification gate. Record original empirical VRAM, configuration
+   and provider fields; mark absent artifact revision, engine/image
+   digest, exact hardware, workload, log and date explicitly unknown.
+   Do not carry forward llmcalc's generic KV, activation, MoE or
+   quantization fallback formulas.
 8. Write a test that every `provenance.json` is valid, every pinned file
    exists, and every recorded SHA-256 matches the file on disk.
 
@@ -368,36 +447,120 @@ to ISO strings and other non-JSON types to their JSON representation.
 This is load-bearing — `model_dump()` without `mode="json"` returns
 live Python objects and `canonicalize()` raises `TypeError`.
 
-**Cross-layer references are fingerprint strings, not embedded
-objects.** When a schema references another schema from a different
-layer, it carries the referenced record's `record_digest_hex` as a
-`str` field, not an embedded typed object. This eliminates circular
-imports between layers. `TaskAttemptRecord` carries "exact
-decision/task-suite/application/evaluation-protocol/solution
-fingerprints" — these are digest strings. `EvaluationProtocol`
-"binds" a `DecisionRequest` by carrying its fingerprint, not by
-embedding it. `QualityEvidence` "references" task attempts by their
-fingerprints.
+**Field naming convention.** All schema field names are `snake_case`.
+RFC 8785 is syntactic, not semantic — two contributors using different
+casing for the same field produce non-equal digests. This convention
+prevents silent digest divergence.
+
+**Cross-layer references are typed strings, not embedded objects.**
+When a schema references another schema from a different layer, it
+carries a string reference, not an embedded typed object. This
+eliminates circular imports between layers.
+
+Cross-layer references come in two kinds:
+
+| reference kind | key type | purpose | examples |
+|---|---|---|---|
+| **Identity-fingerprint** | `FingerprintHex` | equivalence checking; display changes don't invalidate the reference | evidence-lineage: outcome → request/task/solution (INV-25, INV-12, INV-17, INV-18) |
+| **Exact-instance digest** | `str` (full `record_digest_hex`) | exact-bytes binding; the referenced revision is immutable | acceptance/authorization (INV-7, INV-14, INV-21); correction `corrects` field (INV-12); storage identity (INV-43); release manifests (INV-35) |
+
+**Why acceptance uses digest, not fingerprint:** if a free-text field
+(e.g. `optimization_objective_description`) is classified `DISPLAY`,
+and the acceptance reference uses fingerprint, someone could act under
+a `DecisionRequest` revision that was never accepted by a human, as
+long as it fingerprint-matches one that was. That is an authorization
+boundary bypass (INV-7, INV-14).
+
+**Why correction uses digest, not fingerprint:** fingerprint is
+many-to-one by design. A correction of one specific wrong record would
+silently supersede ALL records sharing that fingerprint. Correction is
+instance-level; it needs instance-level addressing.
+
+Each schema field documents which reference kind it is via a naming
+convention: `*_fingerprint: FingerprintHex` for identity-fingerprint
+references, `*_digest: str` for exact-instance digest references.
+
+Schemas with cross-layer references provide a `from_objects()`
+classmethod for construction:
+
+```python
+@classmethod
+def from_objects(cls, decision_request: DecisionRequest, ...) -> Self:
+    return cls(
+        decision_request_digest=record_digest_hex(
+            decision_request.model_dump(mode="json")
+        ),
+        task_suite_fingerprint=fingerprint_hex(task_suite),
+        ...
+    )
+```
 
 **Fingerprint vs digest.** A record's digest (`record_digest_hex`) is
-its full canonical form. A record's fingerprint is the digest of its
+the SHA-256 multihash of its full canonical form. A record's
+fingerprint (`fingerprint_hex`) is the SHA-256 multihash of its
 **identity subset** — the fields that define what the record IS, not
 how it is displayed or when it was created. Each schema declares its
-identity fields via a `fingerprint_fields()` classmethod that returns
-the subset of `model_dump(mode="json")` used for fingerprinting.
-Display metadata, timestamps and mutable annotations are excluded.
-This is how `test_solution_fingerprint_stable_on_irrelevant_change`
-works.
+identity fields via `Annotated[T, IDENTITY]` markers on every field.
+Every field on every frozen model carries either `IDENTITY` or
+`DISPLAY`. `assert_fully_classified` runs in CI for every schema
+class — an unclassified field is a build failure. Display metadata,
+timestamps and mutable annotations are `DISPLAY`. This is how
+`test_solution_fingerprint_stable_on_irrelevant_change` works.
 
-**Migration convention.** Migrations are explicit functions from
-version N to N+1 in `src/apron/domain/schemas/migrations/`. Migration
-produces a new record version with a new digest; old references (by
-digest) remain valid against the old version. INV-5 (append-only) and
-INV-12 (correction keeps original visible) are satisfied because
-migration never mutates an existing record — it creates a successor.
-The migration registry maps `(schema_name, version)` to the forward
-migration function. Built and tested with the first schema (Layer 0)
-using a synthetic v1→v2 migration that adds one optional field.
+`FingerprintHex` is a constrained `str` type
+(`Annotated[str, StringConstraints(pattern=r"^1220[0-9a-f]{64}$")]`)
+used for every cross-layer identity-fingerprint reference. The shared
+functions live in `src/apron/domain/fingerprints.py`:
+`identity_field_names(cls)`, `assert_fully_classified(cls)` and
+`fingerprint_hex(record)`.
+
+**Do not use PEP 695 type aliases** (`type Identity[T] =
+Annotated[T, IDENTITY]`) — pydantic 2.x silently drops metadata from
+PEP 695 type aliases. Use plain `Annotated` directly.
+
+**Migration convention (INV-5).** Migrations are explicit functions
+from version N to N+1 in `src/apron/domain/schemas/migrations/`.
+Migration is type-level schema evolution: a function in the migration
+registry transforms all v1 instances of a type to v2. Applied lazily
+at read time. Produces a new record with a new storage digest. The old
+version remains retrievable by its old digest. Migration cannot change
+identity fields — only add optional fields or restructure display
+fields. Therefore the fingerprint is preserved across migration
+(identity fields unchanged → same `fingerprint_hex`). The migration
+registry maps `(schema_name, version)` to the forward migration
+function. Built and tested with the first schema (Layer 0) using a
+synthetic v1→v2 migration that adds one optional field.
+
+**Correction convention (INV-12).** Correction is instance-level
+content fix, distinct from migration. A new record is created with
+`corrects: str | None` carrying the original's **full-content digest**
+(`record_digest_hex`), NOT its fingerprint. Correction is
+instance-level — it addresses one specific record by its exact bytes,
+not a class of records sharing an identity. `corrects` points to the
+immediate predecessor in a correction chain, not the chain root.
+
+Both records exist in storage. The original is never mutated.
+`lifecycle` is set at creation time:
+
+- The original was created with `lifecycle: "observed"`
+- The correction is created with `lifecycle: "observed"` and
+  `corrects: <original_digest>`
+- "Superseded" is a derived query state: a record is superseded if any
+  newer record's `corrects` field points to its digest
+- `lifecycle: "retracted"` is set at creation time for explicit
+  retractions (the record is created as a retraction notice)
+- Two independent corrections of the same record produce two current
+  records — this is a disagreement, connected to INV-4's contested
+  mechanism. Both survive; human resolves
+
+This resolves the immutability paradox: no frozen record's `lifecycle`
+field ever changes after creation. "Superseded" is not a value of the
+stored `lifecycle` field; it is derived by query.
+
+**Pydantic version constraint.** The project pins `pydantic>=2,<3`.
+Without an upper bound, Pydantic 3 could silently change
+`model_dump(mode="json")` output, breaking every historical digest
+(INV-43).
 
 **Extension-point Protocols.** The 10 extension-point contracts
 (framework-spec.md §1) are `typing.Protocol` definitions, not
@@ -452,7 +615,8 @@ model and evidence schemas
 | `ArtifactRelation` | ADR-006 | discriminated union: `published_by_owner`, `claimed_derived_from`, `reproducibly_derived_from`, `structurally_compatible_with`, `quality_compared_with`, `tokenizer_compatible_with` |
 | `ExecutionSpec` | ADR-006 | engine image digest, resolved checkpoint method, implementation overrides, selected linear/MoE/attention kernels |
 | `ComponentMechanism` | ADR-007 §4 | role, typed execution mechanism (`autoregressive_decode`, `discrete_diffusion_decode`, `single_pass_pooling`, `encoder_decoder_generation`, `media_encoder`, `projector`, `latent_denoising`, `vae_decode`, `vocoder`, namespaced extension) |
-| `Calculator` | phase-plan, ADR-003 | `typing.Protocol`: dispatches by typed `ComponentMechanism` + `HardwareSpec` + workload shape → `PlanningClaim`. Mechanism registry; unimplemented mechanism returns `unknown` without fallback formula. The calculator is a function, not an object (engineering-standards.md §1) |
+| `WorkloadShape` | ADR-011 §2 | discriminated union of per-mechanism workload parameters: token distribution for text, audio duration/chunking for ASR, latent geometry for diffusion. Distinct from `ServingWorkloadSpec` (Layer 3, serving-traffic level) — this is the per-request shape the calculator needs |
+| `calculate` | phase-plan, ADR-003, INV-32 | Plain function (`Callable`), not a Protocol object. **Dispatch key:** `ComponentMechanism` + accepted `WorkloadShape`. **Consumed inputs:** immutable artifact/component metadata (including exact tensor/scale bytes from safetensors index), `HardwareSpec`, versioned engine constraints (`ExecutionSpec`), qualified calibration records. **Output:** `PlanningClaim`. Strategy-pattern registry keyed by `ComponentMechanism` discriminated-union `Literal` tag (engineering-standards.md §1). Tag lookup, not trial validation. Mechanism registry defaults to `unknown`; no fallback formula |
 | `ModelSpec` | ADR-007 §4, ADR-011 §4 | common identity core (repository, immutable revision, license, files, exact component bytes/dtype, remote-code requirement, lineage, publisher claims) + typed component graph with edges |
 | `QualityEvidence` | ADR-006, ADR-011 | carries fingerprints of the task attempts and evaluation protocol that produced it; not a free-standing assertion. Referenced by fingerprint, not embedded |
 | `CompatibilityEvidence` | ADR-006 | scoped to a candidate and execution fingerprint |
@@ -480,23 +644,26 @@ Modules: `src/apron/domain/solutions/` for `InferenceSolution` and
 | `InferenceSolution` | ADR-011 §4, ADR-013 | managed API binding, self-hosted artifact/engine/target binding, concrete role bindings for application roles, resolved routing/fallback/escalation policy; every endpoint retains fingerprints of its own `ModelSpec`, `ArtifactSpec`, `ExecutionSpec`, `CapabilitySignature`s, provider/target identity and `DeploymentPlan` |
 | `PlanningClaim` | ADR-002 §10 | producer and version, exact input fingerprint, proposed configuration, claim scope, producer-declared epistemic tier (NOT Apron `EpistemicStatus`), source-record references, calibration domain, uncertainty, unsupported/opaque fields |
 | `DeploymentPlan` | phase-plan §Phase 0 | canonical executable plan for a deployable endpoint or coordinated set of endpoints; includes parallelism topology (TP/PP/EP/DP/DCP/PCP), engine configuration, batch size, resource allocation, rendered command strings (literal `vllm serve` and Docker Compose text, not adapter output) |
-| `EvaluationProtocol` | ADR-011 §5 | carries fingerprints of `DecisionRequest`, `TaskSuiteSpec`, `ApplicationSpec` and candidate `InferenceSolution` (not embedded — cross-layer references are digest strings per §2.0); harness/version, dataset snapshot, solver/agent, scorer/rubric, deterministic checks, judge model/prompt, sampling parameters, seeds, repetitions, concurrency, stopping rules, aggregation, uncertainty method |
+| `EvaluationProtocol` | ADR-011 §5 | mixed reference kinds: `decision_request_digest: str` (acceptance, INV-7) + `task_suite_fingerprint: FingerprintHex`, `application_fingerprint: FingerprintHex`, `solution_fingerprint: FingerprintHex` (evidence-lineage, INV-25) — not embedded, per §2.0; harness/version, dataset snapshot, solver/agent, scorer/rubric, deterministic checks, judge model/prompt, sampling parameters, seeds, repetitions, concurrency, stopping rules, aggregation, uncertainty method |
 
 #### Layer 5 — Records
 
 Module: `src/apron/domain/schemas/records.py`
 
-Every record carries `claim_scope`, `production_mode` and a
-machine-readable `reason` (INV-20). Every record carries `lifecycle`
-state: `observed`, `superseded` or `retracted`; correction keeps
-the original visible (INV-12).
+Every evidentiary record (`TaskAttemptRecord`, `VerificationReport`,
+`RemediationRecord`) carries `claim_scope`, `production_mode`, a
+machine-readable `reason` (INV-20), `lifecycle` and `corrects: str |
+None` (§2.0 correction convention). `DiagnosisRule` carries its own
+status (`hypothesis` / `mechanism_verified`).
+`EvidenceReleaseManifest` is a content-addressed manifest, not an
+evidentiary observation.
 
 | schema | source | key fields |
 |---|---|---|
-| `TaskAttemptRecord` | ADR-011 §7 | exact decision/task-suite/application/evaluation-protocol/solution fingerprints (digest strings); case/attempt identity; output and permitted artifacts; criterion scores and acceptance; trace references; turns/retries/tool calls; input/cached-input/output usage; time; endpoint/judge/infrastructure cost; failures; raw-observation provenance; `claim_scope`, `production_mode`, `reason`, `lifecycle` |
-| `VerificationReport` | ADR-006, phase-plan | target kind, operator/source, provider, detected hardware (from `ExecutionTarget`); initial total/free/requested memory; model/weight memory; persistent consumption; transient peak headroom; non-PyTorch increase; CUDA-graph estimate/applied/actual; available KV-cache memory; safety buffer; profiling shape. Each stored as a separate non-overlapping field; `claim_scope`, `production_mode`, `reason`, `lifecycle` |
-| `RemediationRecord` | ADR-006 §Remediation-proof | `mechanism_outcome` (`verified`/`failed`/`not_evaluated`), `request_outcome` (`satisfied`/`violated`/`not_evaluated`), accepted request snapshot fingerprint, task/application/evaluation fingerprints, corrected-solution and plan diff, violated constraints, proving record fingerprints. Public result derived: `Fixed` = mechanism verified + request satisfied; `Alternative with trade-offs` = mechanism works + constraint violated; `Unverified suggestion` = incomplete proof |
-| `DiagnosisRule` | ADR-006 §Failure-fingerprint, phase-plan | exception class, engine call-site module, error family; correction spec; status (`hypothesis` or `mechanism_verified`); promoting `VerificationReport` fingerprint when verified |
+| `TaskAttemptRecord` | ADR-011 §7, ADR-010 §15 | exact decision/task-suite/application/evaluation-protocol/solution fingerprints (digest strings); case/attempt identity; output and permitted artifacts; criterion scores and acceptance; trace references; turns/retries/tool calls; input/cached-input/output usage; time; endpoint/judge/infrastructure cost; failures; raw-observation provenance; subsidy economics (`market_equivalent_price`, `gross_attributable_cost`, `subsidy_applied`, `project_out_of_pocket_cost` — ADR-010 Decision 15); `claim_scope`, `production_mode`, `reason`, `lifecycle`, `corrects: str | None` |
+| `VerificationReport` | ADR-006, phase-plan, ADR-010 §15 | target kind, operator/source, provider, detected hardware (from `ExecutionTarget`); initial total/free/requested memory; model/weight memory; persistent consumption; transient peak headroom; non-PyTorch increase; CUDA-graph estimate/applied/actual; available KV-cache memory; safety buffer; profiling shape. Each stored as a separate non-overlapping field. Subsidy economics (`market_equivalent_price`, `gross_attributable_cost`, `subsidy_applied`, `project_out_of_pocket_cost`); `claim_scope`, `production_mode`, `reason`, `lifecycle`, `corrects: str | None` |
+| `RemediationRecord` | ADR-006 §Remediation-proof, §Failure-fingerprint | `mechanism_outcome` (`verified`/`failed`/`not_evaluated`), `request_outcome` (`satisfied`/`violated`/`not_evaluated`), `accepted_request_digest: str` (exact-instance, not fingerprint), task/application/evaluation fingerprints (`FingerprintHex`), `corrected_plan_digest: str` (exact-instance of the new `DeploymentPlan`), `corrected_solution_digest: str | None` (exact-instance of the new `InferenceSolution`, optional — boot-failure remediation has no corrected solution, only a corrected plan), violated constraints, proving record fingerprints, `claim_scope` (pinned to `remediation` per ADR-002 §7), `production_mode`, `reason`, `lifecycle`, `corrects: str | None` (§2.0 correction convention). Public result derived: `Fixed` = mechanism verified + request satisfied; `Alternative with trade-offs` = mechanism works + constraint violated; `Unverified suggestion` = incomplete proof |
+| `DiagnosisRule` | ADR-006 §Failure-fingerprint, §Remediation-proof, phase-plan | exception class, engine call-site module, error family; correction spec; status (`hypothesis` or `mechanism_verified`); promoting `VerificationReport` fingerprint when verified |
 | `EvidenceReleaseManifest` | ADR-002 §6 | content-addressed, schema version, record digests, signatures/attestations, CDLA-Permissive-2.0 license, reconstructable independently of any mirror |
 
 #### Layer 6 — Authority and automation
@@ -509,7 +676,7 @@ Module: `src/apron/domain/schemas/authority.py`
 | `ActionRequest` | ADR-010 §1 | side-effect-specific; references `DecisionRequest` |
 | `AuthorityContribution` | ADR-010 §2 | typed `AuthoritySource` implementations contributing versioned constraints over principal, action, resource, context |
 | `AuthorizationDecision` | ADR-010 §3 | bound to `ActionRequest`, accepted `DecisionRequest`, context and source versions |
-| `AuthorizationEnvelope` | ADR-010 §3 | permitted action classes, candidate/model/judge/evaluation/compute providers/accounts, credential scopes, task-data destinations, hard target constraints, maximum spend, runtime/lifecycle/teardown, security/data rules, publication scope, adaptation rules |
+| `AuthorizationEnvelope` | ADR-010 §3 | permitted action classes, candidate/model/judge/evaluation/compute providers/accounts, credential scopes, task-data destinations, hard target constraints, maximum spend, runtime/lifecycle/teardown, security/data rules, publication scope, adaptation rules, `baseline_allocation_digest: str | None` and `contributed_pool_digest: str | None` (traces which resource records justified the `maximum_spend`; integrity deferred to step 9/13 where Layer 7 records exist) |
 | `OrchestrationDecision` | ADR-010 §7 | stable job id, deduplication key, policy version, state transitions, inputs, outputs |
 | `ActionAttempt` | ADR-010 §1 | discriminated union with evaluation, execution and publication specializations |
 | `AnomalyCase` | phase-plan §Phase 0 automation-boundaries, ADR-010 §8 | internal case for unknown fingerprint or significant prediction delta |
@@ -521,13 +688,15 @@ Module: `src/apron/domain/schemas/reports.py`
 
 | schema | source | key fields |
 |---|---|---|
-| `DecisionReport` | ADR-011 §9, phase-plan | every considered solution, rejection reason, evidence state, evaluation coverage, trade-off; preserves candidate set, exclusions, evidence states and trade-offs |
+| `DecisionReport` | ADR-011 §9, phase-plan, product-definition.md:113 | `decision_request_digest: str` (acceptance, INV-7); every considered solution with per-candidate `qualification_status: Literal["candidate", "capability_eligible", "identity_resolved", "task_evaluated", "serving_verified", "task_reproduced", "qualified", "measured_efficient"]` and `qualification_graph_state` (which obligation node was reached/failed); rejection reason; evidence state; evaluation coverage; `outcome_economics` (7 ADR-011 §8 measures); `uncertainty`; `disclosed_comparable_set: list[FingerprintHex]` (the subset of solutions used for measured-efficient claims, INV-23 — distinct from the full candidate set); trade-off. Preserves candidate set, exclusions, evidence states and trade-offs. Per-candidate economics include `market_equivalent_price`, `gross_attributable_cost`, `subsidy_applied`, `project_out_of_pocket_cost` (ADR-010 Decision 15). Fixture economics values are hand-authored to satisfy arithmetic invariants, not computed from real aggregation (the aggregator is Phase 1a). Single-candidate reports: `disclosed_comparable_set: []` and `qualification_status` capped below `measured_efficient` |
 | `MaintainerBaselineAllocation` | ADR-010 §14 | owner-controlled, cannot be set by scheduler |
 | `ContributedResourcePool` | ADR-010 §13 | provenance, may reduce project cost or expand coverage, cannot change evidence authority |
 
 ### 2.2 Golden fixtures
 
-Three golden fixture directories under `tests/fixtures/golden/`:
+Four golden fixture directories under `tests/fixtures/golden/` (success
+× 3, remediation × 1), plus budget-feasibility fixtures and negative/
+rejection fixtures (~114 total fixture files across all categories):
 
 #### `self-hosted/` — single self-hosted solution
 
@@ -549,11 +718,17 @@ Shape: Qwen3-8B BF16 on a single RTX 4090 via vLLM.
   Compose rendering
 - `evaluation-protocol.json` — deterministic scorer, 1 seed, 1 repetition
 - `task-attempt-records.json` — one passing attempt per case
-- `verification-report.json` — memory profiling fields (model memory,
-  KV-cache budget, peak activation, safety buffer) with synthetic but
-  structurally correct values
+- `verification-report.json` — all 15 non-overlapping memory profiling
+  fields: initial_total_memory, initial_free_memory, requested_memory,
+  model_weight_memory, persistent_consumption, transient_peak_headroom,
+  non_pytorch_increase, cuda_graph_estimate, cuda_graph_applied,
+  cuda_graph_actual, available_kv_cache_memory, safety_buffer, plus
+  profiling_shape fields. No "peak activation" composite — that is the
+  field the schema says NOT to use. Synthetic but structurally correct
+  values
 - `decision-report.json` — one candidate considered, one qualified, no
-  rejections
+  rejections; `disclosed_comparable_set: []` (single candidate cannot be
+  `measured_efficient`)
 
 Also export:
 - `exported-recipes.yaml` — the same plan exported as a recipes YAML entry
@@ -587,17 +762,75 @@ Shape: three-role application — planning (managed API), execution
   `executor`, `vision_analyzer`) with invocation conditions and a routing
   policy
 - `inference-solution.json` — `logical_route` over three `direct_endpoint`
-  bindings: one managed, two self-hosted; concrete role bindings for each
-  logical role; routing/fallback policy
+  bindings: one managed (`provider_opaque` for hidden runtime fields),
+  two self-hosted; concrete role bindings for each logical role;
+  routing/fallback policy
 - `task-suite-spec.json` — task requiring text+image input (proves the
   vision path) with a text output
 - Two `deployment-plan.json` files — one per self-hosted endpoint
 - `decision-report.json` — three endpoints, one compound solution, changed
   member changes fingerprint
 
+Also export (each self-hosted `DeploymentPlan` gets its own export set;
+managed-API planner endpoint has no exports — no plan):
+- `exported-recipes-executor.yaml` — executor endpoint plan as recipes
+- `exported-recipes-vision.yaml` — vision endpoint plan as recipes
+- `exported-aiconfigurator-executor.json`
+- `exported-aiconfigurator-vision.json`
+- `exported-inferencex-executor.json`
+- `exported-inferencex-vision.json`
+
+Fingerprint-change fixture pairs (proving the fingerprint changes when
+composition changes):
+- `fingerprint-routing-change.json` — same endpoints, changed routing
+  policy → different solution fingerprint
+- `fingerprint-modality-change.json` — same endpoints, vision endpoint
+  replaced with an audio endpoint → different solution fingerprint
+
+#### `remediation/` — remediation cycle (F1)
+
+The product's core loop: hit an error, get a proven correction. This
+sequence exercises the full derivation logic. Under
+`tests/fixtures/golden/remediation/`:
+
+- `original-verification-report.json` — boot failure (OOM on Qwen3-8B
+  at batch_size=64 on RTX 4090). All 15 non-overlapping memory fields
+  with structurally correct values showing the OOM condition
+- `diagnosis-rule.json` — hypothesis matching the failure fingerprint
+  (exception: OutOfMemoryError, module: vllm.worker, family: oom);
+  correction spec: reduce batch_size to 32
+- `corrected-deployment-plan.json` — same model/engine/hardware, only
+  batch_size changed (referenced by `corrected_plan_digest`)
+- `corrected-verification-report.json` — corrected boot succeeds,
+  memory fits. All 15 fields
+- `remediation-record-fixed.json` — `mechanism_outcome: verified`,
+  `request_outcome: satisfied` → public result: Fixed. Carries
+  `corrects: <original_verification_report_digest>`,
+  `accepted_request_digest`, `corrected_plan_digest`, proving record
+  fingerprints
+- `remediation-record-tradeoff.json` — `mechanism_outcome: verified`,
+  `request_outcome: violated` (batch_size reduction violates accepted
+  throughput SLO) → public result: Alternative with trade-offs
+- `remediation-record-unverified.json` — `mechanism_outcome:
+  not_evaluated`, `request_outcome: not_evaluated` → public result:
+  Unverified suggestion
+
+#### Budget-feasibility fixtures (F4)
+
+Under `tests/fixtures/golden/`:
+- `maintainer-baseline-allocation.json` — owner-controlled budget
+  envelope for Phase 1a
+- `phase-1a-run-plan.json` — estimated cost for the Phase 1a run
+  (artifact download, boot, measurement, task evaluation, failure
+  injection, correction, replay, teardown)
+
+Test: allocation covers run-plan cost at `ContributedResourcePool = 0`.
+
 #### Negative/rejection golden fixtures (phase-plan exit gate, line 29)
 
-Under `tests/fixtures/golden/negative/`, five mandated scenarios:
+Under `tests/fixtures/golden/negative/`, five mandated scenarios plus
+two qualification-graph rejection fixtures and one multi-candidate
+fixture:
 
 | fixture | what it proves |
 |---|---|
@@ -606,6 +839,9 @@ Under `tests/fixtures/golden/negative/`, five mandated scenarios:
 | `high-throughput-task-failure.json` | high throughput with failed task outcomes cannot qualify a solution (INV-24) |
 | `serving-slo-failure.json` | high task score with a violated serving SLO cannot qualify a solution (INV-24) |
 | `incomparable-cost-boundary.json` | managed and self-hosted cost cannot be ranked when their cost boundary or workload horizon is incomparable |
+| `capability-pruned.json` | candidate lacks a required `CapabilitySignature` → pruned at `capability_eligible` qualification-graph node (ADR-011 §9) |
+| `policy-rejected.json` | candidate violates a privacy/license/data-residency constraint on `DecisionRequest` → pruned at policy check (ADR-011 §9) |
+| `multi-candidate-comparison.json` | ≥3 candidates, ≥1 rejection, ≥1 incomparable cost boundary; `disclosed_comparable_set` exercises INV-23 at non-trivial scale; every considered solution preserved in report |
 
 #### Authority and automation fixtures
 
@@ -613,12 +849,12 @@ Under `tests/fixtures/authority/`:
 
 | fixture | what it proves |
 |---|---|
-| `authorization-envelope.json` | deny overrides permit; indeterminate never authorizes; unknown obligation denies |
-| `restart-no-duplication.json` | replaying a job cannot duplicate a paid task attempt or judge call (ADR-010, INV-21) |
+| `authorization-envelope.json` | deny overrides permit; indeterminate never authorizes; unknown obligation denies. Folds `authority-contribution.json` — needs ≥2 contributions to test deny-overrides-permit |
+| `restart-no-duplication.json` | replaying a job cannot duplicate a paid task attempt or judge call (ADR-010, INV-21). Folds `orchestration-dedup.json` — needs a stable job id to test replay |
 | `teardown-convergence.json` | cancellation, timeout, controller crash and target loss converge on idempotent teardown |
 | `dynamic-destination-denied.json` | authorized primary route with unauthorized fallback is denied before disclosure or spend (ADR-013) |
-| `authority-contribution.json` | typed `AuthoritySource` contributing versioned constraints |
-| `orchestration-dedup.json` | stable job id, deduplication key, state transitions; restart produces same result |
+| `verify-no-action-request.json` | verify produces a local `VerificationReport` with no `ActionRequest`, no authorization chain (ADR-010 verify ≠ submit) |
+| `submit-requires-authorization.json` | submit produces an `ActionRequest` → `AuthorizationDecision` → publication attempt (ADR-010 verify ≠ submit) |
 
 #### Evidence-state fixtures
 
@@ -627,14 +863,16 @@ Under `tests/fixtures/evidence-states/`:
 | fixture | what it proves |
 |---|---|
 | `contested.json` | two records at different evidence levels for the same fingerprint; disagreement marked `contested`, both shown, nothing auto-resolves (INV-4, ADR-006 §8) |
-| `lifecycle-correction.json` | record with `lifecycle: observed`, then corrected record with `lifecycle: superseded`; original stays visible (INV-12) |
+| `lifecycle-correction.json` | correction record created with `lifecycle: observed` and `corrects: <original_digest>`; original record stays `lifecycle: observed` in storage; superseded status is derived by query — any record whose `corrects` field points to the original's digest makes the original effectively superseded (INV-12, §2.0 correction convention) |
 | `cross-fingerprint-rejection.json` | a task score from a different solution fingerprint is a prediction, not a measurement; same task, two different solutions, score does not transfer (INV-25) |
 | `promotion-gate-recommended.json` | an endpoint cannot reach `Recommended` without accepted task and serving evidence (INV-18) |
 | `promotion-gate-qualified.json` | a solution cannot reach `Qualified` without exact-solution task reproduction plus every applicable SLO (INV-18) |
 | `quality-evidence.json` | `QualityEvidence` references task-attempt and evaluation-protocol fingerprints; cannot exist as a free-standing assertion (ADR-006, ADR-011) |
 | `compatibility-evidence.json` | scoped to a candidate and execution fingerprint |
 | `evidence-release-manifest.json` | content-addressed manifest with record digests, CDLA-Permissive-2.0; reconstructable independently of any mirror (INV-35) |
+| `predicted-with-uncertainty.json` | a resource prediction with `EpistemicStatus = predicted`, uncertainty bounds, calibration scope and provenance; proves the schema can carry predictions as a distinct state from measurements |
 | `workload-spec-envelope.json` | `WorkloadSpec` binds `TaskSuiteSpec` and `ServingWorkloadSpec`; task success not inferred from serving throughput (INV-24) |
+| `predicted-with-uncertainty.json` | a resource prediction with `EpistemicStatus = predicted`, uncertainty bounds, calibration scope and provenance. Proves the schema can carry predictions as a distinct state from measurements |
 
 ### 2.3 Capability and component fixtures
 
@@ -712,15 +950,18 @@ Under `tests/fixtures/quantization/`:
 | `quality-compared.json` | two artifacts compared on the same task | `quality_compared_with` relation; comparison references the task/protocol that produced it |
 | `tokenizer-compatible.json` | two artifacts with shared tokenizer | `tokenizer_compatible_with` relation; tokenizer hash matches |
 | `same-content-two-sources.json` | identical resolved artifact from HF and local | one `ArtifactIdentity` with two `ArtifactSourceObservation`s (ADR-002 §8, ADR-011) |
+| `unsupported-adapter.json` | unsupported quantization method | a hypothetical quantization method for which no adapter exists; the candidate API returns `unsupported` explicitly rather than silently skipping or falling back |
 
 ### 2.8 Implementation order for Part 2
 
 1. **Migration infrastructure and canonicalization test.** Build the
    migration registry, version field convention and the
-   `fingerprint_fields()` classmethod pattern. Prove that
-   `model_dump(mode="json")` + `canonicalize()` works on a minimal
-   frozen model with a `datetime` field. Prove that migration produces a
-   new digest and old references remain valid.
+   `Annotated[T, IDENTITY/DISPLAY]` marker pattern (§2.0). Prove that
+   `model_dump(mode="json")` + `canonicalize()` works on a toy
+   `FrozenModel` with a `datetime` field (not a real schema — the
+   pattern is tested before any schema is built). Prove that migration
+   produces a new digest and old references remain valid.
+   `assert_fully_classified` runs on the toy model.
 2. **Layer 0 primitives + `ExecutionTarget` Protocol.** Test: each model
    serializes to canonical form and round-trips. `ExecutionTarget` Protocol
    has a fake-adapter test client.
@@ -728,8 +969,10 @@ Under `tests/fixtures/quantization/`:
    contents; equal contents from two sources share one identity with two
    observations.
 4. **Layer 2 models + calculator contract.** Test: `ModelSpec` component
-   graph builds from `config.json` fixtures; calculator Protocol dispatches
-   on `ComponentMechanism` + `HardwareSpec` → `PlanningClaim`;
+   graph builds from `config.json` fixtures; calculator function dispatches
+   on `ComponentMechanism` + `WorkloadShape` → `PlanningClaim`; consumed
+   inputs include artifact metadata, exact tensor bytes, `HardwareSpec`,
+   `ExecutionSpec` (engine constraints), calibration records;
    unimplemented mechanism returns `unknown`. Quantization candidate graph
    resolves through one API.
 5. **Layer 3 tasks.** Test: `TaskSuiteSpec` and `ServingWorkloadSpec` are
@@ -737,9 +980,10 @@ Under `tests/fixtures/quantization/`:
    cannot establish task success.
 6. **Layer 4 solutions + evaluation.** Test: `InferenceSolution` with one
    endpoint and with three endpoints uses the same API; changed member
-   changes fingerprint. `EvaluationProtocol` carries fingerprint refs to
-   `DecisionRequest` (not embedded — digest string). Topology fixtures
-   preserve distinct semantics.
+   changes fingerprint. `EvaluationProtocol` carries
+   `decision_request_digest` (acceptance) + 3 fingerprints
+   (evidence-lineage) — not embedded, per §2.0 reference kinds. Topology
+   fixtures preserve distinct semantics.
 7. **Layer 5 records.** Test: `TaskAttemptRecord` carries exact
    fingerprints; cross-fingerprint result cannot be emitted as
    measurement. `VerificationReport` memory fields are non-overlapping and
@@ -749,32 +993,49 @@ Under `tests/fixtures/quantization/`:
 8. **Layer 6 authority.** Test: `AuthorizationEnvelope` deny overrides
    permit; indeterminate never authorizes. Restart/dedup fixtures prove
    `OrchestrationDecision` idempotency. Dynamic-destination authorization
-   denied for unauthorized fallback.
+   denied for unauthorized fallback. Verify ≠ submit: verify produces a
+   local `VerificationReport` with no `ActionRequest`; submit produces
+   an `ActionRequest` → `AuthorizationDecision` → publication attempt.
+   `baseline_allocation_digest`/`contributed_pool_digest` integrity
+   deferred to step 9/13 (Layer 7 records do not exist at step 8).
 9. **Layer 7 reports.** Test: `DecisionReport` preserves every considered
    solution, rejection reason, evidence state. Promotion-gate test: no
    endpoint reaches `Recommended` without task+serving evidence; no
    solution reaches `Qualified` without exact-solution reproduction (INV-18).
-10. **llmcalc legacy import.** Import the 101 entries as
-    `owner_attested_legacy_boot`. Test: entries seed candidates but do not
-    satisfy current verification gates; fallback formulas are not carried.
-11. **Extension-point Protocols.** Define the remaining 9 Protocols
+10. **Extension-point Protocols.** Define the remaining 9 Protocols
     (framework-spec.md §1): `EngineAdapter`, `ArtifactSourceResolver`,
     `RenderTarget`, `EvidenceSource`, `PlanningSource`,
     `EvaluationAdapter`, `SignalSource`, `AuthoritySource`, `Publisher`.
     Each with a fake-adapter test client. These are `typing.Protocol`
     in the domain layer; full conformance suites in `conformance/` are
     built as a prerequisite for Phase 1a.
-12. **Golden fixtures.** Build the three success golden fixture sets + the
-    five negative/rejection fixtures from the schemas. Test: each
-    round-trips through serialization and migration.
+11. **llmcalc legacy import.** Import the 101 entries with
+    `import_status` (§1.3 step 7). This step is after Protocols because
+    the import should use the `EvidenceSource` Protocol contract. Test:
+    entries seed candidates but do not satisfy current verification
+    gates; fallback formulas are not carried.
+12. **Golden fixtures.** Build four golden categories: success × 3
+    (self-hosted, managed-api, compound), remediation × 1
+    (golden/remediation/ — 7 files from §2.2), plus five
+    negative/rejection fixtures and two budget-feasibility fixtures.
+    Test: each round-trips through serialization and migration.
+    Remediation fixtures exercise the full derivation logic
+    (Fixed/tradeoff/unverified from mechanism_outcome × request_outcome
+    pairs) and the corrects-chain digest links.
 13. **Evidence-state, authority and evaluation fixtures.** Build the
     contested, lifecycle, restart/dedup, cross-fingerprint, promotion-gate,
-    QualityEvidence, CompatibilityEvidence, EvidenceReleaseManifest and
-    remaining ArtifactRelation fixtures. Test: each exercises its stated
-    invariant.
-14. **Export tests.** Test: each `DeploymentPlan` golden fixture exports
-    losslessly to the three pinned ecosystem shapes and back, using
-    explicit shared-field tables (§3.5a).
+    QualityEvidence, CompatibilityEvidence, EvidenceReleaseManifest,
+    predicted-with-uncertainty and remaining ArtifactRelation fixtures.
+    Build verify-no-action-request and submit-requires-authorization
+    authority fixtures. Test: each exercises its stated invariant.
+    Cross-fixture fingerprint integrity: tests that construct records
+    with fingerprint references MUST compute
+    `fingerprint_hex(referenced_fixture)` and assert it equals the
+    embedded fingerprint field — same self-proving pattern as the
+    provenance integrity test (§3.16).
+14. **Export tests.** Test: every `DeploymentPlan` (including compound's
+    2 embedded self-hosted plans) exports losslessly to the three pinned
+    ecosystem shapes and back, using explicit shared-field tables (§3.5a).
 
 ---
 
@@ -840,7 +1101,7 @@ def test_deterministic_plan(fixed_clock, fixed_id_gen, fixed_rng):
 
 ### 3.5 Export tests (ADR-002 §4)
 
-For each golden self-hosted `DeploymentPlan`:
+For every `DeploymentPlan` (self-hosted golden + compound's embedded):
 
 ```python
 def test_export_to_recipes(plan, recipes_fixture):
@@ -1019,8 +1280,10 @@ def test_contested_evidence():
 
 
 def test_lifecycle_correction():
-    """Corrected record has lifecycle superseded; original stays visible with
-    lifecycle observed (INV-12)."""
+    """Correction record has lifecycle: observed and corrects: <original_digest>.
+    Original stays lifecycle: observed in storage. Superseded is derived by
+    query — any record whose corrects points to the original's digest (INV-12,
+    §2.0 correction convention)."""
 
 
 def test_epistemic_proven_constraint():
@@ -1060,6 +1323,108 @@ def test_external_format_provenance():
             assert hashlib.sha256(path.read_bytes()).hexdigest() == entry["sha256"]
 ```
 
+### 3.17 Mechanism dispatch collective test
+
+```python
+def test_mechanism_dispatch():
+    """Every mechanism fixture (11 total) dispatches through the calculator
+    function. Each mechanism resolves to a PlanningClaim or unknown."""
+```
+
+### 3.18 Negative fixture rejection tests
+
+```python
+def test_negative_golden_capability_pruning():
+    """capability-pruned.json: candidate lacks required CapabilitySignature,
+    pruned at capability_eligible qualification-graph node."""
+
+
+def test_negative_golden_policy_rejection():
+    """policy-rejected.json: candidate violates privacy/license constraint,
+    pruned at policy check."""
+```
+
+### 3.19 Remediation tests
+
+```python
+def test_remediation_derivation():
+    """Fixed/tradeoff/unverified derived from mechanism_outcome × request_outcome
+    pairs across the 3 remediation fixtures."""
+
+
+def test_remediation_corrects_chain():
+    """Digest link from correction to original is valid and navigable:
+    remediation-record-fixed.json corrects points to original-verification-report
+    digest, computed by hashing the original fixture."""
+```
+
+### 3.20 Qualification graph pruning test
+
+```python
+def test_qualification_graph_pruning():
+    """Capability and policy rejection at early qualification-graph nodes.
+    capability-pruned fixture stops at capability_eligible; policy-rejected
+    fixture stops at policy check. Neither reaches qualified."""
+```
+
+### 3.21 Verify vs submit authorization test
+
+```python
+def test_verify_vs_submit_authorization():
+    """verify-no-action-request.json produces no ActionRequest, no authorization
+    chain. submit-requires-authorization.json produces ActionRequest →
+    AuthorizationDecision → publication attempt."""
+```
+
+### 3.22 Disclosed comparable set test
+
+```python
+def test_disclosed_comparable_set():
+    """multi-candidate-comparison.json: INV-23 — ≥3 candidates, ≥1 rejection;
+    disclosed_comparable_set is a subset of the full candidate set.
+    Single-candidate decision-report.json: disclosed_comparable_set is empty."""
+```
+
+### 3.23 Dynamic destination authorization test
+
+```python
+def test_dynamic_destination_authorization():
+    """dynamic-destination-denied.json: authorized primary route with
+    unauthorized fallback is denied before disclosure or spend (ADR-013)."""
+```
+
+### 3.24 Evidence release manifest test
+
+```python
+def test_evidence_release_manifest():
+    """evidence-release-manifest.json: content-addressed manifest with record
+    digests, CDLA-Permissive-2.0; reconstructable independently of any mirror
+    (INV-35)."""
+```
+
+### 3.25 Fingerprint vs digest distinction test
+
+```python
+def test_fingerprint_vs_digest_distinction():
+    """For any record with DISPLAY fields: fingerprint_hex(obj) !=
+    record_digest_hex(obj.model_dump(mode='json')). FingerprintHex and full
+    digests share identical byte patterns (^1220[0-9a-f]{64}$); Pydantic can't
+    prevent a swap. This assertion proves the two values are distinct at test
+    time."""
+```
+
+### 3.26 Cross-fixture fingerprint integrity test
+
+```python
+def test_cross_fixture_fingerprint_integrity():
+    """Every fixture that carries a FingerprintHex reference to another fixture
+    must match: compute fingerprint_hex(referenced_fixture) and assert it equals
+    the embedded fingerprint field. Same self-proving pattern as provenance
+    integrity (§3.16), but using fingerprint_hex (identity subset) for
+    evidence-lineage refs and record_digest_hex (full content) for
+    acceptance/correction refs."""
+```
+
 ---
 
 ## Exit gate summary
@@ -1073,17 +1438,19 @@ Phase 0 is complete when `prek run --all-files` passes and:
    frozen Pydantic model with discriminated unions, version field and
    migration from v1 (Part 2, Layers 0–7).
 3. The 10 extension-point `typing.Protocol` contracts are defined with
-   fake-adapter test clients (§2.8 steps 2 and 11).
-4. The calculator Protocol dispatches on mechanism + hardware + workload
-   and returns `unknown` for unimplemented mechanisms (§2.8 step 4).
-5. Three success golden fixtures (self-hosted, managed, compound) and
-   five negative/rejection golden fixtures round-trip through
+   fake-adapter test clients (§2.8 steps 2 and 10).
+4. The calculator function dispatches on mechanism + workload shape and
+   returns `unknown` for unimplemented mechanisms (§2.8 step 4).
+5. Four golden categories (success × 3, remediation × 1), five
+   negative/rejection fixtures, two budget-feasibility fixtures, and
+   three qualification-graph rejection fixtures round-trip through
    serialization and migration (§3.2).
 6. Generated endpoint plans and decision reports are deterministic under
    injected ports (§3.4).
-7. Every self-hosted `DeploymentPlan` exports losslessly for shared
-   fields (per explicit shared-field tables, §3.5a) to the three pinned
-   ecosystem shapes (§3.5).
+7. Every `DeploymentPlan` (including compound's 2 embedded self-hosted
+   plans) exports losslessly for shared fields (per explicit
+   shared-field tables, §3.5a) to the three pinned ecosystem shapes
+   (§3.5).
 8. Unknown, unsupported, opaque and estimated states are explicit (§3.6).
 9. Changed solution members change the fingerprint; display metadata
    does not; topology fixtures preserve distinct semantics (§3.7).
@@ -1092,7 +1459,8 @@ Phase 0 is complete when `prek run --all-files` passes and:
 11. Capability fixtures preserve combination semantics and result shape
     (§3.9).
 12. Quantization fixtures resolve through one candidate API with actual
-    tensor bytes; all six `ArtifactRelation` variants fixtured (§3.10).
+    tensor bytes; all six `ArtifactRelation` variants fixtured; the
+    unsupported-adapter fixture returns `unsupported` explicitly (§3.10).
 13. No endpoint reaches `Recommended` without task+serving evidence; no
     solution reaches `Qualified` without exact reproduction (§3.11,
     INV-18).
@@ -1105,4 +1473,19 @@ Phase 0 is complete when `prek run --all-files` passes and:
 17. The Phase 1a run plan is budget-feasible at zero contributed
     resources (§3.15).
 18. The llmcalc legacy entries seed candidates without satisfying
-    verification gates; fallback formulas are not carried (§2.8 step 10).
+    verification gates; fallback formulas are not carried (§2.8 step 11).
+19. Remediation-cycle derivation exercised: Fixed, Alternative with
+    trade-offs and Unverified suggestion derived from mechanism_outcome ×
+    request_outcome pairs; corrects-chain digest links validated (§3.19).
+20. Verify ≠ submit distinction: verify produces no `ActionRequest`;
+    submit requires authorization (§3.21).
+21. Mechanism dispatch collective: every mechanism fixture dispatches
+    through the calculator function (§3.17).
+22. Negative fixture rejection paths: capability pruning and policy
+    rejection at qualification-graph nodes (§3.18, §3.20).
+23. Evidence-release manifest (INV-35) round-trips as content-addressed
+    manifest with record digests (§3.24).
+24. Fingerprint and digest are distinct values for records with DISPLAY
+    fields (§3.25). Cross-fixture fingerprint integrity: every embedded
+    reference matches the computed fingerprint/digest of the referenced
+    fixture (§3.26).

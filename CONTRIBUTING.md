@@ -23,7 +23,7 @@ Engine, artifact source, render target, evaluation, execution target, planning s
 1. [`framework-spec.md` §1](docs/framework-spec.md) — the extension-point contracts
 2. [`engineering-standards.md`](docs/engineering-standards.md) — layout, boundaries, test method
 3. The ADR governing that extension point (linked from the framework spec)
-4. Run the conformance suite from the `apron-conformance` distribution against your implementation
+4. Run the conformance suite from the `apron-conformance` distribution against your implementation (the suite ships as a Phase 1a prerequisite; Phase 0 produces the `typing.Protocol` definitions with fake-adapter test clients)
 
 ### Adding a calculator mechanism
 
