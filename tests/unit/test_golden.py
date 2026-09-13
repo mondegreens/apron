@@ -608,6 +608,46 @@ def test_compound_two_plans():
     assert fingerprint_hex(fixtures["executor_plan"]) != fingerprint_hex(fixtures["vision_plan"])
 
 
+def test_fingerprint_routing_change():
+    """Same endpoints, changed routing policy → different solution fingerprint."""
+    fixtures = _build_compound()
+    sol_a = fixtures["solution"]
+    sol_b = InferenceSolution(
+        endpoints=sol_a.endpoints,
+        role_bindings=sol_a.role_bindings,
+        routing_policy="round_robin",
+    )
+    assert sol_a.routing_policy != sol_b.routing_policy
+    assert fingerprint_hex(sol_a) != fingerprint_hex(sol_b)
+
+
+def test_fingerprint_modality_change():
+    """Same endpoints except vision replaced with audio → different fingerprint."""
+    fixtures = _build_compound()
+    sol_a = fixtures["solution"]
+
+    audio_ep = DirectEndpoint(
+        binding="direct_endpoint",
+        model_spec_fingerprint="1220" + "fa" * 32,
+        target_kind="local-container",
+        capabilities=(
+            fingerprint_hex(
+                CapabilitySignature(
+                    operation="transcription",
+                    required_inputs=("audio",),
+                    output_representation="text",
+                )
+            ),
+        ),
+    )
+    sol_b = InferenceSolution(
+        endpoints=(sol_a.endpoints[0], sol_a.endpoints[1], audio_ep),
+        role_bindings=sol_a.role_bindings,
+        routing_policy=sol_a.routing_policy,
+    )
+    assert fingerprint_hex(sol_a) != fingerprint_hex(sol_b)
+
+
 # ============================================================================
 # REMEDIATION — derivation logic and corrects-chain
 # ============================================================================
@@ -762,6 +802,68 @@ def test_write_self_hosted_fixtures():
         _write_fixture(
             "self-hosted", f"{name.replace('_', '-')}.json", obj.model_dump(mode="json")
         )
+
+
+def test_write_managed_api_fixtures():
+    fixtures = _build_managed_api()
+    for name, obj in fixtures.items():
+        if isinstance(obj, str):
+            continue
+        _write_fixture(
+            "managed-api", f"{name.replace('_', '-')}.json", obj.model_dump(mode="json")
+        )
+
+
+def test_write_compound_fixtures():
+    fixtures = _build_compound()
+    for name, obj in fixtures.items():
+        if isinstance(obj, str):
+            continue
+        _write_fixture("compound", f"{name.replace('_', '-')}.json", obj.model_dump(mode="json"))
+
+
+def test_write_negative_fixtures():
+    negatives = {
+        "high-throughput-task-failure": DecisionReport(
+            decision_request_digest="1220" + "dd" * 32,
+            candidates=(
+                CandidateEntry(
+                    solution_fingerprint="1220" + "a0" * 32,
+                    qualification_status="serving_verified",
+                    rejection_reason="task_outcome_failed",
+                ),
+            ),
+        ),
+        "serving-slo-failure": DecisionReport(
+            decision_request_digest="1220" + "dd" * 32,
+            candidates=(
+                CandidateEntry(
+                    solution_fingerprint="1220" + "b0" * 32,
+                    qualification_status="task_evaluated",
+                    rejection_reason="serving_slo_violated",
+                ),
+            ),
+        ),
+        "incomparable-cost-boundary": DecisionReport(
+            decision_request_digest="1220" + "dd" * 32,
+            candidates=(
+                CandidateEntry(
+                    solution_fingerprint="1220" + "c0" * 32,
+                    qualification_status="qualified",
+                    evidence_state="managed_api",
+                ),
+                CandidateEntry(
+                    solution_fingerprint="1220" + "da" * 32,
+                    qualification_status="qualified",
+                    evidence_state="self_hosted",
+                ),
+            ),
+            disclosed_comparable_set=(),
+            exclusions=("cost boundary incomparable: managed vs self-hosted",),
+        ),
+    }
+    for name, obj in negatives.items():
+        _write_fixture("negative", f"{name}.json", obj.model_dump(mode="json"))
 
 
 def test_write_remediation_fixtures():

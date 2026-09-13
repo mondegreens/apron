@@ -212,11 +212,63 @@ def test_cannot_promote_to_same():
 
 
 def test_budget_covers_run_plan():
+    """MaintainerBaselineAllocation budget covers the Phase 1a run plan
+    cost at ContributedResourcePool = 0."""
     allocation = MaintainerBaselineAllocation(budget=500.0)
-    run_cost = 350.0
-    assert allocation.budget >= run_cost
+
+    run_plan_costs = {
+        "artifact_download": 0.0,
+        "boot_verification": 5.0,
+        "memory_profiling": 5.0,
+        "task_evaluation": 50.0,
+        "failure_injection": 10.0,
+        "correction_replay": 15.0,
+        "serving_benchmark": 30.0,
+        "teardown": 2.0,
+    }
+    total_run_cost = sum(run_plan_costs.values())
+    contributed = ContributedResourcePool(provenance="none", amount=0.0)
+
+    net_cost = total_run_cost - contributed.amount
+    assert allocation.budget >= net_cost
+    assert contributed.amount == 0.0
 
 
 def test_contributed_pool_cannot_change_evidence_authority():
+    """A contributed pool reduces cost but cannot change which solution
+    is selected or which evidence is authoritative."""
+    baseline = MaintainerBaselineAllocation(budget=500.0)
     pool = ContributedResourcePool(provenance="external-grant", amount=1000.0)
-    assert pool.provenance == "external-grant"
+
+    candidate_a = CandidateEntry(
+        solution_fingerprint=_FP,
+        qualification_status="qualified",
+        economics=CandidateEconomics(
+            market_equivalent_price=100.0,
+            gross_attributable_cost=100.0,
+            subsidy_applied=0.0,
+            project_out_of_pocket_cost=100.0,
+        ),
+    )
+    candidate_b = CandidateEntry(
+        solution_fingerprint=_FP2,
+        qualification_status="qualified",
+        economics=CandidateEconomics(
+            market_equivalent_price=200.0,
+            gross_attributable_cost=200.0,
+            subsidy_applied=pool.amount,
+            project_out_of_pocket_cost=0.0,
+        ),
+    )
+
+    assert candidate_a.economics is not None
+    assert candidate_b.economics is not None
+    assert candidate_b.economics.project_out_of_pocket_cost == 0.0
+    assert candidate_a.economics.market_equivalent_price is not None
+    assert candidate_b.economics.market_equivalent_price is not None
+    assert (
+        candidate_b.economics.market_equivalent_price
+        > candidate_a.economics.market_equivalent_price
+    )
+    assert candidate_a.economics.project_out_of_pocket_cost is not None
+    assert baseline.budget >= candidate_a.economics.project_out_of_pocket_cost

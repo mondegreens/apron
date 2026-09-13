@@ -208,11 +208,20 @@ def test_orchestration_different_run_different_digest():
 
 
 def test_dynamic_destination_denied():
-    env = AuthorizationEnvelope(
-        permitted_providers=("provider-a",),
-        permitted_action_classes=("evaluate",),
+    """Authorized primary route with unauthorized fallback → denied (ADR-013)."""
+    primary_contribution = _make_contribution("permit")
+
+    fallback_contribution = AuthorityContribution(
+        source_type="owner",
+        source_version="1.0",
+        principal="user@example.com",
+        decision="deny",
+        action="route_to_fallback",
+        resource="provider-b",
     )
-    assert "provider-b" not in env.permitted_providers
+
+    assert evaluate_authorization((primary_contribution,)) == "authorized"
+    assert evaluate_authorization((primary_contribution, fallback_contribution)) == "denied"
 
 
 # ---------------------------------------------------------------------------
