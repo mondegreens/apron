@@ -10,7 +10,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from apron.domain.artifacts.identity import ArtifactIdentity
-from apron.domain.canonical import digest_hex
 from apron.domain.fingerprints import fingerprint_hex
 from apron.domain.schemas.models import ArtifactSpec, ExecutionSpec
 from apron.domain.schemas.primitives import ArtifactLocator
@@ -84,7 +83,6 @@ class ResolutionChain:
         source_kind: str = "huggingface",
         revision: str | None = None,
         engine_constraints: dict[str, Any] | None = None,
-        config_data: dict[str, Any] | None = None,
     ) -> ResolutionResult:
         # Step 1: ArtifactLocator
         locator = ArtifactLocator(
@@ -121,14 +119,14 @@ class ResolutionChain:
         # Step 3: ArtifactIdentity
         identity = ArtifactIdentity.from_observation(observation)
 
-        # Step 4: ArtifactSpec
+        # Step 4: ArtifactSpec — use file content SHA-256 directly (no double-hash)
         config_digest = None
         weight_manifest_digest = None
         for fd in observation.file_digests:
             if fd.path == "config.json":
-                config_digest = digest_hex(fd.sha256.encode())
+                config_digest = fd.sha256
             elif fd.path == "model.safetensors.index.json":
-                weight_manifest_digest = digest_hex(fd.sha256.encode())
+                weight_manifest_digest = fd.sha256
 
         artifact_spec = ArtifactSpec(
             identity=identity,

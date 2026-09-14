@@ -85,14 +85,17 @@ def test_stored_content_is_canonical(store, tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def test_ambiguous_prefix_raises(store):
-    r1 = {"type": "a", "v": 1}
-    r2 = {"type": "a", "v": 2}
-    d1 = store.store(r1)
-    d2 = store.store(r2)
-    if d1[:8] == d2[:8]:
-        with pytest.raises(ValueError, match="Ambiguous"):
-            store.retrieve(d1[:8])
+def test_ambiguous_prefix_raises(store, tmp_path):
+    """Force two files with the same prefix into the same subdirectory."""
+    subdir = tmp_path / "records"
+    subdir.mkdir(parents=True, exist_ok=True)
+    prefix = "1220aabb"
+    suffix_a = "0" * 52 + "01"
+    suffix_b = "0" * 52 + "02"
+    (subdir / f"{prefix}{suffix_a}.json").write_text("{}")
+    (subdir / f"{prefix}{suffix_b}.json").write_text("{}")
+    with pytest.raises(ValueError, match="Ambiguous"):
+        store.retrieve(prefix)
 
 
 # ---------------------------------------------------------------------------

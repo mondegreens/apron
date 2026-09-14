@@ -12,6 +12,11 @@ def test_accepts_returns_bool(evaluation_adapter):
     assert isinstance(result, bool)
 
 
+def test_accepts_rejects_unknown_harness(evaluation_adapter):
+    result = evaluation_adapter.accepts({"harness": "nonexistent_harness"})
+    assert result is False
+
+
 def test_prepare_returns_nonempty_dict(evaluation_adapter):
     result = evaluation_adapter.prepare({"harness": "inspect_ai", "scorer": "exact_match"})
     assert isinstance(result, dict)

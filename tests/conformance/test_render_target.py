@@ -26,3 +26,4 @@ def test_round_trip_recovers_shared_fields(render_target):
     parsed = render_target.parse(rendered)
     assert isinstance(parsed, dict)
     assert parsed["tensor_parallel"] == 4
+    assert parsed.get("dtype") == "bfloat16"

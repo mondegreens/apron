@@ -46,6 +46,7 @@ def test_render_returns_nonempty_dict(engine_adapter):
     rendered = engine_adapter.render(plan)
     assert isinstance(rendered, dict)
     assert len(rendered) > 0
+    assert rendered.get("tp") == 4
 
 
 def test_verify_returns_dict_with_memory_keys(engine_adapter):
@@ -83,3 +84,5 @@ def test_extract_schema_returns_dict_with_architectures(engine_adapter):
     result = engine_adapter.extract_schema("vllm:0.8.5")
     assert isinstance(result, dict)
     assert "architectures" in result
+    assert isinstance(result["architectures"], list)
+    assert len(result["architectures"]) > 0

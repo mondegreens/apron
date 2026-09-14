@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -18,12 +17,19 @@ if TYPE_CHECKING:
     from apron.domain.schemas.primitives import ArtifactLocator
 
 
-@dataclass(frozen=True)
-class ResolutionError:
-    step: str
-    reason: str
-    model_id: str | None = None
-    source: str = "huggingface"
+class ResolutionError(Exception):
+    def __init__(
+        self,
+        step: str,
+        reason: str,
+        model_id: str | None = None,
+        source: str = "huggingface",
+    ) -> None:
+        self.step = step
+        self.reason = reason
+        self.model_id = model_id
+        self.source = source
+        super().__init__(f"{step}: {reason} (model_id={model_id})")
 
 
 class HFHubResolver:
@@ -40,7 +46,15 @@ class HFHubResolver:
         model_id = locator.uri
         revision = locator.requested_revision
 
-        info = self._get_model_info(model_id, revision)
+        try:
+            info = self._get_model_info(model_id, revision)
+        except Exception as exc:
+            raise ResolutionError(
+                step="get_model_info",
+                reason=str(exc),
+                model_id=model_id,
+            ) from exc
+
         resolved_rev = info["sha"]
 
         files_to_fetch = ["config.json", "model.safetensors.index.json"]
@@ -53,6 +67,14 @@ class HFHubResolver:
                     FileDigest(path=filename, sha256=sha256, size_bytes=len(content))
                 )
 
+        config_fd = next((fd for fd in file_digests if fd.path == "config.json"), None)
+        if config_fd is None:
+            raise ResolutionError(
+                step="fetch_config",
+                reason="config.json not found or not downloadable",
+                model_id=model_id,
+            )
+
         readme = self._download_file(model_id, "README.md", resolved_rev)
         if readme is not None:
             sha256 = hashlib.sha256(readme).hexdigest()
@@ -60,10 +82,7 @@ class HFHubResolver:
                 FileDigest(path="README.md", sha256=sha256, size_bytes=len(readme))
             )
 
-        config_content = self._download_file(model_id, "config.json", resolved_rev)
-        manifest_digest = None
-        if config_content is not None:
-            manifest_digest = hashlib.sha256(config_content).hexdigest()
+        manifest_digest = config_fd.sha256
 
         gating = None
         if info.get("gated"):

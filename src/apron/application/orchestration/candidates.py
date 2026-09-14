@@ -67,12 +67,22 @@ class CandidateGraph:
 
 
 def _legacy_to_artifact_spec(obs: ImportedBootObservation) -> ArtifactSpec:
-    """Convert a legacy ImportedBootObservation to an ArtifactSpec."""
+    """Convert a legacy ImportedBootObservation to an ArtifactSpec.
+
+    Identity is derived from the attested data content (model_id +
+    observed_configuration + provenance), not from the name alone.
+    """
     from apron.domain.artifacts.identity import ArtifactIdentity
-    from apron.domain.canonical import digest_hex
+    from apron.domain.canonical import canonicalize, digest_hex
     from apron.domain.schemas.primitives import ArtifactLocator
 
-    content_digest = digest_hex(f"legacy:{obs.model_id}".encode())
+    attested_content = {
+        "model_id": obs.model_id,
+        "observed_configuration": obs.observed_configuration,
+        "provenance": obs.provenance,
+        "import_status": obs.import_status,
+    }
+    content_digest = digest_hex(canonicalize(attested_content))
     identity = ArtifactIdentity(content_digest=content_digest)
     locator = ArtifactLocator(source_kind="legacy", uri=obs.model_id)
 
