@@ -21,8 +21,8 @@ from apron.domain.protocols import (
     SignalSource,
 )
 from apron.domain.schemas.authority import AuthorityContribution
-from apron.domain.schemas.primitives import ArtifactLocator
-from apron.domain.schemas.solutions import DeploymentPlan, PlanningClaim
+from apron.domain.schemas.primitives import ArtifactLocator, HardwareSpec
+from apron.domain.schemas.solutions import DeploymentPlan, PlanningClaim, RenderContext
 
 # ---------------------------------------------------------------------------
 # Fake adapters
@@ -90,8 +90,8 @@ class FakeRenderTarget:
     def target_format(self) -> str:
         return "recipes_yaml"
 
-    def render(self, plan: DeploymentPlan) -> dict[str, Any]:
-        return {"model_id": "test", "tp": plan.tensor_parallel}
+    def render(self, context: RenderContext) -> dict[str, Any]:
+        return {"model_id": context.locator.uri, "tp": context.plan.tensor_parallel}
 
     def parse(self, data: dict[str, Any]) -> dict[str, Any]:
         return {"tensor_parallel": data.get("tp", 1)}
@@ -261,7 +261,16 @@ def test_render_target_satisfies_protocol():
     renderer = FakeRenderTarget()
     assert isinstance(renderer, RenderTarget)
     plan = DeploymentPlan(tensor_parallel=4)
-    rendered = renderer.render(plan)
+    ctx = RenderContext(
+        plan=plan,
+        locator=ArtifactLocator(source_kind="huggingface", uri="test/model"),
+        hardware=HardwareSpec(
+            gpu_sku="RTX 4090",
+            total_memory_bytes=25_769_803_776,
+            compute_capability="8.9",
+        ),
+    )
+    rendered = renderer.render(ctx)
     assert rendered["tp"] == 4
     parsed = renderer.parse(rendered)
     assert parsed["tensor_parallel"] == 4

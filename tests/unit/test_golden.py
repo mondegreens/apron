@@ -487,9 +487,9 @@ def _assert_all_round_trip(fixtures: dict[str, Any]) -> None:
             continue
         canonical = canonicalize(obj.model_dump(mode="json"))
         restored = type(obj).model_validate_json(canonical)
-        assert canonicalize(restored.model_dump(mode="json")) == canonical, (
-            f"{name} failed round-trip"
-        )
+        assert (
+            canonicalize(restored.model_dump(mode="json")) == canonical
+        ), f"{name} failed round-trip"
 
 
 def test_self_hosted_round_trip():

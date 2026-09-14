@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from apron.domain.artifacts import ArtifactSourceObservation
     from apron.domain.schemas.authority import AuthorityContribution
     from apron.domain.schemas.primitives import ArtifactLocator
-    from apron.domain.schemas.solutions import DeploymentPlan, PlanningClaim
+    from apron.domain.schemas.solutions import DeploymentPlan, PlanningClaim, RenderContext
 
 
 # ---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class RenderTarget(Protocol):
     @property
     def target_format(self) -> str: ...
 
-    def render(self, plan: DeploymentPlan) -> dict[str, Any]: ...
+    def render(self, context: RenderContext) -> dict[str, Any]: ...
 
     def parse(self, data: dict[str, Any]) -> dict[str, Any]: ...
 

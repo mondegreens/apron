@@ -44,8 +44,7 @@ def extract_task_registry(tasks_path: Path) -> list[str]:
     tasks: list[str] = []
 
     task_literal_pattern = re.compile(
-        r"(?:GenerationTask|PoolingTask|FrontendTask|SupportedTask)"
-        r"\s*=\s*Literal\[([^\]]+)\]",
+        r"(?:GenerationTask|PoolingTask|FrontendTask|SupportedTask)" r"\s*=\s*Literal\[([^\]]+)\]",
     )
     for match in task_literal_pattern.finditer(text):
         literal_content = match.group(1)
@@ -65,9 +64,7 @@ def extract_kv_cache_specs(kv_cache_path: Path) -> list[str]:
     """
     text = kv_cache_path.read_text()
     specs: list[str] = []
-    for match in re.finditer(
-        r"^class (\w*(?:Spec|Specs)\w*)\b", text, re.MULTILINE
-    ):
+    for match in re.finditer(r"^class (\w*(?:Spec|Specs)\w*)\b", text, re.MULTILINE):
         name = match.group(1)
         if name not in specs:
             specs.append(name)
@@ -86,9 +83,7 @@ def extract_constraints(fixture_dir: Path) -> dict[str, Any]:
 
     supported_models = fixture_dir / "supported_models.md"
     if supported_models.exists():
-        constraints["supported_architectures"] = extract_supported_architectures(
-            supported_models
-        )
+        constraints["supported_architectures"] = extract_supported_architectures(supported_models)
 
     tasks = fixture_dir / "tasks.py"
     if tasks.exists():

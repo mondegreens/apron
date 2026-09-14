@@ -11,7 +11,7 @@ from typing import Any
 import pytest
 from apron.domain.artifacts import ArtifactSourceObservation, FileDigest
 from apron.domain.schemas.primitives import ArtifactLocator, HardwareSpec
-from apron.domain.schemas.solutions import DeploymentPlan, PlanningClaim
+from apron.domain.schemas.solutions import DeploymentPlan, PlanningClaim, RenderContext
 
 # ---------------------------------------------------------------------------
 # EngineAdapter
@@ -105,11 +105,11 @@ class FakeRenderTarget:
     def target_format(self) -> str:
         return "recipes_yaml"
 
-    def render(self, plan: DeploymentPlan) -> dict[str, Any]:
+    def render(self, context: RenderContext) -> dict[str, Any]:
         return {
-            "model_id": "test",
-            "tp": plan.tensor_parallel,
-            "dtype": plan.dtype,
+            "model_id": context.locator.uri,
+            "tp": context.plan.tensor_parallel,
+            "dtype": context.plan.dtype,
         }
 
     def parse(self, data: dict[str, Any]) -> dict[str, Any]:

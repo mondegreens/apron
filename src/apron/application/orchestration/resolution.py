@@ -26,6 +26,7 @@ __all__ = [
     "StepResult",
 ]
 
+
 @dataclass(frozen=True)
 class StepError:
     step: str

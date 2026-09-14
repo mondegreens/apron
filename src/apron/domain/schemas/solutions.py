@@ -5,7 +5,9 @@ from typing import Annotated, Any
 from pydantic import BaseModel, ConfigDict
 
 from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex
-from apron.domain.schemas.primitives import ClaimScope
+from apron.domain.schemas.models import ExecutionSpec
+from apron.domain.schemas.primitives import ArtifactLocator, ClaimScope, HardwareSpec
+from apron.domain.schemas.tasks import ServingWorkloadSpec
 
 # ---------------------------------------------------------------------------
 # PlanningClaim (ADR-002 §10)
@@ -81,3 +83,18 @@ class EvaluationProtocol(BaseModel):
     stopping_rules: Annotated[tuple[str, ...], IDENTITY] = ()
     aggregation_method: Annotated[str | None, IDENTITY] = None
     uncertainty_method: Annotated[str | None, IDENTITY] = None
+
+
+# ---------------------------------------------------------------------------
+# RenderContext (Phase 1a-ii §Layer 3)
+# ---------------------------------------------------------------------------
+
+
+class RenderContext(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    plan: DeploymentPlan
+    locator: ArtifactLocator
+    hardware: HardwareSpec
+    workload_spec: ServingWorkloadSpec | None = None
+    execution_spec: ExecutionSpec | None = None
