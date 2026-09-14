@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "source_name": "vllm",
+  "locations": [
+    {
+      "repository": "https://github.com/vllm-project/vllm",
+      "revision": "a1541f5742a29864a80087af313ad460066a1524",
+      "retrieval_method": "git_clone"
+    }
+  ],
+  "retrieval_date": "2026-09-13",
+  "license": "Apache-2.0",
+  "has_formal_schema": false,
+  "formal_schema_file": null,
+  "schema_description": "vLLM engine configuration surface defined by Python dataclasses and registries: EngineArgs, KV cache mechanism specs (FullAttention, MLA, SlidingWindow, Mamba), task registry, architecture normalization, supported model matrix, Mamba config, and multimodal config.",
+  "pinned_files": [
+    {
+      "source_path": "vllm/engine/arg_utils.py",
+      "local_path": "arg_utils.py",
+      "sha256": "8e6d41ba25fadeb778ea16be6a534193c79ffe7e783d2eac0594ea45eb3960b2",
+      "size_bytes": 127402,
+      "role": "consumer_code"
+    },
+    {
+      "source_path": "vllm/v1/kv_cache_interface.py",
+      "local_path": "kv_cache_interface.py",
+      "sha256": "2aeab89d2aefbe93924167c3ff877f2a50fc64611c4d7a590e8fa825bc43f154",
+      "size_bytes": 53781,
+      "role": "consumer_code"
+    },
+    {
+      "source_path": "vllm/tasks.py",
+      "local_path": "tasks.py",
+      "sha256": "749006cf28945554c445340d4d266d372a5635e02613e876f7628ceab1b60b5d",
+      "size_bytes": 1408,
+      "role": "consumer_code"
+    },
+    {
+      "source_path": "vllm/transformers_utils/model_arch_config_convertor.py",
+      "local_path": "model_arch_config_convertor.py",
+      "sha256": "57326fb53405072a62cf35129c4a596aa8229ff54d041dc767b5b8f425c3cb55",
+      "size_bytes": 34140,
+      "role": "consumer_code"
+    },
+    {
+      "source_path": "docs/models/supported_models.md",
+      "local_path": "supported_models.md",
+      "sha256": "f83bf29d28383845d0a42981fe25e710ed31066e933a1232b028769498868404",
+      "size_bytes": 60530,
+      "role": "documentation"
+    },
+    {
+      "source_path": "vllm/config/mamba.py",
+      "local_path": "mamba.py",
+      "sha256": "2090f791201ca45dd4f1d72b8651268890eb07574b6084721194eb8fdf612c48",
+      "size_bytes": 4025,
+      "role": "consumer_code"
+    },
+    {
+      "source_path": "vllm/config/multimodal.py",
+      "local_path": "multimodal.py",
+      "sha256": "0975ecbb0cebd6dd3e7aa18af1459e4bd64be650cfa2a6ddda677a86668ba335",
+      "size_bytes": 23201,
+      "role": "consumer_code"
+    }
+  ],
+  "notes": "Engine adapter contract source. All files extracted at the pinned commit (a1541f57), which is the revision the architecture dispatch proof and ADR-007 are written against. The local clone HEAD is newer; files were extracted via git show at the pinned revision."
+}

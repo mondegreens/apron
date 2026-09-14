@@ -1,0 +1,49 @@
+{
+  "schema_version": "aic-estimate-request/1.0.0",
+  "model": {
+    "path": "QWEN/QWEN3-32B",
+    "nextn": 0,
+    "nextn_accepted": null
+  },
+  "backend": {
+    "name": "trtllm",
+    "version": "0.20.0",
+    "database_mode": "SOL",
+    "transfer_policy": null
+  },
+  "systems": {
+    "prefill": "h100_sxm",
+    "decode": null
+  },
+  "workload": {
+    "isl": 1024,
+    "osl": 128,
+    "concurrency": 16,
+    "prefix": 0,
+    "image_height": 0,
+    "image_width": 0,
+    "num_images": 1
+  },
+  "topology": {
+    "kind": "agg",
+    "worker": {
+      "replicas": 1,
+      "gpus_per_replica": 2,
+      "batch_size": 16,
+      "tp_size": 2,
+      "moe_tp_size": 2,
+      "moe_ep_size": 1,
+      "pp_size": 1,
+      "attention_dp_size": 1
+    }
+  },
+  "quantization": {},
+  "runtime": {},
+  "provenance": {
+    "adapter_version": "1.0.0",
+    "source_type": "custom",
+    "assumptions": ["confirmed"],
+    "source_ids": {},
+    "source_reference": null
+  }
+}

@@ -88,6 +88,7 @@ pythonVersion = "3.12"
 typeCheckingMode = "standard"
 venvPath = "."
 venv = ".venv"
+exclude = ["tests/fixtures/external-formats"]
 
 [tool.importlinter]
 root_packages = ["apron"]

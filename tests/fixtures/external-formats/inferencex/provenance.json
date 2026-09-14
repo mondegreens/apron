@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "source_name": "inferencex",
+  "locations": [
+    {
+      "repository": "https://github.com/SemiAnalysisAI/InferenceX",
+      "revision": "900f1989d777abb2c1753e8cfe2241371551158e",
+      "retrieval_method": "git_clone"
+    }
+  ],
+  "retrieval_date": "2026-09-13",
+  "license": "Apache-2.0",
+  "has_formal_schema": false,
+  "formal_schema_file": null,
+  "schema_description": "Throughput row schema defined by ingestion code and documentation, including identity keys, derived per-GPU metrics, latency conversions, and disaggregated parallelism topology fields.",
+  "pinned_files": [
+    {
+      "source_path": "docs/results-and-ingestion.md",
+      "local_path": "results-and-ingestion.md",
+      "sha256": "e5cf02a07481aa29e462ce3ed3cc9ec5e7732614776bcd30086c7c781c21d167",
+      "size_bytes": 36156,
+      "role": "documentation"
+    },
+    {
+      "source_path": "infx/results/fixed_sequence.py",
+      "local_path": "fixed_sequence.py",
+      "sha256": "13ad4dc267b1795e1fb3ccc306c6a7a99bb56724e3a898e25d01dd4c5fbac206",
+      "size_bytes": 11130,
+      "role": "consumer_code"
+    },
+    {
+      "source_path": "infx/results/topology.py",
+      "local_path": "topology.py",
+      "sha256": "ee048647d914b41e18770331e23637114121fa5d57a282ce7d841f89250b276c",
+      "size_bytes": 1622,
+      "role": "consumer_code"
+    }
+  ],
+  "notes": "ADR-002 ecosystem shape 3 of 3. No public agg_bmk.json workflow artifact was accessible at retrieval time; example throughput row omitted."
+}

@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "source_name": "huggingface-hub",
+  "locations": [
+    {
+      "repository": "Qwen/Qwen3-8B",
+      "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "retrieval_method": "huggingface_hub_api"
+    },
+    {
+      "repository": "deepseek-ai/DeepSeek-V3",
+      "revision": "e815299b0bcbac849fa540c768ef21845365c9eb",
+      "retrieval_method": "huggingface_hub_api"
+    }
+  ],
+  "retrieval_date": "2026-09-13",
+  "license": "Apache-2.0",
+  "has_formal_schema": false,
+  "formal_schema_file": null,
+  "schema_description": "Hugging Face Hub model repository files and API responses. No published JSON Schema; validated by Hub server. Model config, safetensors index, model card metadata, and API response fields used by ArtifactSourceObservation and ModelSpec.",
+  "pinned_files": [
+    {
+      "source_path": "Qwen/Qwen3-8B/config.json",
+      "local_path": "config.json",
+      "sha256": "f7c4eadfbbf522470667b797a3c89be2524832d2d599797248dc304fff447c30",
+      "size_bytes": 728,
+      "role": "representative_content"
+    },
+    {
+      "source_path": "Qwen/Qwen3-8B/model.safetensors.index.json",
+      "local_path": "model.safetensors.index.json",
+      "sha256": "f9fdbcb91c23971c13ec5d5f2573d2349e8f61f2f049371ec699281748fdb1bc",
+      "size_bytes": 32878,
+      "role": "representative_content"
+    },
+    {
+      "source_path": "Qwen/Qwen3-8B/README.md",
+      "local_path": "model-card.md",
+      "sha256": "0f36caaff9c2516411a7738db384606263ba653c1e63e61d72f511606164d5a6",
+      "size_bytes": 16660,
+      "role": "representative_content"
+    },
+    {
+      "source_path": "deepseek-ai/DeepSeek-V3/config.json",
+      "local_path": "DeepSeek-V3-config.json",
+      "sha256": "cbf0b95dc614de208a109bb5fd4e7eed11385e9c68411d2c17db5319443035d9",
+      "size_bytes": 1660,
+      "role": "representative_content"
+    },
+    {
+      "source_path": "huggingface_hub.model_info('Qwen/Qwen3-8B')",
+      "local_path": "model_info.json",
+      "sha256": "d4c15c930a106e449bf4f198beb4a45f2d96be83b16480df408a97bcbdd47a04",
+      "size_bytes": 794,
+      "role": "example"
+    }
+  ],
+  "notes": "Artifact resolution source. Qwen3-8B provides the dense GQA model shape (config, safetensors index, model card). DeepSeek-V3 provides MLA/MoE fields (kv_lora_rank, num_experts). The model_info.json is a saved huggingface_hub API response with fields that exist only in the API (gated, sha, created_at, safetensors.parameters)."
+}

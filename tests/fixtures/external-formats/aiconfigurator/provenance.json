@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "source_name": "aiconfigurator",
+  "locations": [
+    {
+      "repository": "https://github.com/ai-dynamo/aiconfigurator",
+      "revision": "77fd0773407b3683d8a671fe24a30a7110651b64",
+      "retrieval_method": "git_clone"
+    }
+  ],
+  "retrieval_date": "2026-09-13",
+  "license": "Apache-2.0",
+  "has_formal_schema": true,
+  "formal_schema_file": "estimate-request-v1.schema.json",
+  "schema_description": "Pydantic request models for NVIDIA aiconfigurator estimate requests, including model/backend/system/workload/topology/quantization/runtime settings and InferenceX field mapping.",
+  "pinned_files": [
+    {
+      "source_path": "src/aiconfigurator/sdk/config_adapter/schemas/estimate-request-v1.schema.json",
+      "local_path": "estimate-request-v1.schema.json",
+      "sha256": "6bc9644a9c815adc7e863dc91455d1edd63178811c0c8701a16c0909c697610b",
+      "size_bytes": 7023,
+      "role": "formal_schema"
+    },
+    {
+      "source_path": "src/aiconfigurator/sdk/config_adapter/schema.py",
+      "local_path": "schema.py",
+      "sha256": "349f6e762139971b31bca2a8058f6b89c63ae3a81b341096008aa9aec04a40c9",
+      "size_bytes": 11367,
+      "role": "consumer_code"
+    },
+    {
+      "source_path": "tests/unit/sdk/config_adapter/test_schema.py:_request()",
+      "local_path": "example-estimate-request.json",
+      "sha256": "30127c184359c0e0dc1b7d79bb58a21502c5110aca6e84883a0a027575621a96",
+      "size_bytes": 953,
+      "role": "example"
+    },
+    {
+      "source_path": "src/aiconfigurator/sdk/config_adapter/inferencex.py",
+      "local_path": "inferencex.py",
+      "sha256": "8a9338616a0ad21150d92d9067a3948338a59e7ad2aacb07a20291da4b315153",
+      "size_bytes": 13692,
+      "role": "field_mapping_adapter"
+    }
+  ],
+  "notes": "ADR-002 ecosystem shape 2 of 3. The example-estimate-request.json is extracted from the _request() test fixture and serialized with all default fields explicit. The inferencex.py field mapping shows the two InferenceX result shapes consumed by aiconfigurator."
+}
