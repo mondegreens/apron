@@ -16,27 +16,40 @@ if TYPE_CHECKING:
 def extract_supported_architectures(supported_models_path: Path) -> list[str]:
     """Extract architecture class names from supported_models.md.
 
-    Parses markdown table rows like:
-    ``| `Qwen2ForCausalLM` | Qwen 2 | ... |``
+    Only matches backtick-quoted names inside markdown table rows
+    (lines starting with ``|``), not prose/documentation examples.
     """
     text = supported_models_path.read_text()
-    pattern = re.compile(r"`(\w+(?:For\w+))`")
     architectures: list[str] = []
-    for match in pattern.finditer(text):
-        name = match.group(1)
-        if name not in architectures:
-            architectures.append(name)
+    for line in text.splitlines():
+        if not line.startswith("|"):
+            continue
+        for match in re.finditer(r"`(\w+)`", line):
+            name = match.group(1)
+            if name == "Architecture" or name.startswith("---"):
+                continue
+            first_char = name[0] if name else ""
+            if first_char.isupper() and name not in architectures:
+                architectures.append(name)
     return sorted(architectures)
 
 
 def extract_task_registry(tasks_path: Path) -> list[str]:
-    """Extract task names from tasks.py Literal type definitions."""
+    """Extract task names from tasks.py task-related Literal definitions.
+
+    Scopes to GenerationTask, PoolingTask, FrontendTask, SupportedTask
+    Literals only — excludes ScoreType and other non-task Literals.
+    """
     text = tasks_path.read_text()
     tasks: list[str] = []
 
-    for match in re.finditer(r"Literal\[([^\]]+)\]", text):
+    task_literal_pattern = re.compile(
+        r"(?:GenerationTask|PoolingTask|FrontendTask|SupportedTask)"
+        r"\s*=\s*Literal\[([^\]]+)\]",
+    )
+    for match in task_literal_pattern.finditer(text):
         literal_content = match.group(1)
-        for task_match in re.finditer(r'"(\w+)"', literal_content):
+        for task_match in re.finditer(r'"([^"]+)"', literal_content):
             task = task_match.group(1)
             if task not in tasks:
                 tasks.append(task)
@@ -45,10 +58,16 @@ def extract_task_registry(tasks_path: Path) -> list[str]:
 
 
 def extract_kv_cache_specs(kv_cache_path: Path) -> list[str]:
-    """Extract KV cache spec class names from kv_cache_interface.py."""
+    """Extract KV cache spec class names from kv_cache_interface.py.
+
+    Matches class definitions that contain 'Spec' anywhere in the name
+    (including plurals like UniformTypeKVCacheSpecs).
+    """
     text = kv_cache_path.read_text()
     specs: list[str] = []
-    for match in re.finditer(r"^class (\w+(?:Spec|AttentionSpec))\b", text, re.MULTILINE):
+    for match in re.finditer(
+        r"^class (\w*(?:Spec|Specs)\w*)\b", text, re.MULTILINE
+    ):
         name = match.group(1)
         if name not in specs:
             specs.append(name)
@@ -67,7 +86,9 @@ def extract_constraints(fixture_dir: Path) -> dict[str, Any]:
 
     supported_models = fixture_dir / "supported_models.md"
     if supported_models.exists():
-        constraints["supported_architectures"] = extract_supported_architectures(supported_models)
+        constraints["supported_architectures"] = extract_supported_architectures(
+            supported_models
+        )
 
     tasks = fixture_dir / "tasks.py"
     if tasks.exists():
