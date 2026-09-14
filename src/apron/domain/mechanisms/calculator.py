@@ -59,7 +59,7 @@ def calculate_autoregressive_decode(inputs: CalculatorInput) -> dict[str, Any] |
     dtype_bytes = DTYPE_BYTES.get(torch_dtype, 2)
 
     weight_bytes = metadata.get("total_weight_bytes", 0)
-    if weight_bytes == 0:
+    if weight_bytes <= 0:
         return None
 
     isl = 512
@@ -104,6 +104,7 @@ def calculate_autoregressive_decode(inputs: CalculatorInput) -> dict[str, Any] |
         "available_kv_cache_bytes": available_kv_cache,
         "gpu_available_bytes": gpu_available,
         "num_layers": gqa["num_layers"],
+        "num_attention_heads": gqa["num_attention_heads"],
         "num_kv_heads": gqa["num_kv_heads"],
         "head_dim": gqa["head_dim"],
         "dtype_bytes": dtype_bytes,

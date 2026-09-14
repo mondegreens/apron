@@ -72,6 +72,8 @@ def _qwen3_claim() -> PlanningClaim:
             "cuda_graph_estimate_bytes": result["cuda_graph_estimate_bytes"],
             "available_kv_cache_bytes": result["available_kv_cache_bytes"],
             "total_required_bytes": result["total_required_bytes"],
+            "num_attention_heads": result["num_attention_heads"],
+            "num_kv_heads": result["num_kv_heads"],
             "isl": 512,
             "osl": 128,
         },

@@ -76,15 +76,27 @@ def plan(
     clock = WallClock()
     id_gen = UuidIdGenerator()
 
-    json.loads(request_file.read_text())  # validate JSON
+    try:
+        json.loads(request_file.read_text())
+    except (json.JSONDecodeError, OSError) as exc:
+        console.print(f"[red]Invalid request file: {exc}[/red]")
+        raise typer.Exit(1) from None
 
     resolver = FixtureHFHubResolver(fixture_dir) if fixture_dir is not None else HFHubResolver()
 
     hw = _DEFAULT_HARDWARE
     if target is not None and target.exists():
-        hw = HardwareSpec(**json.loads(target.read_text()))
+        try:
+            hw = HardwareSpec(**json.loads(target.read_text()))
+        except (json.JSONDecodeError, OSError, ValueError) as exc:
+            console.print(f"[red]Invalid target spec: {exc}[/red]")
+            raise typer.Exit(1) from None
 
-    pipeline_result = run_plan_pipeline(resolver, model, hw, clock=clock, id_gen=id_gen)
+    try:
+        pipeline_result = run_plan_pipeline(resolver, model, hw, clock=clock, id_gen=id_gen)
+    except Exception as exc:
+        console.print(f"[red]Plan pipeline error: {exc}[/red]")
+        raise typer.Exit(1) from None
 
     if not pipeline_result.ok:
         console.print(f"[red]Plan failed: {pipeline_result.error}[/red]")
@@ -93,7 +105,11 @@ def plan(
     assert pipeline_result.plan is not None
     assert pipeline_result.context is not None
 
-    output_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        console.print(f"[red]Cannot create output directory: {exc}[/red]")
+        raise typer.Exit(1) from None
     plan_path = output_dir / "deployment-plan.json"
     plan_path.write_text(json.dumps(pipeline_result.plan.model_dump(mode="json"), indent=2))
 

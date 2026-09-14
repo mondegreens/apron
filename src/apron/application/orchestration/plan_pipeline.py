@@ -84,6 +84,11 @@ def run_plan_pipeline(
         calc_metadata, hardware, {"isl": 512, "osl": 128, "max_batch_size": 4}
     )
 
+    if claim.proposed_configuration.get("status") == "unknown":
+        return PlanPipelineResult(
+            error="unknown model mechanism — calculator cannot predict memory"
+        )
+
     deployment_plan = build_plan(
         claim,
         model_spec,

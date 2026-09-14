@@ -55,7 +55,16 @@ class QualificationGraph:
         """
         from apron.domain.fingerprints import fingerprint_hex
 
-        solution_fp = fingerprint_hex(candidate.artifact_spec)
+        artifact_spec = getattr(candidate, "artifact_spec", None)
+        if artifact_spec is None:
+            return self._entry(
+                "0000",
+                "candidate",
+                {"stopped_at": "candidate", "reason": "no artifact spec"},
+                "Missing artifact spec",
+            )
+
+        solution_fp = fingerprint_hex(artifact_spec)
         graph_state: dict[str, Any] = {}
         current: QualificationStatus = "candidate"
 

@@ -38,7 +38,7 @@ def build_plan(
     available_kv = config.get("available_kv_cache_bytes", 0)
 
     dtype = _derive_dtype(model_spec)
-    tp = _derive_tensor_parallel(total_required, hardware_spec, model_spec)
+    tp = _derive_tensor_parallel(total_required, hardware_spec, config)
     batch_size = _derive_batch_size(available_kv, config, tp)
 
     gpu_util = 0.90
@@ -77,17 +77,14 @@ def _derive_dtype(model_spec: ModelSpec) -> str:
 def _derive_tensor_parallel(
     total_required: int,
     hardware: HardwareSpec,
-    model_spec: ModelSpec,
+    config: dict[str, Any],
 ) -> int:
     gpu_usable = int(hardware.total_memory_bytes * 0.90)
     if total_required <= gpu_usable:
         return 1
 
-    num_heads = 1
-    num_kv_heads = 1
-    for comp in model_spec.components:
-        if comp.role == "decoder":
-            break
+    num_heads = config.get("num_attention_heads", 1)
+    num_kv_heads = config.get("num_kv_heads", num_heads)
 
     for tp in (2, 4, 8):
         if num_heads % tp == 0 and num_kv_heads % tp == 0 and total_required / tp <= gpu_usable:
