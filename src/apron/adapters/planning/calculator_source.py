@@ -78,12 +78,12 @@ class CalculatorPlanningSource:
             return self._unknown_claim(config, hardware_spec, workload_shape)
 
         hw_data = (
-            hardware_spec.model_dump(mode="json")
+            hardware_spec.model_dump(mode="json")  # type: ignore[union-attr]
             if hasattr(hardware_spec, "model_dump")
             else hardware_spec
         )
         wl_data = (
-            workload_shape.model_dump(mode="json")
+            workload_shape.model_dump(mode="json")  # type: ignore[union-attr]
             if hasattr(workload_shape, "model_dump")
             else workload_shape
         )

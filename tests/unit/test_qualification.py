@@ -22,7 +22,11 @@ class _FixedClock:
         return datetime(2026, 1, 1, tzinfo=UTC)
 
 
-def _make_candidate(*, source="resolved", execution_spec=_EXEC_SPEC):
+def _make_candidate(
+    *,
+    source: str = "resolved",
+    execution_spec: ExecutionSpec | None = _EXEC_SPEC,
+):
     identity = ArtifactIdentity(content_digest=digest_hex(canonicalize({"test": "data"})))
     spec = ArtifactSpec(
         identity=identity,
@@ -31,7 +35,7 @@ def _make_candidate(*, source="resolved", execution_spec=_EXEC_SPEC):
     return ResolvedCandidate(
         artifact_spec=spec,
         execution_spec=execution_spec,
-        source=source,
+        source=source,  # type: ignore[arg-type]
     )
 
 
