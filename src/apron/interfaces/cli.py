@@ -24,12 +24,9 @@ from apron.adapters.renderers.docker_compose import DockerComposeRenderer
 from apron.adapters.renderers.inferencex_export import InferenceXExportRenderer
 from apron.adapters.renderers.recipes_export import RecipesExportRenderer
 from apron.adapters.renderers.vllm_serve import VllmServeRenderer
-from apron.application.orchestration.plan_builder import build_plan
-from apron.application.orchestration.resolution import ResolutionChain
-from apron.domain.mechanisms.model_spec_builder import build_model_spec
+from apron.application.orchestration.plan_pipeline import run_plan_pipeline
 from apron.domain.ports import UuidIdGenerator, WallClock
-from apron.domain.schemas.primitives import ArtifactLocator, HardwareSpec
-from apron.domain.schemas.solutions import RenderContext
+from apron.domain.schemas.primitives import HardwareSpec
 
 app = typer.Typer(name="apron", no_args_is_help=True)
 console = Console()
@@ -83,78 +80,26 @@ def plan(
 
     resolver = FixtureHFHubResolver(fixture_dir) if fixture_dir is not None else HFHubResolver()
 
-    chain = ResolutionChain(resolver)
-    result = chain.resolve(model)
-
-    if not result.ok:
-        console.print(f"[red]Resolution failed: {result.error}[/red]")
-        raise typer.Exit(1)
-
-    assert result.observation is not None
-    config_content = resolver._download_file(
-        model, "config.json", result.observation.resolved_revision
-    )
-    if config_content is None:
-        console.print("[red]Could not download config.json[/red]")
-        raise typer.Exit(1)
-
-    config = json.loads(config_content)
-
-    index_content = resolver._download_file(
-        model, "model.safetensors.index.json", result.observation.resolved_revision
-    )
-    total_weight_bytes = 0
-    if index_content is not None:
-        index_data = json.loads(index_content)
-        total_weight_bytes = index_data.get("metadata", {}).get("total_size", 0)
-
-    safetensors_params = result.observation.publisher_metadata or {}
-    if total_weight_bytes == 0:
-        for key, val in safetensors_params.items():
-            if key.startswith("parameters_"):
-                total_weight_bytes = int(val) * 2
-                break
-
-    model_spec = build_model_spec(
-        config,
-        repository=model,
-        revision=result.observation.resolved_revision,
-        license_id=result.observation.license_observed,
-    )
-
     hw = _DEFAULT_HARDWARE
     if target is not None and target.exists():
         hw = HardwareSpec(**json.loads(target.read_text()))
 
-    config["total_weight_bytes"] = total_weight_bytes
-    config["components"] = list(model_spec.components)
-    config["artifact_metadata"] = config
+    pipeline_result = run_plan_pipeline(resolver, model, hw, clock=clock, id_gen=id_gen)
 
-    from apron.adapters.planning.calculator_source import CalculatorPlanningSource
+    if not pipeline_result.ok:
+        console.print(f"[red]Plan failed: {pipeline_result.error}[/red]")
+        raise typer.Exit(1)
 
-    planning_source = CalculatorPlanningSource(clock=clock)
-    claim = planning_source.predict(config, hw, {"isl": 512, "osl": 128, "max_batch_size": 4})
-
-    deployment_plan = build_plan(
-        claim,
-        model_spec,
-        hw,
-        result.execution_spec,
-        None,
-        clock=clock,
-        id_gen=id_gen,
-    )
-
-    locator = ArtifactLocator(source_kind="huggingface", uri=model)
-    ctx = RenderContext(plan=deployment_plan, locator=locator, hardware=hw)
+    assert pipeline_result.plan is not None
+    assert pipeline_result.context is not None
 
     output_dir.mkdir(parents=True, exist_ok=True)
     plan_path = output_dir / "deployment-plan.json"
-    plan_path.write_text(json.dumps(deployment_plan.model_dump(mode="json"), indent=2))
+    plan_path.write_text(json.dumps(pipeline_result.plan.model_dump(mode="json"), indent=2))
 
     rendered_outputs: dict[str, Any] = {}
     for renderer in _build_renderers():
-        rendered = renderer.render(ctx)
+        rendered = renderer.render(pipeline_result.context)
         rendered_outputs[renderer.target_format] = rendered
 
     renders_path = output_dir / "rendered-outputs.json"
@@ -163,7 +108,7 @@ def plan(
     console.print(f"[green]Plan saved to {plan_path}[/green]")
 
     if verbose:
-        _print_breakdown(claim)
+        _print_breakdown(pipeline_result.claim)
 
 
 def _print_breakdown(claim: Any) -> None:
