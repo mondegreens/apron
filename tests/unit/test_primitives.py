@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import TypeAdapter
-
 from apron.domain.canonical import canonicalize
 from apron.domain.capabilities import CapabilitySignature
 from apron.domain.fingerprints import assert_fully_classified
@@ -20,6 +18,7 @@ from apron.domain.schemas.primitives import (
     PredictedStatus,
     ProvenConstraintStatus,
 )
+from pydantic import TypeAdapter
 
 # ---------------------------------------------------------------------------
 # helpers

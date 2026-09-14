@@ -1,7 +1,5 @@
 """Step 6 tests: Layer 4 — solutions, plans, evaluation, topology."""
 
-from pydantic import TypeAdapter
-
 from apron.domain.canonical import canonicalize
 from apron.domain.fingerprints import assert_fully_classified, fingerprint_hex
 from apron.domain.schemas.solutions import DeploymentPlan, EvaluationProtocol
@@ -14,6 +12,7 @@ from apron.domain.solutions import (
     ReplicaPool,
     RoleBinding,
 )
+from pydantic import TypeAdapter
 
 _FP = "1220" + "ab" * 32
 _FP2 = "1220" + "cd" * 32

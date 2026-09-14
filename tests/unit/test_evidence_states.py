@@ -5,8 +5,6 @@ integrity: every embedded fingerprint reference is computed from the
 referenced record, not hand-typed.
 """
 
-from pydantic import TypeAdapter
-
 from apron.domain.canonical import canonicalize, record_digest_hex
 from apron.domain.capabilities import CapabilitySignature
 from apron.domain.fingerprints import fingerprint_hex
@@ -42,6 +40,7 @@ from apron.domain.schemas.tasks import (
     TaskSuiteSpec,
     WorkloadSpec,
 )
+from pydantic import TypeAdapter
 
 _FP = "1220" + "ab" * 32
 _FP2 = "1220" + "cd" * 32

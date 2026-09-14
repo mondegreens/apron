@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import TypeAdapter
-
 from apron.domain.artifacts.identity import ArtifactIdentity
 from apron.domain.canonical import canonicalize
 from apron.domain.fingerprints import assert_fully_classified
@@ -36,6 +34,7 @@ from apron.domain.schemas.models import (
 )
 from apron.domain.schemas.primitives import ArtifactLocator, HardwareSpec
 from apron.domain.schemas.solutions import PlanningClaim
+from pydantic import TypeAdapter
 
 
 def _round_trip(model_cls, instance):

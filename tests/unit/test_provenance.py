@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from apron.domain.schemas.provenance import ExternalFormatProvenance
 
 FIXTURES_DIR = Path(__file__).resolve().parent.parent / "fixtures" / "external-formats"

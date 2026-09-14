@@ -2,8 +2,6 @@
 
 from typing import Literal
 
-from pydantic import TypeAdapter
-
 from apron.domain.canonical import canonicalize, record_digest_hex
 from apron.domain.fingerprints import assert_fully_classified
 from apron.domain.schemas.authority import (
@@ -21,6 +19,7 @@ from apron.domain.schemas.authority import (
     PublicationAttempt,
     evaluate_authorization,
 )
+from pydantic import TypeAdapter
 
 _DIGEST = "1220" + "99" * 32
 _FP = "1220" + "ab" * 32

@@ -1,6 +1,6 @@
 """Extension-point Protocol contracts (framework-spec.md §1).
 
-Nine Protocols defined here plus ExecutionTarget in primitives.py = 10 total.
+Ten Protocols defined here plus ExecutionTarget in primitives.py = 11 total.
 Each is a typing.Protocol in the domain layer.  Full conformance suites in
 ``conformance/`` are a Phase 1a prerequisite; Phase 0 provides these
 definitions and one fake-adapter test client per Protocol.
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 # ---------------------------------------------------------------------------
-# EngineAdapter — boot, profile, and manage an inference engine
+# EngineAdapter — resolve, validate, render, verify, classify, extract
 # ---------------------------------------------------------------------------
 
 
@@ -30,11 +30,17 @@ class EngineAdapter(Protocol):
     @property
     def engine_version(self) -> str: ...
 
-    def boot(self, plan: DeploymentPlan) -> dict[str, Any]: ...
+    def resolve_support(self, model_spec: Any, image_tag: str) -> dict[str, Any]: ...
 
-    def profile_memory(self) -> dict[str, Any]: ...
+    def validate(self, plan: DeploymentPlan, target: Any) -> list[str]: ...
 
-    def shutdown(self) -> None: ...
+    def render(self, plan: DeploymentPlan) -> dict[str, Any]: ...
+
+    def verify(self, plan: DeploymentPlan, target: Any) -> dict[str, Any]: ...
+
+    def classify(self, error: str) -> dict[str, Any]: ...
+
+    def extract_schema(self, image_tag: str) -> dict[str, Any]: ...
 
 
 # ---------------------------------------------------------------------------
@@ -90,7 +96,9 @@ class PlanningSource(Protocol):
     @property
     def producer_version(self) -> str: ...
 
-    def plan(self, inputs: dict[str, Any]) -> PlanningClaim: ...
+    def predict(
+        self, model_spec: Any, hardware_spec: Any, workload_shape: Any
+    ) -> PlanningClaim: ...
 
 
 # ---------------------------------------------------------------------------
@@ -106,7 +114,27 @@ class EvaluationAdapter(Protocol):
     @property
     def harness_version(self) -> str: ...
 
-    def evaluate(self, protocol: dict[str, Any]) -> list[dict[str, Any]]: ...
+    def accepts(self, protocol: dict[str, Any]) -> bool: ...
+
+    def prepare(self, protocol: dict[str, Any]) -> dict[str, Any]: ...
+
+    def execute(self, protocol: dict[str, Any], endpoint: str) -> list[dict[str, Any]]: ...
+
+    def collect(self, attempts: list[dict[str, Any]]) -> dict[str, Any]: ...
+
+
+# ---------------------------------------------------------------------------
+# RecordStore — persist and retrieve content-addressed records
+# ---------------------------------------------------------------------------
+
+
+@runtime_checkable
+class RecordStore(Protocol):
+    def store(self, record: dict[str, Any]) -> str: ...
+
+    def retrieve(self, digest: str) -> dict[str, Any] | None: ...
+
+    def search(self, prefix: str) -> list[str]: ...
 
 
 # ---------------------------------------------------------------------------
