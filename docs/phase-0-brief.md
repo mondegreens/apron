@@ -1,6 +1,6 @@
 # Phase 0 implementation brief — contracts and truth model
 
-**Status:** active
+**Status:** implemented, 2026-09-13
 **Date:** 2026-09-12
 **Authority:** phase-plan.md §Phase 0, ADR-001, ADR-002, ADR-003, ADR-006, ADR-007, ADR-010, ADR-011, ADR-012, ADR-013
 **Preconditions met:** determinism ports (`src/apron/domain/ports.py`), canonical digest with cross-implementation vectors (`src/apron/domain/canonical.py`, `tests/vectors/`)
