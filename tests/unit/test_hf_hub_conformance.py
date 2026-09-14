@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+
 from apron.adapters.evidence.hf_hub import FixtureHFHubResolver
 from apron.domain.artifacts import ArtifactSourceObservation
 from apron.domain.artifacts.identity import ArtifactIdentity

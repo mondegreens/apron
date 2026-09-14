@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+
 from apron.domain.artifacts import ArtifactSourceObservation, FileDigest
 from apron.domain.schemas.primitives import ArtifactLocator, HardwareSpec
 from apron.domain.schemas.solutions import DeploymentPlan, PlanningClaim, RenderContext

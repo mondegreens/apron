@@ -3,6 +3,7 @@
 import json
 
 import pytest
+
 from apron.adapters.backends.local_store import LocalRecordStore
 from apron.domain.canonical import canonicalize
 from apron.domain.protocols import RecordStore

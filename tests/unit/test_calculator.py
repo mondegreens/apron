@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from apron.domain.canonical import canonicalize
 from apron.domain.mechanisms import CalculatorInput, ComponentMechanism, TextWorkload, calculate
 from apron.domain.mechanisms.calculator import (

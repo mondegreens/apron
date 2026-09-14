@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Annotated
 
+from pydantic import BaseModel, ConfigDict
+
 from apron.domain.canonical import canonicalize, record_digest_hex
 from apron.domain.fingerprints import (
     DISPLAY,
@@ -14,7 +16,6 @@ from apron.domain.fingerprints import (
     identity_field_names,
 )
 from apron.domain.schemas.migrations import clear_registry, migrate, register
-from pydantic import BaseModel, ConfigDict
 
 
 class ToyModelV1(BaseModel):

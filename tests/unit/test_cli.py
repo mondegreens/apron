@@ -3,10 +3,11 @@
 import json
 from pathlib import Path
 
-import apron.domain.mechanisms.calculator  # noqa: F401
 import pytest
-from apron.interfaces.cli import app
 from typer.testing import CliRunner
+
+import apron.domain.mechanisms.calculator  # noqa: F401
+from apron.interfaces.cli import app
 
 runner = CliRunner()
 FIXTURE_DIR = Path(__file__).parent.parent / "fixtures" / "external-formats" / "huggingface-hub"

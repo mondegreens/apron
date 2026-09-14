@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+
 from apron.adapters.evidence.safetensors_reader import (
     read_all_tensors,
     read_index,
