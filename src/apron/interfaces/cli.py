@@ -160,6 +160,84 @@ def _print_breakdown(claim: Any) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Verification / deployment orchestration
+# ---------------------------------------------------------------------------
+
+
+def _run_verification(
+    plan_data: dict[str, Any],
+    *,
+    teardown: bool = True,
+    timeout: int = 3600,
+) -> None:
+    """Run the verify/deploy lifecycle on a RunPod target."""
+    from apron.adapters.backends.runpod import RunPodTarget
+    from apron.adapters.backends.vllm_engine import VllmEngineAdapter
+    from apron.domain.schemas.solutions import DeploymentPlan
+
+    target = RunPodTarget(max_uptime=timeout)
+
+    prep = target.prepare()
+    if prep["status"] == "hardware_unavailable":
+        console.print(f"[yellow]hardware_unavailable: {prep['reason']}[/yellow]")
+        return
+
+    plan = DeploymentPlan(**plan_data)
+    engine = VllmEngineAdapter()
+
+    success = False
+    try:
+        console.print("[bold]Provisioning target...[/bold]")
+        prov = target.provision()
+        console.print(f"  Pod: {prov['pod_id']}")
+        console.print(f"  GPU: {target.hardware.gpu_sku}")
+        console.print(f"  Memory: {target.hardware.total_memory_bytes / 1e9:.1f} GB")
+
+        validation_errors = engine.validate(plan, target)
+        if validation_errors:
+            for err in validation_errors:
+                console.print(f"[red]Validation: {err}[/red]")
+            return
+
+        console.print("[bold]Booting vLLM and profiling memory...[/bold]")
+        report = engine.verify(plan, target)
+
+        store = _default_store()
+        report_record = {
+            **report,
+            "claim_scope": "memory",
+            "production_mode": False,
+            "reason": "Phase 1a verification",
+            "lifecycle": "observed",
+        }
+        digest = store.store(report_record)
+        console.print(f"  VerificationReport stored: {digest[:16]}...")
+
+        console.print("[bold]Memory profile:[/bold]")
+        for key in (
+            "initial_total_memory",
+            "model_weight_memory",
+            "persistent_consumption",
+            "available_kv_cache_memory",
+        ):
+            val = report.get(key, 0)
+            console.print(f"  {key}: {val / 1e9:.2f} GB")
+
+        success = True
+        if not teardown:
+            console.print(f"\n[green]Endpoint: {target.proxy_url}[/green]")
+            console.print("[yellow]Pod left running — teardown manually or via apron[/yellow]")
+    except Exception as exc:
+        console.print(f"[red]Verification failed: {exc}[/red]")
+        raise typer.Exit(1) from None
+    finally:
+        if teardown or not success:
+            console.print("[bold]Tearing down...[/bold]")
+            target.teardown()
+            console.print("[green]Teardown complete[/green]")
+
+
+# ---------------------------------------------------------------------------
 # apron verify
 # ---------------------------------------------------------------------------
 
@@ -190,7 +268,7 @@ def verify(
     if not yes:
         typer.confirm("Proceed with verification?", abort=True)
 
-    console.print("[yellow]GPU execution not available in Phase 1a-ii[/yellow]")
+    _run_verification(plan_data, teardown=True, timeout=timeout)
 
 
 # ---------------------------------------------------------------------------
@@ -203,16 +281,28 @@ def deploy(
     plan_file: Path = typer.Argument(..., help="DeploymentPlan JSON file"),
     target_spec: str = typer.Option("runpod-4090", help="Target spec"),
     yes: bool = typer.Option(False, help="Standing authorization"),
+    timeout: int = typer.Option(3600, help="Hard deadline seconds"),
 ) -> None:
     """Deploy a model using a deployment plan (teardown=False)."""
     if not plan_file.exists():
         console.print(f"[red]Plan file not found: {plan_file}[/red]")
         raise typer.Exit(1)
 
+    plan_data = json.loads(plan_file.read_text())
+
+    from apron.application.cost_estimator import estimate_cost
+
+    cost = estimate_cost(plan_data, "runpod")
+
+    console.print("[bold]Deployment Summary[/bold]")
+    console.print("  Data destination: ~/.apron/records/ (local)")
+    console.print(f"  Estimated cost: ${cost['estimated_cost_usd']:.2f}/hr ongoing")
+    console.print(f"  Hard deadline: {timeout}s")
+
     if not yes:
         typer.confirm("Proceed with deployment?", abort=True)
 
-    console.print("[yellow]GPU execution not available in Phase 1a-ii[/yellow]")
+    _run_verification(plan_data, teardown=False, timeout=timeout)
 
 
 # ---------------------------------------------------------------------------

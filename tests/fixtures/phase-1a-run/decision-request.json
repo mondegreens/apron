@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "objective": "Deploy Qwen3-8B for deterministic text generation",
+  "success_criteria": {
+    "min_pass_rate": 0.6
+  },
+  "quality_floor": "3 of 5 deterministic cases pass",
+  "serving_slos": {
+    "p99_ttft_ms": 2000,
+    "p99_tpot_ms": 100
+  },
+  "constraints": {
+    "license": "Apache-2.0",
+    "data_residency": null
+  },
+  "budget": {
+    "max_usd": 5.0
+  },
+  "permitted_providers": [
+    "runpod"
+  ],
+  "optimization_objective": "minimize_cost"
+}

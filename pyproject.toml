@@ -69,6 +69,7 @@ dev = [
     "import-linter>=2",
     "pytest>=8",
     "hypothesis>=6",
+    "paramiko>=3",
 ]
 docs = [
     "zensical==0.0.60",
@@ -117,3 +118,4 @@ forbidden_modules = ["apron.interfaces"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["integration: marks tests as integration tests (require external services)"]
