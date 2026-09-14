@@ -22,7 +22,14 @@ ARCHITECTURE_MECHANISMS: dict[str, str] = {
 }
 
 
-def _infer_mechanism(architecture: str) -> str:
+def _has_mla_fields(config: dict[str, Any]) -> bool:
+    """Detect Multi-Latent Attention from config.json fields."""
+    return config.get("kv_lora_rank") is not None and config.get("qk_rope_head_dim") is not None
+
+
+def _infer_mechanism(architecture: str, config: dict[str, Any]) -> str:
+    if _has_mla_fields(config):
+        return "mla_decode"
     for suffix, mechanism in ARCHITECTURE_MECHANISMS.items():
         if architecture.endswith(suffix):
             return mechanism
@@ -50,7 +57,7 @@ def build_model_spec(
     """
     architectures = config.get("architectures", [])
     primary_arch = architectures[0] if architectures else "UnknownArchitecture"
-    mechanism = _infer_mechanism(primary_arch)
+    mechanism = _infer_mechanism(primary_arch, config)
 
     components: list[ComponentMechanism] = [
         ComponentMechanism(mechanism=mechanism, role="decoder"),
