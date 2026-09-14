@@ -7,7 +7,7 @@ Resolution does not crash; a failed step produces a typed error and halts.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any
 
 from apron.domain.artifacts.identity import ArtifactIdentity
 from apron.domain.fingerprints import fingerprint_hex
@@ -26,9 +26,6 @@ __all__ = [
     "StepResult",
 ]
 
-T = TypeVar("T")
-
-
 @dataclass(frozen=True)
 class StepError:
     step: str
@@ -38,7 +35,7 @@ class StepError:
 
 
 @dataclass(frozen=True)
-class StepResult(Generic[T]):
+class StepResult[T]:
     value: T | None = None
     error: StepError | None = None
 
