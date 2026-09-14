@@ -77,12 +77,22 @@ class CalculatorPlanningSource:
         if result is None:
             return self._unknown_claim(config, hardware_spec, workload_shape)
 
+        hw_data = (
+            hardware_spec.model_dump(mode="json")
+            if hasattr(hardware_spec, "model_dump")
+            else hardware_spec
+        )
+        wl_data = (
+            workload_shape.model_dump(mode="json")
+            if hasattr(workload_shape, "model_dump")
+            else workload_shape
+        )
         input_fp = digest_hex(
             canonicalize(
                 {
-                    "model_spec": str(config),
-                    "hardware_spec": str(hardware_spec),
-                    "workload_shape": str(workload_shape),
+                    "model_spec": config if isinstance(config, dict) else {},
+                    "hardware_spec": hw_data if isinstance(hw_data, dict) else {},
+                    "workload_shape": wl_data if isinstance(wl_data, dict) else {},
                 }
             )
         )
@@ -115,14 +125,19 @@ class CalculatorPlanningSource:
         hardware_spec: Any,
         workload_shape: Any,
     ) -> PlanningClaim:
+        ms = model_spec if isinstance(model_spec, dict) else {}
+        hw = (
+            hardware_spec.model_dump(mode="json")
+            if hasattr(hardware_spec, "model_dump")
+            else (hardware_spec if isinstance(hardware_spec, dict) else {})
+        )
+        wl = (
+            workload_shape.model_dump(mode="json")
+            if hasattr(workload_shape, "model_dump")
+            else (workload_shape if isinstance(workload_shape, dict) else {})
+        )
         input_fp = digest_hex(
-            canonicalize(
-                {
-                    "model_spec": str(model_spec),
-                    "hardware_spec": str(hardware_spec),
-                    "workload_shape": str(workload_shape),
-                }
-            )
+            canonicalize({"model_spec": ms, "hardware_spec": hw, "workload_shape": wl})
         )
         return PlanningClaim(
             producer=self.producer_name,

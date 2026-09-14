@@ -100,7 +100,7 @@ def test_qwen3_8b_on_rtx_4090():
 
 def test_batch_size_derived_from_available_kv():
     claim = _qwen3_claim()
-    build_plan(
+    plan = build_plan(
         claim,
         _qwen3_model_spec(),
         RTX_4090,
@@ -109,7 +109,13 @@ def test_batch_size_derived_from_available_kv():
         clock=_FixedClock(),
         id_gen=_FixedIdGen(),
     )
-    assert True  # derived, may coincidentally equal 4
+    available_kv = claim.proposed_configuration["available_kv_cache_bytes"]
+    kv_per_token = claim.proposed_configuration["kv_per_token_bytes"]
+    isl = claim.proposed_configuration["isl"]
+    osl = claim.proposed_configuration["osl"]
+    expected_max = available_kv // (kv_per_token * (isl + osl))
+    assert plan.batch_size is not None
+    assert plan.batch_size == max(1, min(expected_max, 256))
 
 
 def test_unknown_claim_produces_default_plan():
@@ -154,3 +160,38 @@ def test_engine_configuration_has_gpu_util():
     )
     assert "gpu_memory_utilization" in plan.engine_configuration
     assert "max_model_len" in plan.engine_configuration
+
+
+def test_oversized_model_gets_tp_greater_than_1():
+    """Plan §2.2: Model requiring > 24GB → TP=2 (if num_heads divisible)."""
+    claim = PlanningClaim(
+        producer="apron-calculator",
+        version="0.1",
+        input_fingerprint="1220" + "ab" * 32,
+        proposed_configuration={
+            "weight_memory_bytes": 40_000_000_000,
+            "kv_cache_bytes": 500_000_000,
+            "kv_per_token_bytes": 147_456,
+            "activation_estimate_bytes": 4_000_000_000,
+            "non_pytorch_overhead_bytes": 500_000_000,
+            "cuda_graph_estimate_bytes": 800_000_000,
+            "available_kv_cache_bytes": 0,
+            "total_required_bytes": 46_000_000_000,
+            "num_attention_heads": 32,
+            "num_kv_heads": 8,
+            "isl": 512,
+            "osl": 128,
+        },
+        claim_scope="memory",
+        producer_epistemic_tier="MECHANISM",
+    )
+    plan = build_plan(
+        claim,
+        _qwen3_model_spec(),
+        RTX_4090,
+        None,
+        None,
+        clock=_FixedClock(),
+        id_gen=_FixedIdGen(),
+    )
+    assert plan.tensor_parallel == 2

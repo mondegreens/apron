@@ -92,8 +92,14 @@ def plan(
             console.print(f"[red]Invalid target spec: {exc}[/red]")
             raise typer.Exit(1) from None
 
+    from apron.adapters.planning.calculator_source import CalculatorPlanningSource
+
+    planning_source = CalculatorPlanningSource(clock=clock)
+
     try:
-        pipeline_result = run_plan_pipeline(resolver, model, hw, clock=clock, id_gen=id_gen)
+        pipeline_result = run_plan_pipeline(
+            resolver, planning_source, model, hw, clock=clock, id_gen=id_gen
+        )
     except Exception as exc:
         console.print(f"[red]Plan pipeline error: {exc}[/red]")
         raise typer.Exit(1) from None

@@ -16,7 +16,7 @@ from apron.domain.schemas.solutions import DeploymentPlan, RenderContext
 
 if TYPE_CHECKING:
     from apron.domain.ports import Clock, IdGenerator
-    from apron.domain.protocols import ArtifactSourceResolver
+    from apron.domain.protocols import ArtifactSourceResolver, PlanningSource
     from apron.domain.schemas.primitives import HardwareSpec
 
 
@@ -43,6 +43,7 @@ class PlanPipelineResult:
 
 def run_plan_pipeline(
     resolver: ArtifactSourceResolver,
+    planning_source: PlanningSource,
     model_id: str,
     hardware: HardwareSpec,
     *,
@@ -75,11 +76,8 @@ def run_plan_pipeline(
 
     calc_metadata = dict(config)
     calc_metadata["total_weight_bytes"] = total_weight_bytes
-    calc_metadata["components"] = list(model_spec.components)
+    calc_metadata["components"] = [c.model_dump(mode="json") for c in model_spec.components]
 
-    from apron.adapters.planning.calculator_source import CalculatorPlanningSource
-
-    planning_source = CalculatorPlanningSource(clock=clock)
     claim = planning_source.predict(
         calc_metadata, hardware, {"isl": 512, "osl": 128, "max_batch_size": 4}
     )
