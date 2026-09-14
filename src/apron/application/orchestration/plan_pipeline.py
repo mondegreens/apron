@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 class PlanPipelineResult:
-    __slots__ = ("plan", "context", "claim", "error")
+    __slots__ = ("claim", "context", "error", "plan")
 
     def __init__(
         self,
