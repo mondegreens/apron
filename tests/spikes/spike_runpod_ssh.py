@@ -36,12 +36,12 @@ def _gql(api_key: str, query: str, variables: dict | None = None) -> dict:
 
 
 def create_pod(api_key: str) -> str:
-    query = """
+    query = f"""
     mutation {{
       podFindAndDeployOnDemand(input: {{
         name: "apron-spike"
-        imageName: "{image}"
-        gpuTypeId: "{gpu}"
+        imageName: "{IMAGE}"
+        gpuTypeId: "{GPU_TYPE}"
         cloudType: SECURE
         volumeInGb: 20
         containerDiskInGb: 20
@@ -54,7 +54,7 @@ def create_pod(api_key: str) -> str:
         runtime {{ ports {{ ip privatePort publicPort type }} }}
       }}
     }}
-    """.format(image=IMAGE, gpu=GPU_TYPE)
+    """
     data = _gql(api_key, query)
     pod = data["podFindAndDeployOnDemand"]
     print(f"Pod created: {pod['id']}")
@@ -102,9 +102,7 @@ def ssh_nvidia_smi(pod: dict) -> str:
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh_key_path = os.environ.get(
-        "RUNPOD_SSH_KEY_PATH", os.path.expanduser("~/.ssh/id_ed25519")
-    )
+    ssh_key_path = os.environ.get("RUNPOD_SSH_KEY_PATH", os.path.expanduser("~/.ssh/id_ed25519"))
     client.connect(host, port=int(port), username="root", key_filename=ssh_key_path)
 
     _, stdout, _ = client.exec_command("nvidia-smi")

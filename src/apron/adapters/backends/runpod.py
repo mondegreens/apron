@@ -147,9 +147,7 @@ class RunPodTarget:
             try:
                 self._ensure_ssh()
                 assert self._ssh is not None
-                _, stdout, stderr = self._ssh.exec_command(
-                    command, timeout=self._command_timeout
-                )
+                _, stdout, stderr = self._ssh.exec_command(command, timeout=self._command_timeout)
                 exit_code = stdout.channel.recv_exit_status()
                 return {
                     "stdout": stdout.read().decode(),
@@ -209,18 +207,16 @@ class RunPodTarget:
         return results
 
     def teardown(self) -> None:
+        import contextlib
+
         if self._ssh is not None:
-            try:
+            with contextlib.suppress(Exception):
                 self._ssh.close()
-            except Exception:
-                pass
             self._ssh = None
 
         if self._pod_id is not None:
             try:
-                self._gql(
-                    f'mutation {{ podTerminate(input: {{ podId: "{self._pod_id}" }}) }}'
-                )
+                self._gql(f'mutation {{ podTerminate(input: {{ podId: "{self._pod_id}" }}) }}')
                 logger.info("Pod %s terminated", self._pod_id)
             except Exception as exc:
                 logger.warning("Pod termination failed (maxUptime safety net active): %s", exc)

@@ -51,9 +51,7 @@ def ssh_exec(pod: dict, command: str, timeout: int = 300) -> tuple[str, str, int
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh_key_path = os.environ.get(
-        "RUNPOD_SSH_KEY_PATH", os.path.expanduser("~/.ssh/id_ed25519")
-    )
+    ssh_key_path = os.environ.get("RUNPOD_SSH_KEY_PATH", os.path.expanduser("~/.ssh/id_ed25519"))
     client.connect(host, port=port, username="root", key_filename=ssh_key_path)
     _, stdout, stderr = client.exec_command(command, timeout=timeout)
     exit_code = stdout.channel.recv_exit_status()
@@ -76,7 +74,7 @@ def main() -> None:
 
         # Pre-load measurement
         print("Collecting pre-load memory...")
-        out, err, _ = ssh_exec(pod, f"python3 -c {json.dumps(PRE_LOAD_SCRIPT)}")
+        out, _err, _ = ssh_exec(pod, f"python3 -c {json.dumps(PRE_LOAD_SCRIPT)}")
         print(f"  pre-load: {out.strip()}")
 
         # Boot vLLM in background
@@ -105,7 +103,7 @@ def main() -> None:
 
         # Post-load measurement
         print("Collecting post-load memory...")
-        out, err, _ = ssh_exec(pod, f"python3 -c {json.dumps(POST_LOAD_SCRIPT)}")
+        out, _err, _ = ssh_exec(pod, f"python3 -c {json.dumps(POST_LOAD_SCRIPT)}")
         print(f"  post-load: {out.strip()}")
 
         # Compute delta
@@ -115,7 +113,7 @@ def main() -> None:
         post = json.loads(post_out)
 
         model_weight_memory = pre["pre_free"] - post["post_free"]
-        print(f"\n--- Profiling Results ---")
+        print("\n--- Profiling Results ---")
         print(f"  Initial total:  {pre['pre_total'] / 1e9:.2f} GB")
         print(f"  Initial free:   {pre['pre_free'] / 1e9:.2f} GB")
         print(f"  Post-load free: {post['post_free'] / 1e9:.2f} GB")

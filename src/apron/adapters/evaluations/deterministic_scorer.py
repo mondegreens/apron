@@ -40,18 +40,14 @@ class DeterministicScorer:
         cases = protocol.get("cases", [])
         for case in cases:
             if "expected" not in case:
-                raise ValueError(
-                    f"Case {case.get('id', '<unknown>')} missing 'expected' field"
-                )
+                raise ValueError(f"Case {case.get('id', '<unknown>')} missing 'expected' field")
         return {
             "cases": cases,
             "model_id": protocol.get("model_id", ""),
             "endpoint": protocol.get("endpoint", ""),
         }
 
-    def execute(
-        self, protocol: dict[str, Any], endpoint: str
-    ) -> list[dict[str, Any]]:
+    def execute(self, protocol: dict[str, Any], endpoint: str) -> list[dict[str, Any]]:
         cases = protocol.get("cases", [])
         model_id = protocol.get("model_id", "")
         attempts: list[dict[str, Any]] = []
@@ -74,9 +70,7 @@ class DeterministicScorer:
             "attempts": attempts,
         }
 
-    def _execute_case(
-        self, case: dict[str, Any], model_id: str, endpoint: str
-    ) -> dict[str, Any]:
+    def _execute_case(self, case: dict[str, Any], model_id: str, endpoint: str) -> dict[str, Any]:
         case_id = case.get("id", "")
         prompt = case.get("prompt", "")
         expected = case.get("expected", "")

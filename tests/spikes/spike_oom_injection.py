@@ -32,9 +32,7 @@ def ssh_exec(pod: dict, command: str) -> tuple[str, str, int]:
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh_key_path = os.environ.get(
-        "RUNPOD_SSH_KEY_PATH", os.path.expanduser("~/.ssh/id_ed25519")
-    )
+    ssh_key_path = os.environ.get("RUNPOD_SSH_KEY_PATH", os.path.expanduser("~/.ssh/id_ed25519"))
     client.connect(host, port=port, username="root", key_filename=ssh_key_path)
     _, stdout, stderr = client.exec_command(command, timeout=300)
     exit_code = stdout.channel.recv_exit_status()
@@ -55,7 +53,9 @@ def main() -> None:
         pod_id = create_pod(api_key)
         pod = wait_for_running(api_key, pod_id)
 
-        print("Attempting OOM injection: gpu_memory_utilization=0.99 + max_num_batched_tokens=65536")
+        print(
+            "Attempting OOM injection: gpu_memory_utilization=0.99 + max_num_batched_tokens=65536"
+        )
         cmd = (
             f"timeout 120 vllm serve {MODEL} "
             "--dtype bfloat16 "

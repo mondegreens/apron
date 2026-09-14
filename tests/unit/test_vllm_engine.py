@@ -5,7 +5,6 @@ Collects the EngineAdapter conformance suite via pytest_plugins.
 
 from __future__ import annotations
 
-import json
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -203,26 +202,34 @@ def test_extract_schema_returns_dict(engine: VllmEngineAdapter) -> None:
 
 
 def test_verify_returns_15_fields(engine: VllmEngineAdapter) -> None:
-    import json
-
     target = MagicMock()
     target.kind = "local-container"
     target.execution_fingerprint = "1220" + "ff" * 32
 
-    pre_data = json.dumps({"pre_free": 23_000_000_000, "pre_total": 25_769_803_776})
-    post_data = json.dumps({"post_free": 8_000_000_000, "post_total": 25_769_803_776})
-    cg_data = json.dumps({"post_cg_free": 7_500_000_000, "post_cg_total": 25_769_803_776})
-
-    call_count = [0]
+    vllm_log = (
+        "Memory profiling takes 2.50 seconds. "
+        "Total non KV cache memory: 17.50GiB; "
+        "torch peak memory increase: 1.20GiB; "
+        "total consumed (from mem_get_info): 16.00GiB; "
+        "weights memory: 15.30GiB.\n"
+        "Available KV cache memory: 5.50 GiB\n"
+        "CUDA graph pool memory: 0.50 GiB (actual), 0.80 GiB (estimated), "
+        "difference: 0.30 GiB (37.5%).\n"
+        "Free memory on device (22.50/24.00 GiB) on startup. "
+        "Desired GPU memory utilization is (0.9, 20.25 GiB). "
+        "Actual usage is 16.00 GiB for consumed memory (weights + non-torch), "
+        "1.20 GiB for peak activation, and 0.50 GiB for CUDAGraph memory."
+    )
 
     def fake_execute(cmd: str) -> dict[str, Any]:
-        if "cat /workspace/apron_pre_load.json" in cmd:
-            return {"stdout": pre_data, "stderr": "", "exit_code": 0}
-        if "cat /workspace/apron_post_load.json" in cmd:
-            return {"stdout": post_data, "stderr": "", "exit_code": 0}
-        if "cat /workspace/apron_post_cuda_graph.json" in cmd:
-            return {"stdout": cg_data, "stderr": "", "exit_code": 0}
-        call_count[0] += 1
+        if "mem_get_info" in cmd:
+            return {
+                "stdout": '{"pre_free":24159191040,"pre_total":25769803776}',
+                "stderr": "",
+                "exit_code": 0,
+            }
+        if "cat /workspace/vllm.log" in cmd:
+            return {"stdout": vllm_log, "stderr": "", "exit_code": 0}
         return {"stdout": "", "stderr": "", "exit_code": 0}
 
     target.execute.side_effect = fake_execute
@@ -255,3 +262,33 @@ def test_verify_returns_15_fields(engine: VllmEngineAdapter) -> None:
     assert expected_keys.issubset(result.keys())
     assert result["model_weight_memory"] > 0
     assert result["initial_total_memory"] > 0
+    assert result["cuda_graph_actual"] > 0
+    assert result["available_kv_cache_memory"] > 0
+    assert result["transient_peak_headroom"] > 0
+
+
+def test_parse_profiling_logs_extracts_vllm_output(engine: VllmEngineAdapter) -> None:
+    log_text = (
+        "Memory profiling takes 2.50 seconds. "
+        "Total non KV cache memory: 17.50GiB; "
+        "torch peak memory increase: 1.20GiB; "
+        "total consumed (from mem_get_info): 16.00GiB; "
+        "weights memory: 15.30GiB.\n"
+        "Available KV cache memory: 5.50 GiB\n"
+        "CUDA graph pool memory: 0.50 GiB (actual), 0.80 GiB (estimated), "
+        "difference: 0.30 GiB (37.5%).\n"
+    )
+    parsed = engine.parse_profiling_logs(log_text)
+
+    gib = 1 << 30
+    assert abs(parsed["weights_memory"] - 15.30 * gib) < 0.1 * gib
+    assert abs(parsed["torch_peak_increase"] - 1.20 * gib) < 0.1 * gib
+    assert abs(parsed["total_consumed"] - 16.00 * gib) < 0.1 * gib
+    assert abs(parsed["available_kv_cache_gib"] - 5.50) < 0.01
+    assert abs(parsed["cuda_graph_actual_gib"] - 0.50) < 0.01
+    assert abs(parsed["cuda_graph_estimate_gib"] - 0.80) < 0.01
+
+
+def test_parse_profiling_logs_empty(engine: VllmEngineAdapter) -> None:
+    parsed = engine.parse_profiling_logs("")
+    assert parsed == {}

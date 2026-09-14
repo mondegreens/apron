@@ -129,9 +129,7 @@ class TestExitGateGpuFree:
     def test_inv30_no_external_services(self) -> None:
         """Exit gate clause 15: self-hosted acceptance — no external
         eval services, no managed providers, no compound routing."""
-        eval_protocol = json.loads(
-            (FIXTURES_DIR / "evaluation-protocol.json").read_text()
-        )
+        eval_protocol = json.loads((FIXTURES_DIR / "evaluation-protocol.json").read_text())
         assert eval_protocol["scorer_type"] == "deterministic_exact_match"
         assert eval_protocol["judge_model"] is None
 

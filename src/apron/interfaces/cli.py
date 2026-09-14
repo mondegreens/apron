@@ -169,37 +169,49 @@ def _run_verification(
     *,
     teardown: bool = True,
     timeout: int = 3600,
+    task_suite_path: Path | None = None,
+    prediction: dict[str, Any] | None = None,
 ) -> None:
-    """Run the verify/deploy lifecycle on a RunPod target."""
+    """Run the verify/deploy lifecycle on a RunPod target.
+
+    Steps: prepare → provision → validate → boot vLLM → profile memory →
+    run task suite (if provided) → show prediction delta → store records.
+    """
     from apron.adapters.backends.runpod import RunPodTarget
     from apron.adapters.backends.vllm_engine import VllmEngineAdapter
     from apron.domain.schemas.solutions import DeploymentPlan
 
     target = RunPodTarget(max_uptime=timeout)
 
+    console.print("[bold]Step 1/6: Checking target availability[/bold]")
     prep = target.prepare()
     if prep["status"] == "hardware_unavailable":
         console.print(f"[yellow]hardware_unavailable: {prep['reason']}[/yellow]")
         return
+    console.print(f"  RunPod API: authenticated (user {prep.get('user_id', '?')})")
 
     plan = DeploymentPlan(**plan_data)
     engine = VllmEngineAdapter()
 
     success = False
     try:
-        console.print("[bold]Provisioning target...[/bold]")
+        console.print("[bold]Step 2/6: Provisioning GPU pod[/bold]")
         prov = target.provision()
-        console.print(f"  Pod: {prov['pod_id']}")
-        console.print(f"  GPU: {target.hardware.gpu_sku}")
-        console.print(f"  Memory: {target.hardware.total_memory_bytes / 1e9:.1f} GB")
+        console.print(f"  Pod ID:             {prov['pod_id']}")
+        console.print(f"  GPU:                {target.hardware.gpu_sku}")
+        console.print(f"  GPU memory:         {target.hardware.total_memory_bytes / 1e9:.1f} GB")
+        console.print(f"  Compute capability: {target.hardware.compute_capability}")
+        console.print(f"  Fingerprint:        {target.execution_fingerprint[:24]}...")
 
+        console.print("[bold]Step 3/6: Validating plan against target[/bold]")
         validation_errors = engine.validate(plan, target)
         if validation_errors:
             for err in validation_errors:
-                console.print(f"[red]Validation: {err}[/red]")
+                console.print(f"  [red]FAIL: {err}[/red]")
             return
+        console.print("  [green]Validation passed[/green]")
 
-        console.print("[bold]Booting vLLM and profiling memory...[/bold]")
+        console.print("[bold]Step 4/6: Booting vLLM and profiling memory[/bold]")
         report = engine.verify(plan, target)
 
         store = _default_store()
@@ -207,26 +219,25 @@ def _run_verification(
             **report,
             "claim_scope": "memory",
             "production_mode": False,
-            "reason": "Phase 1a verification",
+            "reason": "verification",
             "lifecycle": "observed",
         }
         digest = store.store(report_record)
-        console.print(f"  VerificationReport stored: {digest[:16]}...")
 
-        console.print("[bold]Memory profile:[/bold]")
-        for key in (
-            "initial_total_memory",
-            "model_weight_memory",
-            "persistent_consumption",
-            "available_kv_cache_memory",
-        ):
-            val = report.get(key, 0)
-            console.print(f"  {key}: {val / 1e9:.2f} GB")
+        _print_memory_profile(report, prediction)
+        console.print(f"  Record: {digest[:24]}...")
 
+        if task_suite_path is not None and task_suite_path.exists():
+            console.print("[bold]Step 5/6: Running task suite[/bold]")
+            _run_task_suite(task_suite_path, plan_data, target, store)
+        else:
+            console.print("[dim]Step 5/6: Task suite — skipped (no --task-suite)[/dim]")
+
+        console.print("[bold]Step 6/6: Complete[/bold]")
         success = True
         if not teardown:
-            console.print(f"\n[green]Endpoint: {target.proxy_url}[/green]")
-            console.print("[yellow]Pod left running — teardown manually or via apron[/yellow]")
+            console.print(f"  [green]Endpoint: {target.proxy_url}[/green]")
+            console.print("  [yellow]Pod left running — teardown manually or via apron[/yellow]")
     except Exception as exc:
         console.print(f"[red]Verification failed: {exc}[/red]")
         raise typer.Exit(1) from None
@@ -235,6 +246,84 @@ def _run_verification(
             console.print("[bold]Tearing down...[/bold]")
             target.teardown()
             console.print("[green]Teardown complete[/green]")
+
+
+def _print_memory_profile(
+    report: dict[str, Any], prediction: dict[str, Any] | None = None
+) -> None:
+    """Print a memory profile table, optionally with prediction comparison."""
+    table = Table(title="Memory Profile (measured)")
+    table.add_column("Component", style="cyan")
+    table.add_column("Measured", justify="right")
+    if prediction:
+        table.add_column("Predicted", justify="right")
+        table.add_column("Delta", justify="right")
+
+    rows = [
+        ("model_weight_memory", "weight_memory_bytes"),
+        ("transient_peak_headroom", "activation_estimate_bytes"),
+        ("non_pytorch_increase", "non_pytorch_overhead_bytes"),
+        ("cuda_graph_actual", "cuda_graph_estimate_bytes"),
+        ("available_kv_cache_memory", "available_kv_cache_bytes"),
+        ("persistent_consumption", "total_required_bytes"),
+    ]
+
+    for measured_key, predicted_key in rows:
+        measured_val = report.get(measured_key, 0)
+        measured_str = f"{measured_val / 1e9:.2f} GB"
+
+        if prediction:
+            predicted_val = prediction.get(predicted_key, 0)
+            delta = measured_val - predicted_val
+            sign = "+" if delta >= 0 else ""
+            table.add_row(
+                measured_key,
+                measured_str,
+                f"{predicted_val / 1e9:.2f} GB",
+                f"{sign}{delta / 1e9:.2f} GB",
+            )
+        else:
+            table.add_row(measured_key, measured_str)
+
+    console.print(table)
+
+
+def _run_task_suite(
+    task_suite_path: Path,
+    plan_data: dict[str, Any],
+    target: Any,
+    store: Any,
+) -> None:
+    """Execute the task suite against the running vLLM endpoint."""
+    from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
+
+    task_suite = json.loads(task_suite_path.read_text())
+    scorer = DeterministicScorer()
+
+    if not scorer.accepts(task_suite):
+        console.print("  [yellow]Scorer does not accept this task suite[/yellow]")
+        return
+
+    endpoint = getattr(target, "proxy_url", None)
+    if endpoint is None:
+        console.print("  [yellow]No endpoint URL available — skipping[/yellow]")
+        return
+
+    model_id = plan_data.get("resource_allocation", {}).get("model_id", "")
+    protocol = scorer.prepare({**task_suite, "model_id": model_id, "endpoint": endpoint})
+    attempts = scorer.execute(protocol, endpoint)
+    results = scorer.collect(attempts)
+
+    console.print(f"  Cases: {results['total_attempts']}")
+    console.print(f"  Passed: {results['passed']}")
+    console.print(f"  Failed: {results['failed']}")
+    console.print(f"  Pass rate: {results['pass_rate']:.0%}")
+
+    for attempt in attempts:
+        status = "[green]PASS[/green]" if attempt.get("score") == 1 else "[red]FAIL[/red]"
+        console.print(f"    {attempt.get('case_id', '?')}: {status}")
+        if attempt.get("status") == "failed":
+            console.print(f"      error: {attempt.get('error', '')}")
 
 
 # ---------------------------------------------------------------------------
@@ -246,6 +335,8 @@ def _run_verification(
 def verify(
     plan_file: Path = typer.Argument(..., help="DeploymentPlan JSON file"),
     target_spec: str = typer.Option("runpod-4090", help="Target spec"),
+    task_suite: Path | None = typer.Option(None, help="Task suite JSON file"),
+    prediction_file: Path | None = typer.Option(None, help="PlanningClaim JSON for delta"),
     yes: bool = typer.Option(False, help="Standing authorization"),
     timeout: int = typer.Option(3600, help="Hard deadline seconds"),
 ) -> None:
@@ -264,11 +355,24 @@ def verify(
     console.print("  Data destination: ~/.apron/records/ (local)")
     console.print(f"  Estimated cost: ${cost['estimated_cost_usd']:.2f}")
     console.print(f"  Hard deadline: {timeout}s")
+    if task_suite:
+        console.print(f"  Task suite: {task_suite}")
 
     if not yes:
         typer.confirm("Proceed with verification?", abort=True)
 
-    _run_verification(plan_data, teardown=True, timeout=timeout)
+    prediction = None
+    if prediction_file and prediction_file.exists():
+        claim = json.loads(prediction_file.read_text())
+        prediction = claim.get("proposed_configuration", claim)
+
+    _run_verification(
+        plan_data,
+        teardown=True,
+        timeout=timeout,
+        task_suite_path=task_suite,
+        prediction=prediction,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -317,6 +421,10 @@ def run(command: list[str]) -> None:
         console.print("[red]No command provided[/red]")
         raise typer.Exit(1)
 
+    from apron.adapters.backends.vllm_engine import VllmEngineAdapter
+
+    engine = VllmEngineAdapter()
+
     process = subprocess.Popen(
         command,
         stdout=subprocess.PIPE,
@@ -326,21 +434,14 @@ def run(command: list[str]) -> None:
     assert process.stdout is not None
     for line in process.stdout:
         sys.stdout.write(line)
-        _classify_line(line)
+        classification = engine.classify(line)
+        if classification["failure_class"] != "unknown":
+            console.print(f"[red]Detected: {classification['failure_class']}[/red]")
 
     process.wait()
     if process.returncode != 0:
         console.print(f"[red]Process exited with code {process.returncode}[/red]")
         raise typer.Exit(process.returncode)
-
-
-def _classify_line(line: str) -> None:
-    if "torch.OutOfMemoryError" in line or "CUDA out of memory" in line:
-        console.print("[red]Detected: OOM error — reduce batch size or model size[/red]")
-    elif "RuntimeError" in line and "engine" in line.lower():
-        console.print("[red]Detected: engine init error[/red]")
-    elif "ValueError" in line and "max_model_len" in line:
-        console.print("[red]Detected: max_model_len mismatch — check model config[/red]")
 
 
 # ---------------------------------------------------------------------------

@@ -35,6 +35,7 @@ class TestFixtureRun:
     """Full 14-step fixture run on a real RunPod GPU."""
 
     def test_full_loop(self, tmp_path: Path) -> None:
+        import apron.domain.mechanisms.calculator  # noqa: F401
         from apron.adapters.backends.local_store import LocalRecordStore
         from apron.adapters.backends.runpod import RunPodTarget
         from apron.adapters.backends.vllm_engine import VllmEngineAdapter
@@ -45,8 +46,6 @@ class TestFixtureRun:
         from apron.domain.canonical import canonicalize, digest_hex
         from apron.domain.ports import UuidIdGenerator, WallClock
         from apron.domain.schemas.primitives import HardwareSpec
-
-        import apron.domain.mechanisms.calculator  # noqa: F401
 
         store = LocalRecordStore(tmp_path / "records")
         clock = WallClock()
@@ -104,27 +103,28 @@ class TestFixtureRun:
                 "reason": "Phase 1a initial verification",
                 "lifecycle": "observed",
             }
-            report_digest_1 = store.store(report_record)
+            store.store(report_record)
 
             # Step 4: Record prediction delta
             predicted_total = claim.proposed_configuration.get("total_required_bytes", 0)
             measured_consumption = verification_report["persistent_consumption"]
-            prediction_delta = predicted_total - measured_consumption
+            assert predicted_total > 0
+            assert measured_consumption > 0
 
             # Step 5: Run task suite
-            task_suite = json.loads(
-                (FIXTURES_DIR / "task-suite-spec.json").read_text()
-            )
+            task_suite = json.loads((FIXTURES_DIR / "task-suite-spec.json").read_text())
             endpoint = target.proxy_url
             assert endpoint is not None, "proxy_url not available after provision"
 
-            eval_protocol = scorer.prepare({
-                **task_suite,
-                "model_id": MODEL_ID,
-                "endpoint": endpoint,
-            })
+            eval_protocol = scorer.prepare(
+                {
+                    **task_suite,
+                    "model_id": MODEL_ID,
+                    "endpoint": endpoint,
+                }
+            )
             initial_attempts = scorer.execute(eval_protocol, endpoint)
-            initial_results = scorer.collect(initial_attempts)
+            scorer.collect(initial_attempts)
 
             for attempt in initial_attempts:
                 attempt_record = {
@@ -144,7 +144,7 @@ class TestFixtureRun:
 
             # Step 6: Serving benchmark (vllm bench inside pod)
             # Run benchmark inside the pod hitting localhost:8000
-            bench_result = target.execute(
+            target.execute(
                 "python3 -m vllm.entrypoints.openai.run_batch "
                 "--help 2>&1 | head -5 || echo 'bench not available'"
             )
@@ -209,11 +209,11 @@ class TestFixtureRun:
                 **verification_report,
                 "reason": "Phase 1a corrected verification",
             }
-            report_digest_2 = store.store(corrected_report)
+            store.store(corrected_report)
 
             # Step 11: Replay accepted task
             replay_attempts = scorer.execute(eval_protocol, endpoint)
-            replay_results = scorer.collect(replay_attempts)
+            scorer.collect(replay_attempts)
 
             for attempt in replay_attempts:
                 attempt_record = {
@@ -237,16 +237,12 @@ class TestFixtureRun:
                 "mechanism_outcome": "verified",
                 "request_outcome": "satisfied",
                 "accepted_request_digest": digest_hex(
-                    canonicalize(
-                        json.loads((FIXTURES_DIR / "decision-request.json").read_text())
-                    )
+                    canonicalize(json.loads((FIXTURES_DIR / "decision-request.json").read_text()))
                 ),
                 "task_fingerprint": digest_hex(canonicalize(task_suite)),
                 "application_fingerprint": "1220" + "00" * 32,
                 "evaluation_fingerprint": "1220" + "00" * 32,
-                "corrected_plan_digest": digest_hex(
-                    canonicalize(plan.model_dump(mode="json"))
-                ),
+                "corrected_plan_digest": digest_hex(canonicalize(plan.model_dump(mode="json"))),
                 "claim_scope": "remediation",
                 "production_mode": False,
                 "reason": "OOM injection corrected by reducing gpu_memory_utilization",
@@ -270,7 +266,7 @@ class TestFixtureRun:
             assert rr["request_outcome"] == "satisfied"
 
             ta_files = list((records_dir / "task-attempt-records").glob("*.json"))
-            assert len(ta_files) >= 6  # 3 cases × 2 runs
+            assert len(ta_files) >= 6  # 3 cases x 2 runs
 
         finally:
             # ---------------------------------------------------------------

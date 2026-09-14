@@ -13,8 +13,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from apron.adapters.backends.runpod import RunPodTarget
-from apron.domain.schemas.primitives import ExecutionTarget, HardwareSpec
-
+from apron.domain.schemas.primitives import ExecutionTarget
 
 # ---------------------------------------------------------------------------
 # Fixtures
