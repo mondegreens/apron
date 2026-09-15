@@ -8,9 +8,5 @@ vllm==0.29.0
 # FlashInfer index (required for flashinfer wheels)
 --extra-index-url https://flashinfer.ai/whl/
 
-# flashinfer-cubin provides pre-compiled kernels for x86_64; on aarch64
-# FlashInfer JIT-compiles at runtime (needs cudnn-devel base image).
-flashinfer-cubin==0.6.18.post1; platform_machine == "x86_64"
-
 # --- apron runner additions ---
 hf-transfer>=0.1.8
