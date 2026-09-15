@@ -324,7 +324,7 @@ class RunPodTarget:
             self._pod_id = None
 
     # ------------------------------------------------------------------
-    # Environment variable builder for model-serve image
+    # Environment variable builder for apron runner image
     # ------------------------------------------------------------------
 
     @staticmethod
@@ -336,7 +336,7 @@ class RunPodTarget:
         tensor_parallel: int = 1,
         trust_remote_code: bool = False,
     ) -> dict[str, str]:
-        """Build env vars for the vladryzhkov/vllm-model-serve image."""
+        """Build env vars for the apron runner image."""
         env: dict[str, str] = {
             "VLLM_MODEL": model_id,
             "VLLM_TOKENIZER": model_id,

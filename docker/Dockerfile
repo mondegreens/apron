@@ -8,8 +8,7 @@
 # the full toolkit — the official vLLM image's curated minimal list has
 # broken repeatedly (vllm-project/vllm#42291, #42906, #44305, #41865).
 #
-# Structure learned from docflux/model-serve (proven on RunPod).
-# Stripped of model-serve-specific deps (OCR, vision, chat templates).
+# Text, MoE, quantized, multimodal, and LoRA models via env vars.
 
 ARG CUDA_VERSION=13.0.0
 ARG UBUNTU_VERSION=22.04

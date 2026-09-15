@@ -2,8 +2,8 @@
 
 ## Decision 1: Base image approach
 
-**Question:** Build from `nvidia/cuda:cudnn-devel` (like model-serve) or
-layer on `vllm/vllm-openai` (official image)?
+**Question:** Build from `nvidia/cuda:cudnn-devel` or layer on
+`vllm/vllm-openai` (official image)?
 
 **Answer:** Build from `nvidia/cuda:cudnn-devel`.
 
@@ -34,8 +34,8 @@ FlashInfer JIT requires ([sgl-project/sglang#5389](https://github.com/sgl-projec
 in the official image includes SOME of them and has historically been
 incomplete.
 
-model-serve (vladryzhkov/vllm-model-serve) uses `cudnn-devel` and
-has been proven on RunPod with real GPU deployments. Zero JIT failures.
+The `cudnn-devel` approach has been proven on RunPod with real GPU
+deployments across multiple models. Zero JIT failures.
 
 **Cost:** ~5 GB larger image (cudnn-devel vs base). Paid once per host.
 The JIT failure debugging + re-deployment cost is paid every time the
@@ -51,16 +51,14 @@ on-prem — without a vendor support pipeline to catch JIT failures.
 
 **Question:** Where does the Dockerfile come from?
 
-**Answer:** Fork model-serve's Dockerfile structure. Update version pins
-to match vLLM v0.29.0's dependency chain. Strip model-serve-specific
-deps (OCR, vision, chat templates). Keep everything that makes it work
-on cloud GPUs (SSH, NCCL tuning, model download, env-var config,
-cudnn-devel base).
+**Answer:** Apron's own Dockerfile in `docker/`. Two-stage build from
+`nvidia/cuda:cudnn-devel`, pinned to vLLM v0.29.0's dependency chain.
+SSH, NCCL tuning, model download, env-var config, tini PID 1.
 
-**Reason:** model-serve's Dockerfile is battle-tested on RunPod. The
-structure (two-stage build, venv copy, start.sh orchestration, SSH
-setup, NCCL settings) transfers directly. The version re-pin to v0.29.0
-is the work — the structure is proven.
+**Reason:** The two-stage cudnn-devel build pattern with venv copy and
+env-var-driven start.sh is proven on RunPod across multiple models.
+Requirements sourced from vLLM v0.29.0's own release files, not
+hand-edited.
 
 ## Decision 3: Registry
 
