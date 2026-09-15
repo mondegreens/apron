@@ -1,11 +1,16 @@
 """RunPod ExecutionTarget — rented-provider adapter for RunPod Secure Cloud GPUs.
 
 Implements the ExecutionTarget Protocol (domain/schemas/primitives.py).
-Uses httpx for RunPod GraphQL API, paramiko for SSH.
+
+Control plane: ``runpod`` Python SDK (create_pod / terminate_pod).
+Status polling: raw GraphQL (SDK doesn't expose runtime/uptime fields).
+Management plane: SSH via paramiko (kill/restart vLLM, run profiling).
+Data plane: HTTPS proxy ``https://{pod_id}-8000.proxy.runpod.net``.
 """
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import os
@@ -24,6 +29,18 @@ GRAPHQL_URL = "https://api.runpod.io/graphql"
 DEFAULT_IMAGE = "vllm/vllm-openai:v0.29.0"
 DEFAULT_GPU_TYPE = "NVIDIA GeForce RTX 4090"
 DEFAULT_MAX_UPTIME = 3600
+
+_POD_STATUS_QUERY = """query Pod {{
+  pod(input: {{podId: "{pod_id}"}}) {{
+    id
+    name
+    runtime {{
+      uptimeInSeconds
+      ports {{ ip isIpPublic privatePort publicPort type }}
+      gpus {{ id gpuUtilPercent memoryUtilPercent }}
+    }}
+  }}
+}}"""
 
 
 class RunPodTarget:
@@ -61,8 +78,6 @@ class RunPodTarget:
         self._ssh_port: int | None = None
         self._hardware: HardwareSpec | None = None
         self._execution_fingerprint_hex: str | None = None
-        self._proxy_base: str | None = None
-        self._image_digest: str | None = None
 
     @property
     def kind(self) -> str:
@@ -103,22 +118,36 @@ class RunPodTarget:
             return {"status": "hardware_unavailable", "reason": "RUNPOD_API_KEY not set"}
 
         try:
-            data = self._gql("query { myself { id } }")
-            user_id = data.get("myself", {}).get("id")
-            if not user_id:
-                return {"status": "hardware_unavailable", "reason": "RunPod API auth failed"}
+            import runpod as _runpod
+
+            _runpod.api_key = self._api_key
+            gpus = _runpod.get_gpus()
+            if not gpus:
+                return {"status": "hardware_unavailable", "reason": "No GPUs available"}
         except Exception as exc:
             return {"status": "hardware_unavailable", "reason": f"RunPod API error: {exc}"}
 
-        return {"status": "ready", "user_id": user_id}
+        return {"status": "ready"}
 
     def provision(self, wait_timeout: int = 300) -> dict[str, Any]:
         if not self._api_key:
             raise RuntimeError("Cannot provision without RUNPOD_API_KEY")
 
-        pod = self._create_pod()
+        import runpod as _runpod
+
+        _runpod.api_key = self._api_key
+
+        pod = _runpod.create_pod(
+            name="apron-run",
+            image_name=self._image,
+            gpu_type_id=self._gpu_type,
+            gpu_count=1,
+            cloud_type="SECURE",
+            ports="22/tcp,8000/http",
+            volume_in_gb=50,
+            container_disk_in_gb=20,
+        )
         self._pod_id = pod["id"]
-        self._proxy_base = f"https://{self._pod_id}-8000.proxy.runpod.net"
         logger.info("Pod created: %s", self._pod_id)
 
         pod_info = self._wait_for_running(wait_timeout)
@@ -207,8 +236,6 @@ class RunPodTarget:
         return results
 
     def teardown(self) -> None:
-        import contextlib
-
         if self._ssh is not None:
             with contextlib.suppress(Exception):
                 self._ssh.close()
@@ -216,21 +243,25 @@ class RunPodTarget:
 
         if self._pod_id is not None:
             try:
-                self._gql(f'mutation {{ podTerminate(input: {{ podId: "{self._pod_id}" }}) }}')
+                import runpod as _runpod
+
+                _runpod.api_key = self._api_key
+                _runpod.terminate_pod(self._pod_id)
                 logger.info("Pod %s terminated", self._pod_id)
             except Exception as exc:
                 logger.warning("Pod termination failed (maxUptime safety net active): %s", exc)
             self._pod_id = None
 
     # ------------------------------------------------------------------
-    # Internal helpers
+    # Internal — status polling (raw GraphQL, SDK lacks runtime fields)
     # ------------------------------------------------------------------
 
-    def _gql(self, query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _gql_status(self, query: str) -> dict[str, Any]:
+        """Raw GraphQL for pod status — auth via query param per RunPod convention."""
         resp = httpx.post(
-            GRAPHQL_URL,
-            json={"query": query, "variables": variables or {}},
-            headers={"Authorization": f"Bearer {self._api_key}"},
+            f"{GRAPHQL_URL}?api_key={self._api_key}",
+            json={"query": query},
+            headers={"Content-Type": "application/json"},
             timeout=30,
         )
         resp.raise_for_status()
@@ -239,55 +270,25 @@ class RunPodTarget:
             raise RuntimeError(f"GraphQL errors: {json.dumps(data['errors'])}")
         return data.get("data", {})
 
-    def _create_pod(self) -> dict[str, Any]:
-        query = """
-        mutation($input: PodFindAndDeployOnDemandInput!) {
-          podFindAndDeployOnDemand(input: $input) {
-            id
-            desiredStatus
-            imageName
-            runtime { ports { ip privatePort publicPort type } }
-          }
-        }
-        """
-        variables = {
-            "input": {
-                "name": "apron-run",
-                "imageName": self._image,
-                "gpuTypeId": self._gpu_type,
-                "cloudType": "SECURE",
-                "volumeInGb": 50,
-                "containerDiskInGb": 20,
-                "ports": "22/tcp,8000/http",
-                "gpuCount": 1,
-            }
-        }
-        data = self._gql(query, variables)
-        return data["podFindAndDeployOnDemand"]
-
     def _wait_for_running(self, timeout: int) -> dict[str, Any]:
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
-            query = """
-            query($input: PodQueryInput!) {
-              pod(input: $input) {
-                id desiredStatus
-                runtime {
-                  uptimeInSeconds
-                  ports { ip privatePort publicPort type }
-                  gpus { id gpuUtilPercent memoryUtilPercent }
-                }
-              }
-            }
-            """
-            data = self._gql(query, {"input": {"podId": self._pod_id}})
-            pod = data["pod"]
+            query = _POD_STATUS_QUERY.format(pod_id=self._pod_id)
+            data = self._gql_status(query)
+            pod = data.get("pod")
+            if pod is None:
+                time.sleep(10)
+                continue
             runtime = pod.get("runtime")
             if runtime and runtime.get("uptimeInSeconds", 0) > 0:
                 return pod
             time.sleep(10)
 
         raise TimeoutError(f"Pod {self._pod_id} did not reach RUNNING within {timeout}s")
+
+    # ------------------------------------------------------------------
+    # Internal — SSH management
+    # ------------------------------------------------------------------
 
     def _establish_ssh(self, pod_info: dict[str, Any]) -> None:
         import paramiko as _paramiko
@@ -336,6 +337,10 @@ class RunPodTarget:
             timeout=self._ssh_timeout,
         )
         self._ssh = client
+
+    # ------------------------------------------------------------------
+    # Internal — hardware detection + fingerprint
+    # ------------------------------------------------------------------
 
     def _detect_hardware(self) -> dict[str, Any]:
         detection_script = (

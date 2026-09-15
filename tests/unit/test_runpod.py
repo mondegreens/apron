@@ -94,14 +94,17 @@ def test_prepare_without_api_key() -> None:
 
 
 def test_prepare_with_api_key_checks_api(runpod_target: RunPodTarget) -> None:
-    with patch.object(runpod_target, "_gql", return_value={"myself": {"id": "user-1"}}):
+    mock_runpod = MagicMock()
+    mock_runpod.get_gpus.return_value = [{"id": "gpu-1"}]
+    with patch.dict("sys.modules", {"runpod": mock_runpod}):
         result = runpod_target.prepare()
     assert result["status"] == "ready"
-    assert result["user_id"] == "user-1"
 
 
 def test_prepare_api_failure(runpod_target: RunPodTarget) -> None:
-    with patch.object(runpod_target, "_gql", side_effect=RuntimeError("connection refused")):
+    mock_runpod = MagicMock()
+    mock_runpod.get_gpus.side_effect = RuntimeError("connection refused")
+    with patch.dict("sys.modules", {"runpod": mock_runpod}):
         result = runpod_target.prepare()
     assert result["status"] == "hardware_unavailable"
     assert "connection refused" in result["reason"]
@@ -135,10 +138,12 @@ def test_teardown_idempotent(runpod_target: RunPodTarget) -> None:
 def test_teardown_with_ssh(runpod_target: RunPodTarget) -> None:
     runpod_target._ssh = FakeSSHClient()
     runpod_target._pod_id = "pod-123"
-    with patch.object(runpod_target, "_gql"):
+    mock_runpod = MagicMock()
+    with patch.dict("sys.modules", {"runpod": mock_runpod}):
         runpod_target.teardown()
     assert runpod_target._ssh is None
     assert runpod_target._pod_id is None
+    mock_runpod.terminate_pod.assert_called_once_with("pod-123")
 
 
 def test_teardown_with_closed_ssh(runpod_target: RunPodTarget) -> None:
@@ -146,14 +151,17 @@ def test_teardown_with_closed_ssh(runpod_target: RunPodTarget) -> None:
     ssh.close()
     runpod_target._ssh = ssh
     runpod_target._pod_id = "pod-123"
-    with patch.object(runpod_target, "_gql"):
+    mock_runpod = MagicMock()
+    with patch.dict("sys.modules", {"runpod": mock_runpod}):
         runpod_target.teardown()
     assert runpod_target._ssh is None
 
 
-def test_teardown_gql_failure_does_not_raise(runpod_target: RunPodTarget) -> None:
+def test_teardown_sdk_failure_does_not_raise(runpod_target: RunPodTarget) -> None:
     runpod_target._pod_id = "pod-123"
-    with patch.object(runpod_target, "_gql", side_effect=RuntimeError("network")):
+    mock_runpod = MagicMock()
+    mock_runpod.terminate_pod.side_effect = RuntimeError("network")
+    with patch.dict("sys.modules", {"runpod": mock_runpod}):
         runpod_target.teardown()
     assert runpod_target._pod_id is None
 

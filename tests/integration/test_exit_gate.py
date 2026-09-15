@@ -98,19 +98,22 @@ class TestExitGateGpuFree:
 
     def test_target_loss_triggers_teardown(self) -> None:
         """Exit gate clause 9: target loss triggers idempotent teardown."""
-        from unittest.mock import patch
+        from unittest.mock import MagicMock, patch
 
         from apron.adapters.backends.runpod import RunPodTarget
 
         target = RunPodTarget(api_key="test")
         target._pod_id = "doomed-pod"
-        with patch.object(target, "_gql"):
+        mock_runpod = MagicMock()
+        with patch.dict("sys.modules", {"runpod": mock_runpod}):
             target.teardown()
         assert target._pod_id is None
         target.teardown()
 
     def test_failed_run_triggers_teardown(self) -> None:
         """Exit gate clause 9: boot failure triggers teardown via try/finally."""
+        from unittest.mock import MagicMock, patch
+
         from apron.adapters.backends.runpod import RunPodTarget
 
         target = RunPodTarget(api_key="test")
@@ -120,9 +123,8 @@ class TestExitGateGpuFree:
         except RuntimeError:
             pass
         finally:
-            from unittest.mock import patch
-
-            with patch.object(target, "_gql"):
+            mock_runpod = MagicMock()
+            with patch.dict("sys.modules", {"runpod": mock_runpod}):
                 target.teardown()
         assert target._pod_id is None
 
