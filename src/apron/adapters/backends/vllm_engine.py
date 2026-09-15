@@ -138,20 +138,14 @@ class VllmEngineAdapter:
     ) -> dict[str, Any]:
         """Collect profiling data from a running vLLM instance.
 
-        With the model-serve image, vLLM boots automatically on container
-        start. This method waits for health, then reads the startup logs
-        for profiling data and queries GPU memory state via SSH.
+        The apron runner image boots vLLM on container start and tees
+        logs to /var/log/vllm.log. This method waits for health, reads
+        the logs for profiling data, and queries GPU memory via SSH.
         """
         self._wait_for_health(target, timeout=health_timeout)
 
-        log_result = target.execute(
-            "cat /proc/1/fd/1 2>/dev/null || journalctl -u vllm 2>/dev/null || echo ''"
-        )
+        log_result = target.execute("cat /var/log/vllm.log 2>/dev/null || echo ''")
         log_text = log_result.get("stdout", "") if isinstance(log_result, dict) else ""
-
-        if not log_text.strip():
-            log_result = target.execute("cat /workspace/*.log 2>/dev/null || echo ''")
-            log_text = log_result.get("stdout", "") if isinstance(log_result, dict) else ""
 
         parsed = self.parse_profiling_logs(log_text)
 

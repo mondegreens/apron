@@ -228,7 +228,7 @@ def test_verify_returns_15_fields(engine: VllmEngineAdapter) -> None:
                 "stderr": "",
                 "exit_code": 0,
             }
-        if "/proc/1/fd/1" in cmd or "*.log" in cmd:
+        if "/var/log/vllm.log" in cmd:
             return {"stdout": vllm_log, "stderr": "", "exit_code": 0}
         return {"stdout": "", "stderr": "", "exit_code": 0}
 
