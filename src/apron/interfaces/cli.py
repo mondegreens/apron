@@ -54,6 +54,10 @@ def _default_store() -> LocalRecordStore:
     return LocalRecordStore(store_dir)
 
 
+def _build_resolver(fixture_dir: Path | None = None) -> Any:
+    return FixtureHFHubResolver(fixture_dir) if fixture_dir is not None else HFHubResolver()
+
+
 # ---------------------------------------------------------------------------
 # apron plan
 # ---------------------------------------------------------------------------
@@ -167,35 +171,89 @@ def _print_breakdown(claim: Any) -> None:
 def _run_verification(
     plan_data: dict[str, Any],
     *,
+    model_id: str = "",
+    budget_max_usd: float = 5.0,
     teardown: bool = True,
     timeout: int = 3600,
     task_suite_path: Path | None = None,
-    prediction: dict[str, Any] | None = None,
 ) -> None:
     """Run the verify/deploy lifecycle on a RunPod target.
 
-    Steps: prepare → provision → validate → boot vLLM → profile memory →
-    run task suite (if provided) → show prediction delta → store records.
+    Steps: discover GPUs → select cheapest fit → plan for that hardware →
+    provision → boot vLLM → profile → task suite → store records.
     """
     from apron.adapters.backends.runpod import RunPodTarget
     from apron.adapters.backends.vllm_engine import VllmEngineAdapter
-    from apron.domain.schemas.solutions import DeploymentPlan
+    from apron.adapters.planning.calculator_source import CalculatorPlanningSource
+    from apron.application.orchestration.gpu_selection import select_gpu
+    from apron.application.orchestration.plan_pipeline import run_plan_pipeline
+    from apron.domain.ports import UuidIdGenerator, WallClock
 
     target = RunPodTarget(max_uptime=timeout)
+    clock = WallClock()
+    id_gen = UuidIdGenerator()
 
-    console.print("[bold]Step 1/6: Checking target availability[/bold]")
+    console.print("[bold]Step 1/7: Checking target availability[/bold]")
     prep = target.prepare()
     if prep["status"] == "hardware_unavailable":
         console.print(f"[yellow]hardware_unavailable: {prep['reason']}[/yellow]")
         return
-    console.print(f"  RunPod API: authenticated (user {prep.get('user_id', '?')})")
 
-    plan = DeploymentPlan(**plan_data)
+    available_gpus = prep.get("available_gpus", [])
+    console.print(f"  {len(available_gpus)} GPU types available on RunPod")
+
+    console.print("[bold]Step 2/7: Selecting GPU (cheapest that fits within budget)[/bold]")
+
+    if not model_id:
+        model_id = plan_data.get("resource_allocation", {}).get("model_id", "")
+
+    planning_source = CalculatorPlanningSource(clock=clock)
+
+    resolver = _build_resolver()
+    pipeline_result = run_plan_pipeline(
+        resolver, planning_source, model_id, _DEFAULT_HARDWARE, clock=clock, id_gen=id_gen
+    )
+    if not pipeline_result.ok:
+        console.print(f"[red]Plan pipeline failed: {pipeline_result.error}[/red]")
+        return
+
+    model_metadata = pipeline_result.claim.proposed_configuration if pipeline_result.claim else {}
+
+    selected = select_gpu(available_gpus, model_metadata, planning_source, budget_max_usd)
+
+    if selected is None:
+        console.print("[yellow]No available GPU fits this model within budget[/yellow]")
+        for gpu in available_gpus[:5]:
+            console.print(
+                f"  {gpu['gpu_type_id']}: ${gpu['hourly_rate_usd']:.2f}/hr, "
+                f"{gpu['hardware_spec'].total_memory_bytes / 1e9:.0f} GB"
+            )
+        return
+
+    target._gpu_type = selected["gpu_type_id"]
+    prediction = selected.get("prediction")
+    hw = selected["hardware_spec"]
+
+    console.print(f"  Selected: {selected['gpu_type_id']}")
+    console.print(f"  Rate: ${selected['hourly_rate_usd']:.2f}/hr")
+    console.print(f"  Estimated cost: ${selected['estimated_cost_usd']:.2f}")
+    console.print(f"  Headroom: {selected['headroom_bytes'] / 1e9:.2f} GB")
+
+    console.print("[bold]Step 3/7: Planning for selected hardware[/bold]")
+    pipeline_result = run_plan_pipeline(
+        resolver, planning_source, model_id, hw, clock=clock, id_gen=id_gen
+    )
+    if not pipeline_result.ok:
+        console.print(f"[red]Plan failed for {hw.gpu_sku}: {pipeline_result.error}[/red]")
+        return
+
+    assert pipeline_result.plan is not None
+    plan = pipeline_result.plan
     engine = VllmEngineAdapter()
 
     success = False
     try:
-        console.print("[bold]Step 2/6: Provisioning GPU pod[/bold]")
+        console.print("[bold]Step 4/7: Provisioning GPU pod[/bold]")
         prov = target.provision()
         console.print(f"  Pod ID:             {prov['pod_id']}")
         console.print(f"  GPU:                {target.hardware.gpu_sku}")
@@ -203,7 +261,7 @@ def _run_verification(
         console.print(f"  Compute capability: {target.hardware.compute_capability}")
         console.print(f"  Fingerprint:        {target.execution_fingerprint[:24]}...")
 
-        console.print("[bold]Step 3/6: Validating plan against target[/bold]")
+        console.print("[bold]Step 5/7: Validating plan against target[/bold]")
         validation_errors = engine.validate(plan, target)
         if validation_errors:
             for err in validation_errors:
@@ -211,7 +269,7 @@ def _run_verification(
             return
         console.print("  [green]Validation passed[/green]")
 
-        console.print("[bold]Step 4/6: Booting vLLM and profiling memory[/bold]")
+        console.print("[bold]Step 6/7: Booting vLLM and profiling memory[/bold]")
         report = engine.verify(plan, target)
 
         store = _default_store()
@@ -228,12 +286,12 @@ def _run_verification(
         console.print(f"  Record: {digest[:24]}...")
 
         if task_suite_path is not None and task_suite_path.exists():
-            console.print("[bold]Step 5/6: Running task suite[/bold]")
+            console.print("[bold]Step 7/7: Running task suite[/bold]")
             _run_task_suite(task_suite_path, plan_data, target, store)
         else:
-            console.print("[dim]Step 5/6: Task suite — skipped (no --task-suite)[/dim]")
+            console.print("[dim]Step 7/7: Task suite — skipped (no --task-suite)[/dim]")
 
-        console.print("[bold]Step 6/6: Complete[/bold]")
+        console.print("[bold green]Complete[/bold green]")
         success = True
         if not teardown:
             console.print(f"  [green]Endpoint: {target.proxy_url}[/green]")
@@ -333,45 +391,48 @@ def _run_task_suite(
 
 @app.command()
 def verify(
-    plan_file: Path = typer.Argument(..., help="DeploymentPlan JSON file"),
-    target_spec: str = typer.Option("runpod-4090", help="Target spec"),
+    request_file: Path = typer.Argument(..., help="DecisionRequest or DeploymentPlan JSON"),
+    model: str = typer.Option("", help="Model ID (e.g. Qwen/Qwen3-8B)"),
+    budget: float = typer.Option(5.0, help="Maximum budget in USD"),
     task_suite: Path | None = typer.Option(None, help="Task suite JSON file"),
-    prediction_file: Path | None = typer.Option(None, help="PlanningClaim JSON for delta"),
     yes: bool = typer.Option(False, help="Standing authorization"),
     timeout: int = typer.Option(3600, help="Hard deadline seconds"),
 ) -> None:
-    """Verify a deployment plan on a target environment."""
-    if not plan_file.exists():
-        console.print(f"[red]Plan file not found: {plan_file}[/red]")
+    """Verify a model on the cheapest available GPU within budget."""
+    if not request_file.exists():
+        console.print(f"[red]File not found: {request_file}[/red]")
         raise typer.Exit(1)
 
-    plan_data = json.loads(plan_file.read_text())
+    request_data = json.loads(request_file.read_text())
 
-    from apron.application.cost_estimator import estimate_cost
+    if not model:
+        alloc = request_data.get("resource_allocation", {})
+        model = request_data.get("model", alloc.get("model_id", ""))
+    if not model:
+        console.print("[red]No model specified — use --model or include in request file[/red]")
+        raise typer.Exit(1)
 
-    cost = estimate_cost(plan_data, "runpod")
+    budget_from_request = request_data.get("budget", {}).get("max_usd", budget)
 
     console.print("[bold]Verification Summary[/bold]")
+    console.print(f"  Model: {model}")
+    console.print(f"  Budget: ${min(budget, budget_from_request):.2f}")
     console.print("  Data destination: ~/.apron/records/ (local)")
-    console.print(f"  Estimated cost: ${cost['estimated_cost_usd']:.2f}")
     console.print(f"  Hard deadline: {timeout}s")
     if task_suite:
         console.print(f"  Task suite: {task_suite}")
+    console.print("  GPU: [dim]will be selected from available inventory[/dim]")
 
     if not yes:
         typer.confirm("Proceed with verification?", abort=True)
 
-    prediction = None
-    if prediction_file and prediction_file.exists():
-        claim = json.loads(prediction_file.read_text())
-        prediction = claim.get("proposed_configuration", claim)
-
     _run_verification(
-        plan_data,
+        request_data,
+        model_id=model,
+        budget_max_usd=min(budget, budget_from_request),
         teardown=True,
         timeout=timeout,
         task_suite_path=task_suite,
-        prediction=prediction,
     )
 
 
@@ -382,31 +443,39 @@ def verify(
 
 @app.command()
 def deploy(
-    plan_file: Path = typer.Argument(..., help="DeploymentPlan JSON file"),
-    target_spec: str = typer.Option("runpod-4090", help="Target spec"),
+    request_file: Path = typer.Argument(..., help="DecisionRequest or DeploymentPlan JSON"),
+    model: str = typer.Option("", help="Model ID (e.g. Qwen/Qwen3-8B)"),
+    budget: float = typer.Option(5.0, help="Maximum budget in USD"),
     yes: bool = typer.Option(False, help="Standing authorization"),
     timeout: int = typer.Option(3600, help="Hard deadline seconds"),
 ) -> None:
-    """Deploy a model using a deployment plan (teardown=False)."""
-    if not plan_file.exists():
-        console.print(f"[red]Plan file not found: {plan_file}[/red]")
+    """Deploy a model on the cheapest available GPU within budget (teardown=False)."""
+    if not request_file.exists():
+        console.print(f"[red]File not found: {request_file}[/red]")
         raise typer.Exit(1)
 
-    plan_data = json.loads(plan_file.read_text())
+    request_data = json.loads(request_file.read_text())
 
-    from apron.application.cost_estimator import estimate_cost
-
-    cost = estimate_cost(plan_data, "runpod")
+    if not model:
+        alloc = request_data.get("resource_allocation", {})
+        model = request_data.get("model", alloc.get("model_id", ""))
 
     console.print("[bold]Deployment Summary[/bold]")
+    console.print(f"  Model: {model}")
+    console.print(f"  Budget: ${budget:.2f}")
     console.print("  Data destination: ~/.apron/records/ (local)")
-    console.print(f"  Estimated cost: ${cost['estimated_cost_usd']:.2f}/hr ongoing")
     console.print(f"  Hard deadline: {timeout}s")
 
     if not yes:
         typer.confirm("Proceed with deployment?", abort=True)
 
-    _run_verification(plan_data, teardown=False, timeout=timeout)
+    _run_verification(
+        request_data,
+        model_id=model,
+        budget_max_usd=budget,
+        teardown=False,
+        timeout=timeout,
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -27,8 +27,38 @@ logger = logging.getLogger(__name__)
 
 GRAPHQL_URL = "https://api.runpod.io/graphql"
 DEFAULT_IMAGE = "vllm/vllm-openai:v0.29.0"
-DEFAULT_GPU_TYPE = "NVIDIA GeForce RTX 4090"
 DEFAULT_MAX_UPTIME = 3600
+
+GPU_SPECS: dict[str, dict[str, Any]] = {
+    "NVIDIA GeForce RTX 4090": {
+        "total_memory_bytes": 25_769_803_776,
+        "compute_capability": "8.9",
+    },
+    "NVIDIA RTX A5000": {
+        "total_memory_bytes": 25_769_803_776,
+        "compute_capability": "8.6",
+    },
+    "NVIDIA L4": {
+        "total_memory_bytes": 25_769_803_776,
+        "compute_capability": "8.9",
+    },
+    "NVIDIA RTX A6000": {
+        "total_memory_bytes": 51_539_607_552,
+        "compute_capability": "8.6",
+    },
+    "NVIDIA A100 80GB PCIe": {
+        "total_memory_bytes": 85_899_345_920,
+        "compute_capability": "8.0",
+    },
+    "NVIDIA A100-SXM4-80GB": {
+        "total_memory_bytes": 85_899_345_920,
+        "compute_capability": "8.0",
+    },
+    "NVIDIA H100 80GB HBM3": {
+        "total_memory_bytes": 85_899_345_920,
+        "compute_capability": "9.0",
+    },
+}
 
 _POD_STATUS_QUERY = """query Pod {{
   pod(input: {{podId: "{pod_id}"}}) {{
@@ -56,7 +86,7 @@ class RunPodTarget:
         api_key: str | None = None,
         ssh_key_path: str | None = None,
         image: str = DEFAULT_IMAGE,
-        gpu_type: str = DEFAULT_GPU_TYPE,
+        gpu_type: str | None = None,
         max_uptime: int = DEFAULT_MAX_UPTIME,
         ssh_timeout: int = 30,
         command_timeout: int = 600,
@@ -118,20 +148,48 @@ class RunPodTarget:
             return {"status": "hardware_unavailable", "reason": "RUNPOD_API_KEY not set"}
 
         try:
-            import runpod as _runpod
-
-            _runpod.api_key = self._api_key
-            gpus = _runpod.get_gpus()
-            if not gpus:
+            available = self.discover_gpus()
+            if not available:
                 return {"status": "hardware_unavailable", "reason": "No GPUs available"}
         except Exception as exc:
             return {"status": "hardware_unavailable", "reason": f"RunPod API error: {exc}"}
 
-        return {"status": "ready"}
+        return {"status": "ready", "available_gpus": available}
+
+    def discover_gpus(self) -> list[dict[str, Any]]:
+        """Query RunPod for available GPU types with specs and pricing."""
+        import runpod as _runpod
+
+        _runpod.api_key = self._api_key
+        raw_gpus = _runpod.get_gpus()
+
+        available: list[dict[str, Any]] = []
+        for gpu in raw_gpus:
+            gpu_id = gpu.get("id", "")
+            specs = GPU_SPECS.get(gpu_id)
+            if specs is None:
+                continue
+            secure_price = gpu.get("securePrice") or gpu.get("communityPrice") or 0
+            if not secure_price:
+                continue
+            available.append(
+                {
+                    "gpu_type_id": gpu_id,
+                    "hourly_rate_usd": float(secure_price),
+                    "hardware_spec": HardwareSpec(
+                        gpu_sku=gpu_id,
+                        total_memory_bytes=specs["total_memory_bytes"],
+                        compute_capability=specs["compute_capability"],
+                    ),
+                }
+            )
+        return sorted(available, key=lambda g: g["hourly_rate_usd"])
 
     def provision(self, wait_timeout: int = 300) -> dict[str, Any]:
         if not self._api_key:
             raise RuntimeError("Cannot provision without RUNPOD_API_KEY")
+        if not self._gpu_type:
+            raise RuntimeError("No gpu_type set — call select_gpu() or pass gpu_type")
 
         import runpod as _runpod
 

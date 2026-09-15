@@ -127,28 +127,29 @@ def test_plan_produces_rendered_outputs(request_file: Path, tmp_path: Path):
 
 
 def test_verify_displays_cost_and_deadline(tmp_path: Path):
-    plan_file = tmp_path / "plan.json"
-    plan_file.write_text(
+    request_file = tmp_path / "request.json"
+    request_file.write_text(
         json.dumps(
             {
-                "tensor_parallel": 1,
-                "dtype": "bfloat16",
-                "batch_size": 8,
-                "resource_allocation": {"gpu_sku": "RTX 4090", "weight_bytes": "16381470720"},
+                "schema_version": 1,
+                "budget": {"max_usd": 5.0},
+                "permitted_providers": ["runpod"],
             }
         )
     )
-    result = runner.invoke(app, ["verify", str(plan_file), "--yes"])
+    result = runner.invoke(app, ["verify", str(request_file), "--model", "Qwen/Qwen3-8B", "--yes"])
     assert result.exit_code == 0, result.output
-    assert "Estimated cost" in result.output
+    assert "Budget" in result.output
     assert "Hard deadline" in result.output
     assert "Data destination" in result.output
 
 
 def test_verify_prompts_without_yes(tmp_path: Path):
-    plan_file = tmp_path / "plan.json"
-    plan_file.write_text(json.dumps({"tensor_parallel": 1}))
-    result = runner.invoke(app, ["verify", str(plan_file)], input="n\n")
+    request_file = tmp_path / "request.json"
+    request_file.write_text(json.dumps({"schema_version": 1, "budget": {"max_usd": 5.0}}))
+    result = runner.invoke(
+        app, ["verify", str(request_file), "--model", "test/model"], input="n\n"
+    )
     assert result.exit_code != 0
 
 

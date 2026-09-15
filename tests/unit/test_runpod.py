@@ -95,10 +95,13 @@ def test_prepare_without_api_key() -> None:
 
 def test_prepare_with_api_key_checks_api(runpod_target: RunPodTarget) -> None:
     mock_runpod = MagicMock()
-    mock_runpod.get_gpus.return_value = [{"id": "gpu-1"}]
+    mock_runpod.get_gpus.return_value = [
+        {"id": "NVIDIA GeForce RTX 4090", "securePrice": 0.74},
+    ]
     with patch.dict("sys.modules", {"runpod": mock_runpod}):
         result = runpod_target.prepare()
     assert result["status"] == "ready"
+    assert len(result["available_gpus"]) >= 1
 
 
 def test_prepare_api_failure(runpod_target: RunPodTarget) -> None:
