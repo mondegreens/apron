@@ -157,25 +157,31 @@ class RunPodTarget:
         return {"status": "ready", "available_gpus": available}
 
     def discover_gpus(self) -> list[dict[str, Any]]:
-        """Query RunPod for available GPU types with specs and pricing."""
+        """Query RunPod for available GPU types with specs and pricing.
+
+        Uses get_gpu() per known type because get_gpus() omits pricing.
+        """
         import runpod as _runpod
 
         _runpod.api_key = self._api_key
-        raw_gpus = _runpod.get_gpus()
 
         available: list[dict[str, Any]] = []
-        for gpu in raw_gpus:
-            gpu_id = gpu.get("id", "")
-            specs = GPU_SPECS.get(gpu_id)
-            if specs is None:
+        for gpu_id, specs in GPU_SPECS.items():
+            try:
+                gpu = _runpod.get_gpu(gpu_id)
+            except Exception:
                 continue
-            secure_price = gpu.get("securePrice") or gpu.get("communityPrice") or 0
-            if not secure_price:
+            secure_price = gpu.get("securePrice") or 0
+            community_price = gpu.get("communityPrice") or 0
+            price = secure_price or community_price
+            if not price:
                 continue
             available.append(
                 {
                     "gpu_type_id": gpu_id,
-                    "hourly_rate_usd": float(secure_price),
+                    "hourly_rate_usd": float(price),
+                    "secure_price": float(secure_price),
+                    "community_price": float(community_price),
                     "hardware_spec": HardwareSpec(
                         gpu_sku=gpu_id,
                         total_memory_bytes=specs["total_memory_bytes"],

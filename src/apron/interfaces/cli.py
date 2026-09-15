@@ -217,9 +217,11 @@ def _run_verification(
         console.print(f"[red]Plan pipeline failed: {pipeline_result.error}[/red]")
         return
 
-    model_metadata = pipeline_result.claim.proposed_configuration if pipeline_result.claim else {}
+    prediction = pipeline_result.claim.proposed_configuration if pipeline_result.claim else {}
+    total_gb = prediction.get("total_required_bytes", 0) / 1e9
+    console.print(f"  Calculator prediction: {total_gb:.2f} GB total required")
 
-    selected = select_gpu(available_gpus, model_metadata, planning_source, budget_max_usd)
+    selected = select_gpu(available_gpus, prediction, budget_max_usd)
 
     if selected is None:
         console.print("[yellow]No available GPU fits this model within budget[/yellow]")
@@ -231,7 +233,6 @@ def _run_verification(
         return
 
     target._gpu_type = selected["gpu_type_id"]
-    prediction = selected.get("prediction")
     hw = selected["hardware_spec"]
 
     console.print(f"  Selected: {selected['gpu_type_id']}")

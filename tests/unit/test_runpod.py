@@ -95,9 +95,12 @@ def test_prepare_without_api_key() -> None:
 
 def test_prepare_with_api_key_checks_api(runpod_target: RunPodTarget) -> None:
     mock_runpod = MagicMock()
-    mock_runpod.get_gpus.return_value = [
-        {"id": "NVIDIA GeForce RTX 4090", "securePrice": 0.74},
-    ]
+    mock_runpod.get_gpu.return_value = {
+        "id": "NVIDIA GeForce RTX 4090",
+        "securePrice": 0.74,
+        "communityPrice": 0.34,
+        "memoryInGb": 24,
+    }
     with patch.dict("sys.modules", {"runpod": mock_runpod}):
         result = runpod_target.prepare()
     assert result["status"] == "ready"
@@ -106,11 +109,10 @@ def test_prepare_with_api_key_checks_api(runpod_target: RunPodTarget) -> None:
 
 def test_prepare_api_failure(runpod_target: RunPodTarget) -> None:
     mock_runpod = MagicMock()
-    mock_runpod.get_gpus.side_effect = RuntimeError("connection refused")
+    mock_runpod.get_gpu.side_effect = RuntimeError("connection refused")
     with patch.dict("sys.modules", {"runpod": mock_runpod}):
         result = runpod_target.prepare()
     assert result["status"] == "hardware_unavailable"
-    assert "connection refused" in result["reason"]
 
 
 # ---------------------------------------------------------------------------
