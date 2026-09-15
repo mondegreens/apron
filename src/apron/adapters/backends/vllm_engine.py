@@ -130,28 +130,44 @@ class VllmEngineAdapter:
             args.extend([f"--{key.replace('_', '-')}", str(value)])
         return {"args": args, "engine": self._engine_name}
 
-    def verify(self, plan: DeploymentPlan, target: Any) -> dict[str, Any]:
-        pre_result = target.execute(
-            "python3 -c 'import torch; f,t=torch.cuda.mem_get_info(); "
-            'print(f"{{\\"pre_free\\":{f},\\"pre_total\\":{t}}}")\''
+    def verify(
+        self,
+        plan: DeploymentPlan,
+        target: Any,
+        health_timeout: int = 600,
+    ) -> dict[str, Any]:
+        """Collect profiling data from a running vLLM instance.
+
+        With the model-serve image, vLLM boots automatically on container
+        start. This method waits for health, then reads the startup logs
+        for profiling data and queries GPU memory state via SSH.
+        """
+        self._wait_for_health(target, timeout=health_timeout)
+
+        log_result = target.execute(
+            "cat /proc/1/fd/1 2>/dev/null || journalctl -u vllm 2>/dev/null || echo ''"
         )
-        pre = _parse_json_output(pre_result)
-
-        serve_cmd = self._build_serve_command(plan, target)
-        target.execute(f"VLLM_LOGGING_LEVEL=DEBUG nohup {serve_cmd} > /workspace/vllm.log 2>&1 &")
-
-        self._wait_for_health(target)
-
-        log_result = target.execute("cat /workspace/vllm.log")
         log_text = log_result.get("stdout", "") if isinstance(log_result, dict) else ""
+
+        if not log_text.strip():
+            log_result = target.execute("cat /workspace/*.log 2>/dev/null || echo ''")
+            log_text = log_result.get("stdout", "") if isinstance(log_result, dict) else ""
 
         parsed = self.parse_profiling_logs(log_text)
 
-        post_result = target.execute(
+        mem_result = target.execute(
             "python3 -c 'import torch; f,t=torch.cuda.mem_get_info(); "
             'print(f"{{\\"post_free\\":{f},\\"post_total\\":{t}}}")\''
         )
-        post = _parse_json_output(post_result)
+        post = _parse_json_output(mem_result)
+
+        pre: dict[str, Any] = {}
+        if parsed.get("startup_total_gib"):
+            pre["pre_total"] = int(parsed["startup_total_gib"] * GIB)
+            pre["pre_free"] = int(parsed["startup_free_gib"] * GIB)
+        else:
+            pre["pre_total"] = post.get("post_total", 0)
+            pre["pre_free"] = post.get("post_total", 0)
 
         return self._build_verification_report(pre, post, parsed, plan, target)
 

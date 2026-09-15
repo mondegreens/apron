@@ -78,6 +78,8 @@ class TestFixtureRun:
         # ---------------------------------------------------------------
         # Steps 3-6: Initial verification on a single GPU pod
         # ---------------------------------------------------------------
+        from apron.application.orchestration.gpu_selection import select_gpu
+
         target = RunPodTarget(max_uptime=3600)
         engine = VllmEngineAdapter()
         scorer = DeterministicScorer()
@@ -85,6 +87,11 @@ class TestFixtureRun:
         try:
             prep = target.prepare()
             assert prep["status"] == "ready", f"Target not ready: {prep}"
+
+            prediction = claim.proposed_configuration
+            selected = select_gpu(prep["available_gpus"], prediction, budget_max_usd=5.0)
+            assert selected is not None, "No GPU fits within budget"
+            target._gpu_type = selected["gpu_type_id"]
 
             target.provision()
             detected_hw = target.hardware

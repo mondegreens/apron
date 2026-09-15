@@ -26,7 +26,7 @@ from apron.domain.schemas.primitives import HardwareSpec
 logger = logging.getLogger(__name__)
 
 GRAPHQL_URL = "https://api.runpod.io/graphql"
-DEFAULT_IMAGE = "vllm/vllm-openai:v0.29.0"
+DEFAULT_IMAGE = "vladryzhkov/vllm-model-serve:latest"
 DEFAULT_MAX_UPTIME = 3600
 
 GPU_SPECS: dict[str, dict[str, Any]] = {
@@ -191,11 +191,17 @@ class RunPodTarget:
             )
         return sorted(available, key=lambda g: g["hourly_rate_usd"])
 
-    def provision(self, wait_timeout: int = 300) -> dict[str, Any]:
+    def provision(
+        self,
+        wait_timeout: int = 300,
+        env: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         if not self._api_key:
             raise RuntimeError("Cannot provision without RUNPOD_API_KEY")
         if not self._gpu_type:
-            raise RuntimeError("No gpu_type set — call select_gpu() or pass gpu_type")
+            raise RuntimeError(
+                "No gpu_type set — call select_gpu() or pass gpu_type"
+            )
 
         import runpod as _runpod
 
@@ -208,8 +214,9 @@ class RunPodTarget:
             gpu_count=1,
             cloud_type="SECURE",
             ports="22/tcp,8000/http",
-            volume_in_gb=50,
-            container_disk_in_gb=20,
+            volume_in_gb=100,
+            container_disk_in_gb=50,
+            env=env or {},
         )
         self._pod_id = pod["id"]
         logger.info("Pod created: %s", self._pod_id)
@@ -317,6 +324,34 @@ class RunPodTarget:
             self._pod_id = None
 
     # ------------------------------------------------------------------
+    # Environment variable builder for model-serve image
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def build_env(
+        model_id: str,
+        dtype: str = "bfloat16",
+        gpu_memory_utilization: float = 0.90,
+        max_model_len: int = 640,
+        tensor_parallel: int = 1,
+        trust_remote_code: bool = False,
+    ) -> dict[str, str]:
+        """Build env vars for the vladryzhkov/vllm-model-serve image."""
+        env: dict[str, str] = {
+            "VLLM_MODEL": model_id,
+            "VLLM_TOKENIZER": model_id,
+            "VLLM_DTYPE": dtype,
+            "VLLM_GPU_MEMORY_UTILIZATION": str(gpu_memory_utilization),
+            "VLLM_MAX_MODEL_LEN": str(max_model_len),
+            "VLLM_TENSOR_PARALLEL_SIZE": str(tensor_parallel),
+            "USE_HUGGINGFACE_DIRECT": "true",
+            "VLLM_LOGGING_LEVEL": "DEBUG",
+        }
+        if trust_remote_code:
+            env["VLLM_TRUST_REMOTE_CODE"] = "1"
+        return env
+
+    # ------------------------------------------------------------------
     # Internal — status polling (raw GraphQL, SDK lacks runtime fields)
     # ------------------------------------------------------------------
 
@@ -354,7 +389,9 @@ class RunPodTarget:
     # Internal — SSH management
     # ------------------------------------------------------------------
 
-    def _establish_ssh(self, pod_info: dict[str, Any]) -> None:
+    def _establish_ssh(
+        self, pod_info: dict[str, Any], retries: int = 6, backoff: int = 10
+    ) -> None:
         import paramiko as _paramiko
 
         ports = pod_info["runtime"]["ports"]
@@ -367,16 +404,26 @@ class RunPodTarget:
         self._ssh_host = ssh_host
         self._ssh_port = ssh_port
 
-        client = _paramiko.SSHClient()
-        client.set_missing_host_key_policy(_paramiko.AutoAddPolicy())
-        client.connect(
-            ssh_host,
-            port=ssh_port,
-            username="root",
-            key_filename=self._ssh_key_path,
-            timeout=self._ssh_timeout,
-        )
-        self._ssh = client
+        for attempt in range(retries):
+            try:
+                client = _paramiko.SSHClient()
+                client.set_missing_host_key_policy(_paramiko.AutoAddPolicy())
+                client.connect(
+                    ssh_host,
+                    port=ssh_port,
+                    username="root",
+                    key_filename=self._ssh_key_path,
+                    timeout=self._ssh_timeout,
+                )
+                self._ssh = client
+                return
+            except (OSError, _paramiko.SSHException) as exc:
+                if attempt == retries - 1:
+                    raise RuntimeError(
+                        f"SSH to {ssh_host}:{ssh_port} failed after {retries} attempts: {exc}"
+                    ) from exc
+                logger.info("SSH not ready, retrying in %ds (attempt %d)", backoff, attempt + 1)
+                time.sleep(backoff)
 
     def _ensure_ssh(self) -> None:
         import paramiko as _paramiko

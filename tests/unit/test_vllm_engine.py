@@ -224,11 +224,11 @@ def test_verify_returns_15_fields(engine: VllmEngineAdapter) -> None:
     def fake_execute(cmd: str) -> dict[str, Any]:
         if "mem_get_info" in cmd:
             return {
-                "stdout": '{"pre_free":24159191040,"pre_total":25769803776}',
+                "stdout": '{"post_free":8000000000,"post_total":25769803776}',
                 "stderr": "",
                 "exit_code": 0,
             }
-        if "cat /workspace/vllm.log" in cmd:
+        if "/proc/1/fd/1" in cmd or "*.log" in cmd:
             return {"stdout": vllm_log, "stderr": "", "exit_code": 0}
         return {"stdout": "", "stderr": "", "exit_code": 0}
 
