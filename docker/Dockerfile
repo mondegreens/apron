@@ -81,8 +81,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt-get update && apt-get install -y --no-install-recommends \
-        python3.12 python3.12-venv \
+        python3.12 python3.12-venv python3.12-dev \
         curl ca-certificates git \
+        build-essential \
         openssh-server tini \
         vim htop tmux \
     && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
