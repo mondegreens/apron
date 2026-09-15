@@ -49,11 +49,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN python3 -m venv /opt/venv \
+RUN --mount=type=cache,target=/tmp/uv-cache \
+    python3 -m venv /opt/venv \
     && . /opt/venv/bin/activate \
     && pip install --upgrade pip setuptools wheel \
-    && --mount=type=cache,target=/tmp/uv-cache \
-       uv pip install --cache-dir /tmp/uv-cache -r requirements.txt
+    && uv pip install --cache-dir /tmp/uv-cache -r requirements.txt
 
 COPY start.sh parallel_downloader.py ./
 RUN chmod +x start.sh
