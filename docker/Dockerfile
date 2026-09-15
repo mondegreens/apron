@@ -84,6 +84,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         python3.12 python3.12-venv \
         curl ca-certificates git \
         openssh-server tini \
+        vim htop tmux \
     && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
     && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
     && mkdir -p /var/run/sshd \

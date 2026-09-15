@@ -19,6 +19,14 @@ if [ -n "$PUBLIC_KEY" ]; then
 fi
 
 # --------------------------------------------------------------------------- #
+# Export env vars for SSH sessions (container env vars are not inherited)
+# --------------------------------------------------------------------------- #
+
+printenv | grep -E '^VLLM_|^HF_|^NVIDIA_|^NCCL_|^CUDA_|^PATH=|^LD_LIBRARY_PATH=' \
+    | awk -F = '{ print "export " $1 "=\"" $2 "\"" }' >> /etc/apron_environment
+echo 'source /etc/apron_environment' >> ~/.bashrc
+
+# --------------------------------------------------------------------------- #
 # NVIDIA / NCCL (tuned for cloud GPU providers)
 # --------------------------------------------------------------------------- #
 
