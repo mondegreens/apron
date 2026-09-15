@@ -77,7 +77,10 @@ PyNvVideoCodec==2.0.4
 # install_requires so the published wheel does not carry an unresolvable pin
 --extra-index-url https://flashinfer.ai/whl/
 flashinfer-python==0.6.18.post1
-flashinfer-cubin==0.6.18.post1
+# flashinfer-cubin provides pre-compiled kernels for x86_64; on aarch64
+# FlashInfer JIT-compiles at runtime (needs cudnn-devel base image).
+# Install only if available for the target platform.
+flashinfer-cubin==0.6.18.post1; platform_machine == "x86_64"
 apache-tvm-ffi==0.1.11
 tilelang==0.1.12
 nvidia-cudnn-frontend>=1.19.1
