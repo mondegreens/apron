@@ -131,5 +131,22 @@ fi
 SAFE_ARGS=$(echo "$ARGS" | sed 's/--hf-token [^ ]*/--hf-token ***REDACTED***/g')
 echo "Starting vLLM: vllm serve $SAFE_ARGS"
 
-set -o pipefail
-exec vllm serve $ARGS 2>&1 | tee /var/log/vllm.log
+# Run vLLM in background with tee to log file. NOT exec — so killing
+# vLLM for OOM injection doesn't kill the container. The shell stays
+# alive as the container's main process; tini reaps children.
+vllm serve $ARGS 2>&1 | tee /var/log/vllm.log &
+VLLM_PID=$!
+
+# Keep the container alive — wait for vLLM or any signal
+wait $VLLM_PID
+EXIT_CODE=$?
+
+echo "vLLM exited with code $EXIT_CODE"
+
+# If vLLM dies, keep the container alive for SSH debugging
+# rather than crashing and losing access. Sleep indefinitely
+# until the pod is terminated externally.
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "vLLM failed — container staying alive for SSH debugging"
+    sleep infinity
+fi

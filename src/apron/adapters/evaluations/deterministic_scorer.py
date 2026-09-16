@@ -88,7 +88,7 @@ class DeterministicScorer:
                     "max_tokens": max_tokens,
                     "temperature": 0,
                     "seed": 42,
-                    "extra_body": {"chat_template_kwargs": {"enable_thinking": False}},
+                    "chat_template_kwargs": {"enable_thinking": False},
                 },
                 timeout=self._timeout,
             )
