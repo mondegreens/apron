@@ -58,3 +58,13 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Ensure package is public
+        run: |
+          gh api \
+            --method PATCH \
+            /orgs/${{ github.repository_owner }}/packages/container/apron-runner \
+            -f visibility=public \
+          || echo "::warning::Could not set package visibility — set manually at https://github.com/orgs/${{ github.repository_owner }}/packages/container/apron-runner/settings"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
