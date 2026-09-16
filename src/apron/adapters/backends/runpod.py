@@ -26,7 +26,7 @@ from apron.domain.schemas.primitives import HardwareSpec
 logger = logging.getLogger(__name__)
 
 GRAPHQL_URL = "https://api.runpod.io/graphql"
-DEFAULT_IMAGE = "ghcr.io/mondegreens/apron-runner:v0.29.0-rc5"
+DEFAULT_IMAGE = "ghcr.io/mondegreens/apron-runner:v0.29.0-rc6"
 DEFAULT_MAX_UPTIME = 3600
 
 GPU_SPECS: dict[str, dict[str, Any]] = {
