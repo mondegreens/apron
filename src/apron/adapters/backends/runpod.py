@@ -424,9 +424,7 @@ class RunPodTarget:
         for attempt in range(retries):
             try:
                 client = _paramiko.SSHClient()
-                # RunPod pods generate host keys at boot — no known key to verify.
-            # WarningPolicy logs unknown keys; AutoAddPolicy would silently trust.
-            client.set_missing_host_key_policy(_paramiko.WarningPolicy())
+                client.set_missing_host_key_policy(_paramiko.WarningPolicy())
                 client.connect(
                     ssh_host,
                     port=ssh_port,
@@ -458,7 +456,7 @@ class RunPodTarget:
             raise RuntimeError("SSH host/port not set — call provision() first")
 
         client = _paramiko.SSHClient()
-        client.set_missing_host_key_policy(_paramiko.AutoAddPolicy())
+        client.set_missing_host_key_policy(_paramiko.WarningPolicy())
         client.connect(
             ssh_host,
             port=ssh_port,
