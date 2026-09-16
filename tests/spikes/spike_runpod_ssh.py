@@ -101,7 +101,7 @@ def ssh_nvidia_smi(pod: dict) -> str:
     print(f"SSH connecting to {host}:{port}")
 
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.set_missing_host_key_policy(paramiko.WarningPolicy())
     ssh_key_path = os.environ.get("RUNPOD_SSH_KEY_PATH", os.path.expanduser("~/.ssh/id_ed25519"))
     client.connect(host, port=int(port), username="root", key_filename=ssh_key_path)
 
