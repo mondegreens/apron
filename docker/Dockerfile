@@ -68,6 +68,7 @@ ENV DEBIAN_FRONTEND=noninteractive TZ=UTC \
     CUDA_HOME=/usr/local/cuda \
     PATH=/opt/venv/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64 \
+    NVIDIA_DISABLE_REQUIRE=true \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/workspace \
     TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0" \
