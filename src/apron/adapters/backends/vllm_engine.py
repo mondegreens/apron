@@ -26,7 +26,17 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 ERROR_PATTERNS: list[tuple[re.Pattern[str], str]] = [
-    (re.compile(r"torch\.OutOfMemoryError|CUDA out of memory", re.IGNORECASE), "oom"),
+    (
+        re.compile(
+            r"OutOfMemoryError|CUDA out of memory|out of memory|torch\.cuda\.OutOfMemoryError",
+            re.IGNORECASE,
+        ),
+        "oom",
+    ),
+    (
+        re.compile(r"larger than the maximum number of tokens.*KV cache", re.IGNORECASE),
+        "oom",
+    ),
     (re.compile(r"RuntimeError.*engine", re.IGNORECASE), "engine_init"),
     (re.compile(r"ValueError.*max_model_len", re.IGNORECASE), "max_model_len"),
     (

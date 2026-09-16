@@ -3,9 +3,12 @@
 This test requires RUNPOD_API_KEY and spends real money (~$0.50).
 It is NOT run in normal CI — only when explicitly triggered.
 
-The apron-runner image (ghcr.io/mondegreens/apron-runner) boots vLLM
-on container start. The test monitors deployment, waits for health,
-then runs the evidence collection loop.
+Timing: expect 10-20 minutes total. The apron-runner image is ~15 GB
+(vLLM + CUDA + PyTorch); first pull on a fresh pod takes 8-10 minutes
+with runtime=null the entire time. Model download (Qwen3-8B, ~16 GB)
+adds another 5-10 minutes. Do not add timeouts to pod provisioning —
+RunPod shows runtime=null for both "still pulling" and "crashed", and
+the only way to distinguish them is the RunPod console Logs tab.
 
 Steps:
   1-2:   Plan (GPU-free)
@@ -115,6 +118,8 @@ class TestFixtureRun:
                 ssh_public_key=public_key,
             )
 
+            from runpod.error import QueryError  # type: ignore[import-untyped]
+
             provisioned = False
             for candidate in candidates:
                 target._gpu_type = candidate["gpu_type_id"]
@@ -122,10 +127,10 @@ class TestFixtureRun:
                     target.provision(env=env)
                     provisioned = True
                     break
-                except Exception as exc:
-                    if "no longer any instances available" in str(exc).lower():
-                        target._pod_id = None
-                        continue
+                except QueryError:
+                    target._pod_id = None
+                    continue
+                except Exception:
                     target.teardown()
                     raise
             if not provisioned:
@@ -192,7 +197,8 @@ class TestFixtureRun:
             target.execute("sleep 5")
 
             bad_result = target.execute(
-                "timeout 120 vllm serve "
+                "source /etc/apron_environment 2>/dev/null; "
+                "timeout 120 /opt/venv/bin/vllm serve "
                 + MODEL_ID
                 + " --dtype bfloat16"
                 + " --gpu-memory-utilization 0.99"
@@ -203,18 +209,24 @@ class TestFixtureRun:
 
             # Step 8: Classify
             classification = engine.classify(oom_output)
-            assert classification["failure_class"] != "unknown" or len(oom_output) > 0
+            assert oom_output, "OOM injection produced no output"
+            assert classification["failure_class"] in ("oom", "engine_init"), (
+                f"Expected oom or engine_init, got: {classification['failure_class']}"
+                f"\nvLLM output (last 500 chars): {oom_output[-500:]}"
+            )
 
             # Step 9: Correct and reboot
             target.execute("pkill -f 'vllm serve' || true")
             target.execute("sleep 5")
+            target.execute("truncate -s 0 /var/log/vllm.log")
             target.execute(
-                "nohup vllm serve "
+                "source /etc/apron_environment 2>/dev/null; "
+                "nohup /opt/venv/bin/vllm serve "
                 + MODEL_ID
                 + " --dtype bfloat16"
                 + " --gpu-memory-utilization 0.90"
                 + " --max-model-len 640"
-                + " > /var/log/vllm_corrected.log 2>&1 &"
+                + " > /var/log/vllm.log 2>&1 &"
             )
 
             # Wait for corrected boot
@@ -228,10 +240,9 @@ class TestFixtureRun:
             # Steps 10-12: Remediation proof
             # ---------------------------------------------------------------
 
-            corrected_report = {
-                **verification_report,
-                "reason": "Phase 1a corrected verification",
-            }
+            corrected_report = engine.verify(plan, target, health_timeout=60)
+            corrected_report["reason"] = "Phase 1a corrected verification"
+            assert corrected_report["initial_total_memory"] > 0
             store.store(corrected_report)
 
             # Step 11: Replay task suite
