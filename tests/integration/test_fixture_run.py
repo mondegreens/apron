@@ -24,7 +24,6 @@ import time
 from pathlib import Path
 from typing import Any
 
-import httpx
 import pytest
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "phase-1a-run"
@@ -47,7 +46,6 @@ class TestFixtureRun:
         from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
         from apron.adapters.evidence.hf_hub import HFHubResolver
         from apron.adapters.planning.calculator_source import CalculatorPlanningSource
-        from apron.application.orchestration.gpu_selection import select_gpu
         from apron.application.orchestration.plan_pipeline import run_plan_pipeline
         from apron.domain.canonical import canonicalize, digest_hex
         from apron.domain.ports import UuidIdGenerator, WallClock
@@ -102,7 +100,8 @@ class TestFixtureRun:
             prediction = claim.proposed_configuration
             available = prep["available_gpus"]
             candidates = [
-                g for g in available
+                g
+                for g in available
                 if prediction.get("total_required_bytes", 0)
                 <= int(g["hardware_spec"].total_memory_bytes * 0.90)
             ]
@@ -116,8 +115,6 @@ class TestFixtureRun:
                 ssh_public_key=public_key,
             )
 
-            import runpod as _runpod_mod
-
             provisioned = False
             for candidate in candidates:
                 target._gpu_type = candidate["gpu_type_id"]
@@ -125,10 +122,10 @@ class TestFixtureRun:
                     target.provision(env=env)
                     provisioned = True
                     break
-                except _runpod_mod.error.QueryError:
-                    target._pod_id = None
-                    continue
-                except Exception:
+                except Exception as exc:
+                    if "no longer any instances available" in str(exc).lower():
+                        target._pod_id = None
+                        continue
                     target.teardown()
                     raise
             if not provisioned:
@@ -159,14 +156,14 @@ class TestFixtureRun:
             assert measured_consumption > 0
 
             # Step 5: Run task suite
-            task_suite = json.loads(
-                (FIXTURES_DIR / "task-suite-spec.json").read_text()
+            task_suite = json.loads((FIXTURES_DIR / "task-suite-spec.json").read_text())
+            eval_protocol = scorer.prepare(
+                {
+                    **task_suite,
+                    "model_id": MODEL_ID,
+                    "endpoint": endpoint,
+                }
             )
-            eval_protocol = scorer.prepare({
-                **task_suite,
-                "model_id": MODEL_ID,
-                "endpoint": endpoint,
-            })
             initial_attempts = scorer.execute(eval_protocol, endpoint)
             scorer.collect(initial_attempts)
 
@@ -195,7 +192,8 @@ class TestFixtureRun:
             target.execute("sleep 5")
 
             bad_result = target.execute(
-                "timeout 120 vllm serve " + MODEL_ID
+                "timeout 120 vllm serve "
+                + MODEL_ID
                 + " --dtype bfloat16"
                 + " --gpu-memory-utilization 0.99"
                 + " --max-num-batched-tokens 65536"
@@ -211,7 +209,8 @@ class TestFixtureRun:
             target.execute("pkill -f 'vllm serve' || true")
             target.execute("sleep 5")
             target.execute(
-                "nohup vllm serve " + MODEL_ID
+                "nohup vllm serve "
+                + MODEL_ID
                 + " --dtype bfloat16"
                 + " --gpu-memory-utilization 0.90"
                 + " --max-model-len 640"
@@ -261,16 +260,12 @@ class TestFixtureRun:
                 "mechanism_outcome": "verified",
                 "request_outcome": "satisfied",
                 "accepted_request_digest": digest_hex(
-                    canonicalize(
-                        json.loads((FIXTURES_DIR / "decision-request.json").read_text())
-                    )
+                    canonicalize(json.loads((FIXTURES_DIR / "decision-request.json").read_text()))
                 ),
                 "task_fingerprint": digest_hex(canonicalize(task_suite)),
                 "application_fingerprint": "1220" + "00" * 32,
                 "evaluation_fingerprint": "1220" + "00" * 32,
-                "corrected_plan_digest": digest_hex(
-                    canonicalize(plan.model_dump(mode="json"))
-                ),
+                "corrected_plan_digest": digest_hex(canonicalize(plan.model_dump(mode="json"))),
                 "claim_scope": "remediation",
                 "production_mode": False,
                 "reason": "OOM injection corrected by reducing gpu_memory_utilization",

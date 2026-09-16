@@ -199,9 +199,7 @@ class RunPodTarget:
         if not self._api_key:
             raise RuntimeError("Cannot provision without RUNPOD_API_KEY")
         if not self._gpu_type:
-            raise RuntimeError(
-                "No gpu_type set — call select_gpu() or pass gpu_type"
-            )
+            raise RuntimeError("No gpu_type set — call select_gpu() or pass gpu_type")
 
         import runpod as _runpod  # type: ignore[import-untyped]
 
@@ -377,10 +375,7 @@ class RunPodTarget:
         start = time.monotonic()
         while True:
             if timeout > 0 and time.monotonic() - start > timeout:
-                raise TimeoutError(
-                    f"Pod {self._pod_id} did not reach RUNNING "
-                    f"within {timeout}s"
-                )
+                raise TimeoutError(f"Pod {self._pod_id} did not reach RUNNING within {timeout}s")
             query = _POD_STATUS_QUERY.format(pod_id=self._pod_id)
             data = self._gql_status(query)
             pod = data.get("pod")
@@ -487,7 +482,7 @@ class RunPodTarget:
             "}))"
         )
         result = self.execute(
-            f'source /etc/apron_environment 2>/dev/null; '
+            f"source /etc/apron_environment 2>/dev/null; "
             f'/opt/venv/bin/python3 -c "{detection_script}"'
         )
         if result["exit_code"] != 0:
