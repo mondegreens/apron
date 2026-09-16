@@ -116,15 +116,22 @@ class TestFixtureRun:
                 ssh_public_key=public_key,
             )
 
+            import runpod as _runpod_mod
+
+            provisioned = False
             for candidate in candidates:
                 target._gpu_type = candidate["gpu_type_id"]
                 try:
                     target.provision(wait_timeout=600, env=env)
+                    provisioned = True
                     break
-                except Exception:
+                except _runpod_mod.error.QueryError:
                     target._pod_id = None
                     continue
-            else:
+                except Exception:
+                    target.teardown()
+                    raise
+            if not provisioned:
                 pytest.skip("No GPU currently available on RunPod")
             detected_hw = target.hardware
             assert detected_hw.gpu_sku
