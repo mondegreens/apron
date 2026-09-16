@@ -193,7 +193,7 @@ class RunPodTarget:
 
     def provision(
         self,
-        wait_timeout: int = 300,
+        wait_timeout: int = 0,
         env: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         if not self._api_key:
