@@ -161,7 +161,7 @@ class RunPodTarget:
 
         Uses get_gpu() per known type because get_gpus() omits pricing.
         """
-        import runpod as _runpod
+        import runpod as _runpod  # type: ignore[import-untyped]
 
         _runpod.api_key = self._api_key
 
@@ -203,7 +203,7 @@ class RunPodTarget:
                 "No gpu_type set — call select_gpu() or pass gpu_type"
             )
 
-        import runpod as _runpod
+        import runpod as _runpod  # type: ignore[import-untyped]
 
         _runpod.api_key = self._api_key
 
@@ -314,7 +314,7 @@ class RunPodTarget:
 
         if self._pod_id is not None:
             try:
-                import runpod as _runpod
+                import runpod as _runpod  # type: ignore[import-untyped]
 
                 _runpod.api_key = self._api_key
                 _runpod.terminate_pod(self._pod_id)

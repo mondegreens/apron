@@ -81,7 +81,7 @@ docs = [
 [tool.ruff]
 target-version = "py312"
 line-length = 99
-extend-exclude = ["tests/fixtures/external-formats"]
+extend-exclude = ["tests/fixtures/external-formats", "docker"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "TCH", "RUF"]
@@ -94,7 +94,7 @@ pythonVersion = "3.12"
 typeCheckingMode = "standard"
 venvPath = "."
 venv = ".venv"
-exclude = ["tests/fixtures/external-formats"]
+exclude = ["tests/fixtures/external-formats", "docker"]
 
 [tool.importlinter]
 root_packages = ["apron"]
