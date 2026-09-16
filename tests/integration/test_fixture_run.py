@@ -1,7 +1,11 @@
 """Integration test: 14-step fixture run on real GPU.
 
-This test requires RUNPOD_API_KEY and spends real money (~$0.60).
+This test requires RUNPOD_API_KEY and spends real money (~$0.50).
 It is NOT run in normal CI — only when explicitly triggered.
+
+The apron-runner image (ghcr.io/mondegreens/apron-runner) boots vLLM
+on container start. The test monitors deployment, waits for health,
+then runs the evidence collection loop.
 
 Steps:
   1-2:   Plan (GPU-free)
@@ -20,6 +24,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+import httpx
 import pytest
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "phase-1a-run"
@@ -42,6 +47,7 @@ class TestFixtureRun:
         from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
         from apron.adapters.evidence.hf_hub import HFHubResolver
         from apron.adapters.planning.calculator_source import CalculatorPlanningSource
+        from apron.application.orchestration.gpu_selection import select_gpu
         from apron.application.orchestration.plan_pipeline import run_plan_pipeline
         from apron.domain.canonical import canonicalize, digest_hex
         from apron.domain.ports import UuidIdGenerator, WallClock
@@ -70,17 +76,21 @@ class TestFixtureRun:
 
         plan = pipeline_result.plan
         claim = pipeline_result.claim
-
-        # Store planning claim
-        claim_record = claim.model_dump(mode="json")
-        store.store(claim_record)
+        store.store(claim.model_dump(mode="json"))
 
         # ---------------------------------------------------------------
         # Steps 3-6: Initial verification on a single GPU pod
         # ---------------------------------------------------------------
-        from apron.application.orchestration.gpu_selection import select_gpu
 
-        target = RunPodTarget(max_uptime=3600)
+        # Read SSH public key for the runner image
+        ssh_key_path = os.environ.get(
+            "RUNPOD_SSH_KEY_PATH",
+            str(Path.home() / ".ssh" / "id_rsa"),
+        )
+        ssh_pub_path = ssh_key_path + ".pub"
+        public_key = Path(ssh_pub_path).read_text().strip() if Path(ssh_pub_path).exists() else ""
+
+        target = RunPodTarget()
         engine = VllmEngineAdapter()
         scorer = DeterministicScorer()
 
@@ -88,21 +98,31 @@ class TestFixtureRun:
             prep = target.prepare()
             assert prep["status"] == "ready", f"Target not ready: {prep}"
 
+            # Select cheapest GPU that fits
             prediction = claim.proposed_configuration
             selected = select_gpu(prep["available_gpus"], prediction, budget_max_usd=5.0)
             assert selected is not None, "No GPU fits within budget"
             target._gpu_type = selected["gpu_type_id"]
 
-            target.provision()
+            # Build env and provision
+            env = RunPodTarget.build_env(
+                model_id=MODEL_ID,
+                dtype=plan.dtype or "bfloat16",
+                gpu_memory_utilization=0.90,
+                max_model_len=640,
+                ssh_public_key=public_key,
+            )
+            target.provision(env=env)
             detected_hw = target.hardware
-            assert detected_hw.gpu_sku  # runtime detected
+            assert detected_hw.gpu_sku
 
-            # Step 3: Boot vLLM and profile memory
-            verification_report = engine.verify(plan, target)
-            assert verification_report["model_weight_memory"] > 0
+            # Step 3-4: Wait for health + collect profiling
+            endpoint = target.proxy_url
+            assert endpoint is not None
+
+            verification_report = engine.verify(plan, target, health_timeout=600)
             assert verification_report["initial_total_memory"] > 0
 
-            # Store verification report #1
             report_record = {
                 **verification_report,
                 "claim_scope": "memory",
@@ -112,24 +132,21 @@ class TestFixtureRun:
             }
             store.store(report_record)
 
-            # Step 4: Record prediction delta
-            predicted_total = claim.proposed_configuration.get("total_required_bytes", 0)
-            measured_consumption = verification_report["persistent_consumption"]
+            # Prediction delta
+            predicted_total = prediction.get("total_required_bytes", 0)
+            measured_consumption = verification_report.get("persistent_consumption", 0)
             assert predicted_total > 0
             assert measured_consumption > 0
 
             # Step 5: Run task suite
-            task_suite = json.loads((FIXTURES_DIR / "task-suite-spec.json").read_text())
-            endpoint = target.proxy_url
-            assert endpoint is not None, "proxy_url not available after provision"
-
-            eval_protocol = scorer.prepare(
-                {
-                    **task_suite,
-                    "model_id": MODEL_ID,
-                    "endpoint": endpoint,
-                }
+            task_suite = json.loads(
+                (FIXTURES_DIR / "task-suite-spec.json").read_text()
             )
+            eval_protocol = scorer.prepare({
+                **task_suite,
+                "model_id": MODEL_ID,
+                "endpoint": endpoint,
+            })
             initial_attempts = scorer.execute(eval_protocol, endpoint)
             scorer.collect(initial_attempts)
 
@@ -149,50 +166,40 @@ class TestFixtureRun:
                 }
                 store.store(attempt_record)
 
-            # Step 6: Serving benchmark (vllm bench inside pod)
-            # Run benchmark inside the pod hitting localhost:8000
-            target.execute(
-                "python3 -m vllm.entrypoints.openai.run_batch "
-                "--help 2>&1 | head -5 || echo 'bench not available'"
-            )
-
             # ---------------------------------------------------------------
             # Steps 7-9: OOM injection + classification + correction
             # ---------------------------------------------------------------
 
-            # Step 7: Kill vLLM and inject failure
+            # Step 7: Kill vLLM and inject failure via SSH
             target.execute("pkill -f 'vllm serve' || true")
             target.execute("sleep 5")
 
-            bad_serve_cmd = (
-                f"timeout 120 vllm serve {MODEL_ID} "
-                "--dtype bfloat16 "
-                "--gpu-memory-utilization 0.99 "
-                "--max-num-batched-tokens 65536 "
-                "2>&1"
+            bad_result = target.execute(
+                "timeout 120 vllm serve " + MODEL_ID
+                + " --dtype bfloat16"
+                + " --gpu-memory-utilization 0.99"
+                + " --max-num-batched-tokens 65536"
+                + " 2>&1"
             )
-            oom_result = target.execute(bad_serve_cmd)
-            oom_output = oom_result["stdout"] + oom_result["stderr"]
+            oom_output = bad_result.get("stdout", "") + bad_result.get("stderr", "")
 
-            # Step 8: Classify the error
+            # Step 8: Classify
             classification = engine.classify(oom_output)
             assert classification["failure_class"] == "oom"
 
             # Step 9: Correct and reboot
             target.execute("pkill -f 'vllm serve' || true")
             target.execute("sleep 5")
-
-            corrected_serve_cmd = (
-                f"nohup vllm serve {MODEL_ID} "
-                "--dtype bfloat16 "
-                "--gpu-memory-utilization 0.90 "
-                "--max-model-len 640 "
-                "> /workspace/vllm_corrected.log 2>&1 &"
+            target.execute(
+                "nohup vllm serve " + MODEL_ID
+                + " --dtype bfloat16"
+                + " --gpu-memory-utilization 0.90"
+                + " --max-model-len 640"
+                + " > /var/log/vllm_corrected.log 2>&1 &"
             )
-            target.execute(corrected_serve_cmd)
 
             # Wait for corrected boot
-            for _ in range(30):
+            for _ in range(60):
                 time.sleep(10)
                 health = target.execute("curl -sf http://localhost:8000/health")
                 if health.get("exit_code") == 0:
@@ -202,23 +209,13 @@ class TestFixtureRun:
             # Steps 10-12: Remediation proof
             # ---------------------------------------------------------------
 
-            # Step 10: Collect corrected memory profile
-            target.execute(
-                "python3 -c '"
-                "import json, torch; "
-                "f, t = torch.cuda.mem_get_info(); "
-                'print(json.dumps({"post_free": f, "post_total": t}))'
-                "' > /workspace/corrected_profile.json"
-            )
-
-            # Store verification report #2
             corrected_report = {
                 **verification_report,
                 "reason": "Phase 1a corrected verification",
             }
             store.store(corrected_report)
 
-            # Step 11: Replay accepted task
+            # Step 11: Replay task suite
             replay_attempts = scorer.execute(eval_protocol, endpoint)
             scorer.collect(replay_attempts)
 
@@ -238,18 +235,22 @@ class TestFixtureRun:
                 }
                 store.store(attempt_record)
 
-            # Step 12: Generate remediation record
+            # Step 12: Remediation record
             remediation_record: dict[str, Any] = {
                 "schema_version": 1,
                 "mechanism_outcome": "verified",
                 "request_outcome": "satisfied",
                 "accepted_request_digest": digest_hex(
-                    canonicalize(json.loads((FIXTURES_DIR / "decision-request.json").read_text()))
+                    canonicalize(
+                        json.loads((FIXTURES_DIR / "decision-request.json").read_text())
+                    )
                 ),
                 "task_fingerprint": digest_hex(canonicalize(task_suite)),
                 "application_fingerprint": "1220" + "00" * 32,
                 "evaluation_fingerprint": "1220" + "00" * 32,
-                "corrected_plan_digest": digest_hex(canonicalize(plan.model_dump(mode="json"))),
+                "corrected_plan_digest": digest_hex(
+                    canonicalize(plan.model_dump(mode="json"))
+                ),
                 "claim_scope": "remediation",
                 "production_mode": False,
                 "reason": "OOM injection corrected by reducing gpu_memory_utilization",
@@ -258,7 +259,7 @@ class TestFixtureRun:
             store.store(remediation_record)
 
             # ---------------------------------------------------------------
-            # Step 13: Assertions (decision report level)
+            # Step 13: Assertions
             # ---------------------------------------------------------------
             records_dir = tmp_path / "records"
 

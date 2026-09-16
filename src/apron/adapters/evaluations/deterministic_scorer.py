@@ -79,13 +79,16 @@ class DeterministicScorer:
         start = time.monotonic()
         try:
             response = httpx.post(
-                f"{endpoint}/v1/completions",
+                f"{endpoint}/v1/chat/completions",
                 json={
                     "model": model_id,
-                    "prompt": prompt,
+                    "messages": [
+                        {"role": "user", "content": prompt},
+                    ],
                     "max_tokens": max_tokens,
                     "temperature": 0,
                     "seed": 42,
+                    "extra_body": {"chat_template_kwargs": {"enable_thinking": False}},
                 },
                 timeout=self._timeout,
             )
@@ -93,7 +96,7 @@ class DeterministicScorer:
             elapsed = time.monotonic() - start
 
             data = response.json()
-            output = data["choices"][0]["text"]
+            output = data["choices"][0]["message"]["content"]
             usage = data.get("usage", {})
 
             normalized_output = " ".join(output.split())

@@ -26,7 +26,7 @@ from apron.domain.schemas.primitives import HardwareSpec
 logger = logging.getLogger(__name__)
 
 GRAPHQL_URL = "https://api.runpod.io/graphql"
-DEFAULT_IMAGE = "mondegreens/apron-runner:v0.29.0"
+DEFAULT_IMAGE = "ghcr.io/mondegreens/apron-runner:v0.29.0-rc5"
 DEFAULT_MAX_UPTIME = 3600
 
 GPU_SPECS: dict[str, dict[str, Any]] = {
@@ -335,6 +335,7 @@ class RunPodTarget:
         max_model_len: int = 640,
         tensor_parallel: int = 1,
         trust_remote_code: bool = False,
+        ssh_public_key: str | None = None,
     ) -> dict[str, str]:
         """Build env vars for the apron runner image."""
         env: dict[str, str] = {
@@ -344,11 +345,12 @@ class RunPodTarget:
             "VLLM_GPU_MEMORY_UTILIZATION": str(gpu_memory_utilization),
             "VLLM_MAX_MODEL_LEN": str(max_model_len),
             "VLLM_TENSOR_PARALLEL_SIZE": str(tensor_parallel),
-            "USE_HUGGINGFACE_DIRECT": "true",
             "VLLM_LOGGING_LEVEL": "DEBUG",
         }
         if trust_remote_code:
             env["VLLM_TRUST_REMOTE_CODE"] = "1"
+        if ssh_public_key:
+            env["PUBLIC_KEY"] = ssh_public_key
         return env
 
     # ------------------------------------------------------------------

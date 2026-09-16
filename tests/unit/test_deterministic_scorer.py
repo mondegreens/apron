@@ -27,7 +27,7 @@ def _make_fake_response(text: str, prompt_tokens: int = 10, completion_tokens: i
     mock = MagicMock()
     mock.status_code = 200
     mock.json.return_value = {
-        "choices": [{"text": text}],
+        "choices": [{"message": {"content": text}}],
         "usage": {
             "prompt_tokens": prompt_tokens,
             "completion_tokens": completion_tokens,
