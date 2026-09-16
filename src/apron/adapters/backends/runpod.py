@@ -254,7 +254,7 @@ class RunPodTarget:
                     "stderr": stderr.read().decode(),
                     "exit_code": exit_code,
                 }
-            except (_paramiko.SSHException, OSError):
+            except (_paramiko.SSHException, OSError, EOFError):
                 if attempt == retries:
                     raise
                 logger.warning("SSH connection lost, reconnecting (attempt %d)", attempt + 1)
