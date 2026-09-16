@@ -122,7 +122,7 @@ class TestFixtureRun:
             for candidate in candidates:
                 target._gpu_type = candidate["gpu_type_id"]
                 try:
-                    target.provision(wait_timeout=600, env=env)
+                    target.provision(env=env)
                     provisioned = True
                     break
                 except _runpod_mod.error.QueryError:

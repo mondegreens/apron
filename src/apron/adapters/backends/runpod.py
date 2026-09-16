@@ -94,7 +94,7 @@ class RunPodTarget:
         self._api_key = api_key or os.environ.get("RUNPOD_API_KEY")
         self._ssh_key_path = ssh_key_path or os.environ.get(
             "RUNPOD_SSH_KEY_PATH",
-            str(Path.home() / ".ssh" / "id_ed25519"),
+            self._detect_ssh_key(),
         )
         self._image = image
         self._gpu_type = gpu_type
@@ -371,9 +371,16 @@ class RunPodTarget:
             raise RuntimeError(f"GraphQL errors: {json.dumps(data['errors'])}")
         return data.get("data", {})
 
-    def _wait_for_running(self, timeout: int) -> dict[str, Any]:
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
+    def _wait_for_running(self, timeout: int = 0) -> dict[str, Any]:
+        """Poll until pod reaches RUNNING. No timeout by default — image
+        pulls and model downloads can take arbitrarily long."""
+        start = time.monotonic()
+        while True:
+            if timeout > 0 and time.monotonic() - start > timeout:
+                raise TimeoutError(
+                    f"Pod {self._pod_id} did not reach RUNNING "
+                    f"within {timeout}s"
+                )
             query = _POD_STATUS_QUERY.format(pod_id=self._pod_id)
             data = self._gql_status(query)
             pod = data.get("pod")
@@ -390,6 +397,14 @@ class RunPodTarget:
     # ------------------------------------------------------------------
     # Internal — SSH management
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _detect_ssh_key() -> str:
+        ssh_dir = Path.home() / ".ssh"
+        for name in ("id_ed25519", "id_rsa", "id_ecdsa"):
+            if (ssh_dir / name).exists():
+                return str(ssh_dir / name)
+        return str(ssh_dir / "id_rsa")
 
     def _establish_ssh(
         self, pod_info: dict[str, Any], retries: int = 6, backoff: int = 10
