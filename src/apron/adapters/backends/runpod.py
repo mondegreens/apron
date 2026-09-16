@@ -479,7 +479,7 @@ class RunPodTarget:
             "capture_output=True,text=True); "
             "print(json.dumps({"
             "'gpu_name': torch.cuda.get_device_name(),"
-            "'total_memory_bytes': props.total_mem,"
+            "'total_memory_bytes': props.total_memory,"
             "'compute_capability': f'{props.major}.{props.minor}',"
             "'driver_version': nvsmi.stdout.strip(),"
             "'cuda_version': torch.version.cuda,"
