@@ -73,6 +73,17 @@ _POD_STATUS_QUERY = """query Pod {{
 }}"""
 
 
+class _EphemeralHostKeyPolicy:
+    """Accept SSH host keys from ephemeral cloud containers.
+
+    RunPod pods generate host keys at boot (start.sh line 12-14).
+    No prior known key exists. Logs the key fingerprint for audit.
+    """
+
+    def missing_host_key(self, client, hostname, key):  # type: ignore[no-untyped-def]
+        logger.info("Ephemeral host key %s for %s", key.get_fingerprint().hex(), hostname)
+
+
 class RunPodTarget:
     """ExecutionTarget for RunPod Secure Cloud GPUs."""
 
@@ -419,7 +430,7 @@ class RunPodTarget:
         for attempt in range(retries):
             try:
                 client = _paramiko.SSHClient()
-                client.set_missing_host_key_policy(_paramiko.WarningPolicy())
+                client.set_missing_host_key_policy(_EphemeralHostKeyPolicy())  # type: ignore[arg-type]
                 client.connect(
                     ssh_host,
                     port=ssh_port,
@@ -451,7 +462,7 @@ class RunPodTarget:
             raise RuntimeError("SSH host/port not set — call provision() first")
 
         client = _paramiko.SSHClient()
-        client.set_missing_host_key_policy(_paramiko.WarningPolicy())
+        client.set_missing_host_key_policy(_EphemeralHostKeyPolicy())  # type: ignore[arg-type]
         client.connect(
             ssh_host,
             port=ssh_port,

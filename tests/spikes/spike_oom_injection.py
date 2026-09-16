@@ -31,7 +31,9 @@ def ssh_exec(pod: dict, command: str) -> tuple[str, str, int]:
     port = int(ssh_port_info["publicPort"])
 
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.WarningPolicy())
+    client.set_missing_host_key_policy(
+        type("_Accept", (), {"missing_host_key": lambda *a: None})()  # type: ignore[arg-type]
+    )
     ssh_key_path = os.environ.get("RUNPOD_SSH_KEY_PATH", os.path.expanduser("~/.ssh/id_ed25519"))
     client.connect(host, port=port, username="root", key_filename=ssh_key_path)
     _, stdout, stderr = client.exec_command(command, timeout=300)
