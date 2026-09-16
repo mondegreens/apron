@@ -486,7 +486,10 @@ class RunPodTarget:
             "'pytorch_version': torch.__version__"
             "}))"
         )
-        result = self.execute(f'python3 -c "{detection_script}"')
+        result = self.execute(
+            f'source /etc/apron_environment 2>/dev/null; '
+            f'/opt/venv/bin/python3 -c "{detection_script}"'
+        )
         if result["exit_code"] != 0:
             raise RuntimeError(f"Hardware detection failed: {result['stderr']}")
         return json.loads(result["stdout"].strip())

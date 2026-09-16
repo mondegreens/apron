@@ -150,7 +150,7 @@ class VllmEngineAdapter:
         parsed = self.parse_profiling_logs(log_text)
 
         mem_result = target.execute(
-            "python3 -c 'import torch; f,t=torch.cuda.mem_get_info(); "
+            "/opt/venv/bin/python3 -c 'import torch; f,t=torch.cuda.mem_get_info(); "
             'print(f"{{\\"post_free\\":{f},\\"post_total\\":{t}}}")\''
         )
         post = _parse_json_output(mem_result)
