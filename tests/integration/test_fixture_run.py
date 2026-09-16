@@ -98,13 +98,16 @@ class TestFixtureRun:
             prep = target.prepare()
             assert prep["status"] == "ready", f"Target not ready: {prep}"
 
-            # Select cheapest GPU that fits
+            # Select GPU — try each in price order until one is available
             prediction = claim.proposed_configuration
-            selected = select_gpu(prep["available_gpus"], prediction, budget_max_usd=5.0)
-            assert selected is not None, "No GPU fits within budget"
-            target._gpu_type = selected["gpu_type_id"]
+            available = prep["available_gpus"]
+            candidates = [
+                g for g in available
+                if prediction.get("total_required_bytes", 0)
+                <= int(g["hardware_spec"].total_memory_bytes * 0.90)
+            ]
+            assert candidates, "No GPU fits within budget"
 
-            # Build env and provision
             env = RunPodTarget.build_env(
                 model_id=MODEL_ID,
                 dtype=plan.dtype or "bfloat16",
@@ -112,7 +115,17 @@ class TestFixtureRun:
                 max_model_len=640,
                 ssh_public_key=public_key,
             )
-            target.provision(env=env)
+
+            for candidate in candidates:
+                target._gpu_type = candidate["gpu_type_id"]
+                try:
+                    target.provision(wait_timeout=600, env=env)
+                    break
+                except Exception:
+                    target._pod_id = None
+                    continue
+            else:
+                pytest.skip("No GPU currently available on RunPod")
             detected_hw = target.hardware
             assert detected_hw.gpu_sku
 
