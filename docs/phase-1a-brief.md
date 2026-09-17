@@ -828,14 +828,18 @@ Phase 1a tests go in:
 def test_engine_adapter_conformance(vllm_engine_adapter):
     """vLLM adapter passes the EngineAdapter conformance suite."""
 
+
 def test_artifact_resolver_conformance(hf_hub_resolver):
     """HF Hub resolver passes the ArtifactSourceResolver conformance suite."""
+
 
 def test_execution_target_conformance(runpod_target):
     """RunPod target passes the ExecutionTarget conformance suite."""
 
+
 def test_evaluation_adapter_conformance(deterministic_scorer):
     """Deterministic scorer passes the EvaluationAdapter conformance suite."""
+
 
 def test_render_target_conformance(vllm_serve_renderer):
     """vllm serve renderer passes the RenderTarget conformance suite."""
@@ -848,8 +852,10 @@ def test_calculator_qwen3_8b_bf16_prediction():
     """Qwen3-8B BF16 produces a non-zero memory prediction with
     uncertainty bounds for RTX 4090."""
 
+
 def test_calculator_unknown_mechanism():
     """An MLA mechanism returns unknown, not a fallback."""
+
 
 def test_calculator_deterministic():
     """Same inputs + same ports = byte-identical PlanningClaim."""
@@ -862,15 +868,19 @@ def test_cli_plan_produces_valid_plan():
     """apron plan with the self-hosted golden fixture produces a valid
     DeploymentPlan."""
 
+
 def test_cli_verify_lifecycle():
     """apron verify calls prepare → provision → execute → observe →
     collect → teardown in order, with fake target."""
 
+
 def test_cli_report_read_only():
     """apron report renders a record without side effects."""
 
+
 def test_cli_submit_requires_confirmation():
     """apron submit without --yes prompts for confirmation."""
+
 
 def test_cli_no_gpu_returns_typed_outcome():
     """apron verify without RUNPOD_API_KEY returns
@@ -884,17 +894,21 @@ def test_identity_chain_from_hf_hub():
     """ArtifactSourceObservation → ArtifactIdentity → ArtifactSpec →
     ExecutionSpec → InferenceSolution constructed without hardcoding."""
 
+
 def test_candidate_graph_includes_unsupported():
     """Unsupported quantization variants remain visible as unsupported
     in the candidate graph, not silently dropped."""
+
 
 def test_legacy_evidence_seeds_candidates():
     """CatalogueImportSource entries appear in the candidate graph
     but do not satisfy deployment_feasible."""
 
+
 def test_engine_constraint_extraction():
     """Constraints extracted from pinned image are consistent with
     pinned external-format vLLM source files."""
+
 
 def test_tensor_byte_extraction():
     """Safetensors header reader produces per-tensor byte counts
@@ -907,11 +921,14 @@ def test_tensor_byte_extraction():
 def test_qualification_graph_single_candidate():
     """One candidate advances through all nodes to qualified."""
 
+
 def test_qualification_graph_capability_pruning():
     """Missing capability prunes at capability_eligible."""
 
+
 def test_qualification_graph_policy_pruning():
     """Violated constraint prunes at policy_checked."""
+
 
 def test_qualification_graph_evidence_tiers():
     """A candidate that passes boot but fails task cannot reach
@@ -926,17 +943,21 @@ def test_record_storage_round_trip():
     """Write a record to local store, retrieve by full digest and
     by 8-character prefix."""
 
+
 def test_retained_solution_findable():
     """After deploy, the retained solution is findable by
     apron report."""
+
 
 def test_sanitization_strips_credentials():
     """A record containing RUNPOD_API_KEY fails sanitization and
     the key is stripped from the sanitized output."""
 
+
 def test_provenance_validation_dangling_ref():
     """A record with a fingerprint pointing to a non-existent
     record fails provenance validation."""
+
 
 def test_provenance_validation_clean():
     """A record with all references resolving passes provenance
@@ -953,32 +974,40 @@ def test_fixture_run_record_1():
     fingerprints, predicted-vs-measured memory, and
     EpistemicStatus: measured."""
 
+
 def test_fixture_run_remediation_record_1():
     """Remediation record #1 exists with mechanism_outcome: verified,
     request_outcome: satisfied, corrected_plan_digest, and
     accepted_request_digest."""
 
+
 def test_corrected_endpoint_reproduces_task():
     """The corrected endpoint reproduces the accepted deterministic
     task result (same cases pass before and after correction)."""
+
 
 def test_records_schema_valid():
     """All produced records pass schema validation and round-trip
     through canonicalize → deserialize → re-canonicalize."""
 
+
 def test_records_pass_sanitization():
     """All produced records pass sanitization and provenance validation
     (no credentials, no raw prompts, fingerprints resolve)."""
+
 
 def test_no_gpu_non_measurement():
     """apron verify with no GPU target returns a typed non-measurement
     outcome, not an error."""
 
+
 def test_target_loss_triggers_teardown():
     """A simulated target loss triggers idempotent teardown."""
 
+
 def test_failed_run_triggers_teardown():
     """A boot failure triggers teardown, not a dangling instance."""
+
 
 def test_self_hosted_acceptance_inv30():
     """The self-hosted acceptance suite passes with external evaluation
@@ -993,9 +1022,11 @@ def test_real_plan_exports_to_recipes():
     """The real DeploymentPlan (not golden fixture) exports to recipes
     YAML with shared fields matching the pinned vllm-recipes format."""
 
+
 def test_real_plan_exports_to_aiconfigurator():
     """The real DeploymentPlan exports to aiconfigurator estimate
     request with shared fields matching the pinned format."""
+
 
 def test_real_plan_exports_to_inferencex():
     """The real DeploymentPlan exports to InferenceX row shape."""
