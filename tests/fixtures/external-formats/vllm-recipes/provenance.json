@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "source_name": "vllm-recipes",
+  "locations": [
+    {
+      "repository": "https://github.com/vllm-project/recipes",
+      "revision": "f050a17eec51c7093727ddbc765c005647bc92f3",
+      "retrieval_method": "git_clone"
+    }
+  ],
+  "retrieval_date": "2026-09-13",
+  "license": "Apache-2.0",
+  "has_formal_schema": false,
+  "formal_schema_file": null,
+  "schema_description": "Convention-based YAML model cards defining deployment configurations, hardware overrides, and compatible serving strategies for vLLM.",
+  "pinned_files": [
+    {
+      "source_path": "models/Qwen/Qwen3-8B.yaml",
+      "local_path": "Qwen3-8B.yaml",
+      "sha256": "d04d3e564bc812dc75e393bf245c20dfc3002f864aecb50085780c729680cb86",
+      "size_bytes": 3603,
+      "role": "representative_content"
+    },
+    {
+      "source_path": "models/deepseek-ai/DeepSeek-V3.yaml",
+      "local_path": "DeepSeek-V3.yaml",
+      "sha256": "1f998dfeac93ace6853e9ddd87c915b5675525831076e5e18e7593b9fa636395",
+      "size_bytes": 7619,
+      "role": "representative_content"
+    },
+    {
+      "source_path": "models/deepseek-ai/DeepSeek-V4-Flash.yaml",
+      "local_path": "DeepSeek-V4-Flash.yaml",
+      "sha256": "c1cc112dbbc48db534ff0e17b24635036930e88163caa9c214caaede33031b94",
+      "size_bytes": 46412,
+      "role": "representative_content"
+    }
+  ],
+  "notes": "ADR-002 ecosystem shape 1 of 3. Dense (Qwen3-8B), MoE (DeepSeek-V3), and full-feature (DeepSeek-V4-Flash) model cards pinned for deployment-plan.json export round-trip testing."
+}

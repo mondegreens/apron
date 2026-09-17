@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "source_name": "inspect-ai",
+  "locations": [
+    {
+      "repository": "https://github.com/UKGovernmentBEIS/inspect_ai",
+      "revision": "8ebe620d74c1eb679438db1b65324e30e2306092",
+      "retrieval_method": "git_clone"
+    }
+  ],
+  "retrieval_date": "2026-09-13",
+  "license": "MIT",
+  "has_formal_schema": false,
+  "formal_schema_file": null,
+  "schema_description": "Pydantic models defining EvalLog, EvalSpec, EvalSample, EvalResults, EvalStats, EvalScore, EvalMetric, Score, Value, and ScoreReason. Schema for the evaluation log format that an Inspect AI evaluation adapter would ingest.",
+  "pinned_files": [
+    {
+      "source_path": "src/inspect_ai/log/_log.py",
+      "local_path": "_log.py",
+      "sha256": "00cb8800ca5711582060a6dcd36b69c796a493246b64cbfb1d779f3476dcf01d",
+      "size_bytes": 47126,
+      "role": "consumer_code"
+    },
+    {
+      "source_path": "src/inspect_ai/scorer/_metric.py",
+      "local_path": "_metric.py",
+      "sha256": "a79f798e23c760cbf1877539e1aa2f8ca5217752bbe485980ea87675c35b51b9",
+      "size_bytes": 18844,
+      "role": "consumer_code"
+    }
+  ],
+  "notes": "Informational reference, not exit-gate. Informs EvaluationAdapter Protocol design. Adapter implementation belongs to Phase 2."
+}

@@ -69,6 +69,8 @@ dev = [
     "import-linter>=2",
     "pytest>=8",
     "hypothesis>=6",
+    "paramiko>=3",
+    "runpod>=1",
 ]
 docs = [
     "zensical==0.0.60",
@@ -79,17 +81,20 @@ docs = [
 [tool.ruff]
 target-version = "py312"
 line-length = 99
-extend-exclude = ["docker"]
+extend-exclude = ["tests/fixtures/external-formats", "docker"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "TCH", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/apron/interfaces/cli.py" = ["B008"]
 
 [tool.pyright]
 pythonVersion = "3.12"
 typeCheckingMode = "standard"
 venvPath = "."
 venv = ".venv"
-exclude = ["docker"]
+exclude = ["tests/fixtures/external-formats", "docker"]
 
 [tool.importlinter]
 root_packages = ["apron"]
@@ -114,3 +119,4 @@ forbidden_modules = ["apron.interfaces"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["integration: marks tests as integration tests (require external services)"]

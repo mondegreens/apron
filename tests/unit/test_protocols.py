@@ -16,12 +16,13 @@ from apron.domain.protocols import (
     EvidenceSource,
     PlanningSource,
     Publisher,
+    RecordStore,
     RenderTarget,
     SignalSource,
 )
 from apron.domain.schemas.authority import AuthorityContribution
-from apron.domain.schemas.primitives import ArtifactLocator
-from apron.domain.schemas.solutions import DeploymentPlan, PlanningClaim
+from apron.domain.schemas.primitives import ArtifactLocator, HardwareSpec
+from apron.domain.schemas.solutions import DeploymentPlan, PlanningClaim, RenderContext
 
 # ---------------------------------------------------------------------------
 # Fake adapters
@@ -37,14 +38,39 @@ class FakeEngineAdapter:
     def engine_version(self) -> str:
         return "0.8.5"
 
-    def boot(self, plan: DeploymentPlan) -> dict[str, Any]:
-        return {"status": "booted", "tp": plan.tensor_parallel}
+    def resolve_support(self, model_spec: Any, image_tag: str) -> dict[str, Any]:
+        return {"supported": True, "tasks": ["generate"]}
 
-    def profile_memory(self) -> dict[str, Any]:
-        return {"model_weight_memory": 8_000_000_000}
+    def validate(self, plan: DeploymentPlan, target: Any) -> list[str]:
+        return []
 
-    def shutdown(self) -> None:
-        pass
+    def render(self, plan: DeploymentPlan) -> dict[str, Any]:
+        return {"model_id": "test", "tp": plan.tensor_parallel}
+
+    def verify(self, plan: DeploymentPlan, target: Any) -> dict[str, Any]:
+        return {
+            "model_weight_memory": 8_000_000_000,
+            "persistent_consumption": 9_000_000_000,
+            "transient_peak_headroom": 1_000_000_000,
+            "non_pytorch_increase": 500_000_000,
+            "cuda_graph_estimate": 200_000_000,
+            "cuda_graph_applied": True,
+            "cuda_graph_actual": 180_000_000,
+            "available_kv_cache_memory": 6_000_000_000,
+            "safety_buffer": 500_000_000,
+            "initial_total_memory": 24_000_000_000,
+            "initial_free_memory": 23_000_000_000,
+            "requested_memory": 16_000_000_000,
+            "profiling_shape": {"batch": 1, "seq_len": 128},
+            "execution_fingerprint": "fake-fingerprint",
+            "target_kind": "local-container",
+        }
+
+    def classify(self, error: str) -> dict[str, Any]:
+        return {"failure_class": "unknown", "error": error}
+
+    def extract_schema(self, image_tag: str) -> dict[str, Any]:
+        return {"architectures": ["LlamaForCausalLM"], "image_tag": image_tag}
 
 
 class FakeArtifactSourceResolver:
@@ -64,8 +90,8 @@ class FakeRenderTarget:
     def target_format(self) -> str:
         return "recipes_yaml"
 
-    def render(self, plan: DeploymentPlan) -> dict[str, Any]:
-        return {"model_id": "test", "tp": plan.tensor_parallel}
+    def render(self, context: RenderContext) -> dict[str, Any]:
+        return {"model_id": context.locator.uri, "tp": context.plan.tensor_parallel}
 
     def parse(self, data: dict[str, Any]) -> dict[str, Any]:
         return {"tensor_parallel": data.get("tp", 1)}
@@ -89,7 +115,7 @@ class FakePlanningSource:
     def producer_version(self) -> str:
         return "1.0.0"
 
-    def plan(self, inputs: dict[str, Any]) -> PlanningClaim:
+    def predict(self, model_spec: Any, hardware_spec: Any, workload_shape: Any) -> PlanningClaim:
         return PlanningClaim(
             producer=self.producer_name,
             version=self.producer_version,
@@ -109,8 +135,47 @@ class FakeEvaluationAdapter:
     def harness_version(self) -> str:
         return "0.4.0"
 
-    def evaluate(self, protocol: dict[str, Any]) -> list[dict[str, Any]]:
-        return [{"case_id": "case-1", "score": 1.0, "accepted": True}]
+    def accepts(self, protocol: dict[str, Any]) -> bool:
+        return protocol.get("harness") == "inspect_ai"
+
+    def prepare(self, protocol: dict[str, Any]) -> dict[str, Any]:
+        return {"prepared": True, "scorer": protocol.get("scorer", "exact_match")}
+
+    def execute(self, protocol: dict[str, Any], endpoint: str) -> list[dict[str, Any]]:
+        return [
+            {"case_id": "case-1", "score": 1.0, "accepted": True},
+            {"case_id": "case-2", "score": 0.0, "accepted": False},
+        ]
+
+    def collect(self, attempts: list[dict[str, Any]]) -> dict[str, Any]:
+        scores = [a["score"] for a in attempts if "score" in a]
+        return {
+            "aggregate_score": sum(scores) / len(scores) if scores else 0.0,
+            "total_attempts": len(attempts),
+        }
+
+
+class FakeRecordStore:
+    def __init__(self) -> None:
+        self._records: dict[str, dict[str, Any]] = {}
+
+    def store(self, record: dict[str, Any]) -> str:
+        from apron.domain.canonical import record_digest_hex
+
+        digest = record_digest_hex(record)
+        self._records[digest] = record
+        return digest
+
+    def retrieve(self, digest: str) -> dict[str, Any] | None:
+        if digest in self._records:
+            return self._records[digest]
+        matches = [k for k in self._records if k.startswith(digest)]
+        if len(matches) == 1:
+            return self._records[matches[0]]
+        return None
+
+    def search(self, prefix: str) -> list[str]:
+        return [k for k in self._records if k.startswith(prefix)]
 
 
 class FakeSignalSource:
@@ -167,10 +232,19 @@ class FakePublisher:
 def test_engine_adapter_satisfies_protocol():
     adapter = FakeEngineAdapter()
     assert isinstance(adapter, EngineAdapter)
-    result = adapter.boot(DeploymentPlan(tensor_parallel=2))
-    assert result["tp"] == 2
-    assert adapter.profile_memory()["model_weight_memory"] > 0
-    adapter.shutdown()
+    support = adapter.resolve_support({"arch": "LlamaForCausalLM"}, "vllm:0.8.5")
+    assert support["supported"] is True
+    plan = DeploymentPlan(tensor_parallel=2)
+    assert adapter.validate(plan, None) == []
+    rendered = adapter.render(plan)
+    assert rendered["tp"] == 2
+    verification = adapter.verify(plan, None)
+    assert verification["model_weight_memory"] > 0
+    assert isinstance(verification, dict)
+    classified = adapter.classify("OOM")
+    assert "failure_class" in classified
+    schema = adapter.extract_schema("vllm:0.8.5")
+    assert "architectures" in schema
 
 
 def test_artifact_source_resolver_satisfies_protocol():
@@ -187,7 +261,16 @@ def test_render_target_satisfies_protocol():
     renderer = FakeRenderTarget()
     assert isinstance(renderer, RenderTarget)
     plan = DeploymentPlan(tensor_parallel=4)
-    rendered = renderer.render(plan)
+    ctx = RenderContext(
+        plan=plan,
+        locator=ArtifactLocator(source_kind="huggingface", uri="test/model"),
+        hardware=HardwareSpec(
+            gpu_sku="RTX 4090",
+            total_memory_bytes=25_769_803_776,
+            compute_capability="8.9",
+        ),
+    )
+    rendered = renderer.render(ctx)
     assert rendered["tp"] == 4
     parsed = renderer.parse(rendered)
     assert parsed["tensor_parallel"] == 4
@@ -203,7 +286,7 @@ def test_evidence_source_satisfies_protocol():
 def test_planning_source_satisfies_protocol():
     source = FakePlanningSource()
     assert isinstance(source, PlanningSource)
-    claim = source.plan({"model": "Qwen3-8B"})
+    claim = source.predict({"arch": "Qwen3ForCausalLM"}, {"gpu_sku": "H100"}, {"batch": 32})
     assert claim.producer == "aiconfigurator"
     assert claim.proposed_configuration["batch_size"] == 32
 
@@ -211,9 +294,18 @@ def test_planning_source_satisfies_protocol():
 def test_evaluation_adapter_satisfies_protocol():
     adapter = FakeEvaluationAdapter()
     assert isinstance(adapter, EvaluationAdapter)
-    results = adapter.evaluate({"scorer": "exact_match"})
-    assert len(results) == 1
+    proto = {"harness": "inspect_ai", "scorer": "exact_match"}
+    assert adapter.accepts(proto) is True
+    assert adapter.accepts({"harness": "other"}) is False
+    prepared = adapter.prepare(proto)
+    assert prepared["prepared"] is True
+    results = adapter.execute(proto, "http://localhost:8000")
+    assert len(results) == 2
     assert results[0]["accepted"] is True
+    assert results[1]["accepted"] is False
+    collected = adapter.collect(results)
+    assert collected["aggregate_score"] == 0.5
+    assert collected["total_attempts"] == 2
 
 
 def test_signal_source_satisfies_protocol():
@@ -229,6 +321,19 @@ def test_authority_source_satisfies_protocol():
     contribution = source.evaluate("submit", None, {})
     assert contribution.decision == "permit"
     assert contribution.source_type == "owner_policy"
+
+
+def test_record_store_satisfies_protocol():
+    store = FakeRecordStore()
+    assert isinstance(store, RecordStore)
+    record = {"type": "test", "value": 42}
+    digest = store.store(record)
+    assert digest.startswith("1220")
+    retrieved = store.retrieve(digest)
+    assert retrieved == record
+    assert store.retrieve("nonexistent") is None
+    results = store.search(digest[:8])
+    assert digest in results
 
 
 def test_publisher_satisfies_protocol():

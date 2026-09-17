@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "source_name": "harbor",
+  "locations": [
+    {
+      "repository": "https://github.com/harbor-framework/harbor",
+      "revision": "1e5c5c6db929a10a140d05e606882c671ae20729",
+      "retrieval_method": "git_clone"
+    }
+  ],
+  "retrieval_date": "2026-09-13",
+  "license": "Apache-2.0",
+  "has_formal_schema": false,
+  "formal_schema_file": null,
+  "schema_description": "Pydantic models defining TrialResult, StepResult, TimingInfo, ExceptionInfo, AgentInfo, ModelInfo, TrialConfig, AgentConfig, EnvironmentConfig, VerifierConfig, and TaskConfig. Schema for the trial result and task config formats that a Harbor evaluation adapter would ingest.",
+  "pinned_files": [
+    {
+      "source_path": "src/harbor/models/trial/result.py",
+      "local_path": "result.py",
+      "sha256": "66130539641e97e6f07569a5264c2d2d2ffda962a68b0be13255a1f8539edcb7",
+      "size_bytes": 4763,
+      "role": "consumer_code"
+    },
+    {
+      "source_path": "src/harbor/models/trial/config.py",
+      "local_path": "config.py",
+      "sha256": "c95acedd896e7bab9f4007ed6373adc7e414ac2b63dfd188b7bbcae6ce5ac480",
+      "size_bytes": 19860,
+      "role": "consumer_code"
+    },
+    {
+      "source_path": "src/harbor/models/task/config.py",
+      "local_path": "task_config.py",
+      "sha256": "d8c62a49acefb8cd6a0be4c4d48dc0f4f52f31f8a8a6728439aad04e1c62e9fb",
+      "size_bytes": 36655,
+      "role": "consumer_code"
+    }
+  ],
+  "notes": "Informational reference, not exit-gate. Informs EvaluationAdapter Protocol design. Adapter implementation belongs to Phase 2."
+}

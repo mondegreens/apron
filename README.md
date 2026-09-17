@@ -7,7 +7,7 @@
 Apron is a decision and evidence system for LLM inference. You give it a task the model has to perform, a quality floor, a latency or throughput target and a data policy. It returns the solution that reproduces that outcome: a managed model API, an open-weight model self-hosted on an inference engine such as vLLM, or a compound system that routes between several of either. The answer names the exact checkpoint and quantization, the engine version, the GPU or provider and the serving configuration. It carries the evidence that produced it and reports the cost per accepted result rather than per token. Every number states how it is known. The interfaces are a CLI, an MCP server in the same package so a coding agent gets a version-pinned answer instead of a guess, and a GitHub Action that re-checks a repository's deployment when a model or engine version changes.
 
 > [!IMPORTANT]
-> **Status.** Specification published September 2026. No implementation yet. Zero records. The PyPI names are reserved at 0.0.0 and contain nothing.
+> **Status.** Phase 0 (contracts and truth model) and Phase 1a (first complete vLLM product loop) implemented September 2026. One internal deployment evidence record with predicted-vs-measured memory, failure injection, correction and task reproduction on Qwen3-8B BF16 via RunPod RTX 4090/A6000. The PyPI names are reserved at 0.0.0 and contain nothing.
 
 ## In this repository
 
