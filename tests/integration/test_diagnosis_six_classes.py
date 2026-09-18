@@ -81,10 +81,7 @@ _SIX_CLASSES = [
     ),
     pytest.param(
         "tp_divisibility",
-        (
-            "Total number of attention heads (28)"
-            " must be divisible by tensor parallel size (4)."
-        ),
+        ("Total number of attention heads (28) must be divisible by tensor parallel size (4)."),
         None,
         id="tp_divisibility",
     ),
@@ -129,9 +126,7 @@ def test_six_classes_through_pipeline(
         },
     )
 
-    result = run_diagnosis_pipeline(
-        error, engine, plan, model_config, hardware, rules
-    )
+    result = run_diagnosis_pipeline(error, engine, plan, model_config, hardware, rules)
 
     assert result.failure_class == expected_class
     assert result.rule_matched, f"No rule matched for {expected_class}"

@@ -412,3 +412,18 @@ def test_extract_engine_init(engine: VllmEngineAdapter) -> None:
 def test_extract_unknown_returns_empty(engine: VllmEngineAdapter) -> None:
     extracted = engine.extract("something random", "unknown")
     assert extracted == {}
+
+
+def test_extract_ignores_chained_traceback(engine: VllmEngineAdapter) -> None:
+    """Extraction must not pull values from an unrelated chained traceback."""
+    error = (
+        "Traceback (most recent call last):\n"
+        "  File 'kv_cache_utils.py', line 879\n"
+        "cache is needed, which is larger than the available KV cache "
+        "memory (6.20 GiB).\n"
+        "Traceback (most recent call last):\n"
+        "  File 'shutdown.py', line 42\n"
+        "Cleanup failed. estimated maximum model length is 2048.\n"
+    )
+    extracted = engine.extract(error, "oom")
+    assert "estimated_max_model_len" not in extracted

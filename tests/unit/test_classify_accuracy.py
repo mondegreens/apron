@@ -7,10 +7,6 @@ Zero-GPU, zero-cost verification. Layer 0 gate for Phase 1b diagnosis.
 
 from __future__ import annotations
 
-import re
-
-import pytest
-
 from apron.adapters.backends.vllm_engine import ERROR_PATTERNS
 
 
@@ -182,9 +178,7 @@ class TestDtypeIncompatible:
 class TestTpDivisibility:
     def test_attention_heads_not_divisible(self) -> None:
         error = (
-            "Total number of attention heads (28)"
-            " must be divisible by tensor parallel size "
-            "(4)."
+            "Total number of attention heads (28) must be divisible by tensor parallel size (4)."
         )
         assert _classify(error) == "tp_divisibility"
 
@@ -224,9 +218,7 @@ class TestEngineInit:
 
     def test_no_draft_model(self) -> None:
         # Source: gpu_worker.py:961
-        error = (
-            "Draft model weight update requested, but no draft model is configured."
-        )
+        error = "Draft model weight update requested, but no draft model is configured."
         assert _classify(error) == "engine_init"
 
     def test_device_type_infer_failure(self) -> None:
@@ -274,8 +266,5 @@ class TestClassifySpecificity:
 
     def test_oom_before_engine_init(self) -> None:
         """OOM during warmup (RuntimeError) should match oom, not engine_init."""
-        error = (
-            "CUDA out of memory occurred when warming up sampler with "
-            "256 dummy requests."
-        )
+        error = "CUDA out of memory occurred when warming up sampler with 256 dummy requests."
         assert _classify(error) == "oom"

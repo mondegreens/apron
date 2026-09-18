@@ -8,12 +8,14 @@ corrected plan; deployment is the caller's responsibility.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from apron.application.orchestration.correction import compute_correction
 from apron.domain.diagnosis import match_rule
-from apron.domain.schemas.primitives import HardwareSpec
-from apron.domain.schemas.solutions import DeploymentPlan
+
+if TYPE_CHECKING:
+    from apron.domain.schemas.primitives import HardwareSpec
+    from apron.domain.schemas.solutions import DeploymentPlan
 
 
 @dataclass(frozen=True)

@@ -122,17 +122,13 @@ class TestClampMaxModelLen:
 
 
 class TestFallbackDtype:
-    def test_low_cc_falls_to_float16(
-        self, base_plan: DeploymentPlan, model_config: dict
-    ) -> None:
+    def test_low_cc_falls_to_float16(self, base_plan: DeploymentPlan, model_config: dict) -> None:
         low_cc = HardwareSpec(
             gpu_sku="GTX 1080",
             total_memory_bytes=8_589_934_592,
             compute_capability="6.1",
         )
-        result = compute_correction(
-            "fallback_dtype", {}, base_plan, model_config, low_cc, None
-        )
+        result = compute_correction("fallback_dtype", {}, base_plan, model_config, low_cc, None)
         assert result is not None
         assert result.dtype == "float16"
 
@@ -143,6 +139,18 @@ class TestFallbackDtype:
         result = compute_correction(
             "fallback_dtype", extracted, base_plan, model_config, hardware, None
         )
+        assert result is not None
+        assert result.dtype == "bfloat16"
+
+    def test_high_cc_gpu_gets_bfloat16(
+        self, base_plan: DeploymentPlan, model_config: dict
+    ) -> None:
+        blackwell = HardwareSpec(
+            gpu_sku="B200",
+            total_memory_bytes=196_608_000_000,
+            compute_capability="10.0",
+        )
+        result = compute_correction("fallback_dtype", {}, base_plan, model_config, blackwell, None)
         assert result is not None
         assert result.dtype == "bfloat16"
 
@@ -164,9 +172,7 @@ class TestReduceTensorParallel:
         assert 28 % result.tensor_parallel == 0
         assert result.tensor_parallel < 4
 
-    def test_falls_to_1_when_no_divisor(
-        self, hardware: HardwareSpec, model_config: dict
-    ) -> None:
+    def test_falls_to_1_when_no_divisor(self, hardware: HardwareSpec, model_config: dict) -> None:
         plan = DeploymentPlan(tensor_parallel=2)
         extracted = {"num_heads": 7, "tp_size": 2}
         result = compute_correction(
@@ -187,15 +193,11 @@ class TestReduceTensorParallel:
 
 
 class TestRemoveQuantization:
-    def test_removes_quantization_key(
-        self, hardware: HardwareSpec, model_config: dict
-    ) -> None:
+    def test_removes_quantization_key(self, hardware: HardwareSpec, model_config: dict) -> None:
         plan = DeploymentPlan(
             engine_configuration={"quantization": "gptq", "max_model_len": "4096"},
         )
-        result = compute_correction(
-            "remove_quantization", {}, plan, model_config, hardware, None
-        )
+        result = compute_correction("remove_quantization", {}, plan, model_config, hardware, None)
         assert result is not None
         assert "quantization" not in result.engine_configuration
         assert result.engine_configuration["max_model_len"] == "4096"

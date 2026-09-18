@@ -9,19 +9,23 @@ from __future__ import annotations
 
 import json
 import logging
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-_REQUIRED_FIELDS = frozenset({
-    "schema_version",
-    "engine",
-    "engine_version",
-    "error_family",
-    "correction_strategy",
-    "status",
-})
+_REQUIRED_FIELDS = frozenset(
+    {
+        "schema_version",
+        "engine",
+        "engine_version",
+        "error_family",
+        "correction_strategy",
+        "status",
+    }
+)
 
 
 def _find_version_dir(rules_dir: Path, engine: str, version: str) -> Path | None:

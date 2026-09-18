@@ -7,6 +7,7 @@ that imports concrete adapters. Phase 1a: hardwired adapter instances.
 from __future__ import annotations
 
 import json
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -28,6 +29,7 @@ from apron.application.orchestration.plan_pipeline import run_plan_pipeline
 from apron.domain.ports import UuidIdGenerator, WallClock
 from apron.domain.schemas.primitives import HardwareSpec
 
+logger = logging.getLogger(__name__)
 app = typer.Typer(name="apron", no_args_is_help=True)
 console = Console()
 
@@ -497,6 +499,8 @@ def run(command: list[str]) -> None:
     from apron.domain.schemas.primitives import HardwareSpec
     from apron.domain.schemas.solutions import DeploymentPlan
 
+    _MAX_BUFFER_LINES = 10_000
+
     engine = VllmEngineAdapter()
     output_buffer: list[str] = []
 
@@ -510,6 +514,8 @@ def run(command: list[str]) -> None:
     for line in process.stdout:
         sys.stdout.write(line)
         output_buffer.append(line)
+        if len(output_buffer) > _MAX_BUFFER_LINES:
+            output_buffer = output_buffer[-_MAX_BUFFER_LINES:]
         classification = engine.classify(line)
         if classification["failure_class"] != "unknown":
             console.print(f"[red]Detected: {classification['failure_class']}[/red]")
@@ -520,7 +526,12 @@ def run(command: list[str]) -> None:
         rules = load_rules(_rules_dir(), "vllm", engine.engine_version)
         hardware = HardwareSpec(gpu_sku="unknown", total_memory_bytes=0, compute_capability="0.0")
         plan = DeploymentPlan()
-        result = run_diagnosis_pipeline(full_output, engine, plan, {}, hardware, rules)
+        try:
+            result = run_diagnosis_pipeline(full_output, engine, plan, {}, hardware, rules)
+        except Exception:
+            logger.debug("Diagnosis pipeline error", exc_info=True)
+            console.print(f"[red]Process exited with code {process.returncode}[/red]")
+            raise typer.Exit(process.returncode) from None
         if result.failure_class != "unknown":
             console.print(f"[red]Diagnosis: {result.failure_class}[/red]")
             if result.corrected_plan is not None:

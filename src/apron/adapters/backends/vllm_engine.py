@@ -128,12 +128,14 @@ def _find_error_block(error: str, failure_class: str) -> str:
         m = pattern.search(error)
         if m:
             frame_start = 0
+            frame_end = len(error)
             for s in tb_starts:
                 if s <= m.start():
                     frame_start = s
                 else:
+                    frame_end = s
                     break
-            return error[frame_start:]
+            return error[frame_start:frame_end]
     return error
 
 

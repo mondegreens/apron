@@ -8,11 +8,13 @@ compute a corrected DeploymentPlan. Pure computation, no I/O, no GPU.
 from __future__ import annotations
 
 import logging
-from collections.abc import Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from apron.domain.schemas.primitives import HardwareSpec
-from apron.domain.schemas.solutions import DeploymentPlan
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from apron.domain.schemas.primitives import HardwareSpec
+    from apron.domain.schemas.solutions import DeploymentPlan
 
 logger = logging.getLogger(__name__)
 
@@ -23,14 +25,16 @@ CORRECTION_BOUNDS: dict[str, tuple[int | float, int | float]] = {
     "tensor_parallel": (1, 8),
 }
 
-TOP_LEVEL_FIELDS = frozenset({
-    "tensor_parallel",
-    "pipeline_parallel",
-    "expert_parallel",
-    "data_parallel",
-    "dtype",
-    "batch_size",
-})
+TOP_LEVEL_FIELDS = frozenset(
+    {
+        "tensor_parallel",
+        "pipeline_parallel",
+        "expert_parallel",
+        "data_parallel",
+        "dtype",
+        "batch_size",
+    }
+)
 
 
 def compute_correction(
@@ -98,8 +102,7 @@ def _check_feasibility(
     usable = int(hardware.total_memory_bytes * 0.95)
     if weight_memory > usable:
         logger.warning(
-            "Correction infeasible: model weights (%d bytes) exceed "
-            "95%% of GPU memory (%d bytes)",
+            "Correction infeasible: model weights (%d bytes) exceed 95%% of GPU memory (%d bytes)",
             weight_memory,
             hardware.total_memory_bytes,
         )
@@ -173,8 +176,11 @@ def _fallback_dtype(
     hardware: HardwareSpec,
     vr: dict[str, Any] | None,
 ) -> dict[str, Any]:
-    cc = hardware.compute_capability
-    if cc < "8.0":
+    try:
+        cc = float(hardware.compute_capability)
+    except (ValueError, TypeError):
+        cc = 0.0
+    if cc < 8.0:
         return {"dtype": "float16"}
     unsupported = str(extracted.get("unsupported_dtype", ""))
     if unsupported == "float16":

@@ -73,9 +73,7 @@ class TestPipelinePerClass:
             "Based on the available memory, "
             "the estimated maximum model length is 8192."
         )
-        result = run_diagnosis_pipeline(
-            error, engine, base_plan, model_config, hardware, rules
-        )
+        result = run_diagnosis_pipeline(error, engine, base_plan, model_config, hardware, rules)
         assert result.failure_class == "oom"
         assert result.rule_matched
         assert result.corrected_plan is not None
@@ -90,13 +88,8 @@ class TestPipelinePerClass:
         hardware: HardwareSpec,
         rules: list[dict],
     ) -> None:
-        error = (
-            "CUDA out of memory occurred when warming up sampler with "
-            "256 dummy requests."
-        )
-        result = run_diagnosis_pipeline(
-            error, engine, base_plan, model_config, hardware, rules
-        )
+        error = "CUDA out of memory occurred when warming up sampler with 256 dummy requests."
+        result = run_diagnosis_pipeline(error, engine, base_plan, model_config, hardware, rules)
         assert result.failure_class == "oom"
         assert result.corrected_plan is not None
         assert result.corrected_plan.engine_configuration["max_num_seqs"] == "128"
@@ -114,9 +107,7 @@ class TestPipelinePerClass:
             "than the derived max_model_len (max_position_embeddings="
             "32768 or model_max_length=None in model's config.json)."
         )
-        result = run_diagnosis_pipeline(
-            error, engine, base_plan, model_config, hardware, rules
-        )
+        result = run_diagnosis_pipeline(error, engine, base_plan, model_config, hardware, rules)
         assert result.failure_class == "max_model_len"
         assert result.corrected_plan is not None
         assert result.corrected_plan.engine_configuration["max_model_len"] == "32768"
@@ -133,9 +124,7 @@ class TestPipelinePerClass:
             "The model type 'Qwen3MoeForCausalLM' does not support float16. "
             "Reason: quantized models require bfloat16"
         )
-        result = run_diagnosis_pipeline(
-            error, engine, base_plan, model_config, hardware, rules
-        )
+        result = run_diagnosis_pipeline(error, engine, base_plan, model_config, hardware, rules)
         assert result.failure_class == "dtype_incompatible"
         assert result.corrected_plan is not None
         assert result.corrected_plan.dtype in ("bfloat16", "float16")
@@ -149,12 +138,9 @@ class TestPipelinePerClass:
         rules: list[dict],
     ) -> None:
         error = (
-            "Total number of attention heads (28)"
-            " must be divisible by tensor parallel size (4)."
+            "Total number of attention heads (28) must be divisible by tensor parallel size (4)."
         )
-        result = run_diagnosis_pipeline(
-            error, engine, base_plan, model_config, hardware, rules
-        )
+        result = run_diagnosis_pipeline(error, engine, base_plan, model_config, hardware, rules)
         assert result.failure_class == "tp_divisibility"
         assert result.corrected_plan is not None
         assert 28 % result.corrected_plan.tensor_parallel == 0
@@ -174,9 +160,7 @@ class TestPipelinePerClass:
             "is not supported for the current GPU. Minimum "
             "capability: 80. Current capability: 75."
         )
-        result = run_diagnosis_pipeline(
-            error, engine, plan, model_config, hardware, rules
-        )
+        result = run_diagnosis_pipeline(error, engine, plan, model_config, hardware, rules)
         assert result.failure_class == "quant_compute_capability"
         assert result.corrected_plan is not None
         assert "quantization" not in result.corrected_plan.engine_configuration
@@ -224,9 +208,7 @@ class TestPipelineEdgeCases:
             "Based on the available memory, "
             "the estimated maximum model length is 8192."
         )
-        result = run_diagnosis_pipeline(
-            error, engine, base_plan, model_config, hardware, rules
-        )
+        result = run_diagnosis_pipeline(error, engine, base_plan, model_config, hardware, rules)
         assert result.corrected_plan is not None
         assert isinstance(result.corrected_plan, DeploymentPlan)
         assert result.corrected_plan.schema_version == 1
@@ -265,9 +247,7 @@ class TestPipelineEdgeCases:
         plan = DeploymentPlan(engine_configuration={"max_model_len": "4096"})
         vr = {"model_weight_memory": 20_000_000_000}
         error = "torch.cuda.OutOfMemoryError: CUDA error: out of memory"
-        result = run_diagnosis_pipeline(
-            error, engine, plan, model_config, small_gpu, rules, vr
-        )
+        result = run_diagnosis_pipeline(error, engine, plan, model_config, small_gpu, rules, vr)
         assert result.failure_class == "oom"
         assert result.rule_matched
         assert result.corrected_plan is None
