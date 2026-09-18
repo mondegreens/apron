@@ -117,10 +117,10 @@ def test_six_classes_through_pipeline(
     """Each failure class produces a corrected plan through one generic pipeline."""
     plan = DeploymentPlan(
         tensor_parallel=4,
-        dtype="bfloat16",
+        dtype="float16",
         engine_configuration={
             "gpu_memory_utilization": "0.90",
-            "max_model_len": "32768",
+            "max_model_len": "131072",
             "max_num_seqs": "256",
             "quantization": "gptq",
         },

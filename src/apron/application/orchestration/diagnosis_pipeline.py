@@ -87,12 +87,16 @@ def run_diagnosis_pipeline(
             error_trace=error[:2000],
         )
 
+    label = "Corrected"
+    if corrected == plan:
+        label = "No effective correction"
+
     return DiagnosisPipelineResult(
         failure_class=failure_class,
         extracted=extracted,
         rule_matched=True,
         correction_strategy=strategy,
         corrected_plan=corrected,
-        result_label="Corrected",
+        result_label=label,
         error_trace=error[:2000],
     )

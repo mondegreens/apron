@@ -504,12 +504,16 @@ def run(command: list[str]) -> None:
     engine = VllmEngineAdapter()
     output_buffer: list[str] = []
 
-    process = subprocess.Popen(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-    )
+    try:
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+    except OSError as exc:
+        console.print(f"[red]Failed to start command: {exc}[/red]")
+        raise typer.Exit(1) from None
     assert process.stdout is not None
     for line in process.stdout:
         sys.stdout.write(line)
