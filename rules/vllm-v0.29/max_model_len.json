@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "max_model_len",
+  "correction_strategy": "clamp_max_model_len",
+  "source_sites": [
+    {"module": "vllm.config.model", "line": 2517}
+  ],
+  "status": "hypothesis"
+}

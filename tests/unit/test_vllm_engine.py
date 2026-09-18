@@ -140,23 +140,64 @@ def test_classify_oom(engine: VllmEngineAdapter) -> None:
 
 
 def test_classify_engine_init(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("RuntimeError: Failed to initialize engine")
+    result = engine.classify("Unsupported task: 'summarize' for model 'Qwen3-8B'")
     assert result["failure_class"] == "engine_init"
 
 
 def test_classify_max_model_len(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("ValueError: max_model_len exceeds maximum")
+    result = engine.classify(
+        "User-specified max_model_len (131072) is greater "
+        "than the derived max_model_len (max_position_embeddings=32768)"
+    )
     assert result["failure_class"] == "max_model_len"
 
 
 def test_classify_dtype(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("BFloat16 is not supported on this GPU")
+    result = engine.classify(
+        "The model type 'Qwen3MoeForCausalLM' does not support float16. "
+        "Reason: quantized models require bfloat16"
+    )
     assert result["failure_class"] == "dtype_incompatible"
 
 
 def test_classify_tp_divisibility(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("num_heads is not divisible by tensor_parallel")
+    result = engine.classify(
+        "Total number of attention heads (28) must be divisible by tensor parallel size (4)."
+    )
     assert result["failure_class"] == "tp_divisibility"
+
+
+def test_classify_oom_kv_cache(engine: VllmEngineAdapter) -> None:
+    result = engine.classify(
+        "cache is needed, which is larger than the available KV cache memory (6.20 GiB)."
+    )
+    assert result["failure_class"] == "oom"
+
+
+def test_classify_quant_compute_capability(engine: VllmEngineAdapter) -> None:
+    result = engine.classify(
+        "The quantization method gptq "
+        "is not supported for the current GPU. Minimum "
+        "capability: 80. Current capability: 75."
+    )
+    assert result["failure_class"] == "quant_compute_capability"
+
+
+def test_classify_returns_match_position(engine: VllmEngineAdapter) -> None:
+    result = engine.classify("torch.cuda.OutOfMemoryError: CUDA error")
+    assert "match_start" in result
+    assert "match_end" in result
+    assert result["match_start"] >= 0
+    assert result["match_end"] > result["match_start"]
+
+
+def test_classify_order_specificity(engine: VllmEngineAdapter) -> None:
+    """OOM KV cache matches before dtype for messages containing 'not supported'."""
+    error = (
+        "cache is needed, which is larger than the available KV cache "
+        "memory (6.20 GiB). dtype not supported"
+    )
+    assert engine.classify(error)["failure_class"] == "oom"
 
 
 def test_classify_unknown(engine: VllmEngineAdapter) -> None:
@@ -292,3 +333,82 @@ def test_parse_profiling_logs_extracts_vllm_output(engine: VllmEngineAdapter) ->
 def test_parse_profiling_logs_empty(engine: VllmEngineAdapter) -> None:
     parsed = engine.parse_profiling_logs("")
     assert parsed == {}
+
+
+# ---------------------------------------------------------------------------
+# extract
+# ---------------------------------------------------------------------------
+
+
+def test_extract_oom_kv_cache(engine: VllmEngineAdapter) -> None:
+    error = (
+        "To serve at least one request with the model's max seq len "
+        "(32768), (14.50 GiB KV "
+        "cache is needed, which is larger than the available KV cache "
+        "memory (6.20 GiB). "
+        "Based on the available memory, "
+        "the estimated maximum model length is 8192."
+    )
+    extracted = engine.extract(error, "oom")
+    assert extracted["estimated_max_model_len"] == 8192
+    assert extracted["max_model_len"] == 32768
+    assert abs(float(extracted["needed_gib"]) - 14.50) < 0.01
+    assert abs(float(extracted["available_gib"]) - 6.20) < 0.01
+
+
+def test_extract_oom_warmup(engine: VllmEngineAdapter) -> None:
+    error = "CUDA out of memory occurred when warming up sampler with 256 dummy requests."
+    extracted = engine.extract(error, "oom")
+    assert extracted["max_num_seqs_attempted"] == 256
+
+
+def test_extract_max_model_len(engine: VllmEngineAdapter) -> None:
+    error = (
+        "User-specified max_model_len (131072) is greater "
+        "than the derived max_model_len (max_position_embeddings="
+        "32768 or model_max_length=None in model's config.json)."
+    )
+    extracted = engine.extract(error, "max_model_len")
+    assert extracted["requested"] == 131072
+    assert extracted["derived_max"] == 32768
+    assert extracted["max_len_key"] == "max_position_embeddings"
+
+
+def test_extract_dtype_incompatible(engine: VllmEngineAdapter) -> None:
+    error = (
+        "The model type 'Qwen3MoeForCausalLM' does not support float16. "
+        "Reason: quantized models require bfloat16"
+    )
+    extracted = engine.extract(error, "dtype_incompatible")
+    assert extracted["model_type"] == "Qwen3MoeForCausalLM"
+    assert extracted["unsupported_dtype"] == "float16"
+
+
+def test_extract_tp_divisibility(engine: VllmEngineAdapter) -> None:
+    error = "Total number of attention heads (28) must be divisible by tensor parallel size (4)."
+    extracted = engine.extract(error, "tp_divisibility")
+    assert extracted["num_heads"] == 28
+    assert extracted["tp_size"] == 4
+
+
+def test_extract_quant_compute_capability(engine: VllmEngineAdapter) -> None:
+    error = (
+        "The quantization method gptq "
+        "is not supported for the current GPU. Minimum "
+        "capability: 80. Current capability: 75."
+    )
+    extracted = engine.extract(error, "quant_compute_capability")
+    assert extracted["method"] == "gptq"
+    assert extracted["min_cap"] == 80
+    assert extracted["cur_cap"] == 75
+
+
+def test_extract_engine_init(engine: VllmEngineAdapter) -> None:
+    error = "LoRA is not enabled. Use --enable-lora to enable LoRA."
+    extracted = engine.extract(error, "engine_init")
+    assert "suggested_fix" in extracted
+
+
+def test_extract_unknown_returns_empty(engine: VllmEngineAdapter) -> None:
+    extracted = engine.extract("something random", "unknown")
+    assert extracted == {}

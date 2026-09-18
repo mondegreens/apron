@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "quant_compute_capability",
+  "correction_strategy": "remove_quantization",
+  "source_sites": [
+    {"module": "vllm.config.vllm", "line": 791}
+  ],
+  "status": "hypothesis"
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "engine_init",
+  "correction_strategy": "fallback_engine_config",
+  "source_sites": [
+    {"module": "vllm.config.model", "line": 1783},
+    {"module": "vllm.config.device", "line": 56},
+    {"module": "vllm.v1.worker.lora_model_runner_mixin", "line": 87},
+    {"module": "vllm.v1.worker.gpu_worker", "line": 960}
+  ],
+  "status": "hypothesis"
+}

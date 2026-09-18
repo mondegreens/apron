@@ -63,6 +63,9 @@ apron = "apron.interfaces.cli:app"
 
 [project.entry-points."apron.publishers"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"rules" = "apron/rules"
+
 [dependency-groups]
 dev = [
     "pyright>=1.1",

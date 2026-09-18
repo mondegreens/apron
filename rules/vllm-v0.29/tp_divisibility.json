@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "tp_divisibility",
+  "correction_strategy": "reduce_tensor_parallel",
+  "source_sites": [
+    {"module": "vllm.config.model", "line": 1414}
+  ],
+  "status": "hypothesis"
+}

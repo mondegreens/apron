@@ -26,29 +26,150 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 ERROR_PATTERNS: list[tuple[re.Pattern[str], str]] = [
+    # oom — torch OOM during weight loading or warmup
+    # Source: gpu_model_runner.py:5460, 6370, 6473
     (
         re.compile(
-            r"OutOfMemoryError|CUDA out of memory|out of memory|torch\.cuda\.OutOfMemoryError",
+            r"OutOfMemoryError|CUDA out of memory|torch\.cuda\.OutOfMemoryError",
             re.IGNORECASE,
         ),
         "oom",
     ),
+    # oom — KV cache memory insufficient (ValueError, not torch OOM)
+    # Source: kv_cache_utils.py:858, 879
     (
-        re.compile(r"larger than the maximum number of tokens.*KV cache", re.IGNORECASE),
+        re.compile(
+            r"larger than the available KV cache memory|"
+            r"No available memory for the cache blocks",
+            re.IGNORECASE,
+        ),
         "oom",
     ),
-    (re.compile(r"RuntimeError.*engine", re.IGNORECASE), "engine_init"),
-    (re.compile(r"ValueError.*max_model_len", re.IGNORECASE), "max_model_len"),
+    # max_model_len — user value exceeds model-derived maximum
+    # Source: config/model.py:2517
     (
-        re.compile(r"dtype.*not supported|BFloat16 is not supported", re.IGNORECASE),
+        re.compile(
+            r"max_model_len.*is greater than|"
+            r"max_model_len must be a positive integer",
+            re.IGNORECASE,
+        ),
+        "max_model_len",
+    ),
+    # dtype_incompatible — dtype not supported by model type, platform, or quant
+    # Sources: config/model.py:2261, config/vllm.py:799
+    (
+        re.compile(
+            r"does not support float16|"
+            r"is not supported for quantization method|"
+            r"bfloat16 KV cache is not supported|"
+            r"dtype.*not supported",
+            re.IGNORECASE,
+        ),
         "dtype_incompatible",
     ),
-    (re.compile(r"not divisible by tensor_parallel", re.IGNORECASE), "tp_divisibility"),
+    # tp_divisibility — attention heads not divisible by TP size
+    # Source: config/model.py:1414
     (
-        re.compile(r"quantization.*compute capability", re.IGNORECASE),
+        re.compile(
+            r"must be divisible by tensor parallel|"
+            r"is not divisible by",
+            re.IGNORECASE,
+        ),
+        "tp_divisibility",
+    ),
+    # quant_compute_capability — GPU too old for quantization method
+    # Source: config/vllm.py:791
+    (
+        re.compile(
+            r"quantization.*not supported for the current GPU|"
+            r"Minimum capability:.*Current capability:",
+            re.IGNORECASE,
+        ),
         "quant_compute_capability",
     ),
+    # engine_init — correctable config RuntimeErrors only
+    # Sources: config/model.py (unsupported task/model),
+    #   config/device.py:56, lora_model_runner_mixin.py:87,
+    #   gpu_worker.py:960
+    (
+        re.compile(
+            r"Unsupported task|"
+            r"LoRA is not enabled|"
+            r"no draft model is configured|"
+            r"Failed to infer device type",
+            re.IGNORECASE,
+        ),
+        "engine_init",
+    ),
 ]
+
+# -------------------------------------------------------------------
+# Extraction: typed value capture from classified error messages
+# -------------------------------------------------------------------
+
+_RE_TRACEBACK = re.compile(r"Traceback \(most recent call last\):")
+
+
+def _find_error_block(error: str, failure_class: str) -> str:
+    """Return the contiguous error block around the match.
+
+    Searches for the enclosing traceback frame (delimited by
+    ``Traceback (most recent call last):`` or blank lines) and
+    returns the text within it. Falls back to the full error string
+    when no traceback boundary is found.
+    """
+    tb_starts = [m.start() for m in _RE_TRACEBACK.finditer(error)]
+    if not tb_starts:
+        return error
+
+    for pattern, fc in ERROR_PATTERNS:
+        if fc != failure_class:
+            continue
+        m = pattern.search(error)
+        if m:
+            frame_start = 0
+            for s in tb_starts:
+                if s <= m.start():
+                    frame_start = s
+                else:
+                    break
+            return error[frame_start:]
+    return error
+
+
+_ExtractorEntry = tuple[str, re.Pattern[str], type]
+
+_EXTRACTORS: dict[str, list[_ExtractorEntry]] = {
+    "oom": [
+        ("estimated_max_model_len", re.compile(r"estimated maximum model length is (\d+)"), int),
+        ("max_model_len", re.compile(r"max seq len\s*\((\d+)\)"), int),
+        ("needed_gib", re.compile(r"([\d.]+)\s*GiB KV\s*cache is needed"), float),
+        ("available_gib", re.compile(r"available KV cache\s*memory \(([\d.]+)\s*GiB\)"), float),
+        ("max_num_seqs_attempted", re.compile(r"warming up (?:sampler|pooler) with\s*(\d+)"), int),
+    ],
+    "max_model_len": [
+        ("requested", re.compile(r"max_model_len \((\d+)\)"), int),
+        ("derived_max", re.compile(r"derived max_model_len \([^=]+=(\d+)"), int),
+        ("max_len_key", re.compile(r"derived max_model_len \((\w+)="), str),
+    ],
+    "dtype_incompatible": [
+        ("model_type", re.compile(r"model type '(\w+)'"), str),
+        ("unsupported_dtype", re.compile(r"does not support (\w+)"), str),
+        ("supported_list", re.compile(r"Supported dtypes:\s*(.+)"), str),
+    ],
+    "tp_divisibility": [
+        ("num_heads", re.compile(r"attention heads \((\d+)\)"), int),
+        ("tp_size", re.compile(r"tensor parallel size\s*\((\d+)\)"), int),
+    ],
+    "quant_compute_capability": [
+        ("method", re.compile(r"quantization method (\w+)"), str),
+        ("min_cap", re.compile(r"Minimum capability:\s*(\d+)"), int),
+        ("cur_cap", re.compile(r"Current capability:\s*(\d+)"), int),
+    ],
+    "engine_init": [
+        ("suggested_fix", re.compile(r"(?:Use |please set )(.+?)(?:\.|$)", re.IGNORECASE), str),
+    ],
+}
 
 # vLLM startup log patterns (from vllm/v1/worker/gpu_worker.py)
 _RE_AVAILABLE_KV = re.compile(r"Available KV cache memory:\s*([\d.]+)\s*GiB")
@@ -177,12 +298,28 @@ class VllmEngineAdapter:
 
     def classify(self, error: str) -> dict[str, Any]:
         for pattern, failure_class in ERROR_PATTERNS:
-            if pattern.search(error):
+            m = pattern.search(error)
+            if m:
                 return {
                     "failure_class": failure_class,
                     "matched_pattern": pattern.pattern,
+                    "match_start": m.start(),
+                    "match_end": m.end(),
                 }
         return {"failure_class": "unknown", "raw_error": error[:500]}
+
+    def extract(self, error: str, failure_class: str) -> dict[str, int | float | str]:
+        """Extract typed values from classified error for deterministic correction."""
+        block = _find_error_block(error, failure_class)
+        extractors = _EXTRACTORS.get(failure_class)
+        if extractors is None:
+            return {}
+        result: dict[str, int | float | str] = {}
+        for key, pattern, converter in extractors:
+            m = pattern.search(block)
+            if m:
+                result[key] = converter(m.group(1))
+        return result
 
     def extract_schema(self, image_tag: str) -> dict[str, Any]:
         architectures = self._get_supported_architectures(image_tag)

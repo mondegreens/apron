@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "dtype_incompatible",
+  "correction_strategy": "fallback_dtype",
+  "source_sites": [
+    {"module": "vllm.config.model", "line": 2261},
+    {"module": "vllm.config.vllm", "line": 799}
+  ],
+  "status": "hypothesis"
+}

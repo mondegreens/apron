@@ -491,9 +491,14 @@ def run(command: list[str]) -> None:
         console.print("[red]No command provided[/red]")
         raise typer.Exit(1)
 
+    from apron.adapters.backends.rule_loader import load_rules
     from apron.adapters.backends.vllm_engine import VllmEngineAdapter
+    from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
+    from apron.domain.schemas.primitives import HardwareSpec
+    from apron.domain.schemas.solutions import DeploymentPlan
 
     engine = VllmEngineAdapter()
+    output_buffer: list[str] = []
 
     process = subprocess.Popen(
         command,
@@ -504,13 +509,24 @@ def run(command: list[str]) -> None:
     assert process.stdout is not None
     for line in process.stdout:
         sys.stdout.write(line)
+        output_buffer.append(line)
         classification = engine.classify(line)
         if classification["failure_class"] != "unknown":
             console.print(f"[red]Detected: {classification['failure_class']}[/red]")
 
     process.wait()
     if process.returncode != 0:
-        console.print(f"[red]Process exited with code {process.returncode}[/red]")
+        full_output = "".join(output_buffer)
+        rules = load_rules(_rules_dir(), "vllm", engine.engine_version)
+        hardware = HardwareSpec(gpu_sku="unknown", total_memory_bytes=0, compute_capability="0.0")
+        plan = DeploymentPlan()
+        result = run_diagnosis_pipeline(full_output, engine, plan, {}, hardware, rules)
+        if result.failure_class != "unknown":
+            console.print(f"[red]Diagnosis: {result.failure_class}[/red]")
+            if result.corrected_plan is not None:
+                console.print(f"[green]Correction: {result.correction_strategy}[/green]")
+        else:
+            console.print(f"[red]Process exited with code {process.returncode}[/red]")
         raise typer.Exit(process.returncode)
 
 
@@ -570,6 +586,44 @@ def submit(
 
 
 # ---------------------------------------------------------------------------
+# MCP helpers
+# ---------------------------------------------------------------------------
+
+
+def _rules_dir() -> Path:
+    """Locate the rules directory — works from source checkout and pip install."""
+    import apron
+
+    pkg_dir = Path(apron.__file__).parent
+    pkg_rules = pkg_dir / "rules"
+    if pkg_rules.is_dir():
+        return pkg_rules
+    return Path(__file__).parents[3] / "rules"
+
+
+def _handle_diagnose(arguments: dict[str, Any]) -> str:
+    """Handle apron_diagnose MCP tool call. No logic here — delegates to pipeline."""
+    from dataclasses import asdict
+
+    from apron.adapters.backends.rule_loader import load_rules
+    from apron.adapters.backends.vllm_engine import VllmEngineAdapter
+    from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
+    from apron.domain.schemas.primitives import HardwareSpec
+    from apron.domain.schemas.solutions import DeploymentPlan
+
+    engine = VllmEngineAdapter()
+    rules = load_rules(_rules_dir(), "vllm", engine.engine_version)
+
+    hardware = HardwareSpec(gpu_sku="unknown", total_memory_bytes=0, compute_capability="0.0")
+    plan = DeploymentPlan()
+    result = run_diagnosis_pipeline(arguments["error"], engine, plan, {}, hardware, rules)
+    output = asdict(result)
+    if result.corrected_plan is not None:
+        output["corrected_plan"] = result.corrected_plan.model_dump(mode="json")
+    return json.dumps(output, indent=2, default=str)
+
+
+# ---------------------------------------------------------------------------
 # apron mcp
 # ---------------------------------------------------------------------------
 
@@ -604,6 +658,15 @@ def mcp_server() -> None:
             },
             "required": ["record_id"],
         }
+        diagnose_schema: dict[str, Any] = {
+            "type": "object",
+            "properties": {
+                "error": {"type": "string", "description": "Full error output from vLLM"},
+                "model": {"type": "string", "description": "Model identifier"},
+                "plan_digest": {"type": "string", "description": "Digest of the failing plan"},
+            },
+            "required": ["error", "model"],
+        }
         return [
             Tool(
                 name="apron_plan",
@@ -615,6 +678,11 @@ def mcp_server() -> None:
                 description="Retrieve a stored record",
                 inputSchema=report_schema,  # pyright: ignore[reportCallIssue]
             ),
+            Tool(
+                name="apron_diagnose",
+                description="Diagnose a vLLM deployment failure and suggest correction",
+                inputSchema=diagnose_schema,  # pyright: ignore[reportCallIssue]
+            ),
         ]
 
     @server.call_tool()  # type: ignore[misc]
@@ -625,6 +693,8 @@ def mcp_server() -> None:
             if record is None:
                 return [TextContent(type="text", text=json.dumps({"error": "Record not found"}))]
             return [TextContent(type="text", text=json.dumps(record, indent=2))]
+        if name == "apron_diagnose":
+            return [TextContent(type="text", text=_handle_diagnose(arguments))]
         return [TextContent(type="text", text=json.dumps({"error": f"Unknown tool: {name}"}))]
 
     async def _run() -> None:
