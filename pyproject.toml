@@ -73,7 +73,7 @@ dev = [
     "runpod>=1",
 ]
 docs = [
-    "zensical==0.0.60",
+    "zensical==0.0.62",
     "mkdocstrings-python>=2.0",
     "mike>=2.2",
 ]
