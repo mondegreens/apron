@@ -74,7 +74,7 @@ torchcodec >= 0.14
 PyNvVideoCodec==2.0.4
 --extra-index-url https://flashinfer.ai/whl/
 flashinfer-python==0.6.18
-flashinfer-cubin==0.6.18; platform_machine == "x86_64"
+flashinfer-cubin==0.6.18.post1; platform_machine == "x86_64"
 apache-tvm-ffi==0.1.11
 tilelang==0.1.12
 nvidia-cudnn-frontend>=1.19.1
