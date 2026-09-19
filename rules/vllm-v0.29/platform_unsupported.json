@@ -1,0 +1,23 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "platform_unsupported",
+  "correction_spec": {
+    "action": "set_field",
+    "field": "attention_config",
+    "value": "auto"
+  },
+  "extraction_schema": {},
+  "source_sites": [
+    {
+      "file": "model_executor/models/config.py",
+      "line": 124
+    }
+  ],
+  "examples": [
+    "Unlimited-OCR: --attention-config backend=FLASH_ATTN requires FA4 (rswa_mask_mod), but FA4 is not available on this device/installation. Use backend=TRITON_ATTN or FLEX_ATTENTION, or upgrade vllm-flas"
+  ],
+  "status": "hypothesis",
+  "count": 1
+}

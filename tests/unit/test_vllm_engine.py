@@ -5,6 +5,7 @@ Collects the EngineAdapter conformance suite via pytest_plugins.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -127,42 +128,6 @@ def test_validate_dtype_compute_capability(engine: VllmEngineAdapter) -> None:
     )
     errors = engine.validate(plan, low_cc_target)
     assert any("compute capability" in e for e in errors)
-
-
-# ---------------------------------------------------------------------------
-# classify
-# ---------------------------------------------------------------------------
-
-
-def test_classify_oom(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("torch.OutOfMemoryError: CUDA out of memory")
-    assert result["failure_class"] == "oom"
-
-
-def test_classify_engine_init(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("RuntimeError: Failed to initialize engine")
-    assert result["failure_class"] == "engine_init"
-
-
-def test_classify_max_model_len(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("ValueError: max_model_len exceeds maximum")
-    assert result["failure_class"] == "max_model_len"
-
-
-def test_classify_dtype(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("BFloat16 is not supported on this GPU")
-    assert result["failure_class"] == "dtype_incompatible"
-
-
-def test_classify_tp_divisibility(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("num_heads is not divisible by tensor_parallel")
-    assert result["failure_class"] == "tp_divisibility"
-
-
-def test_classify_unknown(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("something completely different happened")
-    assert result["failure_class"] == "unknown"
-    assert "raw_error" in result
 
 
 # ---------------------------------------------------------------------------
@@ -292,3 +257,65 @@ def test_parse_profiling_logs_extracts_vllm_output(engine: VllmEngineAdapter) ->
 def test_parse_profiling_logs_empty(engine: VllmEngineAdapter) -> None:
     parsed = engine.parse_profiling_logs("")
     assert parsed == {}
+
+
+# ---------------------------------------------------------------------------
+# extraction_confidence
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_confidence_full() -> None:
+    from apron.adapters.backends.rule_loader import load_rules
+    from apron.domain.diagnosis import build_extraction_schemas, extraction_confidence
+
+    rules = load_rules(Path(__file__).parents[2] / "rules", "vllm", "v0.29")
+    schemas = build_extraction_schemas(rules)
+    tp_fields = {k for k, _ in schemas.get("tp_divisibility", [])}
+    extracted = {k: 1 for k in tp_fields}
+    assert extraction_confidence("tp_divisibility", extracted, schemas) == 1.0
+
+
+def test_extraction_confidence_partial() -> None:
+    from apron.adapters.backends.rule_loader import load_rules
+    from apron.domain.diagnosis import build_extraction_schemas, extraction_confidence
+
+    rules = load_rules(Path(__file__).parents[2] / "rules", "vllm", "v0.29")
+    schemas = build_extraction_schemas(rules)
+    tp_fields = [k for k, _ in schemas.get("tp_divisibility", [])]
+    extracted = {tp_fields[0]: 1} if tp_fields else {}
+    conf = extraction_confidence("tp_divisibility", extracted, schemas)
+    assert 0.0 < conf < 1.0
+
+
+def test_extraction_confidence_empty() -> None:
+    from apron.adapters.backends.rule_loader import load_rules
+    from apron.domain.diagnosis import build_extraction_schemas, extraction_confidence
+
+    rules = load_rules(Path(__file__).parents[2] / "rules", "vllm", "v0.29")
+    schemas = build_extraction_schemas(rules)
+    assert extraction_confidence("tp_divisibility", {}, schemas) == 0.0
+
+
+def test_extraction_confidence_unknown() -> None:
+    from apron.domain.diagnosis import extraction_confidence
+
+    assert extraction_confidence("unknown", {}) == 1.0
+
+
+# ---------------------------------------------------------------------------
+# detect_engine_version
+# ---------------------------------------------------------------------------
+
+
+def test_detect_version_from_output(engine: VllmEngineAdapter) -> None:
+    output = "INFO 09-18 vLLM v0.29.0 starting on http://0.0.0.0:8000"
+    assert engine.detect_engine_version(output) == "0.29.0"
+
+
+def test_detect_version_missing(engine: VllmEngineAdapter) -> None:
+    assert engine.detect_engine_version("no version info here") is None
+
+
+def test_detect_version_different(engine: VllmEngineAdapter) -> None:
+    output = "vLLM 0.30.1 loaded"
+    assert engine.detect_engine_version(output) == "0.30.1"

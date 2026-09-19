@@ -1,0 +1,19 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "quant_compute_capability",
+  "correction_strategy": "remove_quantization",
+  "extraction_schema": {},
+  "source_sites": [
+    {
+      "file": "config/mamba.py",
+      "line": 98
+    }
+  ],
+  "examples": [
+    "Stochastic rounding for Mamba cache with triton backend requires compute capability 10.0 (data center Blackwell). The `cvt.rs` PTX instruction is not supported on your GPU. Please do not specify `--en"
+  ],
+  "status": "hypothesis",
+  "count": 1
+}

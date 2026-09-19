@@ -1,0 +1,57 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "kv_transfer_config",
+  "correction_spec": {
+    "action": "fallback",
+    "description": "manual review needed"
+  },
+  "extraction_schema": {
+    "get_args": "string",
+    "backend": "string"
+  },
+  "source_sites": [
+    {
+      "file": "config/kv_transfer.py",
+      "line": 103
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/factory.py",
+      "line": 51
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/base.py",
+      "line": 212
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/moriio/moriio_common.py",
+      "line": 312
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/nixl/base_worker.py",
+      "line": 317
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/offloading/config.py",
+      "line": 70
+    },
+    {
+      "file": "v1/kv_offload/tiering/spec.py",
+      "line": 424
+    },
+    {
+      "file": "v1/kv_offload/tiering/spec.py",
+      "line": 441
+    }
+  ],
+  "examples": [
+    "Please specify kv_role when kv_connector is set, supported roles are {get_args}",
+    "kv_transfer_config must be set to create a connector",
+    "kv_transfer_config must be set for KVConnectorBase_V1",
+    "Invalid MoRIIO backend {backend} in kv_connector_extra_config; must be one of 'rdma' or 'xgmi'.",
+    "kv_transfer_config must be set for NixlConnector"
+  ],
+  "status": "hypothesis",
+  "count": 8
+}

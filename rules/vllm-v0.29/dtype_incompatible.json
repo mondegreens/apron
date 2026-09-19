@@ -1,0 +1,43 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "dtype_incompatible",
+  "correction_strategy": "fallback_dtype",
+  "extraction_schema": {
+    "dev": "string",
+    "cap_str": "string",
+    "suggested": "string"
+  },
+  "source_sites": [
+    {
+      "file": "config/vllm.py",
+      "line": 2828
+    },
+    {
+      "file": "v1/attention/backends/mla/triton_mla.py",
+      "line": 239
+    },
+    {
+      "file": "v1/attention/backends/mla/triton_mla.py",
+      "line": 248
+    },
+    {
+      "file": "v1/attention/backends/triton_attn.py",
+      "line": 488
+    },
+    {
+      "file": "v1/attention/backends/triton_attn.py",
+      "line": 496
+    }
+  ],
+  "examples": [
+    "nvfp4 KV cache is not supported with MLA (Multi-head Latent Attention) backends. Please use a different --kv-cache-dtype (e.g., 'fp8' or 'auto') for MLA models such as DeepSeek.",
+    "FP8 KV cache is not supported by the Triton MLA backend on {dev} (compute capability {cap_str}); native FP8 (fp8e4nv) requires SM89+. Re-run with --kv-cache-dtype {suggested}.",
+    "bfloat16 KV cache is not supported by the Triton MLA backend on {dev} (compute capability {cap_str}); bfloat16 requires SM80+. Re-run with --kv-cache-dtype float16.",
+    "FP8 KV cache is not supported by the Triton attention backend on {dev} (compute capability {cap_str}); native FP8 (fp8e4nv) requires SM89+. Re-run with --kv-cache-dtype {suggested}.",
+    "bfloat16 KV cache is not supported on {dev} (compute capability {cap_str}); bfloat16 requires SM80+. Re-run with --kv-cache-dtype float16."
+  ],
+  "status": "hypothesis",
+  "count": 5
+}

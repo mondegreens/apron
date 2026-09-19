@@ -1,0 +1,80 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "compilation_config",
+  "correction_spec": {
+    "action": "use_alternative",
+    "source": "error_suggestion"
+  },
+  "extraction_schema": {
+    "join": "string",
+    "query_mode": "string",
+    "weight_bits": "string",
+    "supported": "string",
+    "prefix": "string",
+    "backend": "string",
+    "scheme": "string",
+    "name": "string",
+    "sorted": "string"
+  },
+  "source_sites": [
+    {
+      "file": "config/compilation.py",
+      "line": 998
+    },
+    {
+      "file": "config/compilation.py",
+      "line": 1022
+    },
+    {
+      "file": "model_executor/layers/attention/mla_attention.py",
+      "line": 2150
+    },
+    {
+      "file": "model_executor/layers/quantization/auto_awq.py",
+      "line": 203
+    },
+    {
+      "file": "model_executor/layers/quantization/inc/schemes/inc_wna16_scheme.py",
+      "line": 39
+    },
+    {
+      "file": "model_executor/models/config.py",
+      "line": 277
+    },
+    {
+      "file": "model_executor/models/config.py",
+      "line": 163
+    },
+    {
+      "file": "model_executor/models/llava_onevision2.py",
+      "line": 234
+    },
+    {
+      "file": "v1/attention/backends/flashinfer.py",
+      "line": 898
+    },
+    {
+      "file": "v1/attention/backends/flashinfer.py",
+      "line": 1359
+    },
+    {
+      "file": "v1/core/kv_cache_utils.py",
+      "line": 1399
+    },
+    {
+      "file": "v1/spec_decode/custom_class_proposer.py",
+      "line": 29
+    }
+  ],
+  "examples": [
+    "use_inductor_graph_partition is only supported with torch>=2.9.0.dev. Set use_inductor_graph_partition=False instead.",
+    "custom_ops cannot both enable and disable the same operation(s): {join}. Remove either the '+' or '-' directive",
+    "{type.__name__} does not support {query_mode} MLA attention for DSpark with decode context parallelism. Select a backend with explicit DSpark DCP support or set decode_context_parallel_size=1.",
+    "Unsupported num_bits = {self.weight_bits}. Supported: {supported}. For 8-bit AWQ, use Marlin backend by setting backend='awq:marlin' or backend='marlin'.",
+    "VLLM_XPU_INC_WNA16_BACKEND=w4a8 requires the int4_gemm_w4a8 op, which this build of vllm-xpu-kernels does not provide. Layer: {prefix}."
+  ],
+  "status": "hypothesis",
+  "count": 12
+}

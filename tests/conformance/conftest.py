@@ -61,6 +61,9 @@ class FakeEngineAdapter:
     def classify(self, error: str) -> dict[str, Any]:
         return {"failure_class": "unknown", "error": error}
 
+    def extract(self, error: str, failure_class: str) -> dict[str, int | float | str]:
+        return {}
+
     def extract_schema(self, image_tag: str) -> dict[str, Any]:
         return {"architectures": ["LlamaForCausalLM"], "image_tag": image_tag}
 

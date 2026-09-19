@@ -1,0 +1,46 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "max_model_len",
+  "correction_strategy": "clamp_max_model_len",
+  "extraction_schema": {
+    "max_model_len": "string",
+    "msg": "string",
+    "warning": "string",
+    "max_num_batched_tokens": "string",
+    "name": "string",
+    "value": "string"
+  },
+  "source_sites": [
+    {
+      "file": "config/model.py",
+      "line": 936
+    },
+    {
+      "file": "config/model.py",
+      "line": 2517
+    },
+    {
+      "file": "config/scheduler.py",
+      "line": 289
+    },
+    {
+      "file": "entrypoints/pooling/base/serving.py",
+      "line": 242
+    },
+    {
+      "file": "entrypoints/pooling/scoring/io_processor.py",
+      "line": 111
+    }
+  ],
+  "examples": [
+    "max_model_len must be a positive integer, got {type.__name__}: {self.max_model_len}. Example: max_model_len=2048",
+    "{msg} To allow overriding this maximum, set the env var VLLM_ALLOW_LONG_MAX_MODEL_LEN=1. {warning}",
+    "max_num_batched_tokens ({self.max_num_batched_tokens}) is smaller than max_model_len ({max_model_len}). This effectively limits the maximum sequence length to max_num_batched_tokens and makes vLLM rej",
+    "truncate_prompt_tokens value is greater than max_model_len. Please request a smaller truncation size.",
+    "{name} ({value}) must be less than max_model_len ({self.model_config.max_model_len})."
+  ],
+  "status": "hypothesis",
+  "count": 5
+}

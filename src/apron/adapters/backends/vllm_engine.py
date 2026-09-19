@@ -25,30 +25,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-ERROR_PATTERNS: list[tuple[re.Pattern[str], str]] = [
-    (
-        re.compile(
-            r"OutOfMemoryError|CUDA out of memory|out of memory|torch\.cuda\.OutOfMemoryError",
-            re.IGNORECASE,
-        ),
-        "oom",
-    ),
-    (
-        re.compile(r"larger than the maximum number of tokens.*KV cache", re.IGNORECASE),
-        "oom",
-    ),
-    (re.compile(r"RuntimeError.*engine", re.IGNORECASE), "engine_init"),
-    (re.compile(r"ValueError.*max_model_len", re.IGNORECASE), "max_model_len"),
-    (
-        re.compile(r"dtype.*not supported|BFloat16 is not supported", re.IGNORECASE),
-        "dtype_incompatible",
-    ),
-    (re.compile(r"not divisible by tensor_parallel", re.IGNORECASE), "tp_divisibility"),
-    (
-        re.compile(r"quantization.*compute capability", re.IGNORECASE),
-        "quant_compute_capability",
-    ),
-]
+_RE_VLLM_VERSION = re.compile(r"vLLM\s+v?(\d+\.\d+\.\d+)")
 
 # vLLM startup log patterns (from vllm/v1/worker/gpu_worker.py)
 _RE_AVAILABLE_KV = re.compile(r"Available KV cache memory:\s*([\d.]+)\s*GiB")
@@ -79,8 +56,13 @@ class VllmEngineAdapter:
 
     _engine_name = "vllm"
 
-    def __init__(self, engine_version: str = "v0.29.0") -> None:
+    def __init__(
+        self,
+        engine_version: str = "v0.29.0",
+        rules: list[dict[str, Any]] | None = None,
+    ) -> None:
         self._engine_version = engine_version
+        self._rules = rules or []
 
     @property
     def engine_name(self) -> str:
@@ -176,13 +158,38 @@ class VllmEngineAdapter:
         return self._build_verification_report(pre, post, parsed, plan, target)
 
     def classify(self, error: str) -> dict[str, Any]:
-        for pattern, failure_class in ERROR_PATTERNS:
-            if pattern.search(error):
-                return {
-                    "failure_class": failure_class,
-                    "matched_pattern": pattern.pattern,
-                }
-        return {"failure_class": "unknown", "raw_error": error[:500]}
+        from apron.adapters.backends.llm_classifier import classify_and_extract
+
+        result = classify_and_extract(error, rules=self._rules)
+        return {
+            "failure_class": result.get("failure_class", "unknown"),
+            "confidence": result.get("confidence", 0.0),
+            "evidence_span": result.get("evidence_span", ""),
+            "_full_extraction": result,
+        }
+
+    def extract(self, error: str, failure_class: str) -> dict[str, int | float | str]:
+        """Extract typed values — delegates to LLM classifier."""
+        from apron.adapters.backends.llm_classifier import classify_and_extract
+        from apron.domain.diagnosis import build_extraction_schemas
+
+        full = classify_and_extract(error, rules=self._rules)
+        schemas = build_extraction_schemas(self._rules)
+        schema = schemas.get(failure_class, [])
+        result: dict[str, int | float | str] = {}
+        for field_name, field_type in schema:
+            value = full.get(field_name)
+            if value is not None:
+                try:
+                    result[field_name] = field_type(value)
+                except (ValueError, TypeError):
+                    continue
+        return result
+
+    def detect_engine_version(self, output: str) -> str | None:
+        """Try to detect the vLLM version from process output."""
+        m = _RE_VLLM_VERSION.search(output)
+        return m.group(1) if m else None
 
     def extract_schema(self, image_tag: str) -> dict[str, Any]:
         architectures = self._get_supported_architectures(image_tag)

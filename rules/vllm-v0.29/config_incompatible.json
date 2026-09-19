@@ -1,0 +1,354 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "config_incompatible",
+  "correction_spec": {
+    "action": "set_env",
+    "variable": "VLLM_LOGGING_LEVEL",
+    "value": "1"
+  },
+  "extraction_schema": {
+    "indexer_kv_dtype": "string",
+    "value": "string",
+    "encoder_cudagraph_token_budgets": "string",
+    "op": "string",
+    "get_args": "string",
+    "runner_type": "string",
+    "tokenizer": "string",
+    "convert_option": "string",
+    "quantization": "string",
+    "supported_quantization": "string",
+    "otel_import_error_traceback": "string",
+    "offload_num_in_group": "string",
+    "offload_group_size": "string",
+    "offload_prefetch_step": "string",
+    "communicator": "string",
+    "num_redundant_experts": "string",
+    "cpuset": "string",
+    "target_layer_ids": "string",
+    "suffix_decoding_max_tree_depth": "string",
+    "suffix_decoding_max_cached_requests": "string",
+    "suffix_decoding_max_spec_factor": "string",
+    "suffix_decoding_min_token_prob": "string",
+    "prompt_lookup_min": "string",
+    "prompt_lookup_max": "string",
+    "field_path": "string",
+    "expected_type_name": "string",
+    "join": "string",
+    "architecture": "string",
+    "load_format": "string",
+    "model": "string",
+    "remote_physical_per_logical": "string",
+    "reason": "string",
+    "input_quant": "string",
+    "moe_backend": "string"
+  },
+  "source_sites": [
+    {
+      "file": "compilation/piecewise_backend.py",
+      "line": 169
+    },
+    {
+      "file": "config/attention.py",
+      "line": 126
+    },
+    {
+      "file": "config/compilation.py",
+      "line": 890
+    },
+    {
+      "file": "config/compilation.py",
+      "line": 1053
+    },
+    {
+      "file": "config/compilation.py",
+      "line": 1061
+    },
+    {
+      "file": "config/compilation.py",
+      "line": 1006
+    },
+    {
+      "file": "config/device.py",
+      "line": 56
+    },
+    {
+      "file": "config/ec_transfer.py",
+      "line": 89
+    },
+    {
+      "file": "config/mamba.py",
+      "line": 77
+    },
+    {
+      "file": "config/mamba.py",
+      "line": 89
+    },
+    {
+      "file": "config/model.py",
+      "line": 660
+    },
+    {
+      "file": "config/model.py",
+      "line": 930
+    },
+    {
+      "file": "config/model.py",
+      "line": 944
+    },
+    {
+      "file": "config/model.py",
+      "line": 1362
+    },
+    {
+      "file": "config/model.py",
+      "line": 668
+    },
+    {
+      "file": "config/model.py",
+      "line": 673
+    },
+    {
+      "file": "config/model.py",
+      "line": 1328
+    },
+    {
+      "file": "config/model.py",
+      "line": 1342
+    },
+    {
+      "file": "config/multimodal.py",
+      "line": 298
+    },
+    {
+      "file": "config/observability.py",
+      "line": 168
+    },
+    {
+      "file": "config/observability.py",
+      "line": 147
+    },
+    {
+      "file": "config/offload.py",
+      "line": 102
+    },
+    {
+      "file": "config/offload.py",
+      "line": 108
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 107
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 114
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 482
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 1000
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 458
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 538
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 467
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 893
+    },
+    {
+      "file": "config/pooler.py",
+      "line": 137
+    },
+    {
+      "file": "config/pooler.py",
+      "line": 141
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 260
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 269
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 275
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1528
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1533
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1538
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1543
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1167
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1116
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1152
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1159
+    },
+    {
+      "file": "config/utils.py",
+      "line": 257
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1177
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1353
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1461
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 2717
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 2844
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 2857
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 2894
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 2899
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1103
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1111
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1125
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1236
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1840
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 2868
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 2881
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 2889
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 2373
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/nixl/base_worker.py",
+      "line": 1892
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 2214
+    },
+    {
+      "file": "entrypoints/pooling/offline.py",
+      "line": 162
+    },
+    {
+      "file": "entrypoints/pooling/offline.py",
+      "line": 171
+    },
+    {
+      "file": "model_executor/layers/mamba/gdn/qwen_gdn_linear_attn.py",
+      "line": 508
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/quark_moe.py",
+      "line": 1060
+    },
+    {
+      "file": "model_executor/models/llava_onevision2.py",
+      "line": 262
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/allreduce_rmsnorm_reduce_scatter_early_exit.py",
+      "line": 125
+    },
+    {
+      "file": "utils/flashinfer_moe_ep.py",
+      "line": 102
+    },
+    {
+      "file": "v1/attention/backends/rocm_aiter_fa.py",
+      "line": 937
+    },
+    {
+      "file": "v1/engine/utils.py",
+      "line": 618
+    },
+    {
+      "file": "v1/worker/gpu/model_states/encoder_decoder.py",
+      "line": 58
+    }
+  ],
+  "examples": [
+    "cudagraph_capture_sizes not supported in compile_sizes.This should be handled in `post_init_cudagraph_sizes`.",
+    "use_fp4_indexer_cache=True conflicts with indexer_kv_dtype={self.indexer_kv_dtype}. Set only indexer_kv_dtype.",
+    "compile_cache_save_format must be 'binary' or 'unpacked', got: {value}",
+    "encoder_cudagraph_max_frames_per_batch must be non-negative (None = auto-infer)",
+    "All encoder_cudagraph_token_budgets must be positive, got {self.encoder_cudagraph_token_budgets}"
+  ],
+  "status": "hypothesis",
+  "count": 74
+}
