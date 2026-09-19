@@ -427,3 +427,45 @@ def test_extract_ignores_chained_traceback(engine: VllmEngineAdapter) -> None:
     )
     extracted = engine.extract(error, "oom")
     assert "estimated_max_model_len" not in extracted
+
+
+# ---------------------------------------------------------------------------
+# extraction_confidence
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_confidence_full(engine: VllmEngineAdapter) -> None:
+    extracted = {"num_heads": 28, "tp_size": 4}
+    assert engine.extraction_confidence("tp_divisibility", extracted) == 1.0
+
+
+def test_extraction_confidence_partial(engine: VllmEngineAdapter) -> None:
+    extracted = {"num_heads": 28}
+    assert engine.extraction_confidence("tp_divisibility", extracted) == 0.5
+
+
+def test_extraction_confidence_empty(engine: VllmEngineAdapter) -> None:
+    assert engine.extraction_confidence("tp_divisibility", {}) == 0.0
+
+
+def test_extraction_confidence_unknown(engine: VllmEngineAdapter) -> None:
+    assert engine.extraction_confidence("unknown", {}) == 1.0
+
+
+# ---------------------------------------------------------------------------
+# detect_engine_version
+# ---------------------------------------------------------------------------
+
+
+def test_detect_version_from_output(engine: VllmEngineAdapter) -> None:
+    output = "INFO 09-18 vLLM v0.29.0 starting on http://0.0.0.0:8000"
+    assert engine.detect_engine_version(output) == "0.29.0"
+
+
+def test_detect_version_missing(engine: VllmEngineAdapter) -> None:
+    assert engine.detect_engine_version("no version info here") is None
+
+
+def test_detect_version_different(engine: VllmEngineAdapter) -> None:
+    output = "vLLM 0.30.1 loaded"
+    assert engine.detect_engine_version(output) == "0.30.1"

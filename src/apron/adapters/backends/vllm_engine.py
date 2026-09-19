@@ -177,6 +177,8 @@ _EXTRACTORS: dict[str, list[_ExtractorEntry]] = {
     ],
 }
 
+_RE_VLLM_VERSION = re.compile(r"vLLM\s+v?(\d+\.\d+\.\d+)")
+
 # vLLM startup log patterns (from vllm/v1/worker/gpu_worker.py)
 _RE_AVAILABLE_KV = re.compile(r"Available KV cache memory:\s*([\d.]+)\s*GiB")
 _RE_CUDA_GRAPH = re.compile(
@@ -326,6 +328,20 @@ class VllmEngineAdapter:
             if m:
                 result[key] = converter(m.group(1))
         return result
+
+    def extraction_confidence(self, failure_class: str, extracted: dict[str, Any]) -> float:
+        """Fraction of expected fields that were actually extracted (0.0-1.0)."""
+        extractors = _EXTRACTORS.get(failure_class)
+        if not extractors:
+            return 1.0
+        expected = len(extractors)
+        found = sum(1 for key, _, _ in extractors if key in extracted)
+        return found / expected
+
+    def detect_engine_version(self, output: str) -> str | None:
+        """Try to detect the vLLM version from process output."""
+        m = _RE_VLLM_VERSION.search(output)
+        return m.group(1) if m else None
 
     def extract_schema(self, image_tag: str) -> dict[str, Any]:
         architectures = self._get_supported_architectures(image_tag)

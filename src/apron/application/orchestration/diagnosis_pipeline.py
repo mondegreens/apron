@@ -29,6 +29,8 @@ class DiagnosisPipelineResult:
     result_label: str
     error_trace: str
     corrects: str | None = None
+    extraction_confidence: float = 1.0
+    version_match: bool | None = None
 
 
 def run_diagnosis_pipeline(
@@ -45,8 +47,25 @@ def run_diagnosis_pipeline(
     The pipeline does NOT deploy the corrected plan. Deployment,
     mechanism proof, and request replay are the caller's responsibility.
     """
+    import logging
+
+    _log = logging.getLogger(__name__)
+
     classification = engine.classify(error)
     failure_class = classification["failure_class"]
+
+    version_match: bool | None = None
+    if hasattr(engine, "detect_engine_version"):
+        detected = engine.detect_engine_version(error)
+        if detected is not None:
+            expected = engine.engine_version.lstrip("v")
+            version_match = detected == expected
+            if not version_match:
+                _log.warning(
+                    "Engine version mismatch: rules expect %s, error output shows %s",
+                    engine.engine_version,
+                    detected,
+                )
 
     if failure_class == "unknown":
         return DiagnosisPipelineResult(
@@ -57,9 +76,20 @@ def run_diagnosis_pipeline(
             corrected_plan=None,
             result_label="Unrecognized failure",
             error_trace=error[:2000],
+            version_match=version_match,
         )
 
     extracted = engine.extract(error, failure_class)
+
+    confidence = 1.0
+    if hasattr(engine, "extraction_confidence"):
+        confidence = engine.extraction_confidence(failure_class, extracted)
+        if confidence < 0.5:
+            _log.warning(
+                "Low extraction confidence (%.0f%%) for %s — error format may have changed",
+                confidence * 100,
+                failure_class,
+            )
 
     rule = match_rule(failure_class, rules)
     if rule is None:
@@ -71,6 +101,8 @@ def run_diagnosis_pipeline(
             corrected_plan=None,
             result_label="No rule matched",
             error_trace=error[:2000],
+            extraction_confidence=confidence,
+            version_match=version_match,
         )
 
     strategy = rule["correction_strategy"]
@@ -87,6 +119,8 @@ def run_diagnosis_pipeline(
             corrected_plan=None,
             result_label="Correction infeasible",
             error_trace=error[:2000],
+            extraction_confidence=confidence,
+            version_match=version_match,
         )
 
     label = "Corrected"
@@ -106,6 +140,8 @@ def run_diagnosis_pipeline(
         result_label=label,
         error_trace=error[:2000],
         corrects=original_digest,
+        extraction_confidence=confidence,
+        version_match=version_match,
     )
 
 
