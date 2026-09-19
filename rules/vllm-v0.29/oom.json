@@ -1,0 +1,21 @@
+{
+  "schema_version": 2,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "oom",
+  "correction_strategy": "reduce_memory_pressure",
+  "source_sites": [
+    {"module": "vllm.v1.worker.gpu_model_runner", "line": 5460},
+    {"module": "vllm.v1.worker.gpu_model_runner", "line": 6370},
+    {"module": "vllm.v1.worker.gpu_model_runner", "line": 6473},
+    {"module": "vllm.v1.core.kv_cache_utils", "line": 858},
+    {"module": "vllm.v1.core.kv_cache_utils", "line": 879}
+  ],
+  "examples": [
+    "torch.cuda.OutOfMemoryError: CUDA error: out of memory",
+    "CUDA out of memory occurred when warming up sampler with 256 dummy requests",
+    "cache is needed, which is larger than the available KV cache memory (6.20 GiB)",
+    "No available memory for the cache blocks"
+  ],
+  "status": "hypothesis"
+}

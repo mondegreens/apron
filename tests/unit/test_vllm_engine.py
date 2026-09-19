@@ -130,39 +130,10 @@ def test_validate_dtype_compute_capability(engine: VllmEngineAdapter) -> None:
 
 
 # ---------------------------------------------------------------------------
-# classify
+# classify / extract — LLM-backed, tested via FakeDiagnosisEngine in
+# test_classify_accuracy.py and test_diagnosis_pipeline.py.
+# VllmEngineAdapter.classify/extract require ANTHROPIC_API_KEY.
 # ---------------------------------------------------------------------------
-
-
-def test_classify_oom(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("torch.OutOfMemoryError: CUDA out of memory")
-    assert result["failure_class"] == "oom"
-
-
-def test_classify_engine_init(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("RuntimeError: Failed to initialize engine")
-    assert result["failure_class"] == "engine_init"
-
-
-def test_classify_max_model_len(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("ValueError: max_model_len exceeds maximum")
-    assert result["failure_class"] == "max_model_len"
-
-
-def test_classify_dtype(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("BFloat16 is not supported on this GPU")
-    assert result["failure_class"] == "dtype_incompatible"
-
-
-def test_classify_tp_divisibility(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("num_heads is not divisible by tensor_parallel")
-    assert result["failure_class"] == "tp_divisibility"
-
-
-def test_classify_unknown(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("something completely different happened")
-    assert result["failure_class"] == "unknown"
-    assert "raw_error" in result
 
 
 # ---------------------------------------------------------------------------
@@ -292,3 +263,51 @@ def test_parse_profiling_logs_extracts_vllm_output(engine: VllmEngineAdapter) ->
 def test_parse_profiling_logs_empty(engine: VllmEngineAdapter) -> None:
     parsed = engine.parse_profiling_logs("")
     assert parsed == {}
+
+
+# ---------------------------------------------------------------------------
+# extraction_confidence (now in domain/diagnosis.py)
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_confidence_full() -> None:
+    from apron.domain.diagnosis import extraction_confidence
+
+    assert extraction_confidence("tp_divisibility", {"num_heads": 28, "tp_size": 4}) == 1.0
+
+
+def test_extraction_confidence_partial() -> None:
+    from apron.domain.diagnosis import extraction_confidence
+
+    assert extraction_confidence("tp_divisibility", {"num_heads": 28}) == 0.5
+
+
+def test_extraction_confidence_empty() -> None:
+    from apron.domain.diagnosis import extraction_confidence
+
+    assert extraction_confidence("tp_divisibility", {}) == 0.0
+
+
+def test_extraction_confidence_unknown() -> None:
+    from apron.domain.diagnosis import extraction_confidence
+
+    assert extraction_confidence("unknown", {}) == 1.0
+
+
+# ---------------------------------------------------------------------------
+# detect_engine_version
+# ---------------------------------------------------------------------------
+
+
+def test_detect_version_from_output(engine: VllmEngineAdapter) -> None:
+    output = "INFO 09-18 vLLM v0.29.0 starting on http://0.0.0.0:8000"
+    assert engine.detect_engine_version(output) == "0.29.0"
+
+
+def test_detect_version_missing(engine: VllmEngineAdapter) -> None:
+    assert engine.detect_engine_version("no version info here") is None
+
+
+def test_detect_version_different(engine: VllmEngineAdapter) -> None:
+    output = "vLLM 0.30.1 loaded"
+    assert engine.detect_engine_version(output) == "0.30.1"

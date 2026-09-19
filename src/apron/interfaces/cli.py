@@ -7,6 +7,7 @@ that imports concrete adapters. Phase 1a: hardwired adapter instances.
 from __future__ import annotations
 
 import json
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -28,6 +29,7 @@ from apron.application.orchestration.plan_pipeline import run_plan_pipeline
 from apron.domain.ports import UuidIdGenerator, WallClock
 from apron.domain.schemas.primitives import HardwareSpec
 
+logger = logging.getLogger(__name__)
 app = typer.Typer(name="apron", no_args_is_help=True)
 console = Console()
 
@@ -491,26 +493,55 @@ def run(command: list[str]) -> None:
         console.print("[red]No command provided[/red]")
         raise typer.Exit(1)
 
+    from apron.adapters.backends.rule_loader import load_rules
     from apron.adapters.backends.vllm_engine import VllmEngineAdapter
+    from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
+    from apron.domain.schemas.primitives import HardwareSpec
+    from apron.domain.schemas.solutions import DeploymentPlan
+
+    _MAX_BUFFER_LINES = 10_000
 
     engine = VllmEngineAdapter()
+    output_buffer: list[str] = []
 
-    process = subprocess.Popen(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-    )
+    try:
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+    except OSError as exc:
+        console.print(f"[red]Failed to start command: {exc}[/red]")
+        raise typer.Exit(1) from None
     assert process.stdout is not None
     for line in process.stdout:
         sys.stdout.write(line)
-        classification = engine.classify(line)
-        if classification["failure_class"] != "unknown":
-            console.print(f"[red]Detected: {classification['failure_class']}[/red]")
+        output_buffer.append(line)
+        if len(output_buffer) > _MAX_BUFFER_LINES:
+            output_buffer = output_buffer[-_MAX_BUFFER_LINES:]
 
     process.wait()
     if process.returncode != 0:
-        console.print(f"[red]Process exited with code {process.returncode}[/red]")
+        full_output = "".join(output_buffer)
+        rules = load_rules(_rules_dir(), "vllm", engine.engine_version)
+        hardware = HardwareSpec(gpu_sku="unknown", total_memory_bytes=0, compute_capability="0.0")
+        plan = DeploymentPlan()
+        try:
+            result = run_diagnosis_pipeline(full_output, engine, plan, {}, hardware, rules)
+        except Exception:
+            logger.debug("Diagnosis pipeline error", exc_info=True)
+            console.print(f"[red]Process exited with code {process.returncode}[/red]")
+            raise typer.Exit(process.returncode) from None
+        if result.failure_class != "unknown":
+            console.print(f"[red]Diagnosis: {result.failure_class}[/red]")
+            console.print(f"  Label: {result.result_label}")
+            if result.corrected_plan is not None:
+                console.print(f"[green]Correction: {result.correction_strategy}[/green]")
+                if result.result_label == "Alternative with trade-offs":
+                    console.print("[yellow]  Correction reduces serving capacity[/yellow]")
+        else:
+            console.print(f"[red]Process exited with code {process.returncode}[/red]")
         raise typer.Exit(process.returncode)
 
 
@@ -570,6 +601,82 @@ def submit(
 
 
 # ---------------------------------------------------------------------------
+# MCP helpers
+# ---------------------------------------------------------------------------
+
+
+def _rules_dir() -> Path:
+    """Locate the rules directory — works from source checkout and pip install."""
+    import apron
+
+    pkg_dir = Path(apron.__file__).parent
+    pkg_rules = pkg_dir / "rules"
+    if pkg_rules.is_dir():
+        return pkg_rules
+    return Path(__file__).parents[3] / "rules"
+
+
+def _diagnose(
+    error: str,
+    model: str,
+    gpu_sku: str = "unknown",
+    total_memory_bytes: int = 0,
+    compute_capability: str = "0.0",
+    tensor_parallel: int = 1,
+    dtype: str | None = None,
+    plan_digest: str | None = None,
+) -> dict[str, Any]:
+    """Run diagnosis pipeline with real context when available."""
+    from dataclasses import asdict
+
+    from apron.adapters.backends.rule_loader import load_rules
+    from apron.adapters.backends.vllm_engine import VllmEngineAdapter
+    from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
+    from apron.domain.schemas.primitives import HardwareSpec
+    from apron.domain.schemas.solutions import DeploymentPlan
+
+    engine = VllmEngineAdapter()
+    rules = load_rules(_rules_dir(), "vllm", engine.engine_version)
+
+    hardware = HardwareSpec(
+        gpu_sku=gpu_sku,
+        total_memory_bytes=total_memory_bytes,
+        compute_capability=compute_capability,
+    )
+
+    plan = DeploymentPlan(tensor_parallel=tensor_parallel, dtype=dtype)
+
+    if plan_digest:
+        store = _default_store()
+        stored = store.retrieve(plan_digest)
+        if stored and "tensor_parallel" in stored:
+            plan = DeploymentPlan(
+                **{k: v for k, v in stored.items() if k in DeploymentPlan.model_fields}
+            )
+
+    model_config: dict[str, Any] = {}
+    try:
+        resolver = _build_resolver()
+        from apron.domain.schemas.primitives import ArtifactLocator
+
+        obs = resolver.resolve(ArtifactLocator(source_kind="huggingface", uri=model))
+        if hasattr(obs, "model_spec") and obs.model_spec:
+            spec = obs.model_spec
+            if isinstance(spec, dict):
+                model_config = spec
+            elif hasattr(spec, "model_dump"):
+                model_config = spec.model_dump()
+    except Exception:
+        logger.debug("Could not resolve model config for %s", model, exc_info=True)
+
+    result = run_diagnosis_pipeline(error, engine, plan, model_config, hardware, rules)
+    output = asdict(result)
+    if result.corrected_plan is not None:
+        output["corrected_plan"] = result.corrected_plan.model_dump(mode="json")
+    return output
+
+
+# ---------------------------------------------------------------------------
 # apron mcp
 # ---------------------------------------------------------------------------
 
@@ -577,58 +684,42 @@ def submit(
 @app.command("mcp")
 def mcp_server() -> None:
     """Start MCP server on stdio."""
-    import asyncio
+    from mcp.server.mcpserver import MCPServer
 
-    from mcp.server import Server  # type: ignore[import-untyped]
-    from mcp.server.stdio import stdio_server  # type: ignore[import-untyped]
-    from mcp.types import TextContent, Tool  # type: ignore[import-untyped]
+    server = MCPServer("apron")
 
-    server = Server("apron")
+    @server.tool(description="Retrieve a stored record")
+    async def apron_report(record_id: str, format: str = "json") -> str:
+        store = _default_store()
+        record = store.retrieve(record_id)
+        if record is None:
+            return json.dumps({"error": "Record not found"})
+        return json.dumps(record, indent=2)
 
-    @server.list_tools()  # type: ignore[misc]
-    async def list_tools() -> list[Tool]:
-        plan_schema: dict[str, Any] = {
-            "type": "object",
-            "properties": {
-                "request_file": {"type": "string"},
-                "model": {"type": "string"},
-                "target": {"type": "string"},
-            },
-            "required": ["request_file", "model"],
-        }
-        report_schema: dict[str, Any] = {
-            "type": "object",
-            "properties": {
-                "record_id": {"type": "string"},
-                "format": {"type": "string"},
-            },
-            "required": ["record_id"],
-        }
-        return [
-            Tool(
-                name="apron_plan",
-                description="Generate a deployment plan",
-                inputSchema=plan_schema,  # pyright: ignore[reportCallIssue]
-            ),
-            Tool(
-                name="apron_report",
-                description="Retrieve a stored record",
-                inputSchema=report_schema,  # pyright: ignore[reportCallIssue]
-            ),
-        ]
+    @server.tool(description="Diagnose a vLLM deployment failure and suggest correction")
+    async def apron_diagnose(
+        error: str,
+        model: str,
+        gpu_sku: str = "unknown",
+        total_memory_bytes: int = 0,
+        compute_capability: str = "0.0",
+        tensor_parallel: int = 1,
+        dtype: str | None = None,
+        plan_digest: str | None = None,
+    ) -> str:
+        import asyncio
 
-    @server.call_tool()  # type: ignore[misc]
-    async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
-        if name == "apron_report":
-            store = _default_store()
-            record = store.retrieve(arguments["record_id"])
-            if record is None:
-                return [TextContent(type="text", text=json.dumps({"error": "Record not found"}))]
-            return [TextContent(type="text", text=json.dumps(record, indent=2))]
-        return [TextContent(type="text", text=json.dumps({"error": f"Unknown tool: {name}"}))]
+        result = await asyncio.to_thread(
+            _diagnose,
+            error,
+            model,
+            gpu_sku,
+            total_memory_bytes,
+            compute_capability,
+            tensor_parallel,
+            dtype,
+            plan_digest,
+        )
+        return json.dumps(result, indent=2, default=str)
 
-    async def _run() -> None:
-        async with stdio_server() as (read, write):
-            await server.run(read, write, server.create_initialization_options())
-
-    asyncio.run(_run())
+    server.run(transport="stdio")

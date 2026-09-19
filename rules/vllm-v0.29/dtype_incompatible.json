@@ -1,0 +1,16 @@
+{
+  "schema_version": 2,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "dtype_incompatible",
+  "correction_strategy": "fallback_dtype",
+  "source_sites": [
+    {"module": "vllm.config.model", "line": 2261},
+    {"module": "vllm.config.vllm", "line": 799}
+  ],
+  "examples": [
+    "The model type 'Qwen3MoeForCausalLM' does not support float16. Reason: quantized models require bfloat16",
+    "torch.float16 is not supported for quantization method awq. Supported dtypes: {torch.bfloat16}"
+  ],
+  "status": "hypothesis"
+}

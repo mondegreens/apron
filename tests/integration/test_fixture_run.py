@@ -207,26 +207,42 @@ class TestFixtureRun:
             )
             oom_output = bad_result.get("stdout", "") + bad_result.get("stderr", "")
 
-            # Step 8: Classify
-            classification = engine.classify(oom_output)
-            assert oom_output, "OOM injection produced no output"
-            assert classification["failure_class"] in ("oom", "engine_init"), (
-                f"Expected oom or engine_init, got: {classification['failure_class']}"
-                f"\nvLLM output (last 500 chars): {oom_output[-500:]}"
+            # Step 8: Classify and correct via diagnosis pipeline
+            from apron.adapters.backends.rule_loader import load_rules
+            from apron.application.orchestration.diagnosis_pipeline import (
+                run_diagnosis_pipeline,
             )
 
-            # Step 9: Correct and reboot
+            assert oom_output, "OOM injection produced no output"
+            rules_dir = Path(__file__).parents[2] / "rules"
+            rules = load_rules(rules_dir, "vllm", engine.engine_version)
+            diagnosis = run_diagnosis_pipeline(
+                oom_output,
+                engine,
+                plan,
+                claim.proposed_configuration,
+                detected_hw,
+                rules,
+                verification_report,
+            )
+            assert diagnosis.failure_class in ("oom", "engine_init"), (
+                f"Expected oom or engine_init, got: {diagnosis.failure_class}"
+                f"\nvLLM output (last 500 chars): {oom_output[-500:]}"
+            )
+            assert diagnosis.corrected_plan is not None, (
+                f"No correction for {diagnosis.failure_class}: {diagnosis.result_label}"
+            )
+            assert diagnosis.corrects is not None
+
+            # Step 9: Reboot with corrected plan
             target.execute("pkill -f 'vllm serve' || true")
             target.execute("sleep 5")
             target.execute("truncate -s 0 /var/log/vllm.log")
+            corrected_cmd = engine._build_serve_command(diagnosis.corrected_plan, target)
             target.execute(
                 "source /etc/apron_environment 2>/dev/null; "
-                "nohup /opt/venv/bin/vllm serve "
-                + MODEL_ID
-                + " --dtype bfloat16"
-                + " --gpu-memory-utilization 0.90"
-                + " --max-model-len 640"
-                + " > /var/log/vllm.log 2>&1 &"
+                f"nohup /opt/venv/bin/{corrected_cmd}"
+                " > /var/log/vllm.log 2>&1 &"
             )
 
             # Wait for corrected boot
