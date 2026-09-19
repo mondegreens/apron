@@ -78,7 +78,7 @@ class TestPipelinePerClass:
         assert result.rule_matched
         assert result.corrected_plan is not None
         assert result.corrected_plan.engine_configuration["max_model_len"] == "8192"
-        assert result.result_label == "Corrected"
+        assert result.result_label in ("Corrected", "Alternative with trade-offs")
 
     def test_oom_warmup(
         self,
@@ -252,3 +252,95 @@ class TestPipelineEdgeCases:
         assert result.rule_matched
         assert result.corrected_plan is None
         assert result.result_label == "Correction infeasible"
+
+    def test_serving_degraded_labels_tradeoff(
+        self,
+        engine: VllmEngineAdapter,
+        hardware: HardwareSpec,
+        model_config: dict,
+        rules: list[dict],
+    ) -> None:
+        """Correction that reduces max_model_len gets trade-off label."""
+        plan = DeploymentPlan(
+            engine_configuration={"max_model_len": "32768", "max_num_seqs": "256"},
+        )
+        error = (
+            "To serve at least one request with the model's max seq len "
+            "(32768), (14.50 GiB KV cache is needed, which is larger "
+            "than the available KV cache memory (6.20 GiB). "
+            "Based on the available memory, "
+            "the estimated maximum model length is 8192."
+        )
+        result = run_diagnosis_pipeline(error, engine, plan, model_config, hardware, rules)
+        assert result.result_label == "Alternative with trade-offs"
+        assert result.corrected_plan is not None
+
+    def test_corrects_carries_original_digest(
+        self,
+        engine: VllmEngineAdapter,
+        base_plan: DeploymentPlan,
+        model_config: dict,
+        hardware: HardwareSpec,
+        rules: list[dict],
+    ) -> None:
+        error = "CUDA out of memory occurred when warming up sampler with 256 dummy requests."
+        result = run_diagnosis_pipeline(error, engine, base_plan, model_config, hardware, rules)
+        assert result.corrects is not None
+        assert len(result.corrects) == 68
+        assert result.corrects.startswith("1220")
+
+
+class TestIteration:
+    def test_cycle_detection(
+        self,
+        engine: VllmEngineAdapter,
+        base_plan: DeploymentPlan,
+        model_config: dict,
+        hardware: HardwareSpec,
+        rules: list[dict],
+    ) -> None:
+        from apron.application.orchestration.diagnosis_pipeline import iterate_diagnosis
+
+        same_error = "CUDA out of memory occurred when warming up sampler with 256 dummy requests."
+        result = iterate_diagnosis(
+            [same_error, same_error],
+            engine,
+            base_plan,
+            model_config,
+            hardware,
+            rules,
+        )
+        assert result.result_label == "Cycle detected"
+        assert result.corrected_plan is None
+
+    def test_iteration_applies_corrected_plan(
+        self,
+        engine: VllmEngineAdapter,
+        model_config: dict,
+        hardware: HardwareSpec,
+        rules: list[dict],
+    ) -> None:
+        from apron.application.orchestration.diagnosis_pipeline import iterate_diagnosis
+
+        error1 = (
+            "To serve at least one request with the model's max seq len "
+            "(32768), (14.50 GiB KV cache is needed, which is larger "
+            "than the available KV cache memory (6.20 GiB). "
+            "Based on the available memory, "
+            "the estimated maximum model length is 8192."
+        )
+        error2 = "The model type 'Qwen3MoeForCausalLM' does not support float16."
+        plan = DeploymentPlan(
+            dtype="float16",
+            engine_configuration={"max_model_len": "32768"},
+        )
+        result = iterate_diagnosis(
+            [error1, error2],
+            engine,
+            plan,
+            model_config,
+            hardware,
+            rules,
+        )
+        assert result.corrected_plan is not None
+        assert result.corrected_plan.dtype == "bfloat16"

@@ -108,6 +108,7 @@ ERROR_PATTERNS: list[tuple[re.Pattern[str], str]] = [
 # -------------------------------------------------------------------
 
 _RE_TRACEBACK = re.compile(r"Traceback \(most recent call last\):")
+_RE_BLANK_LINE = re.compile(r"\n\s*\n")
 
 
 def _find_error_block(error: str, failure_class: str) -> str:
@@ -118,8 +119,11 @@ def _find_error_block(error: str, failure_class: str) -> str:
     returns the text within it. Falls back to the full error string
     when no traceback boundary is found.
     """
-    tb_starts = [m.start() for m in _RE_TRACEBACK.finditer(error)]
-    if not tb_starts:
+    boundaries = sorted(
+        {m.start() for m in _RE_TRACEBACK.finditer(error)}
+        | {m.start() for m in _RE_BLANK_LINE.finditer(error)}
+    )
+    if not boundaries:
         return error
 
     for pattern, fc in ERROR_PATTERNS:
@@ -129,7 +133,7 @@ def _find_error_block(error: str, failure_class: str) -> str:
         if m:
             frame_start = 0
             frame_end = len(error)
-            for s in tb_starts:
+            for s in boundaries:
                 if s <= m.start():
                     frame_start = s
                 else:

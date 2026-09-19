@@ -538,8 +538,11 @@ def run(command: list[str]) -> None:
             raise typer.Exit(process.returncode) from None
         if result.failure_class != "unknown":
             console.print(f"[red]Diagnosis: {result.failure_class}[/red]")
+            console.print(f"  Label: {result.result_label}")
             if result.corrected_plan is not None:
                 console.print(f"[green]Correction: {result.correction_strategy}[/green]")
+                if result.result_label == "Alternative with trade-offs":
+                    console.print("[yellow]  Correction reduces serving capacity[/yellow]")
         else:
             console.print(f"[red]Process exited with code {process.returncode}[/red]")
         raise typer.Exit(process.returncode)

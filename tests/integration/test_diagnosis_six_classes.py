@@ -131,7 +131,7 @@ def test_six_classes_through_pipeline(
     assert result.failure_class == expected_class
     assert result.rule_matched, f"No rule matched for {expected_class}"
     assert result.corrected_plan is not None, f"No correction for {expected_class}"
-    assert result.result_label == "Corrected"
+    assert result.result_label in ("Corrected", "Alternative with trade-offs")
     assert isinstance(result.corrected_plan, DeploymentPlan)
 
     if expected_config:

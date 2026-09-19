@@ -44,10 +44,13 @@ def compute_correction(
     model_config: dict[str, Any],
     hardware: HardwareSpec,
     verification_report: dict[str, Any] | None,
+    planning_source: Any = None,
 ) -> DeploymentPlan | None:
     """Compute a corrected plan by dispatching on strategy name.
 
     Returns None if the correction is infeasible (model doesn't fit).
+    When a planning_source is provided, re-runs the GPU-free calculator
+    prediction to verify the corrected plan fits the target hardware.
     """
     dispatch = _STRATEGIES.get(strategy)
     if dispatch is None:
@@ -59,7 +62,9 @@ def compute_correction(
         return None
     overrides = _validate_bounds(overrides)
     corrected = _apply_overrides(plan, overrides)
-    if not _check_feasibility(corrected, hardware, verification_report):
+    if not _check_feasibility(
+        corrected, hardware, verification_report, planning_source, model_config
+    ):
         return None
     return corrected
 
@@ -88,13 +93,38 @@ def _check_feasibility(
     corrected: DeploymentPlan,
     hardware: HardwareSpec,
     vr: dict[str, Any] | None,
+    planning_source: Any = None,
+    model_config: dict[str, Any] | None = None,
 ) -> bool:
     """Check whether the corrected plan can physically fit on the hardware.
 
-    Uses the verification report (when available) to compare model weight
-    memory against GPU capacity. Returns False if infeasible.
+    When a planning_source is available, re-runs the GPU-free calculator
+    prediction. Otherwise falls back to comparing model weight memory
+    from the verification report against GPU capacity.
     """
-    if hardware.total_memory_bytes <= 0 or vr is None:
+    if hardware.total_memory_bytes <= 0:
+        return True
+
+    if planning_source is not None and model_config:
+        try:
+            claim = planning_source.predict(model_config, hardware, {})
+            proposed = claim.proposed_configuration
+            total_required = proposed.get("total_required_bytes", 0)
+            if total_required > 0:
+                usable = int(hardware.total_memory_bytes * 0.95)
+                if total_required > usable:
+                    logger.warning(
+                        "Correction infeasible: predicted %d bytes exceeds "
+                        "95%% of GPU memory (%d bytes)",
+                        total_required,
+                        hardware.total_memory_bytes,
+                    )
+                    return False
+                return True
+        except Exception:
+            logger.debug("Calculator re-prediction failed", exc_info=True)
+
+    if vr is None:
         return True
     weight_memory = vr.get("model_weight_memory", 0)
     if weight_memory <= 0:
@@ -169,6 +199,9 @@ def _clamp_max_model_len(
     return {"max_model_len": "4096"}
 
 
+_FLOAT16_BLOCKLIST = frozenset({"gemma2", "gemma3", "gemma3_text", "glm4"})
+
+
 def _fallback_dtype(
     extracted: Mapping[str, int | float | str],
     plan: DeploymentPlan,
@@ -183,6 +216,14 @@ def _fallback_dtype(
     if cc < 8.0:
         return {"dtype": "float16"}
     unsupported = str(extracted.get("unsupported_dtype", ""))
+    model_type = str(extracted.get("model_type", ""))
+    if model_type in _FLOAT16_BLOCKLIST:
+        return {"dtype": "bfloat16"}
+    supported_str = str(extracted.get("supported_list", ""))
+    if supported_str:
+        for candidate in ("bfloat16", "float32"):
+            if candidate in supported_str:
+                return {"dtype": candidate}
     if unsupported == "float16":
         return {"dtype": "bfloat16"}
     return {"dtype": "bfloat16"}

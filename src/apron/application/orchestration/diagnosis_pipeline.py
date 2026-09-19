@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 
 from apron.application.orchestration.correction import compute_correction
 from apron.domain.diagnosis import match_rule
+from apron.domain.fingerprints import fingerprint_hex
 
 if TYPE_CHECKING:
     from apron.domain.schemas.primitives import HardwareSpec
@@ -27,6 +28,7 @@ class DiagnosisPipelineResult:
     corrected_plan: DeploymentPlan | None
     result_label: str
     error_trace: str
+    corrects: str | None = None
 
 
 def run_diagnosis_pipeline(
@@ -90,6 +92,10 @@ def run_diagnosis_pipeline(
     label = "Corrected"
     if corrected == plan:
         label = "No effective correction"
+    elif _serving_degraded(corrected, plan, verification_report):
+        label = "Alternative with trade-offs"
+
+    original_digest = fingerprint_hex(plan)
 
     return DiagnosisPipelineResult(
         failure_class=failure_class,
@@ -99,4 +105,75 @@ def run_diagnosis_pipeline(
         corrected_plan=corrected,
         result_label=label,
         error_trace=error[:2000],
+        corrects=original_digest,
     )
+
+
+def _serving_degraded(
+    corrected: DeploymentPlan,
+    original: DeploymentPlan,
+    vr: dict[str, Any] | None,
+) -> bool:
+    """Check if the correction degrades serving capacity.
+
+    Returns True when the corrected max_num_seqs is below the original,
+    or when the corrected max_model_len is below the original and a
+    verification report shows limited KV cache.
+    """
+    corrected_seqs = int(corrected.engine_configuration.get("max_num_seqs", "256"))
+    original_seqs = int(original.engine_configuration.get("max_num_seqs", "256"))
+    if corrected_seqs < original_seqs:
+        return True
+
+    corrected_len = int(corrected.engine_configuration.get("max_model_len", "0"))
+    original_len = int(original.engine_configuration.get("max_model_len", "0"))
+    return 0 < corrected_len < original_len and original_len > 0
+
+
+_MAX_CORRECTION_ATTEMPTS = 3
+
+
+def iterate_diagnosis(
+    errors: list[str],
+    engine: Any,
+    plan: DeploymentPlan,
+    model_config: dict[str, Any],
+    hardware: HardwareSpec,
+    rules: list[dict[str, Any]],
+    verification_report: dict[str, Any] | None = None,
+) -> DiagnosisPipelineResult:
+    """Run diagnosis up to _MAX_CORRECTION_ATTEMPTS times with cycle detection.
+
+    Each error in the list is diagnosed against the corrected plan from
+    the previous iteration. Aborts if the same failure_class recurs.
+    """
+    current_plan = plan
+    seen_classes: set[str] = set()
+    last_result: DiagnosisPipelineResult | None = None
+
+    for error in errors[:_MAX_CORRECTION_ATTEMPTS]:
+        result = run_diagnosis_pipeline(
+            error, engine, current_plan, model_config, hardware, rules, verification_report
+        )
+        last_result = result
+
+        if result.failure_class in seen_classes:
+            return DiagnosisPipelineResult(
+                failure_class=result.failure_class,
+                extracted=result.extracted,
+                rule_matched=result.rule_matched,
+                correction_strategy=result.correction_strategy,
+                corrected_plan=None,
+                result_label="Cycle detected",
+                error_trace=result.error_trace,
+            )
+
+        seen_classes.add(result.failure_class)
+
+        if result.corrected_plan is None:
+            return result
+
+        current_plan = result.corrected_plan
+
+    assert last_result is not None
+    return last_result

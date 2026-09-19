@@ -154,6 +154,26 @@ class TestFallbackDtype:
         assert result is not None
         assert result.dtype == "bfloat16"
 
+    def test_blocklisted_model_gets_bfloat16(
+        self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
+    ) -> None:
+        extracted = {"model_type": "gemma2", "unsupported_dtype": "float16"}
+        result = compute_correction(
+            "fallback_dtype", extracted, base_plan, model_config, hardware, None
+        )
+        assert result is not None
+        assert result.dtype == "bfloat16"
+
+    def test_quant_first_supported(
+        self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
+    ) -> None:
+        extracted = {"supported_list": "{torch.bfloat16, torch.float32}"}
+        result = compute_correction(
+            "fallback_dtype", extracted, base_plan, model_config, hardware, None
+        )
+        assert result is not None
+        assert result.dtype == "bfloat16"
+
 
 # -------------------------------------------------------------------
 # reduce_tensor_parallel
