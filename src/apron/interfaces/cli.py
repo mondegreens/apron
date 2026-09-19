@@ -616,8 +616,17 @@ def _rules_dir() -> Path:
     return Path(__file__).parents[3] / "rules"
 
 
-def _handle_diagnose(arguments: dict[str, Any]) -> str:
-    """Handle apron_diagnose MCP tool call. No logic here — delegates to pipeline."""
+def _diagnose(
+    error: str,
+    model: str,
+    gpu_sku: str = "unknown",
+    total_memory_bytes: int = 0,
+    compute_capability: str = "0.0",
+    tensor_parallel: int = 1,
+    dtype: str | None = None,
+    plan_digest: str | None = None,
+) -> dict[str, Any]:
+    """Run diagnosis pipeline with real context when available."""
     from dataclasses import asdict
 
     from apron.adapters.backends.rule_loader import load_rules
@@ -629,13 +638,42 @@ def _handle_diagnose(arguments: dict[str, Any]) -> str:
     engine = VllmEngineAdapter()
     rules = load_rules(_rules_dir(), "vllm", engine.engine_version)
 
-    hardware = HardwareSpec(gpu_sku="unknown", total_memory_bytes=0, compute_capability="0.0")
-    plan = DeploymentPlan()
-    result = run_diagnosis_pipeline(arguments["error"], engine, plan, {}, hardware, rules)
+    hardware = HardwareSpec(
+        gpu_sku=gpu_sku,
+        total_memory_bytes=total_memory_bytes,
+        compute_capability=compute_capability,
+    )
+
+    plan = DeploymentPlan(tensor_parallel=tensor_parallel, dtype=dtype)
+
+    if plan_digest:
+        store = _default_store()
+        stored = store.retrieve(plan_digest)
+        if stored and "tensor_parallel" in stored:
+            plan = DeploymentPlan(
+                **{k: v for k, v in stored.items() if k in DeploymentPlan.model_fields}
+            )
+
+    model_config: dict[str, Any] = {}
+    try:
+        resolver = _build_resolver()
+        from apron.domain.schemas.primitives import ArtifactLocator
+
+        obs = resolver.resolve(ArtifactLocator(source_kind="huggingface", uri=model))
+        if hasattr(obs, "model_spec") and obs.model_spec:
+            spec = obs.model_spec
+            if isinstance(spec, dict):
+                model_config = spec
+            elif hasattr(spec, "model_dump"):
+                model_config = spec.model_dump()
+    except Exception:
+        logger.debug("Could not resolve model config for %s", model, exc_info=True)
+
+    result = run_diagnosis_pipeline(error, engine, plan, model_config, hardware, rules)
     output = asdict(result)
     if result.corrected_plan is not None:
         output["corrected_plan"] = result.corrected_plan.model_dump(mode="json")
-    return json.dumps(output, indent=2, default=str)
+    return output
 
 
 # ---------------------------------------------------------------------------
@@ -646,74 +684,42 @@ def _handle_diagnose(arguments: dict[str, Any]) -> str:
 @app.command("mcp")
 def mcp_server() -> None:
     """Start MCP server on stdio."""
-    import asyncio
+    from mcp.server.mcpserver import MCPServer
 
-    from mcp.server import Server  # type: ignore[import-untyped]
-    from mcp.server.stdio import stdio_server  # type: ignore[import-untyped]
-    from mcp.types import TextContent, Tool  # type: ignore[import-untyped]
+    server = MCPServer("apron")
 
-    server = Server("apron")
+    @server.tool(description="Retrieve a stored record")
+    async def apron_report(record_id: str, format: str = "json") -> str:
+        store = _default_store()
+        record = store.retrieve(record_id)
+        if record is None:
+            return json.dumps({"error": "Record not found"})
+        return json.dumps(record, indent=2)
 
-    @server.list_tools()  # type: ignore[misc]
-    async def list_tools() -> list[Tool]:
-        plan_schema: dict[str, Any] = {
-            "type": "object",
-            "properties": {
-                "request_file": {"type": "string"},
-                "model": {"type": "string"},
-                "target": {"type": "string"},
-            },
-            "required": ["request_file", "model"],
-        }
-        report_schema: dict[str, Any] = {
-            "type": "object",
-            "properties": {
-                "record_id": {"type": "string"},
-                "format": {"type": "string"},
-            },
-            "required": ["record_id"],
-        }
-        diagnose_schema: dict[str, Any] = {
-            "type": "object",
-            "properties": {
-                "error": {"type": "string", "description": "Full error output from vLLM"},
-                "model": {"type": "string", "description": "Model identifier"},
-                "plan_digest": {"type": "string", "description": "Digest of the failing plan"},
-            },
-            "required": ["error", "model"],
-        }
-        return [
-            Tool(
-                name="apron_plan",
-                description="Generate a deployment plan",
-                inputSchema=plan_schema,  # pyright: ignore[reportCallIssue]
-            ),
-            Tool(
-                name="apron_report",
-                description="Retrieve a stored record",
-                inputSchema=report_schema,  # pyright: ignore[reportCallIssue]
-            ),
-            Tool(
-                name="apron_diagnose",
-                description="Diagnose a vLLM deployment failure and suggest correction",
-                inputSchema=diagnose_schema,  # pyright: ignore[reportCallIssue]
-            ),
-        ]
+    @server.tool(description="Diagnose a vLLM deployment failure and suggest correction")
+    async def apron_diagnose(
+        error: str,
+        model: str,
+        gpu_sku: str = "unknown",
+        total_memory_bytes: int = 0,
+        compute_capability: str = "0.0",
+        tensor_parallel: int = 1,
+        dtype: str | None = None,
+        plan_digest: str | None = None,
+    ) -> str:
+        import asyncio
 
-    @server.call_tool()  # type: ignore[misc]
-    async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
-        if name == "apron_report":
-            store = _default_store()
-            record = store.retrieve(arguments["record_id"])
-            if record is None:
-                return [TextContent(type="text", text=json.dumps({"error": "Record not found"}))]
-            return [TextContent(type="text", text=json.dumps(record, indent=2))]
-        if name == "apron_diagnose":
-            return [TextContent(type="text", text=_handle_diagnose(arguments))]
-        return [TextContent(type="text", text=json.dumps({"error": f"Unknown tool: {name}"}))]
+        result = await asyncio.to_thread(
+            _diagnose,
+            error,
+            model,
+            gpu_sku,
+            total_memory_bytes,
+            compute_capability,
+            tensor_parallel,
+            dtype,
+            plan_digest,
+        )
+        return json.dumps(result, indent=2, default=str)
 
-    async def _run() -> None:
-        async with stdio_server() as (read, write):
-            await server.run(read, write, server.create_initialization_options())
-
-    asyncio.run(_run())
+    server.run(transport="stdio")
