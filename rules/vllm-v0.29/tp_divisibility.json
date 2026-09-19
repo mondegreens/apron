@@ -1,11 +1,14 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "tp_divisibility",
   "correction_strategy": "reduce_tensor_parallel",
   "source_sites": [
     {"module": "vllm.config.model", "line": 1414}
+  ],
+  "examples": [
+    "Total number of attention heads (28) must be divisible by tensor parallel size (4)."
   ],
   "status": "hypothesis"
 }

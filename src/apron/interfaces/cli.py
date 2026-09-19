@@ -520,9 +520,6 @@ def run(command: list[str]) -> None:
         output_buffer.append(line)
         if len(output_buffer) > _MAX_BUFFER_LINES:
             output_buffer = output_buffer[-_MAX_BUFFER_LINES:]
-        classification = engine.classify(line)
-        if classification["failure_class"] != "unknown":
-            console.print(f"[red]Detected: {classification['failure_class']}[/red]")
 
     process.wait()
     if process.returncode != 0:

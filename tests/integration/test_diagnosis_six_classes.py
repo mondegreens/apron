@@ -14,15 +14,15 @@ from pathlib import Path
 import pytest
 
 from apron.adapters.backends.rule_loader import load_rules
-from apron.adapters.backends.vllm_engine import VllmEngineAdapter
 from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
 from apron.domain.schemas.primitives import HardwareSpec
 from apron.domain.schemas.solutions import DeploymentPlan
+from tests.conftest import FakeDiagnosisEngine
 
 
 @pytest.fixture()
-def engine() -> VllmEngineAdapter:
-    return VllmEngineAdapter()
+def engine() -> FakeDiagnosisEngine:
+    return FakeDiagnosisEngine()
 
 
 @pytest.fixture()
@@ -106,7 +106,7 @@ _SIX_CLASSES = [
 
 @pytest.mark.parametrize(("expected_class", "error", "expected_config"), _SIX_CLASSES)
 def test_six_classes_through_pipeline(
-    engine: VllmEngineAdapter,
+    engine: FakeDiagnosisEngine,
     rules: list[dict],
     hardware: HardwareSpec,
     model_config: dict,
@@ -140,7 +140,7 @@ def test_six_classes_through_pipeline(
 
 
 def test_unknown_gets_trace_only(
-    engine: VllmEngineAdapter,
+    engine: FakeDiagnosisEngine,
     rules: list[dict],
     hardware: HardwareSpec,
     model_config: dict,

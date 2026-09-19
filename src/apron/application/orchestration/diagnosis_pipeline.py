@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from apron.application.orchestration.correction import compute_correction
+from apron.domain.diagnosis import extraction_confidence as compute_confidence
 from apron.domain.diagnosis import match_rule
 from apron.domain.fingerprints import fingerprint_hex
 
@@ -80,16 +81,46 @@ def run_diagnosis_pipeline(
         )
 
     extracted = engine.extract(error, failure_class)
+    confidence = compute_confidence(failure_class, extracted)
 
-    confidence = 1.0
-    if hasattr(engine, "extraction_confidence"):
-        confidence = engine.extraction_confidence(failure_class, extracted)
-        if confidence < 0.5:
-            _log.warning(
-                "Low extraction confidence (%.0f%%) for %s — error format may have changed",
-                confidence * 100,
-                failure_class,
-            )
+    classification_confidence = classification.get("confidence", 1.0)
+    if classification_confidence < 0.5:
+        _log.warning(
+            "Low classification confidence (%.0f%%) for %s",
+            classification_confidence * 100,
+            failure_class,
+        )
+        return DiagnosisPipelineResult(
+            failure_class=failure_class,
+            extracted=extracted,
+            rule_matched=False,
+            correction_strategy=None,
+            corrected_plan=None,
+            result_label="Low classification confidence",
+            error_trace=error[:2000],
+            extraction_confidence=confidence,
+            version_match=version_match,
+        )
+
+    if confidence == 0.0 and failure_class != "unknown":
+        _log.info(
+            "No fields extracted for %s — correction will use fallback strategy",
+            failure_class,
+        )
+
+    if version_match is False:
+        _log.warning("Version mismatch — refusing to apply version-pinned correction")
+        return DiagnosisPipelineResult(
+            failure_class=failure_class,
+            extracted=extracted,
+            rule_matched=False,
+            correction_strategy=None,
+            corrected_plan=None,
+            result_label="Engine version mismatch",
+            error_trace=error[:2000],
+            extraction_confidence=confidence,
+            version_match=version_match,
+        )
 
     rule = match_rule(failure_class, rules)
     if rule is None:

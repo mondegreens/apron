@@ -1,11 +1,14 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "quant_compute_capability",
   "correction_strategy": "remove_quantization",
   "source_sites": [
     {"module": "vllm.config.vllm", "line": 791}
+  ],
+  "examples": [
+    "The quantization method gptq is not supported for the current GPU. Minimum capability: 80. Current capability: 75."
   ],
   "status": "hypothesis"
 }

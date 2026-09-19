@@ -7,15 +7,15 @@ from pathlib import Path
 import pytest
 
 from apron.adapters.backends.rule_loader import load_rules
-from apron.adapters.backends.vllm_engine import VllmEngineAdapter
 from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
 from apron.domain.schemas.primitives import HardwareSpec
 from apron.domain.schemas.solutions import DeploymentPlan
+from tests.conftest import FakeDiagnosisEngine
 
 
 @pytest.fixture()
-def engine() -> VllmEngineAdapter:
-    return VllmEngineAdapter()
+def engine() -> FakeDiagnosisEngine:
+    return FakeDiagnosisEngine()
 
 
 @pytest.fixture()
@@ -59,7 +59,7 @@ def rules() -> list[dict]:
 class TestPipelinePerClass:
     def test_oom_kv_cache(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         base_plan: DeploymentPlan,
         model_config: dict,
         hardware: HardwareSpec,
@@ -82,7 +82,7 @@ class TestPipelinePerClass:
 
     def test_oom_warmup(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         base_plan: DeploymentPlan,
         model_config: dict,
         hardware: HardwareSpec,
@@ -96,7 +96,7 @@ class TestPipelinePerClass:
 
     def test_max_model_len(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         base_plan: DeploymentPlan,
         model_config: dict,
         hardware: HardwareSpec,
@@ -114,7 +114,7 @@ class TestPipelinePerClass:
 
     def test_dtype_incompatible(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         base_plan: DeploymentPlan,
         model_config: dict,
         hardware: HardwareSpec,
@@ -131,7 +131,7 @@ class TestPipelinePerClass:
 
     def test_tp_divisibility(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         base_plan: DeploymentPlan,
         model_config: dict,
         hardware: HardwareSpec,
@@ -147,7 +147,7 @@ class TestPipelinePerClass:
 
     def test_quant_compute_capability(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         hardware: HardwareSpec,
         model_config: dict,
         rules: list[dict],
@@ -174,7 +174,7 @@ class TestPipelinePerClass:
 class TestPipelineEdgeCases:
     def test_unknown_error_no_correction(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         base_plan: DeploymentPlan,
         model_config: dict,
         hardware: HardwareSpec,
@@ -195,7 +195,7 @@ class TestPipelineEdgeCases:
 
     def test_corrected_plan_is_valid_schema(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         base_plan: DeploymentPlan,
         model_config: dict,
         hardware: HardwareSpec,
@@ -215,7 +215,7 @@ class TestPipelineEdgeCases:
 
     def test_original_plan_not_mutated(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         base_plan: DeploymentPlan,
         model_config: dict,
         hardware: HardwareSpec,
@@ -234,7 +234,7 @@ class TestPipelineEdgeCases:
 
     def test_infeasible_correction_returns_none(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         model_config: dict,
         rules: list[dict],
     ) -> None:
@@ -255,7 +255,7 @@ class TestPipelineEdgeCases:
 
     def test_serving_degraded_labels_tradeoff(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         hardware: HardwareSpec,
         model_config: dict,
         rules: list[dict],
@@ -277,7 +277,7 @@ class TestPipelineEdgeCases:
 
     def test_corrects_carries_original_digest(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         base_plan: DeploymentPlan,
         model_config: dict,
         hardware: HardwareSpec,
@@ -293,7 +293,7 @@ class TestPipelineEdgeCases:
 class TestIteration:
     def test_cycle_detection(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         base_plan: DeploymentPlan,
         model_config: dict,
         hardware: HardwareSpec,
@@ -315,7 +315,7 @@ class TestIteration:
 
     def test_iteration_applies_corrected_plan(
         self,
-        engine: VllmEngineAdapter,
+        engine: FakeDiagnosisEngine,
         model_config: dict,
         hardware: HardwareSpec,
         rules: list[dict],

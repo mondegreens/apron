@@ -220,9 +220,7 @@ class TestReduceTensorParallel:
     def test_no_heads_anywhere_returns_infeasible(
         self, base_plan: DeploymentPlan, hardware: HardwareSpec
     ) -> None:
-        result = compute_correction(
-            "reduce_tensor_parallel", {}, base_plan, {}, hardware, None
-        )
+        result = compute_correction("reduce_tensor_parallel", {}, base_plan, {}, hardware, None)
         assert result is None
 
     def test_engine_init_uncorrectable_returns_infeasible(
