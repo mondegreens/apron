@@ -196,7 +196,11 @@ def _clamp_max_model_len(
     derived_max = extracted.get("derived_max")
     if derived_max is not None:
         return {"max_model_len": str(int(derived_max))}
-    return {"max_model_len": "4096"}
+    model_max = model_config.get(
+        "max_position_embeddings",
+        model_config.get("max_sequence_length", 4096),
+    )
+    return {"max_model_len": str(int(model_max))}
 
 
 _FLOAT16_BLOCKLIST = frozenset({"gemma2", "gemma3", "gemma3_text", "glm4"})
@@ -235,8 +239,12 @@ def _reduce_tensor_parallel(
     model_config: dict[str, Any],
     hardware: HardwareSpec,
     vr: dict[str, Any] | None,
-) -> dict[str, Any]:
+) -> dict[str, Any] | None:
     num_heads = int(extracted.get("num_heads", 0))
+    if num_heads == 0:
+        num_heads = int(model_config.get("num_attention_heads", 0))
+    if num_heads == 0:
+        return None
     num_kv_heads = int(
         model_config.get("num_kv_heads", model_config.get("num_key_value_heads", num_heads))
     )
@@ -265,11 +273,11 @@ def _fallback_engine_config(
     model_config: dict[str, Any],
     hardware: HardwareSpec,
     vr: dict[str, Any] | None,
-) -> dict[str, Any]:
+) -> dict[str, Any] | None:
     fix = str(extracted.get("suggested_fix", ""))
     if "enable-lora" in fix.lower():
         return {"enable_lora": "true"}
-    return {}
+    return None
 
 
 _STRATEGIES: dict[str, Any] = {

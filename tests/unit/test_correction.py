@@ -206,6 +206,34 @@ class TestReduceTensorParallel:
         assert result is not None
         assert result.tensor_parallel == 1
 
+    def test_missing_num_heads_uses_model_config(
+        self, base_plan: DeploymentPlan, hardware: HardwareSpec
+    ) -> None:
+        extracted: dict = {}
+        mc = {"num_attention_heads": 28, "num_kv_heads": 4}
+        result = compute_correction(
+            "reduce_tensor_parallel", extracted, base_plan, mc, hardware, None
+        )
+        assert result is not None
+        assert 28 % result.tensor_parallel == 0
+
+    def test_no_heads_anywhere_returns_infeasible(
+        self, base_plan: DeploymentPlan, hardware: HardwareSpec
+    ) -> None:
+        result = compute_correction(
+            "reduce_tensor_parallel", {}, base_plan, {}, hardware, None
+        )
+        assert result is None
+
+    def test_engine_init_uncorrectable_returns_infeasible(
+        self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
+    ) -> None:
+        extracted = {"suggested_fix": "set VLLM_LOGGING_LEVEL=DEBUG"}
+        result = compute_correction(
+            "fallback_engine_config", extracted, base_plan, model_config, hardware, None
+        )
+        assert result is None
+
 
 # -------------------------------------------------------------------
 # remove_quantization
