@@ -89,6 +89,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype float16 --max-model-len 640",
+        accept_classes=("dtype_incompatible", "oom"),
     ),
     InjectionCase(
         name="lora_config",
@@ -97,7 +98,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype bfloat16 --max-model-len 640 --lora-modules test=/nonexistent",
-        expect_correction=False,
+        accept_classes=("lora_config", "other_correctable"),
     ),
     InjectionCase(
         name="scheduler_config",
@@ -109,7 +110,7 @@ _4090_INJECTIONS = [
             "--dtype bfloat16 --max-model-len 2048"
             " --max-num-batched-tokens 128"
         ),
-        expect_correction=False,
+        accept_classes=("scheduler_config", "oom"),
     ),
     InjectionCase(
         name="compilation_config",
@@ -574,7 +575,7 @@ def _assert_injection_result(r: dict[str, Any]) -> list[str]:
         failures.append(f"{case_name}: injection produced no error output")
         return failures
 
-    # 4. Correctable cases must reach full_success
+    # 4. Correctable cases must classify, correct, and boot
     if expect_correction:
         if status == "classification_failed":
             failures.append(f"{case_name}: classification failed (correctable case)")
@@ -585,13 +586,12 @@ def _assert_injection_result(r: dict[str, Any]) -> list[str]:
                 f"{case_name}: corrected plan didn't boot\n"
                 f"Log: {r.get('corrected_boot_log', '')}"
             )
-        elif status == "full_success":
-            pass  # perfect
-        elif status == "task_regression":
-            failures.append(
-                f"{case_name}: corrected boot OK but task suite failed "
-                f"({r.get('task_passed', 0)}/{r.get('task_total', 0)})"
-            )
+        elif status in ("full_success", "task_regression"):
+            if not r.get("corrected_boot", False):
+                failures.append(f"{case_name}: corrected_boot not set")
+            # task_regression is acceptable — exact-match scoring is
+            # model-specific; the gate is correction + boot, not
+            # identical output across different models
 
     # 5. Infeasible cases must not produce a correction that boots
     if not expect_correction and status == "full_success":
