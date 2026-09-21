@@ -44,6 +44,7 @@ class InjectionCase:
     good_flags: dict[str, str]
     bad_flags: str
     expect_correction: bool = True
+    accept_classes: tuple[str, ...] = ()
 
 
 # --- Failure injection cases ---
@@ -60,6 +61,7 @@ _4090_INJECTIONS = [
             "--dtype bfloat16 --gpu-memory-utilization 0.90"
             " --max-model-len 131072"
         ),
+        accept_classes=("oom", "max_model_len"),
     ),
     InjectionCase(
         name="oom_torch",
@@ -198,6 +200,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --ngram-prompt-lookup-max 3"
         ),
         expect_correction=False,
+        accept_classes=("config_incompatible", "speculative_config"),
     ),
     InjectionCase(
         name="platform_unsupported",
@@ -210,6 +213,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --attention-backend FLASHINFER_VLLM"
         ),
         expect_correction=False,
+        accept_classes=("platform_unsupported", "compilation_config"),
     ),
     InjectionCase(
         name="model_runtime",
@@ -261,7 +265,12 @@ def _inject_and_diagnose(
     from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
     from apron.domain.schemas.solutions import DeploymentPlan
 
-    result: dict[str, Any] = {"case": case.name, "failure_class": case.failure_class}
+    result: dict[str, Any] = {
+        "case": case.name,
+        "failure_class": case.failure_class,
+        "accept_classes": list(case.accept_classes) if case.accept_classes else [case.failure_class],
+        "expect_correction": case.expect_correction,
+    }
 
     # Kill any running vLLM and wait for port 8000 to be free
     target.execute("pkill -9 -f 'vllm serve' || true")
@@ -520,7 +529,13 @@ def _run_injection_batch(
 
             r = _inject_and_diagnose(target, engine, case, rules, task_suite)
             results.append(r)
-            logger.info("Result: %s → %s", case.name, r["status"])
+            logger.info(
+                "Result: %s → %s (diagnosed=%s, expected=%s, extracted=%s, tasks=%s/%s)",
+                case.name, r["status"],
+                r.get("diagnosed_class", "?"), case.failure_class,
+                r.get("extracted", {}),
+                r.get("task_passed", "-"), r.get("task_total", "-"),
+            )
 
             result_file = tmp_path / f"level3_{case.name}.json"
             result_file.write_text(json.dumps(r, indent=2, default=str))
@@ -531,6 +546,67 @@ def _run_injection_batch(
     return results
 
 
+def _assert_injection_result(r: dict[str, Any]) -> list[str]:
+    """Validate one injection result. Returns list of failure messages (empty = pass)."""
+    failures: list[str] = []
+    case_name = r["case"]
+    status = r["status"]
+    diagnosed = r.get("diagnosed_class", "")
+    accept = r.get("accept_classes", [r["failure_class"]])
+    expect_correction = r.get("expect_correction", True)
+
+    # 1. Classification must not be unknown
+    if diagnosed == "unknown":
+        failures.append(
+            f"{case_name}: classified as unknown\n"
+            f"Error tail: {r.get('error_output_tail', '')}"
+        )
+        return failures
+
+    # 2. Classification must match expected class (or accepted alternatives)
+    if diagnosed not in accept:
+        failures.append(
+            f"{case_name}: classified as '{diagnosed}', expected one of {accept}"
+        )
+
+    # 3. No error output means injection didn't work
+    if status == "no_error_output":
+        failures.append(f"{case_name}: injection produced no error output")
+        return failures
+
+    # 4. Correctable cases must reach full_success
+    if expect_correction:
+        if status == "classification_failed":
+            failures.append(f"{case_name}: classification failed (correctable case)")
+        elif status == "correction_failed":
+            failures.append(f"{case_name}: no correction produced (correctable case)")
+        elif status == "corrected_boot_failed":
+            failures.append(
+                f"{case_name}: corrected plan didn't boot\n"
+                f"Log: {r.get('corrected_boot_log', '')}"
+            )
+        elif status == "full_success":
+            pass  # perfect
+        elif status == "task_regression":
+            failures.append(
+                f"{case_name}: corrected boot OK but task suite failed "
+                f"({r.get('task_passed', 0)}/{r.get('task_total', 0)})"
+            )
+
+    # 5. Infeasible cases must not produce a correction that boots
+    if not expect_correction and status == "full_success":
+        failures.append(
+            f"{case_name}: expected infeasible but got full_success"
+        )
+
+    # 6. Extracted values must be present for classified cases
+    extracted = r.get("extracted", {})
+    if diagnosed != "unknown" and not extracted:
+        logger.warning("%s: no values extracted for class %s", case_name, diagnosed)
+
+    return failures
+
+
 class TestLevel3Gpu4090:
     """Level 3 failure injections on RTX 4090."""
 
@@ -539,31 +615,17 @@ class TestLevel3Gpu4090:
             "NVIDIA GeForce RTX 4090", _4090_INJECTIONS, tmp_path
         )
 
+        all_failures: list[str] = []
         for r in results:
-            case_name = r["case"]
-            status = r["status"]
-            logger.info("%s: %s", case_name, status)
+            logger.info(
+                "%s: status=%s diagnosed=%s extracted=%s",
+                r["case"], r["status"], r.get("diagnosed_class"), r.get("extracted"),
+            )
+            all_failures.extend(_assert_injection_result(r))
 
-            if r.get("diagnosed_class"):
-                # Classification should match or be a reasonable related class
-                assert r["diagnosed_class"] != "unknown", (
-                    f"{case_name}: classified as unknown\n"
-                    f"Error tail: {r.get('error_output_tail', '')}"
-                )
-
-            if status == "full_success":
-                assert r["corrected_boot"]
-                assert r["task_passed"] == r["task_total"]
-            elif status == "correction_infeasible_expected":
-                pass  # expected for some classes
-            else:
-                # Log but don't hard-fail — collect all results
-                logger.warning(
-                    "%s ended with status %s: %s",
-                    case_name,
-                    status,
-                    json.dumps(r, indent=2, default=str),
-                )
+        assert not all_failures, (
+            f"{len(all_failures)} assertion(s) failed:\n" + "\n".join(all_failures)
+        )
 
 
 class TestLevel3Gpu4090CorrectionSpec:
@@ -574,16 +636,17 @@ class TestLevel3Gpu4090CorrectionSpec:
             "NVIDIA GeForce RTX 4090", _4090_INJECTIONS_CORRECTION_SPEC, tmp_path
         )
 
+        all_failures: list[str] = []
         for r in results:
-            case_name = r["case"]
-            status = r["status"]
-            logger.info("%s: %s", case_name, status)
+            logger.info(
+                "%s: status=%s diagnosed=%s extracted=%s",
+                r["case"], r["status"], r.get("diagnosed_class"), r.get("extracted"),
+            )
+            all_failures.extend(_assert_injection_result(r))
 
-            if r.get("diagnosed_class"):
-                assert r["diagnosed_class"] != "unknown", (
-                    f"{case_name}: classified as unknown\n"
-                    f"Error tail: {r.get('error_output_tail', '')}"
-                )
+        assert not all_failures, (
+            f"{len(all_failures)} assertion(s) failed:\n" + "\n".join(all_failures)
+        )
 
 
 class TestLevel3GpuA100:
@@ -594,13 +657,14 @@ class TestLevel3GpuA100:
             "NVIDIA A100-SXM4-80GB", _A100_INJECTIONS, tmp_path
         )
 
+        all_failures: list[str] = []
         for r in results:
-            case_name = r["case"]
-            status = r["status"]
-            logger.info("%s: %s", case_name, status)
+            logger.info(
+                "%s: status=%s diagnosed=%s extracted=%s",
+                r["case"], r["status"], r.get("diagnosed_class"), r.get("extracted"),
+            )
+            all_failures.extend(_assert_injection_result(r))
 
-            if r.get("diagnosed_class"):
-                assert r["diagnosed_class"] != "unknown", (
-                    f"{case_name}: classified as unknown\n"
-                    f"Error tail: {r.get('error_output_tail', '')}"
-                )
+        assert not all_failures, (
+            f"{len(all_failures)} assertion(s) failed:\n" + "\n".join(all_failures)
+        )
