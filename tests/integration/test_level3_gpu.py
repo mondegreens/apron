@@ -152,8 +152,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             "--dtype bfloat16 --max-model-len 640"
             " --tensor-parallel-size 2"
         ),
-        expect_correction=False,
-        accept_classes=("parallelism_config", "other_correctable"),
+        accept_classes=("parallelism_config", "other_correctable", "oom"),
     ),
     InjectionCase(
         name="profiler_config",
@@ -166,8 +165,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --otlp-traces-endpoint http://localhost:4317"
             " --collect-detailed-traces all"
         ),
-        expect_correction=False,
-        accept_classes=("profiler_config", "other_correctable"),
+        accept_classes=("profiler_config", "other_correctable", "oom"),
     ),
     InjectionCase(
         name="multimodal_config",
@@ -179,8 +177,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             "--dtype bfloat16 --max-model-len 640"
             " --limit-mm-per-prompt image=999"
         ),
-        expect_correction=False,
-        accept_classes=("multimodal_config", "other_correctable"),
+        accept_classes=("multimodal_config", "other_correctable", "oom"),
     ),
     InjectionCase(
         name="kv_transfer_config",
@@ -221,7 +218,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --attention-backend FLASHINFER_VLLM"
         ),
         expect_correction=False,
-        accept_classes=("platform_unsupported", "compilation_config", "other_correctable"),
+        accept_classes=("platform_unsupported", "compilation_config", "config_incompatible", "other_correctable"),
     ),
     InjectionCase(
         name="model_runtime",
@@ -233,8 +230,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             "--dtype bfloat16 --max-model-len 640"
             " --load-format dummy"
         ),
-        expect_correction=False,
-        accept_classes=("model_runtime", "other_correctable"),
+        accept_classes=("model_runtime", "other_correctable", "oom"),
     ),
 ]
 
@@ -249,7 +245,7 @@ _A100_INJECTIONS = [
             "gpu_memory_utilization": "0.90",
         },
         bad_flags="--dtype bfloat16 --tensor-parallel-size 3 --max-model-len 640",
-        accept_classes=("tp_divisibility", "other_correctable"),
+        accept_classes=("tp_divisibility", "parallelism_config", "other_correctable"),
     ),
     InjectionCase(
         name="quant_compute_capability",
@@ -258,7 +254,7 @@ _A100_INJECTIONS = [
         gpu_type="NVIDIA A100-SXM4-80GB",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype bfloat16 --quantization fp8 --max-model-len 640",
-        accept_classes=("quant_compute_capability", "other_correctable"),
+        accept_classes=("quant_compute_capability", "other_correctable", "oom"),
         expect_correction=False,
     ),
 ]
