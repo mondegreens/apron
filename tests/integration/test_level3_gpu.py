@@ -471,6 +471,12 @@ def _run_injection_batch(
                 target._pod_id = None
                 target = None
                 continue
+            except RuntimeError as exc:
+                logger.warning("GPU %s (%s) failed post-provision: %s", candidate_gpu, cloud_type, exc)
+                if target and target._pod_id:
+                    target.teardown()
+                target = None
+                continue
             except Exception:
                 if target and target._pod_id:
                     target.teardown()
