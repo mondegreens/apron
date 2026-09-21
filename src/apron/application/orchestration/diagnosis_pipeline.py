@@ -151,7 +151,13 @@ def run_diagnosis_pipeline(
     )
     if strategy_name:
         corrected = compute_correction(
-            strategy_name, extracted, plan, model_config, hardware, verification_report
+            strategy_name,
+            extracted,
+            plan,
+            model_config,
+            hardware,
+            verification_report,
+            rule=rule,
         )
     elif correction_spec:
         corrected = apply_correction_spec(correction_spec, extracted, plan)

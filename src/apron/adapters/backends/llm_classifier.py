@@ -28,12 +28,47 @@ If a value is not present in the error text, set it to null — never guess.\
 """
 
 
+_CLASS_DESCRIPTIONS: dict[str, str] = {
+    "oom": (
+        "Out of memory — CUDA OOM, KV cache insufficient, or weight loading fails. "
+        "Includes errors mentioning 'available KV cache memory', 'OutOfMemoryError', "
+        "'estimated maximum model length'. Use this even when max_model_len appears "
+        "in the error, if the root cause is insufficient memory."
+    ),
+    "max_model_len": (
+        "User-specified max_model_len exceeds the model's derived maximum from "
+        "max_position_embeddings or model_max_length. NOT memory-related."
+    ),
+    "dtype_incompatible": "Model or quantization does not support the requested dtype.",
+    "tp_divisibility": "Attention heads not divisible by tensor parallel size.",
+    "quant_compute_capability": "GPU compute capability too low for the quantization method.",
+    "lora_config": "LoRA misconfiguration (not enabled, parameter errors).",
+    "speculative_config": "Draft model, MTP, Eagle, or speculative decoding misconfiguration.",
+    "parallelism_config": "DP, PP, EP, context parallelism, or world_size misconfiguration.",
+    "compilation_config": "CUDA graphs, custom ops, inductor, or compilation misconfiguration.",
+    "config_incompatible": "General configuration incompatibility between flags.",
+    "profiler_config": "Torch or nsight profiler misconfiguration.",
+    "multimodal_config": "Vision encoder, mm processor, or multimodal budget misconfiguration.",
+    "kv_transfer_config": "KV connector or EC connector role misconfiguration.",
+    "platform_unsupported": "Feature not supported on this device or platform.",
+    "scheduler_config": "Batched tokens, prefill threshold, or scheduler misconfiguration.",
+    "model_runtime": "Model-specific runtime error (activation, weight loading, kernel).",
+    "other_correctable": "Config conflict or flag incompatibility not in other classes.",
+}
+
+
 def _build_system_prompt(rules: list[dict[str, Any]]) -> str:
     lines = []
+    families_seen: set[str] = set()
     for rule in rules:
         family = rule.get("error_family", "")
-        examples = rule.get("examples", [])
-        desc = examples[0][:80] if examples else family
+        if family in families_seen:
+            continue
+        families_seen.add(family)
+        desc = _CLASS_DESCRIPTIONS.get(family, "")
+        if not desc:
+            examples = rule.get("examples", [])
+            desc = examples[0][:80] if examples else family
         lines.append(f"- {family}: {desc}")
     return _SYSTEM_PROMPT_TEMPLATE.format(class_list="\n".join(lines))
 
@@ -133,7 +168,7 @@ def classify_and_extract(
     system_prompt = _build_system_prompt(rules)
 
     client = anthropic.Anthropic()
-    truncated = error[:8000]
+    truncated = error[-8000:] if len(error) > 8000 else error
 
     classify_tool: Any = _classify_tool(classes)
     classification = client.messages.create(

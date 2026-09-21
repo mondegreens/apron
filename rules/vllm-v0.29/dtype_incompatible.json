@@ -38,6 +38,8 @@
     "FP8 KV cache is not supported by the Triton attention backend on {dev} (compute capability {cap_str}); native FP8 (fp8e4nv) requires SM89+. Re-run with --kv-cache-dtype {suggested}.",
     "bfloat16 KV cache is not supported on {dev} (compute capability {cap_str}); bfloat16 requires SM80+. Re-run with --kv-cache-dtype float16."
   ],
+  "float16_blocklist": ["gemma2", "gemma3", "gemma3_text", "glm4"],
+  "float16_blocklist_source": "config/model.py:2243 _FLOAT16_NOT_SUPPORTED_MODELS",
   "status": "hypothesis",
   "count": 5
 }

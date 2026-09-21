@@ -8,7 +8,7 @@ neither can the pipeline tests that use it.
 
 from __future__ import annotations
 
-from tests.conftest import FakeDiagnosisEngine
+from conftest import FakeDiagnosisEngine
 
 
 def _classify(error: str) -> str:

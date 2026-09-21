@@ -5,12 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from conftest import FakeDiagnosisEngine
 
 from apron.adapters.backends.rule_loader import load_rules
 from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
 from apron.domain.schemas.primitives import HardwareSpec
 from apron.domain.schemas.solutions import DeploymentPlan
-from tests.conftest import FakeDiagnosisEngine
 
 
 @pytest.fixture()

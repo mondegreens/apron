@@ -22,7 +22,6 @@ CORRECTION_BOUNDS: dict[str, tuple[int | float, int | float]] = {
     "max_model_len": (1, 1_000_000),
     "max_num_seqs": (1, 4096),
     "gpu_memory_utilization": (0.1, 0.95),
-    "tensor_parallel": (1, 8),
 }
 
 TOP_LEVEL_FIELDS = frozenset(
@@ -45,6 +44,7 @@ def compute_correction(
     hardware: HardwareSpec,
     verification_report: dict[str, Any] | None,
     planning_source: Any = None,
+    rule: dict[str, Any] | None = None,
 ) -> DeploymentPlan | None:
     """Compute a corrected plan by dispatching on strategy name.
 
@@ -57,7 +57,7 @@ def compute_correction(
         msg = f"Unknown correction strategy: {strategy!r}"
         raise ValueError(msg)
 
-    overrides = dispatch(extracted, plan, model_config, hardware, verification_report)
+    overrides = dispatch(extracted, plan, model_config, hardware, verification_report, rule=rule)
     if overrides is None:
         return None
     overrides = _validate_bounds(overrides)
@@ -173,6 +173,7 @@ def _reduce_memory_pressure(
     model_config: dict[str, Any],
     hardware: HardwareSpec,
     vr: dict[str, Any] | None,
+    **_kw: Any,
 ) -> dict[str, Any] | None:
     if "estimated_max_model_len" in extracted:
         return {"max_model_len": str(int(extracted["estimated_max_model_len"]))}
@@ -192,6 +193,7 @@ def _clamp_max_model_len(
     model_config: dict[str, Any],
     hardware: HardwareSpec,
     vr: dict[str, Any] | None,
+    **_kw: Any,
 ) -> dict[str, Any]:
     derived_max = extracted.get("derived_max")
     if derived_max is not None:
@@ -203,15 +205,14 @@ def _clamp_max_model_len(
     return {"max_model_len": str(int(model_max))}
 
 
-_FLOAT16_BLOCKLIST = frozenset({"gemma2", "gemma3", "gemma3_text", "glm4"})
-
-
 def _fallback_dtype(
     extracted: Mapping[str, int | float | str],
     plan: DeploymentPlan,
     model_config: dict[str, Any],
     hardware: HardwareSpec,
     vr: dict[str, Any] | None,
+    rule: dict[str, Any] | None = None,
+    **_kw: Any,
 ) -> dict[str, Any]:
     try:
         cc = float(hardware.compute_capability)
@@ -221,7 +222,8 @@ def _fallback_dtype(
         return {"dtype": "float16"}
     unsupported = str(extracted.get("unsupported_dtype", ""))
     model_type = str(extracted.get("model_type", ""))
-    if model_type in _FLOAT16_BLOCKLIST:
+    blocklist = frozenset(rule.get("float16_blocklist", [])) if rule else frozenset()
+    if model_type and model_type in blocklist:
         return {"dtype": "bfloat16"}
     supported_str = str(extracted.get("supported_list", ""))
     if supported_str:
@@ -239,6 +241,7 @@ def _reduce_tensor_parallel(
     model_config: dict[str, Any],
     hardware: HardwareSpec,
     vr: dict[str, Any] | None,
+    **_kw: Any,
 ) -> dict[str, Any] | None:
     num_heads = int(extracted.get("num_heads", 0))
     if num_heads == 0:
@@ -263,6 +266,7 @@ def _remove_quantization(
     model_config: dict[str, Any],
     hardware: HardwareSpec,
     vr: dict[str, Any] | None,
+    **_kw: Any,
 ) -> dict[str, Any]:
     return {"quantization": None}
 
@@ -273,10 +277,12 @@ def _fallback_engine_config(
     model_config: dict[str, Any],
     hardware: HardwareSpec,
     vr: dict[str, Any] | None,
+    **_kw: Any,
 ) -> dict[str, Any] | None:
-    fix = str(extracted.get("suggested_fix", ""))
-    if "enable-lora" in fix.lower():
-        return {"enable_lora": "true"}
+    for value in extracted.values():
+        s = str(value).lower()
+        if "enable-lora" in s or "enable_lora" in s:
+            return {"enable_lora": "true"}
     return None
 
 
