@@ -263,9 +263,16 @@ def _inject_and_diagnose(
 
     result: dict[str, Any] = {"case": case.name, "failure_class": case.failure_class}
 
-    # Kill any running vLLM
-    target.execute("pkill -f 'vllm serve' || true")
-    target.execute("sleep 5")
+    # Kill any running vLLM and wait for port 8000 to be free
+    target.execute("pkill -9 -f 'vllm serve' || true")
+    target.execute("sleep 3")
+    target.execute("pkill -9 -f 'vllm' || true")
+    target.execute(
+        "for i in $(seq 1 30); do "
+        "  ss -tlnp | grep -q ':8000 ' || break; "
+        "  sleep 1; "
+        "done"
+    )
 
     # Inject bad flags
     logger.info("Injecting %s: %s %s", case.name, case.model_id, case.bad_flags)
@@ -361,7 +368,7 @@ def _inject_and_diagnose(
     attempts = scorer.execute(eval_protocol, endpoint)
     scorer.collect(attempts)
 
-    passed = sum(1 for a in attempts if a.get("outcome") == "pass")
+    passed = sum(1 for a in attempts if a.get("score") == 1)
     total = len(attempts)
     result["task_passed"] = passed
     result["task_total"] = total

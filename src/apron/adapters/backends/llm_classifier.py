@@ -8,11 +8,41 @@ verification to prevent hallucinated values.
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 
 from apron.domain.diagnosis import build_extraction_schemas, build_failure_classes
 
 logger = logging.getLogger(__name__)
+
+_NOISE_PATTERNS = re.compile(
+    r"^\s*$"
+    r"|Downloading.*\|"
+    r"|downloading.*shards"
+    r"|\.safetensors:"
+    r"|^INFO.*HTTP Request:"
+    r"|^INFO.*graphql"
+    r"|^DEBUG.*contextlib"
+    r"|^INFO.*Connecting to"
+    r"|^INFO.*Starting download"
+    r"|^INFO.*Download complete"
+    r"|token_healing"
+    r"|Special tokens"
+    r"|^Fetching \d+ files",
+    re.IGNORECASE,
+)
+
+
+def _extract_relevant(error: str, limit: int = 8000) -> str:
+    """Extract error-relevant lines, stripping download/init noise."""
+    if len(error) <= limit:
+        return error
+    lines = error.splitlines(keepends=True)
+    kept = [ln for ln in lines if not _NOISE_PATTERNS.search(ln)]
+    joined = "".join(kept)
+    if len(joined) <= limit:
+        return joined
+    return joined[-limit:]
 
 _SYSTEM_PROMPT_TEMPLATE = """\
 You are a deployment failure classifier for GPU inference engines (vLLM, SGLang).
@@ -168,7 +198,7 @@ def classify_and_extract(
     system_prompt = _build_system_prompt(rules)
 
     client = anthropic.Anthropic()
-    truncated = error[-8000:] if len(error) > 8000 else error
+    truncated = _extract_relevant(error, limit=8000)
 
     classify_tool: Any = _classify_tool(classes)
     classification = client.messages.create(
