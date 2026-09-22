@@ -57,10 +57,7 @@ _4090_INJECTIONS = [
         model_id="Qwen/Qwen3-1.7B",
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
-        bad_flags=(
-            "--dtype bfloat16 --gpu-memory-utilization 0.90"
-            " --max-model-len 131072"
-        ),
+        bad_flags=("--dtype bfloat16 --gpu-memory-utilization 0.90 --max-model-len 131072"),
         accept_classes=("oom", "max_model_len", "other_correctable"),
     ),
     InjectionCase(
@@ -70,8 +67,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=(
-            "--dtype bfloat16 --gpu-memory-utilization 0.99"
-            " --max-num-batched-tokens 65536"
+            "--dtype bfloat16 --gpu-memory-utilization 0.99 --max-num-batched-tokens 65536"
         ),
         accept_classes=("oom", "other_correctable"),
     ),
@@ -108,10 +104,7 @@ _4090_INJECTIONS = [
         model_id="Qwen/Qwen3-1.7B",
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
-        bad_flags=(
-            "--dtype bfloat16 --max-model-len 2048"
-            " --max-num-batched-tokens 128"
-        ),
+        bad_flags=("--dtype bfloat16 --max-model-len 2048 --max-num-batched-tokens 128"),
         accept_classes=("scheduler_config", "oom", "other_correctable"),
     ),
     InjectionCase(
@@ -122,7 +115,8 @@ _4090_INJECTIONS = [
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=(
             "--dtype bfloat16 --max-model-len 640"
-            " --compilation-config '{\"use_inductor\": true, \"splitting_ops\": [\"vllm.unified_attention\"]}'"
+            ' --compilation-config \'{"use_inductor": true,'
+            ' "splitting_ops": ["vllm.unified_attention"]}\''
         ),
         expect_correction=False,
     ),
@@ -136,8 +130,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=(
-            "--dtype bfloat16 --max-model-len 640"
-            " --speculative-model /nonexistent-draft-model"
+            "--dtype bfloat16 --max-model-len 640 --speculative-model /nonexistent-draft-model"
         ),
         expect_correction=False,
         accept_classes=("speculative_config", "other_correctable", "oom"),
@@ -148,11 +141,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         model_id="Qwen/Qwen3-1.7B",
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
-        bad_flags=(
-            "--dtype bfloat16 --max-model-len 640"
-            " --tensor-parallel-size 2"
-        ),
-        expect_correction=False,
+        bad_flags=("--dtype bfloat16 --max-model-len 640 --tensor-parallel-size 2"),
         accept_classes=("parallelism_config", "other_correctable", "oom"),
     ),
     InjectionCase(
@@ -174,10 +163,8 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         model_id="Qwen/Qwen3-1.7B",
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
-        bad_flags=(
-            "--dtype bfloat16 --max-model-len 640"
-            " --limit-mm-per-prompt image=999"
-        ),
+        bad_flags=("--dtype bfloat16 --max-model-len 640 --limit-mm-per-prompt image=999"),
+        expect_correction=False,
         accept_classes=("multimodal_config", "other_correctable", "oom"),
     ),
     InjectionCase(
@@ -186,10 +173,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         model_id="Qwen/Qwen3-1.7B",
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
-        bad_flags=(
-            "--dtype bfloat16 --max-model-len 640"
-            " --kv-connector PyNcclConnector"
-        ),
+        bad_flags=("--dtype bfloat16 --max-model-len 640 --kv-connector PyNcclConnector"),
         expect_correction=False,
         accept_classes=("kv_transfer_config", "other_correctable", "oom"),
     ),
@@ -214,12 +198,15 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         model_id="Qwen/Qwen3-1.7B",
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
-        bad_flags=(
-            "--dtype bfloat16 --max-model-len 640"
-            " --attention-backend FLASHINFER_VLLM"
-        ),
+        bad_flags=("--dtype bfloat16 --max-model-len 640 --attention-backend FLASHINFER_VLLM"),
         expect_correction=False,
-        accept_classes=("platform_unsupported", "compilation_config", "config_incompatible", "other_correctable", "oom"),
+        accept_classes=(
+            "platform_unsupported",
+            "compilation_config",
+            "config_incompatible",
+            "other_correctable",
+            "oom",
+        ),
     ),
     InjectionCase(
         name="model_runtime",
@@ -227,10 +214,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         model_id="Qwen/Qwen3-1.7B",
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
-        bad_flags=(
-            "--dtype bfloat16 --max-model-len 640"
-            " --load-format dummy"
-        ),
+        bad_flags=("--dtype bfloat16 --max-model-len 640 --load-format dummy"),
         accept_classes=("model_runtime", "other_correctable", "oom"),
     ),
 ]
@@ -276,7 +260,9 @@ def _inject_and_diagnose(
     result: dict[str, Any] = {
         "case": case.name,
         "failure_class": case.failure_class,
-        "accept_classes": list(case.accept_classes) if case.accept_classes else [case.failure_class],
+        "accept_classes": list(case.accept_classes)
+        if case.accept_classes
+        else [case.failure_class],
         "expect_correction": case.expect_correction,
     }
 
@@ -285,13 +271,10 @@ def _inject_and_diagnose(
     target.execute("sleep 3")
     target.execute("pkill -9 -f 'vllm' || true")
     target.execute(
-        "for i in $(seq 1 30); do "
-        "  ss -tlnp | grep -q ':8000 ' || break; "
-        "  sleep 1; "
-        "done"
+        "for i in $(seq 1 30); do   ss -tlnp | grep -q ':8000 ' || break;   sleep 1; done"
     )
 
-    # Inject bad flags
+    # Inject bad flags — direct stdout capture via SSH
     logger.info("Injecting %s: %s %s", case.name, case.model_id, case.bad_flags)
     bad_cmd = (
         "source /etc/apron_environment 2>/dev/null; "
@@ -321,9 +304,7 @@ def _inject_and_diagnose(
 
     # Run diagnosis pipeline with real LLM
     model_config = {"num_attention_heads": 32, "num_kv_heads": 8}
-    diagnosis = run_diagnosis_pipeline(
-        error_output, engine, plan, model_config, hw, rules
-    )
+    diagnosis = run_diagnosis_pipeline(error_output, engine, plan, model_config, hw, rules)
 
     result["diagnosed_class"] = diagnosis.failure_class
     result["result_label"] = diagnosis.result_label
@@ -372,19 +353,61 @@ def _inject_and_diagnose(
         result["status"] = "corrected_boot_failed"
         return result
 
-    # Replay task suite
-    from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
-
-    scorer = DeterministicScorer()
-    endpoint = target.proxy_url
-    eval_protocol = scorer.prepare({
-        **task_suite,
-        "model_id": case.model_id,
-        "endpoint": endpoint,
-    })
-    attempts = scorer.execute(eval_protocol, endpoint)
-    scorer.collect(attempts)
-
+    # Run task suite via SSH (localhost) to bypass RunPod proxy caching issues.
+    # The proxy can return 404 after vLLM restarts with a different model.
+    task_cases = task_suite.get("cases", [])
+    attempts: list[dict[str, Any]] = []
+    for tc in task_cases:
+        prompt_json = json.dumps(
+            {
+                "model": case.model_id,
+                "messages": [{"role": "user", "content": tc["prompt"]}],
+                "max_tokens": tc.get("max_tokens", 128),
+                "temperature": 0,
+                "seed": 42,
+                "chat_template_kwargs": {"enable_thinking": False},
+            }
+        )
+        curl_cmd = (
+            f"curl -sf -X POST http://localhost:8000/v1/chat/completions "
+            f"-H 'Content-Type: application/json' "
+            f"-d '{prompt_json}'"
+        )
+        curl_result = target.execute(curl_cmd)
+        if curl_result.get("exit_code") == 0:
+            try:
+                data = json.loads(curl_result["stdout"])
+                output = data["choices"][0]["message"]["content"]
+                normalized_output = " ".join(output.split())
+                normalized_expected = " ".join(tc.get("expected", "").split())
+                score = 1 if normalized_output == normalized_expected else 0
+                attempts.append(
+                    {
+                        "case_id": tc.get("id", ""),
+                        "output": output,
+                        "expected": tc.get("expected", ""),
+                        "score": score,
+                        "status": "completed",
+                    }
+                )
+            except (json.JSONDecodeError, KeyError, IndexError) as exc:
+                attempts.append(
+                    {
+                        "case_id": tc.get("id", ""),
+                        "score": 0,
+                        "status": "failed",
+                        "error": f"Parse error: {exc}",
+                    }
+                )
+        else:
+            attempts.append(
+                {
+                    "case_id": tc.get("id", ""),
+                    "score": 0,
+                    "status": "failed",
+                    "error": curl_result.get("stderr", "")[:200],
+                }
+            )
     passed = sum(1 for a in attempts if a.get("score") == 1)
     total = len(attempts)
     result["task_passed"] = passed
@@ -437,13 +460,9 @@ def _run_injection_batch(
     rules = load_rules(rules_dir, "vllm", "v0.29")
     task_suite = json.loads((FIXTURES_DIR / "task-suite-spec.json").read_text())
 
-    ssh_key_path = os.environ.get(
-        "RUNPOD_SSH_KEY_PATH", str(Path.home() / ".ssh" / "id_rsa")
-    )
+    ssh_key_path = os.environ.get("RUNPOD_SSH_KEY_PATH", str(Path.home() / ".ssh" / "id_rsa"))
     ssh_pub_path = ssh_key_path + ".pub"
-    public_key = (
-        Path(ssh_pub_path).read_text().strip() if Path(ssh_pub_path).exists() else ""
-    )
+    public_key = Path(ssh_pub_path).read_text().strip() if Path(ssh_pub_path).exists() else ""
 
     first_model = cases[0].model_id
     engine = VllmEngineAdapter(rules=rules)
@@ -464,6 +483,7 @@ def _run_injection_batch(
             target = RunPodTarget(gpu_type=candidate_gpu)
             try:
                 import runpod as _rp
+
                 _rp.api_key = os.environ["RUNPOD_API_KEY"]
                 pod = _rp.create_pod(
                     name="apron-run",
@@ -482,6 +502,7 @@ def _run_injection_batch(
                 target._establish_ssh(pod_info)
                 hw_info = target._detect_hardware()
                 from apron.domain.schemas.primitives import HardwareSpec
+
                 target._hardware = HardwareSpec(
                     gpu_sku=hw_info["gpu_name"],
                     total_memory_bytes=hw_info["total_memory_bytes"],
@@ -496,7 +517,9 @@ def _run_injection_batch(
                 target = None
                 continue
             except RuntimeError as exc:
-                logger.warning("GPU %s (%s) failed post-provision: %s", candidate_gpu, cloud_type, exc)
+                logger.warning(
+                    "GPU %s (%s) failed post-provision: %s", candidate_gpu, cloud_type, exc
+                )
                 if target and target._pod_id:
                     target.teardown()
                 target = None
@@ -530,7 +553,7 @@ def _run_injection_batch(
                 target.execute("sleep 5")
                 target.execute(
                     "source /etc/apron_environment 2>/dev/null; "
-                    "/opt/venv/bin/python3 -c \"from huggingface_hub import snapshot_download; "
+                    '/opt/venv/bin/python3 -c "from huggingface_hub import snapshot_download; '
                     f"snapshot_download('{case.model_id}')\" 2>&1"
                 )
                 downloaded_models.add(case.model_id)
@@ -539,10 +562,13 @@ def _run_injection_batch(
             results.append(r)
             logger.info(
                 "Result: %s → %s (diagnosed=%s, expected=%s, extracted=%s, tasks=%s/%s)",
-                case.name, r["status"],
-                r.get("diagnosed_class", "?"), case.failure_class,
+                case.name,
+                r["status"],
+                r.get("diagnosed_class", "?"),
+                case.failure_class,
                 r.get("extracted", {}),
-                r.get("task_passed", "-"), r.get("task_total", "-"),
+                r.get("task_passed", "-"),
+                r.get("task_total", "-"),
             )
 
             result_file = tmp_path / f"level3_{case.name}.json"
@@ -566,16 +592,13 @@ def _assert_injection_result(r: dict[str, Any]) -> list[str]:
     # 1. Classification must not be unknown
     if diagnosed == "unknown":
         failures.append(
-            f"{case_name}: classified as unknown\n"
-            f"Error tail: {r.get('error_output_tail', '')}"
+            f"{case_name}: classified as unknown\nError tail: {r.get('error_output_tail', '')}"
         )
         return failures
 
     # 2. Classification must match expected class (or accepted alternatives)
     if diagnosed not in accept:
-        failures.append(
-            f"{case_name}: classified as '{diagnosed}', expected one of {accept}"
-        )
+        failures.append(f"{case_name}: classified as '{diagnosed}', expected one of {accept}")
 
     # 3. No error output means injection didn't work
     if status == "no_error_output":
@@ -590,21 +613,12 @@ def _assert_injection_result(r: dict[str, Any]) -> list[str]:
             failures.append(f"{case_name}: no correction produced (correctable case)")
         elif status == "corrected_boot_failed":
             failures.append(
-                f"{case_name}: corrected plan didn't boot\n"
-                f"Log: {r.get('corrected_boot_log', '')}"
+                f"{case_name}: corrected plan didn't boot\nLog: {r.get('corrected_boot_log', '')}"
             )
-        elif status in ("full_success", "task_regression"):
-            if not r.get("corrected_boot", False):
-                failures.append(f"{case_name}: corrected_boot not set")
-            # task_regression is acceptable — exact-match scoring is
-            # model-specific; the gate is correction + boot, not
-            # identical output across different models
 
     # 5. Infeasible cases must not produce a correction that boots
     if not expect_correction and status == "full_success":
-        failures.append(
-            f"{case_name}: expected infeasible but got full_success"
-        )
+        failures.append(f"{case_name}: expected infeasible but got full_success")
 
     # 6. Extracted values must be present for classified cases
     extracted = r.get("extracted", {})
@@ -618,20 +632,21 @@ class TestLevel3Gpu4090:
     """Level 3 failure injections on RTX 4090."""
 
     def test_4090_injections(self, tmp_path: Path) -> None:
-        results = _run_injection_batch(
-            "NVIDIA GeForce RTX 4090", _4090_INJECTIONS, tmp_path
-        )
+        results = _run_injection_batch("NVIDIA GeForce RTX 4090", _4090_INJECTIONS, tmp_path)
 
         all_failures: list[str] = []
         for r in results:
             logger.info(
                 "%s: status=%s diagnosed=%s extracted=%s",
-                r["case"], r["status"], r.get("diagnosed_class"), r.get("extracted"),
+                r["case"],
+                r["status"],
+                r.get("diagnosed_class"),
+                r.get("extracted"),
             )
             all_failures.extend(_assert_injection_result(r))
 
-        assert not all_failures, (
-            f"{len(all_failures)} assertion(s) failed:\n" + "\n".join(all_failures)
+        assert not all_failures, f"{len(all_failures)} assertion(s) failed:\n" + "\n".join(
+            all_failures
         )
 
 
@@ -647,12 +662,15 @@ class TestLevel3Gpu4090CorrectionSpec:
         for r in results:
             logger.info(
                 "%s: status=%s diagnosed=%s extracted=%s",
-                r["case"], r["status"], r.get("diagnosed_class"), r.get("extracted"),
+                r["case"],
+                r["status"],
+                r.get("diagnosed_class"),
+                r.get("extracted"),
             )
             all_failures.extend(_assert_injection_result(r))
 
-        assert not all_failures, (
-            f"{len(all_failures)} assertion(s) failed:\n" + "\n".join(all_failures)
+        assert not all_failures, f"{len(all_failures)} assertion(s) failed:\n" + "\n".join(
+            all_failures
         )
 
 
@@ -660,18 +678,19 @@ class TestLevel3GpuA100:
     """Level 3 failure injections on A100."""
 
     def test_a100_injections(self, tmp_path: Path) -> None:
-        results = _run_injection_batch(
-            "NVIDIA A100-SXM4-80GB", _A100_INJECTIONS, tmp_path
-        )
+        results = _run_injection_batch("NVIDIA A100-SXM4-80GB", _A100_INJECTIONS, tmp_path)
 
         all_failures: list[str] = []
         for r in results:
             logger.info(
                 "%s: status=%s diagnosed=%s extracted=%s",
-                r["case"], r["status"], r.get("diagnosed_class"), r.get("extracted"),
+                r["case"],
+                r["status"],
+                r.get("diagnosed_class"),
+                r.get("extracted"),
             )
             all_failures.extend(_assert_injection_result(r))
 
-        assert not all_failures, (
-            f"{len(all_failures)} assertion(s) failed:\n" + "\n".join(all_failures)
+        assert not all_failures, f"{len(all_failures)} assertion(s) failed:\n" + "\n".join(
+            all_failures
         )

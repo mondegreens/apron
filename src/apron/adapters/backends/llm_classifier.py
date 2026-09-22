@@ -44,6 +44,7 @@ def _extract_relevant(error: str, limit: int = 8000) -> str:
         return joined
     return joined[-limit:]
 
+
 _SYSTEM_PROMPT_TEMPLATE = """\
 You are a deployment failure classifier for GPU inference engines (vLLM, SGLang).
 

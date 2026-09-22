@@ -3,11 +3,7 @@
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "parallelism_config",
-  "correction_spec": {
-    "action": "set_field",
-    "field": "tensor_parallel_size",
-    "value": "auto"
-  },
+  "correction_strategy": "reduce_tensor_parallel",
   "extraction_schema": {
     "tensor_parallel_size": "string",
     "total_num_kv_heads": "string",
