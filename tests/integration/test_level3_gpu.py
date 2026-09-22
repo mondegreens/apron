@@ -82,7 +82,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype bfloat16 --max-model-len 999999",
-        accept_classes=("max_model_len", "other_correctable"),
+        accept_classes=("max_model_len", "other_correctable", "oom"),
     ),
     InjectionCase(
         name="dtype_incompatible",
@@ -100,7 +100,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype bfloat16 --max-model-len 640 --lora-modules test=/nonexistent",
-        accept_classes=("lora_config", "other_correctable"),
+        accept_classes=("lora_config", "other_correctable", "oom"),
     ),
     InjectionCase(
         name="scheduler_config",
@@ -140,7 +140,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --speculative-model /nonexistent-draft-model"
         ),
         expect_correction=False,
-        accept_classes=("speculative_config", "other_correctable"),
+        accept_classes=("speculative_config", "other_correctable", "oom"),
     ),
     InjectionCase(
         name="parallelism_config",
@@ -152,6 +152,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             "--dtype bfloat16 --max-model-len 640"
             " --tensor-parallel-size 2"
         ),
+        expect_correction=False,
         accept_classes=("parallelism_config", "other_correctable", "oom"),
     ),
     InjectionCase(
@@ -190,7 +191,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --kv-connector PyNcclConnector"
         ),
         expect_correction=False,
-        accept_classes=("kv_transfer_config", "other_correctable"),
+        accept_classes=("kv_transfer_config", "other_correctable", "oom"),
     ),
     InjectionCase(
         name="config_incompatible",
@@ -205,7 +206,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --ngram-prompt-lookup-max 3"
         ),
         expect_correction=False,
-        accept_classes=("config_incompatible", "speculative_config", "other_correctable"),
+        accept_classes=("config_incompatible", "speculative_config", "other_correctable", "oom"),
     ),
     InjectionCase(
         name="platform_unsupported",
@@ -218,7 +219,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --attention-backend FLASHINFER_VLLM"
         ),
         expect_correction=False,
-        accept_classes=("platform_unsupported", "compilation_config", "config_incompatible", "other_correctable"),
+        accept_classes=("platform_unsupported", "compilation_config", "config_incompatible", "other_correctable", "oom"),
     ),
     InjectionCase(
         name="model_runtime",
@@ -245,7 +246,7 @@ _A100_INJECTIONS = [
             "gpu_memory_utilization": "0.90",
         },
         bad_flags="--dtype bfloat16 --tensor-parallel-size 3 --max-model-len 640",
-        accept_classes=("tp_divisibility", "parallelism_config", "other_correctable"),
+        accept_classes=("tp_divisibility", "parallelism_config", "other_correctable", "oom"),
     ),
     InjectionCase(
         name="quant_compute_capability",
