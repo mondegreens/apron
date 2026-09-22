@@ -232,6 +232,12 @@ _A100_INJECTIONS = [
         bad_flags="--dtype bfloat16 --tensor-parallel-size 3 --max-model-len 640",
         accept_classes=("tp_divisibility", "parallelism_config", "other_correctable", "oom"),
     ),
+    # NOTE: FP8 on A100 (cc 8.0) does not produce a clean compute
+    # capability error. The cc check fires at kernel selection time
+    # (cutlass.py:288), not config validation — so vLLM passes config
+    # validation, starts loading the model, then OOMs during init.
+    # Classification as oom is accepted. The quant_compute_capability
+    # class is verified by Level 2 tests with the exact error string.
     InjectionCase(
         name="quant_compute_capability",
         failure_class="quant_compute_capability",
@@ -573,6 +579,11 @@ def _run_injection_batch(
 
             result_file = tmp_path / f"level3_{case.name}.json"
             result_file.write_text(json.dumps(r, indent=2, default=str))
+
+            evidence_dir = Path(__file__).parents[2] / "records" / "level3-evidence"
+            evidence_dir.mkdir(parents=True, exist_ok=True)
+            evidence_file = evidence_dir / f"{case.name}.json"
+            evidence_file.write_text(json.dumps(r, indent=2, default=str))
 
     finally:
         target.teardown()
