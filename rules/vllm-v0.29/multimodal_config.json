@@ -4,9 +4,8 @@
   "engine_version": "v0.29.0",
   "error_family": "multimodal_config",
   "correction_spec": {
-    "action": "set_field",
-    "field": "renderer_num_workers",
-    "value": "true"
+    "action": "remove_field",
+    "field": "limit_mm_per_prompt"
   },
   "extraction_schema": {
     "dumps": "string",

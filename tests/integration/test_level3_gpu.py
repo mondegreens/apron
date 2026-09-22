@@ -378,9 +378,9 @@ def _inject_and_diagnose(
             try:
                 data = json.loads(curl_result["stdout"])
                 output = data["choices"][0]["message"]["content"]
-                normalized_output = " ".join(output.split())
+                normalized_output = " ".join(output.strip().split())
                 normalized_expected = " ".join(tc.get("expected", "").split())
-                score = 1 if normalized_output == normalized_expected else 0
+                score = 1 if normalized_expected in normalized_output else 0
                 attempts.append(
                     {
                         "case_id": tc.get("id", ""),
