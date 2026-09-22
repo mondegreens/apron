@@ -189,7 +189,6 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --speculative-model [ngram] --num-speculative-tokens 3"
             " --ngram-prompt-lookup-max 3"
         ),
-        expect_correction=False,
         accept_classes=("config_incompatible", "speculative_config", "other_correctable", "oom"),
     ),
     InjectionCase(
@@ -284,7 +283,7 @@ def _inject_and_diagnose(
     logger.info("Injecting %s: %s %s", case.name, case.model_id, case.bad_flags)
     bad_cmd = (
         "source /etc/apron_environment 2>/dev/null; "
-        f"timeout 180 /opt/venv/bin/vllm serve {case.model_id} {case.bad_flags} 2>&1"
+        f"timeout -s KILL 180 /opt/venv/bin/vllm serve {case.model_id} {case.bad_flags} 2>&1"
     )
     bad_result = target.execute(bad_cmd)
     error_output = bad_result.get("stdout", "") + bad_result.get("stderr", "")
