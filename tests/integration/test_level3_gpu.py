@@ -163,7 +163,6 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=("--dtype bfloat16 --max-model-len 640 --limit-mm-per-prompt image=999"),
-        expect_correction=False,
         accept_classes=("multimodal_config", "other_correctable", "oom"),
     ),
     InjectionCase(
