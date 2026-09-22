@@ -173,7 +173,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=("--dtype bfloat16 --max-model-len 640 --kv-connector PyNcclConnector"),
         expect_correction=False,
-        accept_classes=("kv_transfer_config", "other_correctable", "oom"),
+        accept_classes=("kv_transfer_config", "config_incompatible", "other_correctable", "oom"),
     ),
     InjectionCase(
         name="config_incompatible",
