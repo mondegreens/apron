@@ -132,7 +132,6 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         bad_flags=(
             "--dtype bfloat16 --max-model-len 640 --speculative-model /nonexistent-draft-model"
         ),
-        expect_correction=False,
         accept_classes=("speculative_config", "other_correctable", "oom"),
     ),
     InjectionCase(

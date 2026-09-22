@@ -4,8 +4,8 @@
   "engine_version": "v0.29.0",
   "error_family": "speculative_config",
   "correction_spec": {
-    "action": "use_alternative",
-    "source": "error_suggestion"
+    "action": "remove_field",
+    "field": "speculative_model"
   },
   "extraction_schema": {
     "draft_input_vocab_size": "string",
