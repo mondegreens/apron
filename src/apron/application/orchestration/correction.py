@@ -252,13 +252,14 @@ def _reduce_tensor_parallel(
         model_config.get("num_kv_heads", model_config.get("num_key_value_heads", num_heads))
     )
     current_tp = plan.tensor_parallel
-    # gpu_count from extraction or plan metadata; defaults to 1
-    # (single-GPU). Multi-GPU support requires HardwareSpec.gpu_count
-    # which is a Phase 2 addition (TP calculator fix).
-    gpu_count = int(extracted.get("gpu_count", 0) or plan.resource_allocation.get("gpu_count", 1))
+    # gpu_count from extraction or plan metadata. When unknown (0),
+    # don't constrain — use head divisibility only. Level 3 tests
+    # extract gpu_count from real error output; Level 2 tests verify
+    # head-divisibility math without hardware constraints.
+    gpu_count = int(extracted.get("gpu_count", 0) or plan.resource_allocation.get("gpu_count", 0))
 
     for tp in range(current_tp - 1, 0, -1):
-        if tp > gpu_count:
+        if gpu_count > 0 and tp > gpu_count:
             continue
         if num_heads % tp == 0 and num_kv_heads % tp == 0:
             return {"tensor_parallel": tp}
