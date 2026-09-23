@@ -242,7 +242,6 @@ _A100_INJECTIONS = [
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype bfloat16 --quantization fp8 --max-model-len 640",
         accept_classes=("quant_compute_capability", "other_correctable", "oom"),
-        expect_correction=False,
     ),
 ]
 
