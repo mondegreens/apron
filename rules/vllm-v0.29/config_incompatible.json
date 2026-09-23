@@ -3,11 +3,7 @@
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "config_incompatible",
-  "correction_spec": {
-    "action": "set_env",
-    "variable": "VLLM_LOGGING_LEVEL",
-    "value": "1"
-  },
+  "correction_strategy": "fallback_engine_config",
   "extraction_schema": {
     "indexer_kv_dtype": "string",
     "value": "string",

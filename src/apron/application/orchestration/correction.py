@@ -290,7 +290,14 @@ def _fallback_engine_config(
         s = str(value).lower()
         if "enable-lora" in s or "enable_lora" in s:
             return {"enable_lora": "true"}
-    return None
+    # Remove any extracted field that matches an engine_configuration key
+    for key in ("field_path", "flag", "get_args"):
+        field = str(extracted.get(key, "")).replace("-", "_").lstrip("-")
+        if field and field in plan.engine_configuration:
+            return {field: None}
+    # No specific fix found — return empty override to use baseline plan
+    # (strips the bad CLI flags by not including them)
+    return {}
 
 
 _STRATEGIES: dict[str, Any] = {
