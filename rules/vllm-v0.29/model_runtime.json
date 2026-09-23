@@ -1,0 +1,406 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "model_runtime",
+  "correction_spec": {
+    "action": "set_field",
+    "field": "use_replayssm",
+    "value": "auto"
+  },
+  "extraction_schema": {
+    "block_m": "string",
+    "block_size": "string",
+    "block_n": "string",
+    "q_f": "string",
+    "k_f": "string",
+    "v_f": "string",
+    "layer_name": "string",
+    "shard_id": "string",
+    "data": "string",
+    "loaded_weight": "string",
+    "idx": "string",
+    "strategy": "string",
+    "list": "string",
+    "group_size": "string",
+    "prefix": "string",
+    "ndim": "string",
+    "tuple": "string",
+    "dtype": "string",
+    "shard_proj_names": "string",
+    "input_dtype": "string",
+    "weight_dtype": "string",
+    "ocp_mx_scheme": "string",
+    "input_size_per_partition": "string",
+    "name": "string",
+    "load_format": "string",
+    "num_threads": "string",
+    "distributed": "string",
+    "concurrency": "string",
+    "memory_limit": "string",
+    "num_hidden_layers": "string",
+    "max_pos_emb": "string",
+    "context_size": "string",
+    "shape": "string",
+    "language": "string",
+    "num_kv_heads": "string",
+    "param_name_example": "string",
+    "alias": "string",
+    "canonical": "string"
+  },
+  "source_sites": [
+    {
+      "file": "model_executor/layers/activation.py",
+      "line": 329
+    },
+    {
+      "file": "model_executor/layers/attention/attention.py",
+      "line": 83
+    },
+    {
+      "file": "model_executor/layers/attention/attention.py",
+      "line": 392
+    },
+    {
+      "file": "model_executor/layers/attention/attention.py",
+      "line": 398
+    },
+    {
+      "file": "model_executor/layers/attention/mm_encoder_attention.py",
+      "line": 90
+    },
+    {
+      "file": "model_executor/layers/fused_moe/routed_experts.py",
+      "line": 668
+    },
+    {
+      "file": "model_executor/layers/fused_moe/routed_experts.py",
+      "line": 728
+    },
+    {
+      "file": "model_executor/layers/fused_moe/routed_experts.py",
+      "line": 866
+    },
+    {
+      "file": "model_executor/layers/fused_moe/router/router_factory.py",
+      "line": 144
+    },
+    {
+      "file": "model_executor/layers/linear.py",
+      "line": 1073
+    },
+    {
+      "file": "model_executor/layers/linear.py",
+      "line": 1430
+    },
+    {
+      "file": "model_executor/layers/linear.py",
+      "line": 724
+    },
+    {
+      "file": "model_executor/layers/linear.py",
+      "line": 741
+    },
+    {
+      "file": "model_executor/layers/linear.py",
+      "line": 734
+    },
+    {
+      "file": "model_executor/layers/mamba/mamba_mixer2.py",
+      "line": 515
+    },
+    {
+      "file": "model_executor/layers/quantization/compressed_tensors/schemes/compressed_tensors_w8a8_fp8.py",
+      "line": 173
+    },
+    {
+      "file": "model_executor/layers/quantization/inc/schemes/inc_w4a8_linear.py",
+      "line": 60
+    },
+    {
+      "file": "model_executor/layers/quantization/inc/schemes/inc_wna16_scheme.py",
+      "line": 48
+    },
+    {
+      "file": "model_executor/layers/quantization/modelopt.py",
+      "line": 273
+    },
+    {
+      "file": "model_executor/layers/quantization/modelopt.py",
+      "line": 332
+    },
+    {
+      "file": "model_executor/layers/quantization/modelopt.py",
+      "line": 349
+    },
+    {
+      "file": "model_executor/layers/quantization/modelopt.py",
+      "line": 1865
+    },
+    {
+      "file": "model_executor/layers/quantization/modelopt.py",
+      "line": 1871
+    },
+    {
+      "file": "model_executor/layers/quantization/modelopt.py",
+      "line": 324
+    },
+    {
+      "file": "model_executor/layers/quantization/modelopt.py",
+      "line": 344
+    },
+    {
+      "file": "model_executor/layers/quantization/online/base.py",
+      "line": 124
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/quark.py",
+      "line": 197
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/quark.py",
+      "line": 243
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/quark.py",
+      "line": 598
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/quark.py",
+      "line": 653
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/quark_moe.py",
+      "line": 1072
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/quark_moe.py",
+      "line": 1114
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/quark_moe.py",
+      "line": 1120
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/quark_moe.py",
+      "line": 1386
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/schemes/quark_nvfp4.py",
+      "line": 72
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/schemes/quark_ocp_mx.py",
+      "line": 94
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/schemes/quark_w8a8_fp8.py",
+      "line": 56
+    },
+    {
+      "file": "model_executor/layers/rotary_embedding/mrope_interleaved.py",
+      "line": 61
+    },
+    {
+      "file": "model_executor/model_loader/checkpoint_weight_patch.py",
+      "line": 89
+    },
+    {
+      "file": "model_executor/model_loader/checkpoint_weight_patch.py",
+      "line": 93
+    },
+    {
+      "file": "model_executor/model_loader/checkpoint_weight_patch.py",
+      "line": 95
+    },
+    {
+      "file": "model_executor/model_loader/checkpoint_weight_patch.py",
+      "line": 112
+    },
+    {
+      "file": "model_executor/model_loader/checkpoint_weight_patch.py",
+      "line": 182
+    },
+    {
+      "file": "model_executor/model_loader/default_loader.py",
+      "line": 80
+    },
+    {
+      "file": "model_executor/model_loader/default_loader.py",
+      "line": 100
+    },
+    {
+      "file": "model_executor/model_loader/default_loader.py",
+      "line": 108
+    },
+    {
+      "file": "model_executor/model_loader/runai_streamer_loader.py",
+      "line": 44
+    },
+    {
+      "file": "model_executor/model_loader/runai_streamer_loader.py",
+      "line": 57
+    },
+    {
+      "file": "model_executor/model_loader/runai_streamer_loader.py",
+      "line": 69
+    },
+    {
+      "file": "model_executor/model_loader/tensorizer.py",
+      "line": 490
+    },
+    {
+      "file": "model_executor/model_loader/weight_utils.py",
+      "line": 298
+    },
+    {
+      "file": "model_executor/model_loader/weight_utils.py",
+      "line": 752
+    },
+    {
+      "file": "model_executor/model_loader/weight_utils.py",
+      "line": 766
+    },
+    {
+      "file": "model_executor/model_loader/weight_utils.py",
+      "line": 768
+    },
+    {
+      "file": "model_executor/models/cohere_asr.py",
+      "line": 567
+    },
+    {
+      "file": "model_executor/models/cohere_asr.py",
+      "line": 575
+    },
+    {
+      "file": "model_executor/models/colbert.py",
+      "line": 91
+    },
+    {
+      "file": "model_executor/models/config.py",
+      "line": 554
+    },
+    {
+      "file": "model_executor/models/cosmos3_edge.py",
+      "line": 403
+    },
+    {
+      "file": "model_executor/models/gemma2.py",
+      "line": 82
+    },
+    {
+      "file": "model_executor/models/gemma3n.py",
+      "line": 255
+    },
+    {
+      "file": "model_executor/models/granite_speech.py",
+      "line": 361
+    },
+    {
+      "file": "model_executor/models/granite_speech.py",
+      "line": 698
+    },
+    {
+      "file": "model_executor/models/hy_v3.py",
+      "line": 390
+    },
+    {
+      "file": "model_executor/models/interfaces.py",
+      "line": 1385
+    },
+    {
+      "file": "model_executor/models/interns2_mobius.py",
+      "line": 420
+    },
+    {
+      "file": "model_executor/models/isaac.py",
+      "line": 202
+    },
+    {
+      "file": "model_executor/models/kanana_v.py",
+      "line": 635
+    },
+    {
+      "file": "model_executor/models/lfm2.py",
+      "line": 462
+    },
+    {
+      "file": "model_executor/models/lfm2_moe.py",
+      "line": 579
+    },
+    {
+      "file": "model_executor/models/llava_onevision2.py",
+      "line": 2063
+    },
+    {
+      "file": "model_executor/models/longcat_flash_ngram.py",
+      "line": 218
+    },
+    {
+      "file": "model_executor/models/openpangu_vl.py",
+      "line": 898
+    },
+    {
+      "file": "model_executor/models/phi4mm_utils.py",
+      "line": 977
+    },
+    {
+      "file": "model_executor/models/phi4mm_utils.py",
+      "line": 1060
+    },
+    {
+      "file": "model_executor/models/phi4mm_utils.py",
+      "line": 1075
+    },
+    {
+      "file": "model_executor/models/phi4mm_utils.py",
+      "line": 1686
+    },
+    {
+      "file": "model_executor/models/qwen3_5.py",
+      "line": 333
+    },
+    {
+      "file": "model_executor/models/qwen3_next.py",
+      "line": 829
+    },
+    {
+      "file": "model_executor/models/rnj1.py",
+      "line": 74
+    },
+    {
+      "file": "model_executor/models/step3_text.py",
+      "line": 164
+    },
+    {
+      "file": "model_executor/models/step3p5.py",
+      "line": 216
+    },
+    {
+      "file": "model_executor/models/step3p5_mtp.py",
+      "line": 301
+    },
+    {
+      "file": "model_executor/models/step_vl.py",
+      "line": 369
+    },
+    {
+      "file": "model_executor/models/utils.py",
+      "line": 465
+    },
+    {
+      "file": "model_executor/parameter.py",
+      "line": 537
+    }
+  ],
+  "examples": [
+    "activation_sparsity is 0.0. Please use GeluAndMul.",
+    "error_msg + f\"must be the same type as the current layer ({expected}).\"",
+    "flex_attn_block_m ({block_m}) must be <= cache block size ({cache_config.block_size}) for batch invariance",
+    "flex_attn_block_n ({block_n}) must be <= cache block size ({cache_config.block_size}) for batch invariance",
+    "FP8 scales must be positive, got q={q_f}, k={k_f}, v={v_f} for layer '{layer_name}'"
+  ],
+  "status": "hypothesis",
+  "count": 86
+}

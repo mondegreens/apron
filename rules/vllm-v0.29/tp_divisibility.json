@@ -1,0 +1,203 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "tp_divisibility",
+  "correction_strategy": "reduce_tensor_parallel",
+  "extraction_schema": {
+    "total_num_attention_heads": "string",
+    "tensor_parallel_size": "string",
+    "num_q_per_kv": "string",
+    "decode_context_parallel_size": "string",
+    "intermediate_size_per_partition": "string",
+    "group_size": "string",
+    "w13_n": "string",
+    "packed_factor": "string",
+    "hidden_size": "string",
+    "layer_name": "string",
+    "input_size_per_partition": "string",
+    "output_size_per_partition": "string",
+    "embed_dim": "string",
+    "num_heads": "string",
+    "total_num_heads": "string",
+    "tp_size": "string",
+    "adapter_hidden_size": "string",
+    "encoder_attention_heads": "string",
+    "attention_hidden_size": "string",
+    "num_attention_heads": "string",
+    "embedding_dim": "string",
+    "ngram_heads": "string",
+    "ple_embed_dim": "string"
+  },
+  "source_sites": [
+    {
+      "file": "config/model.py",
+      "line": 1414
+    },
+    {
+      "file": "config/model.py",
+      "line": 1456
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 97
+    },
+    {
+      "file": "model_executor/layers/quantization/compressed_tensors/compressed_tensors_moe/compressed_tensors_moe_wna16.py",
+      "line": 321
+    },
+    {
+      "file": "model_executor/layers/quantization/compressed_tensors/compressed_tensors_moe/compressed_tensors_moe_wna16.py",
+      "line": 340
+    },
+    {
+      "file": "model_executor/layers/quantization/compressed_tensors/compressed_tensors_moe/compressed_tensors_moe_wna16.py",
+      "line": 348
+    },
+    {
+      "file": "model_executor/layers/quantization/quark/schemes/quark_ocp_mx.py",
+      "line": 166
+    },
+    {
+      "file": "model_executor/layers/quantization/utils/marlin_utils.py",
+      "line": 180
+    },
+    {
+      "file": "model_executor/layers/quantization/utils/marlin_utils.py",
+      "line": 190
+    },
+    {
+      "file": "model_executor/models/aimv2.py",
+      "line": 102
+    },
+    {
+      "file": "model_executor/models/blip.py",
+      "line": 99
+    },
+    {
+      "file": "model_executor/models/clip.py",
+      "line": 379
+    },
+    {
+      "file": "model_executor/models/cohere_asr.py",
+      "line": 128
+    },
+    {
+      "file": "model_executor/models/funasr.py",
+      "line": 475
+    },
+    {
+      "file": "model_executor/models/funaudiochat.py",
+      "line": 104
+    },
+    {
+      "file": "model_executor/models/idefics2_vision_model.py",
+      "line": 152
+    },
+    {
+      "file": "model_executor/models/intern_vit.py",
+      "line": 163
+    },
+    {
+      "file": "model_executor/models/interns1_vit.py",
+      "line": 183
+    },
+    {
+      "file": "model_executor/models/lfm2_siglip2.py",
+      "line": 172
+    },
+    {
+      "file": "model_executor/models/moss_audio.py",
+      "line": 329
+    },
+    {
+      "file": "model_executor/models/moss_audio.py",
+      "line": 336
+    },
+    {
+      "file": "model_executor/models/moss_audio.py",
+      "line": 1535
+    },
+    {
+      "file": "model_executor/models/moss_audio.py",
+      "line": 1544
+    },
+    {
+      "file": "model_executor/models/muse_glimmer.py",
+      "line": 727
+    },
+    {
+      "file": "model_executor/models/qwen3_omni_moe_thinker.py",
+      "line": 208
+    },
+    {
+      "file": "model_executor/models/siglip.py",
+      "line": 350
+    },
+    {
+      "file": "model_executor/models/siglip2navit.py",
+      "line": 190
+    },
+    {
+      "file": "model_executor/models/stablelm.py",
+      "line": 126
+    },
+    {
+      "file": "model_executor/models/whisper.py",
+      "line": 190
+    },
+    {
+      "file": "model_executor/models/zamba2.py",
+      "line": 150
+    },
+    {
+      "file": "models/dots3_note/nvidia/audio_encoder.py",
+      "line": 214
+    },
+    {
+      "file": "models/qwen4_exp/amd/ple_layer.py",
+      "line": 187
+    },
+    {
+      "file": "models/qwen4_exp/amd/qsa.py",
+      "line": 210
+    },
+    {
+      "file": "models/qwen4_exp/amd/qsa.py",
+      "line": 215
+    },
+    {
+      "file": "models/qwen4_exp/amd/qsa.py",
+      "line": 217
+    },
+    {
+      "file": "models/qwen4_exp/config.py",
+      "line": 108
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/ple_layer.py",
+      "line": 271
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/qsa.py",
+      "line": 210
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/qsa.py",
+      "line": 215
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/qsa.py",
+      "line": 217
+    }
+  ],
+  "examples": [
+    "Total number of attention heads ({total_num_attention_heads}) must be divisible by tensor parallel size ({tensor_parallel_size}).",
+    "The model's number of query heads per KV head ({num_q_per_kv}) must be divisible by `--decode-context-parallel-size` ({decode_context_parallel_size}) for GQA/MQA.",
+    "Error: --data-parallel-size must be divisible by --data-parallel-size-local",
+    "CompressedTensors WNA16 MoE with static group scales requires the MoE intermediate size per tensor-parallel partition ({intermediate_size_per_partition}) to be divisible by group_size ({self.group_siz",
+    "CompressedTensors WNA16 MoE: gate+up output channels per TP rank (2 * intermediate_size_per_partition = {w13_n}) must be divisible by packed_factor ({self.packed_factor}). Use a TP size where 2 * inte"
+  ],
+  "status": "hypothesis",
+  "count": 40
+}

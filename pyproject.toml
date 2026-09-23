@@ -31,6 +31,7 @@ dependencies = [
     "pydantic>=2,<3",
     "httpx>=0.27",
     "mcp>=1",
+    "anthropic>=0.40",
 ]
 
 [project.urls]
@@ -62,6 +63,9 @@ apron = "apron.interfaces.cli:app"
 [project.entry-points."apron.authority_sources"]
 
 [project.entry-points."apron.publishers"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"rules" = "apron/rules"
 
 [dependency-groups]
 dev = [

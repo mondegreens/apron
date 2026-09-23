@@ -1,0 +1,119 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "multimodal_config",
+  "correction_spec": {
+    "action": "remove_field",
+    "field": "limit_mm_per_prompt"
+  },
+  "extraction_schema": {
+    "dumps": "string",
+    "max_duration_s": "string",
+    "file_duration_s": "string",
+    "native_sr": "string",
+    "frames": "string",
+    "channels": "string",
+    "metadata_duration_s": "string",
+    "total_samples": "string",
+    "sr": "string",
+    "max_batch_size": "string",
+    "min_tok": "string",
+    "token_budgets": "string"
+  },
+  "source_sites": [
+    {
+      "file": "config/compilation.py",
+      "line": 1044
+    },
+    {
+      "file": "config/model.py",
+      "line": 834
+    },
+    {
+      "file": "config/multimodal.py",
+      "line": 317
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1136
+    },
+    {
+      "file": "model_executor/models/chatglm.py",
+      "line": 442
+    },
+    {
+      "file": "model_executor/models/cohere_asr.py",
+      "line": 2266
+    },
+    {
+      "file": "model_executor/models/cohere_asr.py",
+      "line": 2272
+    },
+    {
+      "file": "model_executor/models/granite_speech.py",
+      "line": 666
+    },
+    {
+      "file": "model_executor/models/llava_onevision2.py",
+      "line": 249
+    },
+    {
+      "file": "model_executor/models/muse_glimmer.py",
+      "line": 1532
+    },
+    {
+      "file": "model_executor/models/muse_glimmer.py",
+      "line": 1537
+    },
+    {
+      "file": "model_executor/models/muse_glimmer.py",
+      "line": 1555
+    },
+    {
+      "file": "model_executor/models/muse_glimmer.py",
+      "line": 1560
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 189
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 199
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 97
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 138
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 149
+    },
+    {
+      "file": "transformers_utils/processors/cohere_asr.py",
+      "line": 72
+    },
+    {
+      "file": "transformers_utils/processors/nano_nemotron_vl.py",
+      "line": 807
+    },
+    {
+      "file": "v1/worker/encoder_cudagraph.py",
+      "line": 91
+    }
+  ],
+  "examples": [
+    "encoder_cudagraph_max_vision_items_per_batch must be non-negative (0 = auto-infer)",
+    "Cannot use --renderer-num-workers > 1 with the multimodal processor cache enabled for pooling models. Pooling preprocessing runs on the renderer workers, and the cache is not thread-safe. Please set -",
+    "'mm_shm_cache_max_object_size_mb' should only be set when 'mm_processor_cache_type' is 'shm'.",
+    "--language-model-only is incompatible with cudagraph_mm_encoder=True, since it disables all multimodal inputs and the multimodal encoder is never run. Please disable one of them.",
+    "The configuration of this model indicates that it supports vision inputs, but you instantiated the text-only version of this model. Please use the vision model by setting `--hf-overrides '{json.dumps}"
+  ],
+  "status": "hypothesis",
+  "count": 21
+}

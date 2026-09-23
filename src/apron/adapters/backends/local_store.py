@@ -62,8 +62,15 @@ class LocalRecordStore:
         path.write_bytes(canonical)
         return digest
 
+    @staticmethod
+    def _validate_digest(digest: str) -> bool:
+        """Reject digests containing path traversal sequences."""
+        import re
+
+        return bool(re.fullmatch(r"[0-9a-f]{8,68}", digest))
+
     def retrieve(self, digest: str) -> dict[str, Any] | None:
-        if len(digest) < 8:
+        if len(digest) < 8 or not self._validate_digest(digest):
             return None
 
         for subdir in self._base.iterdir():
@@ -72,10 +79,14 @@ class LocalRecordStore:
 
             if len(digest) == 68:
                 path = subdir / f"{digest}.json"
-                if path.exists():
+                if path.exists() and path.resolve().is_relative_to(self._base.resolve()):
                     return json.loads(path.read_bytes())
             else:
-                matches = list(subdir.glob(f"{digest}*.json"))
+                matches = [
+                    m
+                    for m in subdir.glob(f"{digest}*.json")
+                    if m.resolve().is_relative_to(self._base.resolve())
+                ]
                 if len(matches) == 1:
                     return json.loads(matches[0].read_bytes())
                 if len(matches) > 1:

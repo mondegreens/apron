@@ -1,0 +1,273 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "parallelism_config",
+  "correction_strategy": "reduce_tensor_parallel",
+  "extraction_schema": {
+    "tensor_parallel_size": "string",
+    "total_num_kv_heads": "string",
+    "decode_context_parallel_size": "string",
+    "max_dcp_size": "string",
+    "data_parallel_size_local": "string",
+    "data_parallel_size": "string",
+    "tp": "string",
+    "dcp": "string",
+    "pcp": "string",
+    "sorted": "string",
+    "data_parallel_rank": "string",
+    "world_size": "string",
+    "gpu_count": "string",
+    "block_size": "string",
+    "hash_block_size": "string",
+    "workers_per_replica": "string",
+    "num_consumers": "string",
+    "c": "string",
+    "bad": "string",
+    "backend": "string",
+    "name": "string",
+    "nnodes": "string",
+    "data_parallel_backend": "string",
+    "tp_size": "string",
+    "rank": "string"
+  },
+  "source_sites": [
+    {
+      "file": "config/model.py",
+      "line": 1436
+    },
+    {
+      "file": "config/model.py",
+      "line": 1446
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 497
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 503
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 521
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 553
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 555
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 919
+    },
+    {
+      "file": "config/parallel.py",
+      "line": 960
+    },
+    {
+      "file": "distributed/device_communicators/shm_object_storage.py",
+      "line": 492
+    },
+    {
+      "file": "distributed/ec_transfer/ec_connector/base.py",
+      "line": 91
+    },
+    {
+      "file": "distributed/ec_transfer/ec_connector/cpu/common.py",
+      "line": 112
+    },
+    {
+      "file": "distributed/ec_transfer/ec_connector/example_connector.py",
+      "line": 65
+    },
+    {
+      "file": "distributed/ec_transfer/ec_connector/factory.py",
+      "line": 43
+    },
+    {
+      "file": "distributed/kv_events.py",
+      "line": 141
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/factory.py",
+      "line": 57
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/lmcache_integration/utils.py",
+      "line": 134
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/mooncake/rdma_utils.py",
+      "line": 35
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/mooncake/store/data.py",
+      "line": 181
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/mooncake/store/worker.py",
+      "line": 150
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/moriio/moriio_connector.py",
+      "line": 141
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/moriio/moriio_connector.py",
+      "line": 1082
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/nixl/base_worker.py",
+      "line": 1958
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/nixl/base_worker.py",
+      "line": 1927
+    },
+    {
+      "file": "distributed/kv_transfer/kv_connector/v1/offloading/config.py",
+      "line": 79
+    },
+    {
+      "file": "distributed/parallel_state.py",
+      "line": 1680
+    },
+    {
+      "file": "distributed/weight_transfer/ipc_engine.py",
+      "line": 97
+    },
+    {
+      "file": "distributed/weight_transfer/ipc_engine.py",
+      "line": 102
+    },
+    {
+      "file": "distributed/weight_transfer/ipc_engine.py",
+      "line": 107
+    },
+    {
+      "file": "distributed/weight_transfer/ipc_engine.py",
+      "line": 115
+    },
+    {
+      "file": "distributed/weight_transfer/ipc_engine.py",
+      "line": 83
+    },
+    {
+      "file": "distributed/weight_transfer/ipc_engine.py",
+      "line": 88
+    },
+    {
+      "file": "distributed/weight_transfer/nccl_engine.py",
+      "line": 94
+    },
+    {
+      "file": "distributed/weight_transfer/nccl_engine.py",
+      "line": 99
+    },
+    {
+      "file": "distributed/weight_transfer/sharded_rdt_common.py",
+      "line": 164
+    },
+    {
+      "file": "distributed/weight_transfer/sharded_rdt_common.py",
+      "line": 259
+    },
+    {
+      "file": "distributed/weight_transfer/sharded_rdt_common.py",
+      "line": 262
+    },
+    {
+      "file": "distributed/weight_transfer/sharded_rdt_engine.py",
+      "line": 315
+    },
+    {
+      "file": "distributed/weight_transfer/sparse_nccl_engine.py",
+      "line": 92
+    },
+    {
+      "file": "distributed/weight_transfer/sparse_nccl_engine.py",
+      "line": 97
+    },
+    {
+      "file": "distributed/weight_transfer/sparse_nccl_engine.py",
+      "line": 104
+    },
+    {
+      "file": "distributed/weight_transfer/sparse_nccl_engine.py",
+      "line": 109
+    },
+    {
+      "file": "distributed/weight_transfer/sparse_nccl_engine.py",
+      "line": 225
+    },
+    {
+      "file": "distributed/weight_transfer/sparse_nccl_engine.py",
+      "line": 356
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 2162
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 2180
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 2240
+    },
+    {
+      "file": "entrypoints/llm.py",
+      "line": 291
+    },
+    {
+      "file": "model_executor/models/config.py",
+      "line": 880
+    },
+    {
+      "file": "models/inkling/amd/ops/lamport.py",
+      "line": 493
+    },
+    {
+      "file": "models/inkling/nvidia/ops/lamport.py",
+      "line": 503
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/allreduce_rmsnorm_reduce_scatter_early_exit.py",
+      "line": 66
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/allreduce_rmsnorm_reduce_scatter_early_exit.py",
+      "line": 69
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/allreduce_rmsnorm_reduce_scatter_early_exit.py",
+      "line": 75
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/allreduce_rmsnorm_reduce_scatter_early_exit.py",
+      "line": 123
+    },
+    {
+      "file": "models/qwen4_exp/amd/model_state.py",
+      "line": 36
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/model_state.py",
+      "line": 36
+    }
+  ],
+  "examples": [
+    "Decode context parallelism for GQA/MQA requires `--tensor-parallel-size` ({tensor_parallel_size}) to be greater than the model's total number of KV heads ({total_num_kv_heads}). Increase `--tensor-par",
+    "`--decode-context-parallel-size` ({decode_context_parallel_size}) exceeds the maximum supported value ({max_dcp_size}) for `--tensor-parallel-size` ({tensor_parallel_size}) and {total_num_kv_heads} mo",
+    "data_parallel_size_local ({self.data_parallel_size_local}) must be <= data_parallel_size ({self.data_parallel_size})",
+    "data_parallel_external_lb can only be set when data_parallel_size > 1",
+    "enable_expert_parallel must be True to use EPLB."
+  ],
+  "status": "hypothesis",
+  "count": 57
+}

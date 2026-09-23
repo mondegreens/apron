@@ -1,0 +1,56 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "profiler_config",
+  "correction_spec": {
+    "action": "remove_field",
+    "field": "enforce_eager"
+  },
+  "extraction_schema": {
+    "options": "string"
+  },
+  "source_sites": [
+    {
+      "file": "config/parallel.py",
+      "line": 1064
+    },
+    {
+      "file": "config/profiler.py",
+      "line": 178
+    },
+    {
+      "file": "config/profiler.py",
+      "line": 182
+    },
+    {
+      "file": "config/profiler.py",
+      "line": 207
+    },
+    {
+      "file": "config/profiler.py",
+      "line": 211
+    },
+    {
+      "file": "config/profiler.py",
+      "line": 232
+    },
+    {
+      "file": "config/profiler.py",
+      "line": 216
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1384
+    }
+  ],
+  "examples": [
+    "Unable to use nsight profiling unless workers run with Ray.",
+    "torch_profiler_dir is only applicable when profiler is set to 'torch'",
+    "torch_profiler_dir must be set when profiler is 'torch'",
+    "{options} only applicable when profiler is set to 'proton'",
+    "proton_profiler_dir must be set when profiler is 'proton'"
+  ],
+  "status": "hypothesis",
+  "count": 8
+}

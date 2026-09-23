@@ -1,0 +1,76 @@
+{
+  "schema_version": 3,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "lora_config",
+  "correction_strategy": "fallback_engine_config",
+  "extraction_schema": {
+    "max_cpu_loras": "string",
+    "max_loras": "string",
+    "r": "string",
+    "lora_int_id": "string"
+  },
+  "source_sites": [
+    {
+      "file": "config/lora.py",
+      "line": 144
+    },
+    {
+      "file": "config/lora.py",
+      "line": 121
+    },
+    {
+      "file": "lora/layers/fused_moe.py",
+      "line": 527
+    },
+    {
+      "file": "lora/layers/fused_moe.py",
+      "line": 530
+    },
+    {
+      "file": "lora/layers/logits_processor.py",
+      "line": 92
+    },
+    {
+      "file": "lora/peft_helper.py",
+      "line": 55
+    },
+    {
+      "file": "lora/request.py",
+      "line": 41
+    },
+    {
+      "file": "lora/worker_manager.py",
+      "line": 52
+    },
+    {
+      "file": "lora/worker_manager.py",
+      "line": 92
+    },
+    {
+      "file": "lora/worker_manager.py",
+      "line": 258
+    },
+    {
+      "file": "model_executor/model_loader/tensorizer.py",
+      "line": 236
+    },
+    {
+      "file": "model_executor/model_loader/tensorizer.py",
+      "line": 254
+    },
+    {
+      "file": "v1/worker/lora_model_runner_mixin.py",
+      "line": 87
+    }
+  ],
+  "examples": [
+    "Inkling LoRA requires INKLING_MULTIMEM_AR=0: the Lamport fused-collective path bypasses the LoRA-wrapped wo_ud and dense down_proj layers on decode-sized batches, silently dropping their LoRA. Set INK",
+    "max_cpu_loras ({self.max_cpu_loras}) must be >= max_loras ({self.max_loras}).",
+    "model_config must be provided for MoE LoRA.",
+    "model_config.architectures must be defined for MoE LoRA.",
+    "When using LoRA, vocab size must be <= 258048"
+  ],
+  "status": "hypothesis",
+  "count": 13
+}
