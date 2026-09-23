@@ -58,7 +58,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=("--dtype bfloat16 --gpu-memory-utilization 0.90 --max-model-len 131072"),
-        accept_classes=("oom", "max_model_len", "other_correctable"),
+        accept_classes=("max_model_len", "other_correctable"),
     ),
     InjectionCase(
         name="oom_torch",
@@ -78,7 +78,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype bfloat16 --max-model-len 999999",
-        accept_classes=("max_model_len", "other_correctable", "oom"),
+        accept_classes=("max_model_len", "other_correctable"),
     ),
     InjectionCase(
         name="dtype_incompatible",
@@ -87,7 +87,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype float16 --max-model-len 640",
-        accept_classes=("dtype_incompatible", "oom", "other_correctable"),
+        accept_classes=("oom", "other_correctable"),
     ),
     InjectionCase(
         name="lora_config",
@@ -96,7 +96,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype bfloat16 --max-model-len 640 --lora-modules test=/nonexistent",
-        accept_classes=("lora_config", "other_correctable", "oom"),
+        accept_classes=("oom", "other_correctable"),
     ),
     InjectionCase(
         name="scheduler_config",
@@ -105,7 +105,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=("--dtype bfloat16 --max-model-len 2048 --max-num-batched-tokens 128"),
-        accept_classes=("scheduler_config", "oom", "other_correctable"),
+        accept_classes=("oom", "other_correctable"),
     ),
     InjectionCase(
         name="compilation_config",
@@ -132,7 +132,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         bad_flags=(
             "--dtype bfloat16 --max-model-len 640 --speculative-model /nonexistent-draft-model"
         ),
-        accept_classes=("speculative_config", "other_correctable", "oom"),
+        accept_classes=("speculative_config",),
     ),
     InjectionCase(
         name="parallelism_config",
@@ -141,7 +141,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=("--dtype bfloat16 --max-model-len 640 --tensor-parallel-size 2"),
-        accept_classes=("parallelism_config", "other_correctable", "oom"),
+        accept_classes=("parallelism_config", "other_correctable"),
     ),
     InjectionCase(
         name="profiler_config",
@@ -154,7 +154,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --otlp-traces-endpoint http://localhost:4317"
             " --collect-detailed-traces all"
         ),
-        accept_classes=("profiler_config", "other_correctable", "oom"),
+        accept_classes=("oom", "other_correctable"),
     ),
     InjectionCase(
         name="multimodal_config",
@@ -163,7 +163,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=("--dtype bfloat16 --max-model-len 640 --limit-mm-per-prompt image=999"),
-        accept_classes=("multimodal_config", "other_correctable", "oom"),
+        accept_classes=("multimodal_config", "other_correctable"),
     ),
     InjectionCase(
         name="kv_transfer_config",
@@ -173,7 +173,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=("--dtype bfloat16 --max-model-len 640 --kv-connector PyNcclConnector"),
         expect_correction=False,
-        accept_classes=("kv_transfer_config", "config_incompatible", "other_correctable", "oom"),
+        accept_classes=("kv_transfer_config", "config_incompatible"),
     ),
     InjectionCase(
         name="config_incompatible",
@@ -187,7 +187,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --speculative-model [ngram] --num-speculative-tokens 3"
             " --ngram-prompt-lookup-max 3"
         ),
-        accept_classes=("config_incompatible", "speculative_config", "other_correctable", "oom"),
+        accept_classes=("speculative_config", "other_correctable"),
     ),
     InjectionCase(
         name="platform_unsupported",
@@ -197,11 +197,8 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=("--dtype bfloat16 --max-model-len 640 --attention-backend FLASHINFER_VLLM"),
         accept_classes=(
-            "platform_unsupported",
-            "compilation_config",
             "config_incompatible",
             "other_correctable",
-            "oom",
         ),
     ),
     InjectionCase(
@@ -211,7 +208,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=("--dtype bfloat16 --max-model-len 640 --load-format dummy"),
-        accept_classes=("model_runtime", "other_correctable", "oom"),
+        accept_classes=("oom", "other_correctable"),
     ),
 ]
 
@@ -226,7 +223,7 @@ _A100_INJECTIONS = [
             "gpu_memory_utilization": "0.90",
         },
         bad_flags="--dtype bfloat16 --tensor-parallel-size 3 --max-model-len 640",
-        accept_classes=("tp_divisibility", "parallelism_config", "other_correctable", "oom"),
+        accept_classes=("parallelism_config",),
     ),
     # NOTE: FP8 on A100 (cc 8.0) does not produce a clean compute
     # capability error. The cc check fires at kernel selection time
@@ -241,7 +238,7 @@ _A100_INJECTIONS = [
         gpu_type="NVIDIA A100-SXM4-80GB",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype bfloat16 --quantization fp8 --max-model-len 640",
-        accept_classes=("quant_compute_capability", "other_correctable", "oom"),
+        accept_classes=("oom",),
     ),
 ]
 
