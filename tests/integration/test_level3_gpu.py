@@ -358,14 +358,27 @@ def _inject_and_diagnose(
         result["status"] = "corrected_boot_failed"
         return result
 
-    # Run task suite via SSH (localhost) to bypass RunPod proxy caching issues.
-    # The proxy can return 404 after vLLM restarts with a different model.
+    # Run task suite via SSH (localhost).
+    # Query /v1/models to get the actual registered model name — vLLM may
+    # register it differently than the CLI model_id after a nohup restart.
+    models_result = target.execute("curl -sf http://localhost:8000/v1/models")
+    served_model = case.model_id
+    if models_result.get("exit_code") == 0:
+        try:
+            models_data = json.loads(models_result["stdout"])
+            if models_data.get("data"):
+                served_model = models_data["data"][0]["id"]
+                logger.info("Served model: %s", served_model)
+        except (json.JSONDecodeError, KeyError, IndexError):
+            pass
+    result["served_model"] = served_model
+
     task_cases = task_suite.get("cases", [])
     attempts: list[dict[str, Any]] = []
     for tc in task_cases:
         prompt_json = json.dumps(
             {
-                "model": case.model_id,
+                "model": served_model,
                 "messages": [{"role": "user", "content": tc["prompt"]}],
                 "max_tokens": tc.get("max_tokens", 128),
                 "temperature": 0,
@@ -627,7 +640,7 @@ def _assert_injection_result(r: dict[str, Any]) -> list[str]:
         failures.append(f"{case_name}: injection produced no error output")
         return failures
 
-    # 4. Correctable cases must classify, correct, and boot
+    # 4. Correctable cases must classify, correct, boot, and serve
     if expect_correction:
         if status == "classification_failed":
             failures.append(f"{case_name}: classification failed (correctable case)")
@@ -636,6 +649,14 @@ def _assert_injection_result(r: dict[str, Any]) -> list[str]:
         elif status == "corrected_boot_failed":
             failures.append(
                 f"{case_name}: corrected plan didn't boot\nLog: {r.get('corrected_boot_log', '')}"
+            )
+        elif status == "task_regression":
+            task_info = r.get("task_attempts", [])
+            errors = [a.get("error", "") for a in task_info if a.get("error")]
+            failures.append(
+                f"{case_name}: corrected boot OK but task suite failed "
+                f"({r.get('task_passed', 0)}/{r.get('task_total', 0)})\n"
+                f"Errors: {errors[:3]}"
             )
 
     # 5. Infeasible cases must not produce a correction that boots
