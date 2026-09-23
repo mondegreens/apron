@@ -200,6 +200,12 @@ def classify_and_extract(
 
     client = anthropic.Anthropic()
     truncated = _extract_relevant(error, limit=8000)
+    logger.debug(
+        "Classifier input (%d→%d chars): ...%s",
+        len(error),
+        len(truncated),
+        truncated[-500:],
+    )
 
     classify_tool: Any = _classify_tool(classes)
     classification = client.messages.create(

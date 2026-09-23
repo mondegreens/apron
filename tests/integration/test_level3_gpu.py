@@ -268,10 +268,13 @@ def _inject_and_diagnose(
         "expect_correction": case.expect_correction,
     }
 
-    # Kill any running vLLM and wait for port 8000 to be free
-    target.execute("pkill -9 -f 'vllm serve' || true")
-    target.execute("sleep 3")
-    target.execute("pkill -9 -f 'vllm' || true")
+    # Kill ALL processes holding port 8000, then wait for it to be free
+    target.execute(
+        "fuser -k 8000/tcp 2>/dev/null || true; "
+        "pkill -9 -f 'vllm' || true; "
+        "sleep 2; "
+        "fuser -k -9 8000/tcp 2>/dev/null || true"
+    )
     target.execute(
         "for i in $(seq 1 30); do   ss -tlnp | grep -q ':8000 ' || break;   sleep 1; done"
     )
@@ -371,14 +374,18 @@ def _inject_and_diagnose(
             }
         )
         curl_cmd = (
-            f"curl -sf -X POST http://localhost:8000/v1/chat/completions "
+            f"curl -s -w '\\n%{{http_code}}' -X POST http://localhost:8000/v1/chat/completions "
             f"-H 'Content-Type: application/json' "
             f"-d '{prompt_json}'"
         )
         curl_result = target.execute(curl_cmd)
-        if curl_result.get("exit_code") == 0:
+        curl_stdout = curl_result.get("stdout", "")
+        curl_lines = curl_stdout.rsplit("\n", 1)
+        http_code = curl_lines[-1].strip() if len(curl_lines) > 1 else ""
+        curl_body = curl_lines[0] if len(curl_lines) > 1 else curl_stdout
+        if curl_result.get("exit_code") == 0 and http_code.startswith("2"):
             try:
-                data = json.loads(curl_result["stdout"])
+                data = json.loads(curl_body)
                 output = data["choices"][0]["message"]["content"]
                 normalized_output = " ".join(output.strip().split())
                 normalized_expected = " ".join(tc.get("expected", "").split())
@@ -402,18 +409,26 @@ def _inject_and_diagnose(
                     }
                 )
         else:
+            error_detail = (
+                f"HTTP {http_code}: {curl_body[:200]}"
+                if http_code
+                else f"curl exit {curl_result.get('exit_code')}: "
+                f"{curl_result.get('stderr', '')[:200]}"
+            )
+            logger.warning("Task %s failed: %s", tc.get("id", ""), error_detail)
             attempts.append(
                 {
                     "case_id": tc.get("id", ""),
                     "score": 0,
                     "status": "failed",
-                    "error": curl_result.get("stderr", "")[:200],
+                    "error": error_detail,
                 }
             )
     passed = sum(1 for a in attempts if a.get("score") == 1)
     total = len(attempts)
     result["task_passed"] = passed
     result["task_total"] = total
+    result["task_attempts"] = attempts
     result["status"] = "full_success" if passed == total else "task_regression"
 
     return result
