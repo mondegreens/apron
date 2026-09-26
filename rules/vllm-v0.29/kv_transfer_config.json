@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "kv_transfer_config",
@@ -8,8 +8,12 @@
     "description": "manual review needed"
   },
   "extraction_schema": {
-    "get_args": "string",
-    "backend": "string"
+    "get_args": {
+      "type": "string"
+    },
+    "backend": {
+      "type": "string"
+    }
   },
   "source_sites": [
     {
@@ -53,5 +57,6 @@
     "kv_transfer_config must be set for NixlConnector"
   ],
   "status": "hypothesis",
-  "count": 8
+  "count": 8,
+  "rule_version": 1
 }

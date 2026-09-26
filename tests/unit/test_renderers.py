@@ -89,7 +89,9 @@ def test_docker_compose_has_vllm_service():
     rendered = DockerComposeRenderer().render(_ctx())
     compose = rendered["compose"]
     assert "vllm" in compose["services"]
-    assert compose["services"]["vllm"]["image"].startswith("vllm/vllm-openai")
+    from apron.adapters.runner_image import RUNNER_IMAGE_DIGEST
+
+    assert compose["services"]["vllm"]["image"].endswith("@" + RUNNER_IMAGE_DIGEST)
     assert "8000:8000" in compose["services"]["vllm"]["ports"]
 
 

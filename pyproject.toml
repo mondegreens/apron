@@ -75,6 +75,7 @@ dev = [
     "hypothesis>=6",
     "paramiko>=3",
     "runpod>=1",
+    "huggingface-hub>=1",
 ]
 docs = [
     "zensical==0.0.60",
@@ -123,4 +124,8 @@ forbidden_modules = ["apron.interfaces"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["integration: marks tests as integration tests (require external services)"]
+pythonpath = ["tests"]
+markers = [
+    "integration: marks tests as integration tests (require external services)",
+    "cohort: GPU cohort run on RunPod (opt-in; needs RUNPOD_API_KEY and spends money)",
+]

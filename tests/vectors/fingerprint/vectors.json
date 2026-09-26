@@ -1,0 +1,1139 @@
+{
+  "_provenance": "Apron model-fingerprint vectors. For each domain model: a minimal valid input, the IDENTITY projection at every depth (F1) serialized to RFC 8785 canonical UTF-8, and SHA-256 with multihash prefix 0x1220 over those bytes.",
+  "vectors": [
+    {
+      "fingerprint_hex": "1220c849c2d959c252d5cb6682df747101470eab982d6ee5d37dc68088bc678fd7b1",
+      "identity_projection_utf8_hex": "7b2266696c655f64696765737473223a5b5d2c226d616e69666573745f646967657374223a6e756c6c2c227265736f6c7665645f7265766973696f6e223a2278222c22736f757263655f6b696e64223a2278227d",
+      "input": {
+        "file_digests": [],
+        "gating_observed": null,
+        "license_observed": null,
+        "manifest_digest": null,
+        "observed_at": null,
+        "publisher_metadata": null,
+        "resolved_revision": "x",
+        "schema_version": 1,
+        "source_kind": "x"
+      },
+      "schema": "apron.domain.artifacts.ArtifactSourceObservation"
+    },
+    {
+      "fingerprint_hex": "12202516b03bf9100bdbbee16aca5886de0abbb654036f0922ac00607e2c0c4de81a",
+      "identity_projection_utf8_hex": "7b2270617468223a2278222c22736861323536223a2278222c2273697a655f6279746573223a317d",
+      "input": {
+        "path": "x",
+        "sha256": "x",
+        "size_bytes": 1
+      },
+      "schema": "apron.domain.artifacts.FileDigest"
+    },
+    {
+      "fingerprint_hex": "1220713923caf877300f4405102cdfd05c30596c647ce5c48384789e828c04c76c84",
+      "identity_projection_utf8_hex": "7b2266616d696c79223a2278222c227075626c697368657273223a5b5d7d",
+      "input": {
+        "derivatives": [],
+        "family": "x",
+        "publishers": [],
+        "schema_version": 1
+      },
+      "schema": "apron.domain.artifacts.ModelLineage"
+    },
+    {
+      "fingerprint_hex": "12208a51d3733618e7a3f7c15f3ff20ccad0bfd637b4a461d8142d3e0cc280caaa72",
+      "identity_projection_utf8_hex": "7b2263616c6962726174696f6e5f646174615f6964656e74697479223a6e756c6c2c226f75747075745f61727469666163745f646967657374223a6e756c6c2c2270726f6475636572223a2278222c22726563697065223a6e756c6c2c2276657273696f6e223a2278227d",
+      "input": {
+        "calibration_data_identity": null,
+        "output_artifact_digest": null,
+        "producer": "x",
+        "recipe": null,
+        "schema_version": 1,
+        "version": "x"
+      },
+      "schema": "apron.domain.artifacts.OfflineTransformSpec"
+    },
+    {
+      "fingerprint_hex": "12209f29ce2b7c694d0e8d34af3851a641e32075ba989b0d36bee88dd23e2c17143e",
+      "identity_projection_utf8_hex": "7b2261637469766174696f6e5f666f726d6174223a6e756c6c2c2262697473223a6e756c6c2c22626c6f636b5f7368617065223a6e756c6c2c2263616c6962726174696f6e5f64617461736574223a6e756c6c2c2263616c6962726174696f6e5f726563697065223a6e756c6c2c226578636c756465645f6d6f64756c6573223a5b5d2c2267726f75705f73697a65223a6e756c6c2c226b765f63616368655f666f726d6174223a6e756c6c2c2270726f64756365725f76657273696f6e223a6e756c6c2c227363616c655f726570726573656e746174696f6e223a6e756c6c2c22736368656d65223a2278222c227765696768745f666f726d6174223a2278222c227a65726f5f706f696e745f726570726573656e746174696f6e223a6e756c6c7d",
+      "input": {
+        "activation_format": null,
+        "bits": null,
+        "block_shape": null,
+        "calibration_dataset": null,
+        "calibration_recipe": null,
+        "excluded_modules": [],
+        "group_size": null,
+        "kv_cache_format": null,
+        "producer_version": null,
+        "scale_representation": null,
+        "schema_version": 1,
+        "scheme": "x",
+        "weight_format": "x",
+        "zero_point_representation": null
+      },
+      "schema": "apron.domain.artifacts.QuantizationSpec"
+    },
+    {
+      "fingerprint_hex": "122032a1d9693e2460e2d67fb22084d0425d721141da6250515a6aaccc2be3c4ddb0",
+      "identity_projection_utf8_hex": "7b22656e67696e655f76657273696f6e223a6e756c6c2c226578636c7573696f6e73223a5b5d2c226b696e64223a2278222c2270726f6475636572223a6e756c6c2c227461726765745f6c617965725f72756c6573223a5b5d2c2276657273696f6e223a6e756c6c7d",
+      "input": {
+        "engine_version": null,
+        "exclusions": [],
+        "kind": "x",
+        "producer": null,
+        "schema_version": 1,
+        "target_layer_rules": [],
+        "version": null
+      },
+      "schema": "apron.domain.artifacts.RuntimeTransformSpec"
+    },
+    {
+      "fingerprint_hex": "122070cb604109b6f9bce95b5f0345bd92912c90032ae0bdd3d6b1e8593302d36095",
+      "identity_projection_utf8_hex": "7b22636f6d706f6e656e745f7374727563747572655f646967657374223a6e756c6c2c22636f6e74656e745f646967657374223a2278227d",
+      "input": {
+        "component_structure_digest": null,
+        "content_digest": "x",
+        "schema_version": 1
+      },
+      "schema": "apron.domain.artifacts.identity.ArtifactIdentity"
+    },
+    {
+      "fingerprint_hex": "1220b7f70b5bd139bbd4ce155e0a2a071df74972a6e92513e9c9c3f02cc2011068a4",
+      "identity_projection_utf8_hex": "7b226f7065726174696f6e223a2278222c226f75747075745f726570726573656e746174696f6e223a2278222c2272657175697265645f696e70757473223a5b5d2c2273747265616d696e67223a66616c73657d",
+      "input": {
+        "operation": "x",
+        "output_representation": "x",
+        "required_inputs": [],
+        "schema_version": 1,
+        "streaming": false
+      },
+      "schema": "apron.domain.capabilities.CapabilitySignature"
+    },
+    {
+      "fingerprint_hex": "12207bcd155ed3e59aaf7c250b9ef90dee8468a92c4c491244ea454137f7a5ec5448",
+      "identity_projection_utf8_hex": "7b226368756e6b5f73697a655f6d73223a6e756c6c2c226475726174696f6e5f7365636f6e6473223a312c226b696e64223a22617564696f227d",
+      "input": {
+        "chunk_size_ms": null,
+        "duration_seconds": 1.0,
+        "kind": "audio"
+      },
+      "schema": "apron.domain.mechanisms.AudioWorkload"
+    },
+    {
+      "fingerprint_hex": "1220cf44162fa40ec1ce2aa7594d5f0efc28435e93935530a78774420148d3bbd588",
+      "identity_projection_utf8_hex": "7b2261727469666163745f6d65746164617461223a7b7d2c2263616c6962726174696f6e5f7265636f726473223a5b5d2c22657865637574696f6e5f737065635f64617461223a7b7d2c226861726477617265223a7b22636f6d707574655f6361706162696c697479223a2278222c226770755f736b75223a2278222c22696e746572636f6e6e656374223a6e756c6c2c226d656d6f72795f62616e6477696474685f67627073223a6e756c6c2c22746f74616c5f6d656d6f72795f6279746573223a317d2c226d656368616e69736d223a7b226d656368616e69736d223a2278222c22726f6c65223a2278227d2c22776f726b6c6f6164223a7b22696e7075745f6c656e677468223a312c226b696e64223a2274657874222c226f75747075745f6c656e677468223a317d7d",
+      "input": {
+        "artifact_metadata": {},
+        "calibration_records": [],
+        "execution_spec_data": {},
+        "hardware": {
+          "compute_capability": "x",
+          "gpu_sku": "x",
+          "interconnect": null,
+          "memory_bandwidth_gbps": null,
+          "schema_version": 1,
+          "topology_position": null,
+          "total_memory_bytes": 1
+        },
+        "mechanism": {
+          "mechanism": "x",
+          "role": "x",
+          "schema_version": 1
+        },
+        "workload": {
+          "input_length": 1,
+          "kind": "text",
+          "output_length": 1
+        }
+      },
+      "schema": "apron.domain.mechanisms.CalculatorInput"
+    },
+    {
+      "fingerprint_hex": "1220473599b62701247b935e0cba85258b2b4412f44fa4a8c12bffefc89b5abbbb3a",
+      "identity_projection_utf8_hex": "7b226d656368616e69736d223a2278222c22726f6c65223a2278227d",
+      "input": {
+        "mechanism": "x",
+        "role": "x",
+        "schema_version": 1
+      },
+      "schema": "apron.domain.mechanisms.ComponentMechanism"
+    },
+    {
+      "fingerprint_hex": "1220d9011a89781d696dc865386e5208b8604c00c865f66d261fc683becf251301fa",
+      "identity_projection_utf8_hex": "7b22686569676874223a312c226b696e64223a22696d616765222c227374657073223a6e756c6c2c227769647468223a317d",
+      "input": {
+        "height": 1,
+        "kind": "image",
+        "steps": null,
+        "width": 1
+      },
+      "schema": "apron.domain.mechanisms.ImageWorkload"
+    },
+    {
+      "fingerprint_hex": "122089a0922b1822c7a44054ce333ecedac3298299df2a647704d5fe302eb56d8509",
+      "identity_projection_utf8_hex": "7b22696e7075745f6c656e677468223a312c226b696e64223a2274657874222c226f75747075745f6c656e677468223a317d",
+      "input": {
+        "input_length": 1,
+        "kind": "text",
+        "output_length": 1
+      },
+      "schema": "apron.domain.mechanisms.TextWorkload"
+    },
+    {
+      "fingerprint_hex": "122071e838de909fa768922309ff9230c972f01ebfa2ddcde5e4d4ffdd88a115c59a",
+      "identity_projection_utf8_hex": "7b22616374696f6e5f74797065223a2278222c226465636973696f6e5f726571756573745f646967657374223a2278222c2264657461696c73223a7b7d7d",
+      "input": {
+        "action_type": "x",
+        "decision_request_digest": "x",
+        "details": {},
+        "schema_version": 1
+      },
+      "schema": "apron.domain.schemas.authority.ActionRequest"
+    },
+    {
+      "fingerprint_hex": "1220fd00e3390b94a244e35ce973cfc7bfbccd01097644fdb2c37e46cb258068be4b",
+      "identity_projection_utf8_hex": "7b22636173655f74797065223a2278222c2266696e6765727072696e74223a6e756c6c2c2270726564696374696f6e5f64656c7461223a6e756c6c7d",
+      "input": {
+        "case_type": "x",
+        "details": {},
+        "fingerprint": null,
+        "prediction_delta": null,
+        "schema_version": 1
+      },
+      "schema": "apron.domain.schemas.authority.AnomalyCase"
+    },
+    {
+      "fingerprint_hex": "12204d20d45d4f9aee6bc36d373c11b7d850c318c08de4a0b567696739c9ca4bc51b",
+      "identity_projection_utf8_hex": "7b22616374696f6e223a2278222c22636f6e74657874223a7b7d2c226465636973696f6e223a227065726d6974222c227072696e636970616c223a2278222c227265736f75726365223a6e756c6c2c22736f757263655f74797065223a2278222c22736f757263655f76657273696f6e223a2278227d",
+      "input": {
+        "action": "x",
+        "context": {},
+        "decision": "permit",
+        "principal": "x",
+        "resource": null,
+        "schema_version": 1,
+        "source_type": "x",
+        "source_version": "x"
+      },
+      "schema": "apron.domain.schemas.authority.AuthorityContribution"
+    },
+    {
+      "fingerprint_hex": "1220e5ed96d8ff5a1386653c4de806ae75ca3abda9a164e7350fca691120d8946ecd",
+      "identity_projection_utf8_hex": "7b2261636365707465645f6465636973696f6e5f726571756573745f646967657374223a2278222c22616374696f6e5f726571756573745f646967657374223a2278222c22726573756c74223a22617574686f72697a6564227d",
+      "input": {
+        "accepted_decision_request_digest": "x",
+        "action_request_digest": "x",
+        "context_version": null,
+        "contributions": [],
+        "result": "authorized",
+        "schema_version": 1
+      },
+      "schema": "apron.domain.schemas.authority.AuthorizationDecision"
+    },
+    {
+      "fingerprint_hex": "1220b5f51aed28e1d6cdc5c85ee7071ea13860770206074889bd4238d2b38314d6d2",
+      "identity_projection_utf8_hex": "7b2261646170746174696f6e5f72756c6573223a7b7d2c22626173656c696e655f616c6c6f636174696f6e5f646967657374223a6e756c6c2c22636f6e74726962757465645f706f6f6c5f646967657374223a6e756c6c2c2263726564656e7469616c5f73636f706573223a5b5d2c22646174615f72756c6573223a7b7d2c22686172645f7461726765745f636f6e73747261696e7473223a7b7d2c226c6966656379636c655f72756c6573223a7b7d2c226d6178696d756d5f7370656e64223a6e756c6c2c227065726d69747465645f6163636f756e7473223a5b5d2c227065726d69747465645f616374696f6e5f636c6173736573223a5b5d2c227065726d69747465645f70726f766964657273223a5b5d2c227075626c69636174696f6e5f73636f7065223a6e756c6c2c2272756e74696d655f72756c6573223a7b7d2c2273656375726974795f72756c6573223a7b7d2c227461736b5f646174615f64657374696e6174696f6e73223a5b5d2c2274656172646f776e5f72756c6573223a7b7d7d",
+      "input": {
+        "adaptation_rules": {},
+        "baseline_allocation_digest": null,
+        "contributed_pool_digest": null,
+        "credential_scopes": [],
+        "data_rules": {},
+        "hard_target_constraints": {},
+        "lifecycle_rules": {},
+        "maximum_spend": null,
+        "permitted_accounts": [],
+        "permitted_action_classes": [],
+        "permitted_providers": [],
+        "publication_scope": null,
+        "runtime_rules": {},
+        "schema_version": 1,
+        "security_rules": {},
+        "task_data_destinations": [],
+        "teardown_rules": {}
+      },
+      "schema": "apron.domain.schemas.authority.AuthorizationEnvelope"
+    },
+    {
+      "fingerprint_hex": "1220bd60f3427ae06ec5d4e329001da10b30eb86e377d42987011dd0125190f39f64",
+      "identity_projection_utf8_hex": "7b226275646765745f6c696d6974223a6e756c6c2c22646174615f7265736964656e63795f636f6e73747261696e7473223a5b5d2c226c6963656e73655f636f6e73747261696e7473223a5b5d2c226f626a656374697665223a2278222c226f7074696d697a6174696f6e5f6f626a656374697665223a6e756c6c2c227065726d69747465645f6163636f756e7473223a5b5d2c227065726d69747465645f70726f766964657273223a5b5d2c227065726d69747465645f7265736f7572636573223a5b5d2c22707269766163795f636f6e73747261696e7473223a5b5d2c227175616c6974795f666c6f6f72223a6e756c6c2c2273656375726974795f636f6e73747261696e7473223a5b5d2c2273657276696e675f736c6f73223a7b7d2c22737563636573735f6372697465726961223a5b5d2c2274696d655f626f756e645f686f757273223a6e756c6c7d",
+      "input": {
+        "budget_limit": null,
+        "data_residency_constraints": [],
+        "license_constraints": [],
+        "objective": "x",
+        "optimization_objective": null,
+        "optimization_objective_description": null,
+        "permitted_accounts": [],
+        "permitted_providers": [],
+        "permitted_resources": [],
+        "privacy_constraints": [],
+        "quality_floor": null,
+        "schema_version": 1,
+        "security_constraints": [],
+        "serving_slos": {},
+        "success_criteria": [],
+        "time_bound_hours": null
+      },
+      "schema": "apron.domain.schemas.authority.DecisionRequest"
+    },
+    {
+      "fingerprint_hex": "122003884bb2f86141dfb9ba4b7f0b2df9c328914adca29a046058293ecf518dc676",
+      "identity_projection_utf8_hex": "7b22617474656d70745f74797065223a226576616c756174696f6e222c2270726f746f636f6c5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c22737461747573223a2278227d",
+      "input": {
+        "attempt_type": "evaluation",
+        "protocol_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "status": "x"
+      },
+      "schema": "apron.domain.schemas.authority.EvaluationAttempt"
+    },
+    {
+      "fingerprint_hex": "12202d27ac6b087fb9a52ff2ae5f4f0371725f227f1ce64d82d91f5d6a0423dac8d1",
+      "identity_projection_utf8_hex": "7b22617474656d70745f74797065223a22657865637574696f6e222c22737461747573223a2278222c227461726765745f66696e6765727072696e74223a2278227d",
+      "input": {
+        "attempt_type": "execution",
+        "status": "x",
+        "target_fingerprint": "x"
+      },
+      "schema": "apron.domain.schemas.authority.ExecutionAttempt"
+    },
+    {
+      "fingerprint_hex": "1220c72bdd0981db0f986756e2fdad8f7268ccf985f45f306e6aff6e08b102878835",
+      "identity_projection_utf8_hex": "7b2264656475706c69636174696f6e5f6b6579223a2278222c22696e707574735f646967657374223a2278222c226a6f625f6964223a2278222c22706f6c6963795f76657273696f6e223a2278222c2273746174655f7472616e736974696f6e223a2278227d",
+      "input": {
+        "deduplication_key": "x",
+        "inputs_digest": "x",
+        "job_id": "x",
+        "outputs_digest": null,
+        "policy_version": "x",
+        "schema_version": 1,
+        "state_transition": "x"
+      },
+      "schema": "apron.domain.schemas.authority.OrchestrationDecision"
+    },
+    {
+      "fingerprint_hex": "122021742a76470dd01fd3477381fea237a999deb5978c5694582b2bc722b701c5dd",
+      "identity_projection_utf8_hex": "7b2264656475706c69636174696f6e5f6b6579223a2278222c2264657374696e6174696f6e5f706f6c696379223a2278222c2270726f76656e616e63655f646967657374223a2278222c22726174655f636f6e74726f6c73223a7b7d2c2272656e64657265645f7265636f7264223a7b7d2c22757073747265616d5f7368617065223a2278227d",
+      "input": {
+        "confidence": null,
+        "deduplication_key": "x",
+        "destination_policy": "x",
+        "provenance_digest": "x",
+        "rate_controls": {},
+        "rendered_record": {},
+        "schema_version": 1,
+        "upstream_shape": "x"
+      },
+      "schema": "apron.domain.schemas.authority.ProposedExternalAction"
+    },
+    {
+      "fingerprint_hex": "1220051bfe1dabe0fbeec8f6aec75d94a3b831e1c7462145d9b7a31f9bf6c1177c42",
+      "identity_projection_utf8_hex": "7b22617474656d70745f74797065223a227075626c69636174696f6e222c2264657374696e6174696f6e223a2278222c22737461747573223a2278227d",
+      "input": {
+        "attempt_type": "publication",
+        "destination": "x",
+        "status": "x"
+      },
+      "schema": "apron.domain.schemas.authority.PublicationAttempt"
+    },
+    {
+      "fingerprint_hex": "1220bbe32295315f6e60466afe62163a6505ed884a9b918f55da1aa810c3cd01c2ec",
+      "identity_projection_utf8_hex": "7b22656d7069726963616c5f7672616d5f6762223a6e756c6c2c22696d706f72745f737461747573223a226f776e65725f61747465737465645f626f6f74222c226d6f64656c5f6964223a2278222c226f627365727665645f636f6e66696775726174696f6e223a7b7d2c226f7574636f6d65223a22626f6f7465645f6865616c746879222c2270726f76656e616e6365223a22222c2270726f7669646572223a2272756e706f64227d",
+      "input": {
+        "artifact_revision": null,
+        "date": null,
+        "empirical_vram_gb": null,
+        "engine_image_digest": null,
+        "execution_fingerprint": null,
+        "hardware_fingerprint": null,
+        "import_status": "owner_attested_boot",
+        "model_id": "x",
+        "observed_configuration": {},
+        "outcome": "booted_healthy",
+        "provenance": "",
+        "provider": "runpod",
+        "schema_version": 1,
+        "workload": null
+      },
+      "schema": "apron.domain.schemas.imports.ImportedBootObservation"
+    },
+    {
+      "fingerprint_hex": "12209bbc49bb4aa102a0fb028fd24104b516bac4476bef512804352b4519c319cfdb",
+      "identity_projection_utf8_hex": "7b22636861745f74656d706c6174655f6964656e74697479223a6e756c6c2c22636f6e6669675f646967657374223a6e756c6c2c226964656e74697479223a7b22636f6d706f6e656e745f7374727563747572655f646967657374223a6e756c6c2c22636f6e74656e745f646967657374223a2278227d2c22696e6465785f6d616e69666573745f646967657374223a6e756c6c2c227175616e74697a6174696f6e5f636f6e6669675f646967657374223a6e756c6c2c22746f6b656e697a65725f6964656e74697479223a6e756c6c2c227765696768745f6d616e69666573745f646967657374223a6e756c6c7d",
+      "input": {
+        "attributed_claims": [],
+        "chat_template_identity": null,
+        "claimed_lineage": null,
+        "config_digest": null,
+        "identity": {
+          "component_structure_digest": null,
+          "content_digest": "x",
+          "schema_version": 1
+        },
+        "index_manifest_digest": null,
+        "locators": [],
+        "observations": [],
+        "quantization_config_digest": null,
+        "schema_version": 1,
+        "tokenizer_identity": null,
+        "weight_manifest_digest": null
+      },
+      "schema": "apron.domain.schemas.models.ArtifactSpec"
+    },
+    {
+      "fingerprint_hex": "1220cfb09c67731755a4acfd132a72601069c5889d25ce5a9f95d283f45bb35f87cf",
+      "identity_projection_utf8_hex": "7b22636c61696d5f6261736973223a2278222c2272656c6174696f6e223a22636c61696d65645f646572697665645f66726f6d222c22736f757263655f61727469666163745f646967657374223a2278227d",
+      "input": {
+        "claim_basis": "x",
+        "relation": "claimed_derived_from",
+        "source_artifact_digest": "x"
+      },
+      "schema": "apron.domain.schemas.models.ClaimedDerivedFrom"
+    },
+    {
+      "fingerprint_hex": "1220a003812bdaa785072a86629a084676847f2af65338597cfb186351b97075246d",
+      "identity_projection_utf8_hex": "7b2263616e6469646174655f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c22636f6d70617469626c65223a66616c73652c22657865637574696f6e5f66696e6765727072696e74223a2278227d",
+      "input": {
+        "candidate_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "compatible": false,
+        "details": null,
+        "execution_fingerprint": "x",
+        "schema_version": 1
+      },
+      "schema": "apron.domain.schemas.models.CompatibilityEvidence"
+    },
+    {
+      "fingerprint_hex": "1220d377875ee17a7de0983171ce6c59625ca594e2fc5476c244a06bd785a3764e08",
+      "identity_projection_utf8_hex": "7b22656e67696e655f696d6167655f646967657374223a2278222c22696d706c656d656e746174696f6e5f6f7665727269646573223a7b7d2c227265736f6c7665645f636865636b706f696e745f6d6574686f64223a2278222c2273656c65637465645f6b65726e656c73223a5b5d7d",
+      "input": {
+        "engine_image_digest": "x",
+        "implementation_overrides": {},
+        "resolved_checkpoint_method": "x",
+        "schema_version": 1,
+        "selected_kernels": []
+      },
+      "schema": "apron.domain.schemas.models.ExecutionSpec"
+    },
+    {
+      "fingerprint_hex": "122005f3dbcad97024e92e16b8daf63271bf660200b8b03b8fd14615fbb80a789db8",
+      "identity_projection_utf8_hex": "7b22636f6d706f6e656e745f62797465735f6474797065223a7b7d2c22636f6d706f6e656e7473223a5b5d2c226564676573223a5b5d2c2266696c6573223a5b5d2c22696d6d757461626c655f7265766973696f6e223a6e756c6c2c2272656d6f74655f636f64655f7265717569726564223a66616c73652c227265706f7369746f7279223a6e756c6c7d",
+      "input": {
+        "component_bytes_dtype": {},
+        "components": [],
+        "edges": [],
+        "files": [],
+        "immutable_revision": null,
+        "license": null,
+        "lineage": null,
+        "publisher_claims": [],
+        "remote_code_required": false,
+        "repository": null,
+        "schema_version": 1
+      },
+      "schema": "apron.domain.schemas.models.ModelSpec"
+    },
+    {
+      "fingerprint_hex": "12202293f087c4f06bddaafbf76fdffea06e0750a2ac6c0bf7ffc979f8c99b1b3de3",
+      "identity_projection_utf8_hex": "7b2261727469666163745f646967657374223a2278222c227075626c6973686572223a2278222c2272656c6174696f6e223a227075626c69736865645f62795f6f776e6572227d",
+      "input": {
+        "artifact_digest": "x",
+        "publisher": "x",
+        "relation": "published_by_owner"
+      },
+      "schema": "apron.domain.schemas.models.PublishedByOwner"
+    },
+    {
+      "fingerprint_hex": "1220e6190579cf367a1fe112ccb76fe8f4e8fe878213aad50a93ccbc4083cc9ecf19",
+      "identity_projection_utf8_hex": "7b226f746865725f61727469666163745f646967657374223a2278222c2272656c6174696f6e223a227175616c6974795f636f6d70617265645f77697468222c227461736b5f70726f746f636f6c5f646967657374223a2278227d",
+      "input": {
+        "other_artifact_digest": "x",
+        "relation": "quality_compared_with",
+        "task_protocol_digest": "x"
+      },
+      "schema": "apron.domain.schemas.models.QualityComparedWith"
+    },
+    {
+      "fingerprint_hex": "12205414eb5c671abf8b18e2d554e4da787355d864270d6122db59d4446e90b04f83",
+      "identity_projection_utf8_hex": "7b226576616c756174696f6e5f70726f746f636f6c5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c227461736b5f617474656d70745f66696e6765727072696e7473223a5b5d7d",
+      "input": {
+        "aggregate_score": null,
+        "evaluation_protocol_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "schema_version": 1,
+        "score_breakdown": null,
+        "task_attempt_fingerprints": []
+      },
+      "schema": "apron.domain.schemas.models.QualityEvidence"
+    },
+    {
+      "fingerprint_hex": "122082a22fc76e54415bb264ee2efd50e8f6f83c5244b24cbd3dadd2920f5b1637cd",
+      "identity_projection_utf8_hex": "7b2272656c6174696f6e223a22726570726f64756369626c795f646572697665645f66726f6d222c22736f757263655f61727469666163745f646967657374223a2278222c227472616e73666f726d5f737065635f646967657374223a2278227d",
+      "input": {
+        "relation": "reproducibly_derived_from",
+        "source_artifact_digest": "x",
+        "transform_spec_digest": "x"
+      },
+      "schema": "apron.domain.schemas.models.ReproduciblyDerivedFrom"
+    },
+    {
+      "fingerprint_hex": "1220a9873fec8fc11ecd01b7dd1daa033c409d6b4db5d9430e6e660f03347224a282",
+      "identity_projection_utf8_hex": "7b226d61746368696e675f6372697465726961223a2278222c226f746865725f61727469666163745f646967657374223a2278222c2272656c6174696f6e223a227374727563747572616c6c795f636f6d70617469626c655f77697468227d",
+      "input": {
+        "matching_criteria": "x",
+        "other_artifact_digest": "x",
+        "relation": "structurally_compatible_with"
+      },
+      "schema": "apron.domain.schemas.models.StructurallyCompatibleWith"
+    },
+    {
+      "fingerprint_hex": "122029d7ba2e828cc0abc0b37e3179ddee6abe434a8bdcf1a6be240137f0859df455",
+      "identity_projection_utf8_hex": "7b226f746865725f61727469666163745f646967657374223a2278222c2272656c6174696f6e223a22746f6b656e697a65725f636f6d70617469626c655f77697468222c22746f6b656e697a65725f68617368223a2278227d",
+      "input": {
+        "other_artifact_digest": "x",
+        "relation": "tokenizer_compatible_with",
+        "tokenizer_hash": "x"
+      },
+      "schema": "apron.domain.schemas.models.TokenizerCompatibleWith"
+    },
+    {
+      "fingerprint_hex": "12202c128e2713203935b0dcaf623b0341d6a8f40254acf33cb2a74be397f7fbd5e7",
+      "identity_projection_utf8_hex": "7b227265717565737465645f7265766973696f6e223a6e756c6c2c22736f757263655f6b696e64223a2278222c22757269223a2278227d",
+      "input": {
+        "requested_revision": null,
+        "schema_version": 1,
+        "source_kind": "x",
+        "uri": "x"
+      },
+      "schema": "apron.domain.schemas.primitives.ArtifactLocator"
+    },
+    {
+      "fingerprint_hex": "12206bad159122c37bbd61993a2282eeca3cccbf50c56fb6130c0ebccc1495852ce9",
+      "identity_projection_utf8_hex": "7b2264657269766174696f6e5f6d6574686f64223a2278222c226b696e64223a2264657269766564222c22736f757263655f7265666572656e636573223a5b5d7d",
+      "input": {
+        "derivation_method": "x",
+        "kind": "derived",
+        "source_references": []
+      },
+      "schema": "apron.domain.schemas.primitives.DerivedStatus"
+    },
+    {
+      "fingerprint_hex": "1220defa4e1c7d58e4b31bebc2006e77eddb645ed89a93034b3d677baeb202156dfe",
+      "identity_projection_utf8_hex": "7b22636f6d707574655f6361706162696c697479223a2278222c226770755f736b75223a2278222c22696e746572636f6e6e656374223a6e756c6c2c226d656d6f72795f62616e6477696474685f67627073223a6e756c6c2c22746f74616c5f6d656d6f72795f6279746573223a317d",
+      "input": {
+        "compute_capability": "x",
+        "gpu_sku": "x",
+        "interconnect": null,
+        "memory_bandwidth_gbps": null,
+        "schema_version": 1,
+        "topology_position": null,
+        "total_memory_bytes": 1
+      },
+      "schema": "apron.domain.schemas.primitives.HardwareSpec"
+    },
+    {
+      "fingerprint_hex": "1220aeaab3485b2eaaf7c47fc1da5fd36b0ec5de7c8d4e3e82308f4f8b805a3a38c0",
+      "identity_projection_utf8_hex": "7b22657865637574696f6e5f66696e6765727072696e74223a2278222c226b696e64223a226d65617375726564222c226d6561737572656d656e745f6d6574686f64223a2278227d",
+      "input": {
+        "execution_fingerprint": "x",
+        "kind": "measured",
+        "measurement_method": "x"
+      },
+      "schema": "apron.domain.schemas.primitives.MeasuredStatus"
+    },
+    {
+      "fingerprint_hex": "1220e099588299ec180c7fe9172665000522d43886782b3dcaccd2eeed7d24e4f67c",
+      "identity_projection_utf8_hex": "7b2263616c6962726174696f6e5f73636f7065223a6e756c6c2c226b696e64223a22707265646963746564222c2270726564696374696f6e5f6d6574686f64223a2278222c22756e6365727461696e74795f6c6f776572223a6e756c6c2c22756e6365727461696e74795f7570706572223a6e756c6c7d",
+      "input": {
+        "calibration_scope": null,
+        "kind": "predicted",
+        "prediction_method": "x",
+        "uncertainty_lower": null,
+        "uncertainty_upper": null
+      },
+      "schema": "apron.domain.schemas.primitives.PredictedStatus"
+    },
+    {
+      "fingerprint_hex": "1220d55b3227c2b8d71e4cc5a9ffd387ce1bac0189980bf94c00cd2f5f57f793ef22",
+      "identity_projection_utf8_hex": "7b22636f6e73747261696e745f736f75726365223a2278222c226b696e64223a2270726f76656e5f636f6e73747261696e74222c22766572696669636174696f6e5f6d6574686f64223a2278227d",
+      "input": {
+        "constraint_source": "x",
+        "kind": "proven_constraint",
+        "verification_method": "x"
+      },
+      "schema": "apron.domain.schemas.primitives.ProvenConstraintStatus"
+    },
+    {
+      "fingerprint_hex": "1220b03df859861ca7e463f8d1535e845f82111ee9d4a44b8f3b6873260fe24acdae",
+      "identity_projection_utf8_hex": "7b22666f726d616c5f736368656d615f66696c65223a6e756c6c2c226861735f666f726d616c5f736368656d61223a66616c73652c226c6963656e7365223a2278222c226c6f636174696f6e73223a5b5d2c226e6f746573223a2278222c2270696e6e65645f66696c6573223a5b5d2c2272657472696576616c5f64617465223a2278222c22736368656d615f6465736372697074696f6e223a2278222c22736368656d615f76657273696f6e223a312c22736f757263655f6e616d65223a2278227d",
+      "input": {
+        "formal_schema_file": null,
+        "has_formal_schema": false,
+        "license": "x",
+        "locations": [],
+        "notes": "x",
+        "pinned_files": [],
+        "retrieval_date": "x",
+        "schema_description": "x",
+        "schema_version": 1,
+        "source_name": "x"
+      },
+      "schema": "apron.domain.schemas.provenance.ExternalFormatProvenance"
+    },
+    {
+      "fingerprint_hex": "1220e357e6a04354bb5b9cb73d1cf9da4c7af940355748d1ee103a616bbac54499d6",
+      "identity_projection_utf8_hex": "7b226c6f63616c5f70617468223a2278222c22726f6c65223a2278222c22736861323536223a2278222c2273697a655f6279746573223a312c22736f757263655f70617468223a2278227d",
+      "input": {
+        "local_path": "x",
+        "role": "x",
+        "sha256": "x",
+        "size_bytes": 1,
+        "source_path": "x"
+      },
+      "schema": "apron.domain.schemas.provenance.PinnedFileEntry"
+    },
+    {
+      "fingerprint_hex": "1220a200d8b34861b90fd3394e4c6c7d757a5521e0b8d92f5baed144ebfab191c2c3",
+      "identity_projection_utf8_hex": "7b227265706f7369746f7279223a2278222c2272657472696576616c5f6d6574686f64223a226769745f636c6f6e65222c227265766973696f6e223a2278227d",
+      "input": {
+        "repository": "x",
+        "retrieval_method": "git_clone",
+        "revision": "x"
+      },
+      "schema": "apron.domain.schemas.provenance.SourceLocation"
+    },
+    {
+      "fingerprint_hex": "1220b83ca87ce9371e7d3516f1da4e2860e49279ddfecd32391e29c3008fca1201cc",
+      "identity_projection_utf8_hex": "7b22636f7272656374696f6e5f73706563223a7b7d2c22636f7272656374696f6e5f7374726174656779223a6e756c6c2c22656e67696e65223a2278222c22656e67696e655f63616c6c736974655f6d6f64756c65223a6e756c6c2c22656e67696e655f76657273696f6e223a2278222c226572726f725f66616d696c79223a2278222c22657863657074696f6e5f636c617373223a6e756c6c2c2265787472616374696f6e5f736368656d61223a7b7d2c22666c6f617431365f626c6f636b6c697374223a5b5d2c226b65726e656c5f61726368697465637475726573223a7b7d2c2272756c655f76657273696f6e223a312c22736f757263655f7369746573223a5b5d2c22737461747573223a226879706f746865736973222c2273757065727365646573223a6e756c6c7d",
+      "input": {
+        "correction_spec": {},
+        "correction_strategy": null,
+        "count": null,
+        "curation": null,
+        "engine": "x",
+        "engine_callsite_module": null,
+        "engine_version": "x",
+        "error_family": "x",
+        "examples": [],
+        "exception_class": null,
+        "extraction_schema": {},
+        "float16_blocklist": [],
+        "float16_blocklist_source": null,
+        "kernel_architectures": {},
+        "kernel_architectures_source": null,
+        "promoting_verification_fingerprint": null,
+        "replaces": [],
+        "rule_version": 1,
+        "schema_version": 4,
+        "source_sites": [],
+        "status": "hypothesis",
+        "supersedes": null
+      },
+      "schema": "apron.domain.schemas.records.DiagnosisRule"
+    },
+    {
+      "fingerprint_hex": "1220175104e5a0fdc5ee62911d574fbc4523ca6b4368cb764d784bc2076f39719c6f",
+      "identity_projection_utf8_hex": "7b226174746573746174696f6e73223a5b5d2c226c6963656e7365223a2243444c412d5065726d6973736976652d322e30222c227265636f72645f64696765737473223a5b5d2c227369676e617475726573223a5b5d7d",
+      "input": {
+        "attestations": [],
+        "license": "CDLA-Permissive-2.0",
+        "record_digests": [],
+        "schema_version": 1,
+        "signatures": []
+      },
+      "schema": "apron.domain.schemas.records.EvidenceReleaseManifest"
+    },
+    {
+      "fingerprint_hex": "12207a38dc287808bcfc4099774147e689e6dfe3883ef4115fb3c3fe7b5de7a480a7",
+      "identity_projection_utf8_hex": "7b22656e756d223a5b5d2c22736f75726365223a6e756c6c2c2274797065223a22696e74227d",
+      "input": {
+        "enum": [],
+        "source": null,
+        "type": "int"
+      },
+      "schema": "apron.domain.schemas.records.ExtractionField"
+    },
+    {
+      "fingerprint_hex": "1220aef114b5b724b33e233c6bc949acb22632d0a06ce0e81ec35d61ce9f445f4302",
+      "identity_projection_utf8_hex": "7b2261636365707465645f726571756573745f646967657374223a2278222c226170706c69636174696f6e5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c22636c61696d5f73636f7065223a2272656d6564696174696f6e222c22636c61737369666965725f696e7075745f646967657374223a6e756c6c2c22636c61737369666965725f6d6f64656c5f6964223a6e756c6c2c22636f727265637465645f706c616e5f646967657374223a2278222c22636f727265637465645f736f6c7574696f6e5f646967657374223a6e756c6c2c22636f727265637473223a6e756c6c2c22646961676e6f7365645f6661696c7572655f636c617373223a6e756c6c2c226576616c756174696f6e5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c226c6966656379636c65223a226f62736572766564222c226d656368616e69736d5f6f7574636f6d65223a227665726966696564222c2270726f64756374696f6e5f6d6f6465223a66616c73652c22726561736f6e223a22222c22726571756573745f6f7574636f6d65223a22736174697366696564222c227461736b5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031227d",
+      "input": {
+        "accepted_request_digest": "x",
+        "application_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "claim_scope": "remediation",
+        "classifier_evidence_span": null,
+        "classifier_extraction": {},
+        "classifier_input_digest": null,
+        "classifier_model_id": null,
+        "corrected_plan_digest": "x",
+        "corrected_solution_digest": null,
+        "correction_strategy": null,
+        "corrects": null,
+        "diagnosed_failure_class": null,
+        "evaluation_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "lifecycle": "observed",
+        "mechanism_outcome": "verified",
+        "production_mode": false,
+        "proving_record_fingerprints": [],
+        "reason": "",
+        "request_outcome": "satisfied",
+        "schema_version": 1,
+        "task_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "violated_constraints": []
+      },
+      "schema": "apron.domain.schemas.records.RemediationRecord"
+    },
+    {
+      "fingerprint_hex": "1220c703225bf16de8d77d41313383503b604353700afa3f0cbe87aa7cfdfa47cb5f",
+      "identity_projection_utf8_hex": "7b2266696c65223a2278222c226c696e65223a317d",
+      "input": {
+        "file": "x",
+        "line": 1
+      },
+      "schema": "apron.domain.schemas.records.SourceSite"
+    },
+    {
+      "fingerprint_hex": "1220d3873aeafe69bb8cde9acdf1994fa6528577c6158b59072470235e500888783f",
+      "identity_projection_utf8_hex": "7b226170706c69636174696f6e5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c22617474656d70745f6964223a2278222c22636173655f6964223a2278222c22636c61696d5f73636f7065223a22636f6e666967222c22636f727265637473223a6e756c6c2c226465636973696f6e5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c226576616c756174696f6e5f70726f746f636f6c5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c226c6966656379636c65223a226f62736572766564222c2270726f64756374696f6e5f6d6f6465223a66616c73652c22726561736f6e223a2278222c22736f6c7574696f6e5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c227461736b5f73756974655f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031227d",
+      "input": {
+        "accepted": null,
+        "application_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "attempt_id": "x",
+        "cached_input_tokens": null,
+        "case_id": "x",
+        "claim_scope": "config",
+        "corrects": null,
+        "criterion_scores": {},
+        "decision_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "endpoint_cost": null,
+        "evaluation_protocol_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "failures": [],
+        "gross_attributable_cost": null,
+        "infrastructure_cost": null,
+        "input_tokens": null,
+        "judge_cost": null,
+        "lifecycle": "observed",
+        "market_equivalent_price": null,
+        "output": null,
+        "output_tokens": null,
+        "permitted_artifacts": [],
+        "production_mode": false,
+        "project_out_of_pocket_cost": null,
+        "raw_observation_provenance": null,
+        "reason": "x",
+        "retries": null,
+        "schema_version": 1,
+        "solution_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "subsidy_applied": null,
+        "task_suite_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "time_seconds": null,
+        "tool_calls": null,
+        "trace_references": [],
+        "turns": null
+      },
+      "schema": "apron.domain.schemas.records.TaskAttemptRecord"
+    },
+    {
+      "fingerprint_hex": "1220efad62556627bb8e3270545af9b027e2992834dadac9e7b7ba86f02f3ef97d18",
+      "identity_projection_utf8_hex": "7b22626f6f745f6f7574636f6d65223a6e756c6c2c22636c61696d5f73636f7065223a22636f6e666967222c22636f727265637473223a6e756c6c2c226465706c6f796d656e745f706c616e5f646967657374223a6e756c6c2c2264657465637465645f68617264776172655f66696e6765727072696e74223a6e756c6c2c22657865637574696f6e5f66696e6765727072696e74223a2278222c226c6966656379636c65223a226f62736572766564222c226f70657261746f72223a2278222c2270726f64756374696f6e5f6d6f6465223a66616c73652c2270726f7669646572223a6e756c6c2c22726561736f6e223a2278222c22736f6c7574696f6e5f66696e6765727072696e74223a6e756c6c2c227461726765745f6b696e64223a2278227d",
+      "input": {
+        "available_kv_cache_memory": null,
+        "boot_outcome": null,
+        "claim_scope": "config",
+        "corrects": null,
+        "cuda_graph_actual": null,
+        "cuda_graph_applied": null,
+        "cuda_graph_estimate": null,
+        "deployment_plan_digest": null,
+        "detected_hardware_fingerprint": null,
+        "estimated_cost": null,
+        "execution_fingerprint": "x",
+        "failures": [],
+        "gross_attributable_cost": null,
+        "hourly_rate": null,
+        "initial_free_memory": null,
+        "initial_total_memory": null,
+        "lifecycle": "observed",
+        "log_tail": null,
+        "market_equivalent_price": null,
+        "model_weight_memory": null,
+        "non_pytorch_increase": null,
+        "operator": "x",
+        "persistent_consumption": null,
+        "phase_seconds": null,
+        "predicted_minus_measured": null,
+        "prediction_notes": [],
+        "production_mode": false,
+        "profiling_shape": null,
+        "project_out_of_pocket_cost": null,
+        "provider": null,
+        "provider_reported_cost": null,
+        "reason": "x",
+        "requested_memory": null,
+        "safety_buffer": null,
+        "schema_version": 1,
+        "serving_completed": null,
+        "serving_concurrency": null,
+        "serving_failed": null,
+        "serving_input_sequence_length": null,
+        "serving_latency_ms": null,
+        "serving_num_prompts": null,
+        "serving_output_sequence_length": null,
+        "serving_output_token_throughput": null,
+        "serving_request_throughput": null,
+        "serving_slo_reasons": [],
+        "serving_slo_verdict": null,
+        "solution_fingerprint": null,
+        "subsidy_applied": null,
+        "target_kind": "x",
+        "transient_peak_headroom": null
+      },
+      "schema": "apron.domain.schemas.records.VerificationReport"
+    },
+    {
+      "fingerprint_hex": "122044136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "identity_projection_utf8_hex": "7b7d",
+      "input": {
+        "gross_attributable_cost": null,
+        "market_equivalent_price": null,
+        "project_out_of_pocket_cost": null,
+        "subsidy_applied": null
+      },
+      "schema": "apron.domain.schemas.reports.CandidateEconomics"
+    },
+    {
+      "fingerprint_hex": "1220b599ac5e25468177c7a88a87aadcdc5edf637663731cf9da557e3f5f8f4e2dfe",
+      "identity_projection_utf8_hex": "7b227175616c696669636174696f6e5f737461747573223a2263616e646964617465222c22736f6c7574696f6e5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031227d",
+      "input": {
+        "economics": null,
+        "evaluation_coverage": null,
+        "evidence_state": null,
+        "qualification_graph_state": null,
+        "qualification_status": "candidate",
+        "rejection_reason": null,
+        "solution_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "trade_off": null
+      },
+      "schema": "apron.domain.schemas.reports.CandidateEntry"
+    },
+    {
+      "fingerprint_hex": "12207acd0cc04f5b911996140dd1c64462091588d47cb3def0b7f3fcdc56fc22c879",
+      "identity_projection_utf8_hex": "7b22616d6f756e74223a312c2263757272656e6379223a22555344222c2270726f76656e616e6365223a2278222c2273636f7065223a2270686173655f3161227d",
+      "input": {
+        "amount": 1.0,
+        "currency": "USD",
+        "provenance": "x",
+        "schema_version": 1,
+        "scope": "phase_1a"
+      },
+      "schema": "apron.domain.schemas.reports.ContributedResourcePool"
+    },
+    {
+      "fingerprint_hex": "1220fb4e861d4614eef17e29f4ecd6f8dacc883c675bc70808779c57de4173276afc",
+      "identity_projection_utf8_hex": "7b2263616e64696461746573223a5b5d2c226465636973696f6e5f726571756573745f646967657374223a2278222c22646973636c6f7365645f636f6d70617261626c655f736574223a5b5d7d",
+      "input": {
+        "candidates": [],
+        "decision_request_digest": "x",
+        "disclosed_comparable_set": [],
+        "exclusions": [],
+        "outcome_economics": null,
+        "schema_version": 1,
+        "uncertainty": null
+      },
+      "schema": "apron.domain.schemas.reports.DecisionReport"
+    },
+    {
+      "fingerprint_hex": "1220cb21c5b797451f90b6dd37fe603a3841a2a2c75e47e3dd113e471c22458a8633",
+      "identity_projection_utf8_hex": "7b22627564676574223a312c22636f6e73747261696e7473223a7b7d2c2263757272656e6379223a22555344222c2273636f7065223a2270686173655f3161227d",
+      "input": {
+        "budget": 1.0,
+        "constraints": {},
+        "currency": "USD",
+        "schema_version": 1,
+        "scope": "phase_1a"
+      },
+      "schema": "apron.domain.schemas.reports.MaintainerBaselineAllocation"
+    },
+    {
+      "fingerprint_hex": "1220fa3f1657a67769eea1c5a80a8e797892200749685d88f2080692f5754261b945",
+      "identity_projection_utf8_hex": "7b2262617463685f73697a65223a6e756c6c2c22646174615f706172616c6c656c223a312c22646973616767726567617465645f6465636f6465223a66616c73652c22646973616767726567617465645f70726566696c6c223a66616c73652c226474797065223a6e756c6c2c22656e67696e655f636f6e66696775726174696f6e223a7b7d2c226578706572745f706172616c6c656c223a312c22706970656c696e655f706172616c6c656c223a312c227265736f757263655f616c6c6f636174696f6e223a7b7d2c2274656e736f725f706172616c6c656c223a317d",
+      "input": {
+        "batch_size": null,
+        "data_parallel": 1,
+        "disaggregated_decode": false,
+        "disaggregated_prefill": false,
+        "docker_compose": null,
+        "dtype": null,
+        "engine_configuration": {},
+        "expert_parallel": 1,
+        "pipeline_parallel": 1,
+        "resource_allocation": {},
+        "schema_version": 1,
+        "serve_command": null,
+        "tensor_parallel": 1
+      },
+      "schema": "apron.domain.schemas.solutions.DeploymentPlan"
+    },
+    {
+      "fingerprint_hex": "1220a640f42145178779f7825a88159e15deabab474e6ad626a1ecd543ec3b2cc40c",
+      "identity_projection_utf8_hex": "7b226167677265676174696f6e5f6d6574686f64223a6e756c6c2c226170706c69636174696f6e5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c22636f6e63757272656e6379223a6e756c6c2c22646174617365745f736e617073686f74223a6e756c6c2c226465636973696f6e5f726571756573745f646967657374223a2278222c2264657465726d696e69737469635f636865636b73223a5b5d2c226861726e657373223a2278222c226861726e6573735f76657273696f6e223a2278222c226a756467655f6d6f64656c223a6e756c6c2c226a756467655f70726f6d7074223a6e756c6c2c2272657065746974696f6e73223a312c22727562726963223a6e756c6c2c2273616d706c696e675f74656d7065726174757265223a6e756c6c2c2273616d706c696e675f746f705f70223a6e756c6c2c2273636f726572223a2278222c227365656473223a5b5d2c22736f6c7574696f6e5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c2273746f7070696e675f72756c6573223a5b5d2c227461736b5f73756974655f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c22756e6365727461696e74795f6d6574686f64223a6e756c6c7d",
+      "input": {
+        "aggregation_method": null,
+        "application_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "concurrency": null,
+        "dataset_snapshot": null,
+        "decision_request_digest": "x",
+        "deterministic_checks": [],
+        "harness": "x",
+        "harness_version": "x",
+        "judge_model": null,
+        "judge_prompt": null,
+        "repetitions": 1,
+        "rubric": null,
+        "sampling_temperature": null,
+        "sampling_top_p": null,
+        "schema_version": 1,
+        "scorer": "x",
+        "seeds": [],
+        "solution_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "stopping_rules": [],
+        "task_suite_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "uncertainty_method": null
+      },
+      "schema": "apron.domain.schemas.solutions.EvaluationProtocol"
+    },
+    {
+      "fingerprint_hex": "12202e2d8fb98415a857c8b2d551f69cb44e38c2ce22a2a3238068ab1a215289ade1",
+      "identity_projection_utf8_hex": "7b2263616c6962726174696f6e5f646f6d61696e223a6e756c6c2c22636c61696d5f73636f7065223a22636f6e666967222c22696e7075745f66696e6765727072696e74223a2278222c2270726f6475636572223a2278222c2270726f64756365725f6570697374656d69635f74696572223a2278222c2270726f706f7365645f636f6e66696775726174696f6e223a7b7d2c22736f757263655f7265636f72645f7265666572656e636573223a5b5d2c2276657273696f6e223a2278227d",
+      "input": {
+        "calibration_domain": null,
+        "claim_scope": "config",
+        "input_fingerprint": "x",
+        "opaque_fields": [],
+        "producer": "x",
+        "producer_epistemic_tier": "x",
+        "proposed_configuration": {},
+        "schema_version": 1,
+        "solution_fingerprint": null,
+        "source_record_references": [],
+        "uncertainty": null,
+        "unsupported_fields": [],
+        "version": "x"
+      },
+      "schema": "apron.domain.schemas.solutions.PlanningClaim"
+    },
+    {
+      "fingerprint_hex": "1220357baa3d266b896c7c1d6722b3e6ba41cfbf47c59878a561ea1f82203356fa1f",
+      "identity_projection_utf8_hex": "7b22657865637574696f6e5f73706563223a6e756c6c2c226861726477617265223a7b22636f6d707574655f6361706162696c697479223a2278222c226770755f736b75223a2278222c22696e746572636f6e6e656374223a6e756c6c2c226d656d6f72795f62616e6477696474685f67627073223a6e756c6c2c22746f74616c5f6d656d6f72795f6279746573223a317d2c226c6f6361746f72223a7b227265717565737465645f7265766973696f6e223a6e756c6c2c22736f757263655f6b696e64223a2278222c22757269223a2278227d2c22706c616e223a7b2262617463685f73697a65223a6e756c6c2c22646174615f706172616c6c656c223a312c22646973616767726567617465645f6465636f6465223a66616c73652c22646973616767726567617465645f70726566696c6c223a66616c73652c226474797065223a6e756c6c2c22656e67696e655f636f6e66696775726174696f6e223a7b7d2c226578706572745f706172616c6c656c223a312c22706970656c696e655f706172616c6c656c223a312c227265736f757263655f616c6c6f636174696f6e223a7b7d2c2274656e736f725f706172616c6c656c223a317d2c22776f726b6c6f61645f73706563223a6e756c6c7d",
+      "input": {
+        "execution_spec": null,
+        "hardware": {
+          "compute_capability": "x",
+          "gpu_sku": "x",
+          "interconnect": null,
+          "memory_bandwidth_gbps": null,
+          "schema_version": 1,
+          "topology_position": null,
+          "total_memory_bytes": 1
+        },
+        "locator": {
+          "requested_revision": null,
+          "schema_version": 1,
+          "source_kind": "x",
+          "uri": "x"
+        },
+        "plan": {
+          "batch_size": null,
+          "data_parallel": 1,
+          "disaggregated_decode": false,
+          "disaggregated_prefill": false,
+          "docker_compose": null,
+          "dtype": null,
+          "engine_configuration": {},
+          "expert_parallel": 1,
+          "pipeline_parallel": 1,
+          "resource_allocation": {},
+          "schema_version": 1,
+          "serve_command": null,
+          "tensor_parallel": 1
+        },
+        "workload_spec": null
+      },
+      "schema": "apron.domain.schemas.solutions.RenderContext"
+    },
+    {
+      "fingerprint_hex": "1220e32e51c802bfa50e55be1830c2ee2f31a5be7f4a06192cc3860762fd864b80e0",
+      "identity_projection_utf8_hex": "7b22636c6f75645f74797065223a2278222c226770755f636f756e74223a312c226770755f736b75223a2278222c22696d6167655f646967657374223a2278222c2270726f7669646572223a2278227d",
+      "input": {
+        "cloud_type": "x",
+        "gpu_count": 1,
+        "gpu_sku": "x",
+        "image_digest": "x",
+        "provider": "x",
+        "schema_version": 1
+      },
+      "schema": "apron.domain.schemas.solutions.RequestedExecutionSpec"
+    },
+    {
+      "fingerprint_hex": "12203c308df3658d66fc36ffbd9eca3d4a0f9526fa24932283c99b8bcc85cf53aff0",
+      "identity_projection_utf8_hex": "7b226465706c6f796d656e745f706c616e5f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c226d6f64656c5f737065635f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c227265717565737465645f657865637574696f6e223a7b22636c6f75645f74797065223a2278222c226770755f636f756e74223a312c226770755f736b75223a2278222c22696d6167655f646967657374223a2278222c2270726f7669646572223a2278227d7d",
+      "input": {
+        "deployment_plan_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "model_spec_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "requested_execution": {
+          "cloud_type": "x",
+          "gpu_count": 1,
+          "gpu_sku": "x",
+          "image_digest": "x",
+          "provider": "x",
+          "schema_version": 1
+        },
+        "schema_version": 1
+      },
+      "schema": "apron.domain.schemas.solutions.SolutionIdentity"
+    },
+    {
+      "fingerprint_hex": "1220a16d6062f5b0c2e76334abec1bf9f984bde79a1b49d9309dd3da4aa1dedc3555",
+      "identity_projection_utf8_hex": "7b226167656e745f73636166666f6c645f76657273696f6e223a6e756c6c2c22696e766f636174696f6e5f636f6e646974696f6e73223a7b7d2c226c6f676963616c5f726f6c6573223a5b5d2c226e616d65223a2278222c2270726f6d70745f74656d706c6174655f7265766973696f6e223a6e756c6c2c22726561736f6e696e675f73657474696e6773223a7b7d2c2272657472696576616c5f636f6d706f6e656e7473223a5b5d2c2272657472795f6c696d6974223a6e756c6c2c2273616d706c696e675f73657474696e6773223a7b7d2c22746f6f6c5f63616c6c5f6c696d6974223a6e756c6c2c22746f6f6c5f646566696e6974696f6e73223a5b5d2c22746f6f6c5f76657273696f6e73223a7b7d2c227475726e5f6c696d6974223a6e756c6c2c2276657273696f6e223a2278227d",
+      "input": {
+        "agent_scaffold_version": null,
+        "invocation_conditions": {},
+        "logical_roles": [],
+        "name": "x",
+        "prompt_template_revision": null,
+        "reasoning_settings": {},
+        "retrieval_components": [],
+        "retry_limit": null,
+        "sampling_settings": {},
+        "schema_version": 1,
+        "tool_call_limit": null,
+        "tool_definitions": [],
+        "tool_versions": {},
+        "turn_limit": null,
+        "version": "x"
+      },
+      "schema": "apron.domain.schemas.tasks.ApplicationSpec"
+    },
+    {
+      "fingerprint_hex": "1220ac99f6ada3759e44cb8538d69a69c0c98a5afa84c5a129fa3123cc44c750e3ef",
+      "identity_projection_utf8_hex": "7b22617661696c6162696c6974795f746172676574223a6e756c6c2c226275727374696e657373223a6e756c6c2c2263617061636974795f686f72697a6f6e223a6e756c6c2c22636f6e63757272656e6379223a6e756c6c2c226475726174696f6e5f686f757273223a6e756c6c2c22696e7075745f73657175656e63655f6c656e677468223a6e756c6c2c22696e7075745f73686170655f646973747269627574696f6e223a6e756c6c2c226c6174656e63795f7039395f6d73223a6e756c6c2c226c6f72615f7573616765223a6e756c6c2c226f75747075745f73657175656e63655f6c656e677468223a6e756c6c2c226f75747075745f73686170655f646973747269627574696f6e223a6e756c6c2c227039395f74706f745f6d73223a6e756c6c2c227039395f747466745f6d73223a6e756c6c2c227072656669785f63616368655f6265686176696f72223a6e756c6c2c22726571756573745f646973747269627574696f6e223a6e756c6c2c227468726f7567687075745f7461726765745f727073223a6e756c6c7d",
+      "input": {
+        "availability_target": null,
+        "burstiness": null,
+        "capacity_horizon": null,
+        "concurrency": null,
+        "duration_hours": null,
+        "input_sequence_length": null,
+        "input_shape_distribution": null,
+        "latency_p99_ms": null,
+        "lora_usage": null,
+        "output_sequence_length": null,
+        "output_shape_distribution": null,
+        "p99_tpot_ms": null,
+        "p99_ttft_ms": null,
+        "prefix_cache_behavior": null,
+        "request_distribution": null,
+        "schema_version": 1,
+        "throughput_target_rps": null
+      },
+      "schema": "apron.domain.schemas.tasks.ServingWorkloadSpec"
+    },
+    {
+      "fingerprint_hex": "1220346460da1e9df8dab4d0368af255b0b20490f6a756ff821e551e17b1446cea7c",
+      "identity_projection_utf8_hex": "7b226361736573223a5b5d2c22656e7669726f6e6d656e74223a6e756c6c2c226e616d65223a2278222c22707269766163795f636c617373696669636174696f6e223a227075626c6963222c2272657175697265645f6361706162696c6974696573223a5b5d2c2272756272696373223a5b5d2c2273616d706c696e675f6672616d65223a6e756c6c2c227365676d656e745f77656967687473223a6e756c6c2c22737563636573735f6372697465726961223a5b5d2c227461736b5f63617465676f72696573223a5b5d2c22746f6f6c73223a5b5d2c2276657273696f6e223a2278227d",
+      "input": {
+        "cases": [],
+        "environment": null,
+        "name": "x",
+        "privacy_classification": "public",
+        "representativeness_claims": [],
+        "required_capabilities": [],
+        "rubrics": [],
+        "sampling_frame": null,
+        "schema_version": 1,
+        "segment_weights": null,
+        "success_criteria": [],
+        "task_categories": [],
+        "tools": [],
+        "version": "x"
+      },
+      "schema": "apron.domain.schemas.tasks.TaskSuiteSpec"
+    },
+    {
+      "fingerprint_hex": "1220e15cf550a3d75e15435e748450cba772dce43039897e2bec93ff0f18a904edac",
+      "identity_projection_utf8_hex": "7b2273657276696e675f776f726b6c6f61645f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c227461736b5f73756974655f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031227d",
+      "input": {
+        "schema_version": 1,
+        "serving_workload_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "task_suite_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001"
+      },
+      "schema": "apron.domain.schemas.tasks.WorkloadSpec"
+    },
+    {
+      "fingerprint_hex": "12207c0189ce0d702a7072004b42836a6c74e40ed18e9d3ed0c6172dae69f0d51c32",
+      "identity_projection_utf8_hex": "7b2261727469666163745f737065635f66696e6765727072696e74223a6e756c6c2c2262696e64696e67223a226469726563745f656e64706f696e74222c226361706162696c6974696573223a5b5d2c226465706c6f796d656e745f706c616e5f66696e6765727072696e74223a6e756c6c2c22657865637574696f6e5f737065635f66696e6765727072696e74223a6e756c6c2c226d6f64656c5f737065635f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c2270726f7669646572223a6e756c6c2c2270726f76696465725f6f7061717565223a66616c73652c227461726765745f6b696e64223a6e756c6c7d",
+      "input": {
+        "artifact_spec_fingerprint": null,
+        "binding": "direct_endpoint",
+        "capabilities": [],
+        "deployment_plan_fingerprint": null,
+        "execution_spec_fingerprint": null,
+        "model_spec_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "provider": null,
+        "provider_opaque": false,
+        "target_kind": null
+      },
+      "schema": "apron.domain.solutions.DirectEndpoint"
+    },
+    {
+      "fingerprint_hex": "1220d409e0d21752324894dad2e0959515e484892b46780e3aa6ec095cd174ecc832",
+      "identity_projection_utf8_hex": "7b2262696e64696e67223a2264697374726962757465645f657865637574696f6e5f67726f7570222c22696e746572636f6e6e656374223a6e756c6c2c226d6f64656c5f706c6163656d656e74223a6e756c6c2c22776f726b65725f66696e6765727072696e7473223a5b5d2c22776f726b65725f726f6c6573223a5b5d7d",
+      "input": {
+        "binding": "distributed_execution_group",
+        "interconnect": null,
+        "model_placement": null,
+        "worker_fingerprints": [],
+        "worker_roles": []
+      },
+      "schema": "apron.domain.solutions.DistributedExecutionGroup"
+    },
+    {
+      "fingerprint_hex": "1220d3706c02338bb34dba2c551f11c912377aefaf7f81561d444cc2bb4ad2a5648b",
+      "identity_projection_utf8_hex": "7b22656e64706f696e7473223a5b5d2c22657363616c6174696f6e5f706f6c696379223a6e756c6c2c2266616c6c6261636b5f706f6c696379223a6e756c6c2c22726f6c655f62696e64696e6773223a5b5d2c22726f7574696e675f706f6c696379223a6e756c6c7d",
+      "input": {
+        "endpoints": [],
+        "escalation_policy": null,
+        "fallback_policy": null,
+        "role_bindings": [],
+        "routing_policy": null,
+        "schema_version": 1
+      },
+      "schema": "apron.domain.solutions.InferenceSolution"
+    },
+    {
+      "fingerprint_hex": "12205f9b28ceb69b948e7879e582b63a1099959349fcf57c1ee47714d05054fd0b64",
+      "identity_projection_utf8_hex": "7b2262696e64696e67223a226c6f676963616c5f726f757465222c22656e64706f696e7473223a5b5d2c22726f7574696e675f6f7061717565223a66616c73652c22726f7574696e675f706f6c696379223a2278227d",
+      "input": {
+        "binding": "logical_route",
+        "endpoints": [],
+        "routing_opaque": false,
+        "routing_policy": "x"
+      },
+      "schema": "apron.domain.solutions.LogicalRoute"
+    },
+    {
+      "fingerprint_hex": "122006615e5a6283d2e805763e6fa3fce40c436bdaa22f4a664b143ace1b12c83968",
+      "identity_projection_utf8_hex": "7b2262696e64696e67223a227265706c6963615f706f6f6c222c227265706c6963615f66696e6765727072696e7473223a5b5d7d",
+      "input": {
+        "binding": "replica_pool",
+        "replica_fingerprints": []
+      },
+      "schema": "apron.domain.solutions.ReplicaPool"
+    },
+    {
+      "fingerprint_hex": "1220bef6affb5212be79d06a049c67e95854ee3defcca311fdb16e4ab8aad8b568eb",
+      "identity_projection_utf8_hex": "7b22656e64706f696e745f66696e6765727072696e74223a223132323030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303031222c22726f6c65223a2278227d",
+      "input": {
+        "endpoint_fingerprint": "12200000000000000000000000000000000000000000000000000000000000000001",
+        "role": "x"
+      },
+      "schema": "apron.domain.solutions.RoleBinding"
+    }
+  ]
+}

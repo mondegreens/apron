@@ -74,7 +74,7 @@ class TestPipelinePerClass:
             "the estimated maximum model length is 8192."
         )
         result = run_diagnosis_pipeline(error, engine, base_plan, model_config, hardware, rules)
-        assert result.failure_class == "oom"
+        assert result.failure_class == "oom_kv_cache"
         assert result.rule_matched
         assert result.corrected_plan is not None
         assert result.corrected_plan.engine_configuration["max_model_len"] == "8192"
@@ -90,7 +90,7 @@ class TestPipelinePerClass:
     ) -> None:
         error = "CUDA out of memory occurred when warming up sampler with 256 dummy requests."
         result = run_diagnosis_pipeline(error, engine, base_plan, model_config, hardware, rules)
-        assert result.failure_class == "oom"
+        assert result.failure_class == "oom_kv_cache"
         assert result.corrected_plan is not None
         assert result.corrected_plan.engine_configuration["max_num_seqs"] == "128"
 
@@ -152,18 +152,41 @@ class TestPipelinePerClass:
         model_config: dict,
         rules: list[dict],
     ) -> None:
+        from apron.application.orchestration.correction import CatalogEntry, CorrectionContext
+
         plan = DeploymentPlan(
-            engine_configuration={"quantization": "gptq", "max_model_len": "4096"},
+            engine_configuration={"max_model_len": "4096"},
+            resource_allocation={"gpu_sku": hardware.gpu_sku, "gpu_count": "1"},
         )
         error = (
-            "The quantization method gptq "
+            "The quantization method fp_quant "
             "is not supported for the current GPU. Minimum "
-            "capability: 80. Current capability: 75."
+            "capability: 100. Current capability: 89."
         )
-        result = run_diagnosis_pipeline(error, engine, plan, model_config, hardware, rules)
+        catalog = (
+            CatalogEntry(hardware, 0.74),
+            CatalogEntry(
+                HardwareSpec(
+                    gpu_sku="NVIDIA B200", total_memory_bytes=179 << 30, compute_capability="10.0"
+                ),
+                6.79,
+            ),
+        )
+        result = run_diagnosis_pipeline(
+            error,
+            engine,
+            plan,
+            {**model_config, "quantization_config": {"quant_method": "fp_quant"}},
+            hardware,
+            rules,
+            correction_context=CorrectionContext(catalog=catalog),
+        )
         assert result.failure_class == "quant_compute_capability"
         assert result.corrected_plan is not None
-        assert "quantization" not in result.corrected_plan.engine_configuration
+        # retarget_capability moves the solution to a GPU the kernels were built
+        # for; the checkpoint's quantization stays (it cannot be removed).
+        assert result.corrected_plan.resource_allocation["gpu_sku"] == "NVIDIA B200"
+        assert result.corrected_plan.engine_configuration == plan.engine_configuration
 
 
 # -------------------------------------------------------------------
@@ -246,9 +269,24 @@ class TestPipelineEdgeCases:
         )
         plan = DeploymentPlan(engine_configuration={"max_model_len": "4096"})
         vr = {"model_weight_memory": 20_000_000_000}
+        from apron.application.orchestration.correction import CatalogEntry, CorrectionContext
+
         error = "torch.cuda.OutOfMemoryError: CUDA error: out of memory"
-        result = run_diagnosis_pipeline(error, engine, plan, model_config, small_gpu, rules, vr)
-        assert result.failure_class == "oom"
+        no_gpu_large_enough = CorrectionContext(
+            catalog=(CatalogEntry(small_gpu, 0.3),),
+            predicted_total_bytes=400 << 30,
+        )
+        result = run_diagnosis_pipeline(
+            error,
+            engine,
+            plan,
+            model_config,
+            small_gpu,
+            rules,
+            vr,
+            correction_context=no_gpu_large_enough,
+        )
+        assert result.failure_class == "oom_weight_load"
         assert result.rule_matched
         assert result.corrected_plan is None
         assert result.result_label == "Correction infeasible"

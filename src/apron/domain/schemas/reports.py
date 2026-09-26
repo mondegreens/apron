@@ -40,7 +40,7 @@ _PROMOTION_ORDER = (
 
 
 class CandidateEconomics(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     market_equivalent_price: Annotated[float | None, DISPLAY] = None
     gross_attributable_cost: Annotated[float | None, DISPLAY] = None
@@ -49,7 +49,7 @@ class CandidateEconomics(BaseModel):
 
 
 class CandidateEntry(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     solution_fingerprint: Annotated[FingerprintHex, IDENTITY]
     qualification_status: Annotated[QualificationStatus, IDENTITY]
@@ -67,7 +67,7 @@ class CandidateEntry(BaseModel):
 
 
 class DecisionReport(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     decision_request_digest: Annotated[str, IDENTITY]
@@ -84,7 +84,7 @@ class DecisionReport(BaseModel):
 
 
 class MaintainerBaselineAllocation(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     budget: Annotated[float, IDENTITY]
@@ -99,7 +99,7 @@ class MaintainerBaselineAllocation(BaseModel):
 
 
 class ContributedResourcePool(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     provenance: Annotated[str, IDENTITY]

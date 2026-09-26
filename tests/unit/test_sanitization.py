@@ -115,3 +115,56 @@ def test_none_values_skipped():
     record = {"execution_fingerprint": None, "corrects": None}
     errors = validate_provenance(record, FakeStore())
     assert errors == []
+
+
+# ---- F6: key formats and log masking ----
+
+_ANT = "sk-ant-api03-" + "Ab1_" * 12
+_PROJ = "sk-proj-" + "Zz9-" * 10
+_HF = "hf_" + "aB3" * 12
+
+
+def test_redact_anthropic_openai_project_and_hf_values_in_records():
+    from apron.application.sanitization import sanitize
+
+    record = {"a": _ANT, "b": [_PROJ], "c": {"d": f"token {_HF} here"}}
+    result = sanitize(record)
+    assert result == {"a": "[REDACTED]", "b": ["[REDACTED]"], "c": {"d": "[REDACTED]"}}
+
+
+def test_mask_secrets_keeps_surrounding_text():
+    from apron.application.sanitization import mask_secrets
+
+    text = f"ERROR 401 for {_HF} while calling api?api_key=rpa_{'Q' * 30}&x=1"
+    masked = mask_secrets(text)
+    assert _HF not in masked
+    assert "rpa_" not in masked
+    assert masked.startswith("ERROR 401 for [REDACTED] while calling api?")
+
+
+def test_mask_secrets_in_logs(caplog):
+    import logging
+
+    from apron.application.sanitization import SecretMaskingFilter
+
+    logger = logging.getLogger("apron.test.sanitization")
+    handler_filter = SecretMaskingFilter()
+    logger.addFilter(handler_filter)
+    try:
+        with caplog.at_level(logging.WARNING, logger="apron.test.sanitization"):
+            logger.warning("key %s and %s and %s", _ANT, _PROJ, _HF)
+    finally:
+        logger.removeFilter(handler_filter)
+    assert caplog.records
+    text = caplog.text
+    for secret in (_ANT, _PROJ, _HF):
+        assert secret not in text
+    assert text.count("[REDACTED]") == 3
+
+
+def test_contains_secret_detects_each_kind():
+    from apron.application.sanitization import contains_secret
+
+    for secret in (_ANT, _PROJ, _HF, "rp_" + "k" * 24):
+        assert contains_secret(f"x {secret} y")
+    assert not contains_secret("Qwen/Qwen3-8B on NVIDIA L4, fingerprint 1220" + "ab" * 32)

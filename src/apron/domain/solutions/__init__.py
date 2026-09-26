@@ -19,7 +19,7 @@ from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex
 
 
 class DirectEndpoint(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     binding: Annotated[Literal["direct_endpoint"], IDENTITY]
     model_spec_fingerprint: Annotated[FingerprintHex, IDENTITY]
     artifact_spec_fingerprint: Annotated[FingerprintHex | None, IDENTITY] = None
@@ -32,7 +32,7 @@ class DirectEndpoint(BaseModel):
 
 
 class LogicalRoute(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     binding: Annotated[Literal["logical_route"], IDENTITY]
     endpoints: Annotated[tuple[FingerprintHex, ...], IDENTITY]
     routing_policy: Annotated[str, IDENTITY]
@@ -40,13 +40,13 @@ class LogicalRoute(BaseModel):
 
 
 class ReplicaPool(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     binding: Annotated[Literal["replica_pool"], IDENTITY]
     replica_fingerprints: Annotated[tuple[FingerprintHex, ...], IDENTITY]
 
 
 class DistributedExecutionGroup(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     binding: Annotated[Literal["distributed_execution_group"], IDENTITY]
     worker_fingerprints: Annotated[tuple[FingerprintHex, ...], IDENTITY]
     worker_roles: Annotated[tuple[str, ...], IDENTITY] = ()
@@ -66,13 +66,13 @@ EndpointBinding = Annotated[
 
 
 class RoleBinding(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     role: Annotated[str, IDENTITY]
     endpoint_fingerprint: Annotated[FingerprintHex, IDENTITY]
 
 
 class InferenceSolution(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     endpoints: Annotated[

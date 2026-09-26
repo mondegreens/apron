@@ -54,6 +54,8 @@ def build_plan(
         "gpu_count": str(tp),
         "weight_bytes": str(weight_bytes),
     }
+    if model_spec.repository:
+        resource_allocation["model_id"] = model_spec.repository
 
     return DeploymentPlan(
         tensor_parallel=tp,

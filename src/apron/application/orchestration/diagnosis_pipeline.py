@@ -10,7 +10,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from apron.application.orchestration.correction import apply_correction_spec, compute_correction
+from apron.application.orchestration.correction import (
+    CorrectionContext,
+    apply_correction_spec,
+    compute_correction,
+)
 from apron.domain.diagnosis import (
     build_extraction_schemas,
     match_rule,
@@ -23,6 +27,33 @@ from apron.domain.fingerprints import fingerprint_hex
 if TYPE_CHECKING:
     from apron.domain.schemas.primitives import HardwareSpec
     from apron.domain.schemas.solutions import DeploymentPlan
+
+
+DIAGNOSIS_CONFIG_FIELDS: tuple[str, ...] = (
+    "num_attention_heads",
+    "num_key_value_heads",
+    "max_position_embeddings",
+    "model_type",
+    "architectures",
+    "quantization_config",
+)
+
+
+def diagnosis_model_config(config: dict[str, Any]) -> dict[str, Any]:
+    """The resolved ``config.json`` fields diagnosis and correction read (F5).
+
+    Multimodal checkpoints nest the language model under ``text_config``;
+    its fields fill any that the top level lacks.  Absent fields stay absent.
+    """
+    text_config = config.get("text_config")
+    nested = text_config if isinstance(text_config, dict) else {}
+    selected: dict[str, Any] = {}
+    for key in DIAGNOSIS_CONFIG_FIELDS:
+        if key in config:
+            selected[key] = config[key]
+        elif key in nested:
+            selected[key] = nested[key]
+    return selected
 
 
 @dataclass(frozen=True)
@@ -39,6 +70,10 @@ class DiagnosisPipelineResult:
     version_match: bool | None = None
     classification_confidence: float = 1.0
     requires_gpu_verification: bool = True
+    # F6 provenance: which classifier saw which input, and what it returned.
+    classifier_model_id: str | None = None
+    classifier_input_digest: str | None = None
+    evidence_span: str = ""
 
 
 def run_diagnosis_pipeline(
@@ -49,6 +84,7 @@ def run_diagnosis_pipeline(
     hardware: HardwareSpec,
     rules: list[dict[str, Any]],
     verification_report: dict[str, Any] | None = None,
+    correction_context: CorrectionContext | None = None,
 ) -> DiagnosisPipelineResult:
     """Run the full diagnosis pipeline: classify → extract → match → correct.
 
@@ -61,6 +97,11 @@ def run_diagnosis_pipeline(
 
     classification = engine.classify(error)
     failure_class = classification["failure_class"]
+    provenance: dict[str, Any] = {
+        "classifier_model_id": classification.get("classifier_model_id"),
+        "classifier_input_digest": classification.get("classifier_input_digest"),
+        "evidence_span": str(classification.get("evidence_span") or ""),
+    }
 
     version_match: bool | None = None
     if hasattr(engine, "detect_engine_version"):
@@ -85,6 +126,7 @@ def run_diagnosis_pipeline(
             result_label="Unrecognized failure",
             error_trace=error[:2000],
             version_match=version_match,
+            **provenance,
         )
 
     extracted = engine.extract(error, failure_class)
@@ -108,6 +150,7 @@ def run_diagnosis_pipeline(
             error_trace=error[:2000],
             extraction_confidence=confidence,
             version_match=version_match,
+            **provenance,
         )
 
     if confidence == 0.0 and failure_class != "unknown":
@@ -128,6 +171,7 @@ def run_diagnosis_pipeline(
             error_trace=error[:2000],
             extraction_confidence=confidence,
             version_match=version_match,
+            **provenance,
         )
 
     rule = match_rule(failure_class, rules)
@@ -142,6 +186,7 @@ def run_diagnosis_pipeline(
             error_trace=error[:2000],
             extraction_confidence=confidence,
             version_match=version_match,
+            **provenance,
         )
 
     strategy_name = rule.get("correction_strategy")
@@ -158,6 +203,7 @@ def run_diagnosis_pipeline(
             hardware,
             verification_report,
             rule=rule,
+            context=correction_context,
         )
     elif correction_spec:
         corrected = apply_correction_spec(correction_spec, extracted, plan)
@@ -175,6 +221,7 @@ def run_diagnosis_pipeline(
             error_trace=error[:2000],
             extraction_confidence=confidence,
             version_match=version_match,
+            **provenance,
         )
 
     label = "Corrected"
@@ -196,6 +243,7 @@ def run_diagnosis_pipeline(
         corrects=original_digest,
         extraction_confidence=confidence,
         version_match=version_match,
+        **provenance,
     )
 
 

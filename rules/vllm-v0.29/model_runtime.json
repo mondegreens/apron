@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "model_runtime",
@@ -9,44 +9,120 @@
     "value": "auto"
   },
   "extraction_schema": {
-    "block_m": "string",
-    "block_size": "string",
-    "block_n": "string",
-    "q_f": "string",
-    "k_f": "string",
-    "v_f": "string",
-    "layer_name": "string",
-    "shard_id": "string",
-    "data": "string",
-    "loaded_weight": "string",
-    "idx": "string",
-    "strategy": "string",
-    "list": "string",
-    "group_size": "string",
-    "prefix": "string",
-    "ndim": "string",
-    "tuple": "string",
-    "dtype": "string",
-    "shard_proj_names": "string",
-    "input_dtype": "string",
-    "weight_dtype": "string",
-    "ocp_mx_scheme": "string",
-    "input_size_per_partition": "string",
-    "name": "string",
-    "load_format": "string",
-    "num_threads": "string",
-    "distributed": "string",
-    "concurrency": "string",
-    "memory_limit": "string",
-    "num_hidden_layers": "string",
-    "max_pos_emb": "string",
-    "context_size": "string",
-    "shape": "string",
-    "language": "string",
-    "num_kv_heads": "string",
-    "param_name_example": "string",
-    "alias": "string",
-    "canonical": "string"
+    "block_m": {
+      "type": "string"
+    },
+    "block_size": {
+      "type": "string"
+    },
+    "block_n": {
+      "type": "string"
+    },
+    "q_f": {
+      "type": "string"
+    },
+    "k_f": {
+      "type": "string"
+    },
+    "v_f": {
+      "type": "string"
+    },
+    "layer_name": {
+      "type": "string"
+    },
+    "shard_id": {
+      "type": "string"
+    },
+    "data": {
+      "type": "string"
+    },
+    "loaded_weight": {
+      "type": "string"
+    },
+    "idx": {
+      "type": "string"
+    },
+    "strategy": {
+      "type": "string"
+    },
+    "list": {
+      "type": "string"
+    },
+    "group_size": {
+      "type": "string"
+    },
+    "prefix": {
+      "type": "string"
+    },
+    "ndim": {
+      "type": "string"
+    },
+    "tuple": {
+      "type": "string"
+    },
+    "dtype": {
+      "type": "string"
+    },
+    "shard_proj_names": {
+      "type": "string"
+    },
+    "input_dtype": {
+      "type": "string"
+    },
+    "weight_dtype": {
+      "type": "string"
+    },
+    "ocp_mx_scheme": {
+      "type": "string"
+    },
+    "input_size_per_partition": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "load_format": {
+      "type": "string"
+    },
+    "num_threads": {
+      "type": "string"
+    },
+    "distributed": {
+      "type": "string"
+    },
+    "concurrency": {
+      "type": "string"
+    },
+    "memory_limit": {
+      "type": "string"
+    },
+    "num_hidden_layers": {
+      "type": "string"
+    },
+    "max_pos_emb": {
+      "type": "string"
+    },
+    "context_size": {
+      "type": "string"
+    },
+    "shape": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "num_kv_heads": {
+      "type": "string"
+    },
+    "param_name_example": {
+      "type": "string"
+    },
+    "alias": {
+      "type": "string"
+    },
+    "canonical": {
+      "type": "string"
+    }
   },
   "source_sites": [
     {
@@ -402,5 +478,6 @@
     "FP8 scales must be positive, got q={q_f}, k={k_f}, v={v_f} for layer '{layer_name}'"
   ],
   "status": "hypothesis",
-  "count": 86
+  "count": 86,
+  "rule_version": 1
 }

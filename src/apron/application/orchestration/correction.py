@@ -8,6 +8,7 @@ compute a corrected DeploymentPlan. Pure computation, no I/O, no GPU.
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -15,6 +16,28 @@ if TYPE_CHECKING:
 
     from apron.domain.schemas.primitives import HardwareSpec
     from apron.domain.schemas.solutions import DeploymentPlan
+
+
+@dataclass(frozen=True)
+class CatalogEntry:
+    """A GPU the solution may be retargeted to, with its per-GPU hourly rate."""
+
+    hardware: HardwareSpec
+    hourly_rate: float
+
+
+@dataclass(frozen=True)
+class CorrectionContext:
+    """Facts a retarget strategy needs beyond the error and the plan.
+
+    ``catalog`` is the provider's GPU list (the composition root builds it
+    from the adapter's GPU_SPECS and rates); ``predicted_total_bytes`` is the
+    plan pipeline's calculator prediction for this plan.
+    """
+
+    catalog: tuple[CatalogEntry, ...] = field(default=())
+    predicted_total_bytes: int | None = None
+
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +58,13 @@ TOP_LEVEL_FIELDS = frozenset(
     }
 )
 
+# Requested-execution fields: a retarget changes the GPU, not engine flags.
+RESOURCE_FIELDS = frozenset({"gpu_sku"})
+
+# Strategies that choose new hardware by its capacity or capability; the
+# old hardware's feasibility check does not apply to them.
+RETARGET_STRATEGIES = frozenset({"retarget_memory", "retarget_capability"})
+
 
 def compute_correction(
     strategy: str,
@@ -45,6 +75,7 @@ def compute_correction(
     verification_report: dict[str, Any] | None,
     planning_source: Any = None,
     rule: dict[str, Any] | None = None,
+    context: CorrectionContext | None = None,
 ) -> DeploymentPlan | None:
     """Compute a corrected plan by dispatching on strategy name.
 
@@ -57,11 +88,21 @@ def compute_correction(
         msg = f"Unknown correction strategy: {strategy!r}"
         raise ValueError(msg)
 
-    overrides = dispatch(extracted, plan, model_config, hardware, verification_report, rule=rule)
+    overrides = dispatch(
+        extracted,
+        plan,
+        model_config,
+        hardware,
+        verification_report,
+        rule=rule,
+        context=context or CorrectionContext(),
+    )
     if overrides is None:
         return None
     overrides = _validate_bounds(overrides)
     corrected = _apply_overrides(plan, overrides)
+    if strategy in RETARGET_STRATEGIES:
+        return corrected
     if not _check_feasibility(
         corrected, hardware, verification_report, planning_source, model_config
     ):
@@ -143,6 +184,7 @@ def _check_feasibility(
 def _apply_overrides(plan: DeploymentPlan, overrides: dict[str, Any]) -> DeploymentPlan:
     plan_updates: dict[str, Any] = {}
     config_updates: dict[str, Any] = {}
+    resource_updates: dict[str, str] = {}
     removals: list[str] = []
 
     for key, value in overrides.items():
@@ -150,8 +192,13 @@ def _apply_overrides(plan: DeploymentPlan, overrides: dict[str, Any]) -> Deploym
             removals.append(key)
         elif key in TOP_LEVEL_FIELDS:
             plan_updates[key] = value
+        elif key in RESOURCE_FIELDS:
+            resource_updates[key] = str(value)
         else:
             config_updates[key] = str(value)
+
+    if resource_updates:
+        plan_updates["resource_allocation"] = {**plan.resource_allocation, **resource_updates}
 
     if config_updates or removals:
         new_config = {**plan.engine_configuration, **config_updates}
@@ -175,16 +222,21 @@ def _reduce_memory_pressure(
     vr: dict[str, Any] | None,
     **_kw: Any,
 ) -> dict[str, Any] | None:
+    """Memory pressure after KV-cache sizing: reduce what the engine must hold.
+
+    - KV cache cannot hold one full sequence: clamp ``max_model_len`` to
+      ``estimated_max_model_len`` (v1/core/kv_cache_utils.py:876).
+    - Sampler warm-up ran out of memory: halve ``max_num_seqs`` from
+      ``max_num_seqs_attempted`` (v1/worker/gpu_model_runner.py:6373).
+    Without either value there is no evidence-based correction: resetting
+    gpu_memory_utilization to vLLM's own default would reproduce the failure.
+    """
     if "estimated_max_model_len" in extracted:
         return {"max_model_len": str(int(extracted["estimated_max_model_len"]))}
     if "max_num_seqs_attempted" in extracted:
         halved = max(1, int(extracted["max_num_seqs_attempted"]) // 2)
         return {"max_num_seqs": str(halved)}
-    if vr is not None and hardware.total_memory_bytes > 0:
-        weight_mem = vr.get("model_weight_memory", 0)
-        if weight_mem > int(hardware.total_memory_bytes * 0.95):
-            return None
-    return {"gpu_memory_utilization": "0.90"}
+    return None
 
 
 def _clamp_max_model_len(
@@ -194,14 +246,16 @@ def _clamp_max_model_len(
     hardware: HardwareSpec,
     vr: dict[str, Any] | None,
     **_kw: Any,
-) -> dict[str, Any]:
+) -> dict[str, Any] | None:
+    """Clamp to the derived maximum vLLM printed (config/model.py:2502), else
+    to the resolved config's ``max_position_embeddings`` (F5).  No evidence,
+    no correction — never a guessed default."""
     derived_max = extracted.get("derived_max")
     if derived_max is not None:
         return {"max_model_len": str(int(derived_max))}
-    model_max = model_config.get(
-        "max_position_embeddings",
-        model_config.get("max_sequence_length", 4096),
-    )
+    model_max = model_config.get("max_position_embeddings")
+    if model_max is None:
+        return None
     return {"max_model_len": str(int(model_max))}
 
 
@@ -213,25 +267,24 @@ def _fallback_dtype(
     vr: dict[str, Any] | None,
     rule: dict[str, Any] | None = None,
     **_kw: Any,
-) -> dict[str, Any]:
+) -> dict[str, Any] | None:
+    """float16 refused for the model type: switch to bfloat16 where the GPU has it.
+
+    Evidence only: the extracted ``unsupported_dtype`` and ``model_type``
+    (config/model.py:2262) or the resolved config's ``model_type`` against
+    the rule's float16 blocklist.  No evidence, no correction.
+    """
     try:
         cc = float(hardware.compute_capability)
     except (ValueError, TypeError):
         cc = 0.0
-    if cc < 8.0:
-        return {"dtype": "float16"}
     unsupported = str(extracted.get("unsupported_dtype", ""))
-    model_type = str(extracted.get("model_type", ""))
+    model_type = str(extracted.get("model_type") or model_config.get("model_type") or "")
     blocklist = frozenset(rule.get("float16_blocklist", [])) if rule else frozenset()
-    if model_type and model_type in blocklist:
-        return {"dtype": "bfloat16"}
-    supported_str = str(extracted.get("supported_list", ""))
-    if supported_str:
-        for candidate in ("bfloat16", "float32"):
-            if candidate in supported_str:
-                return {"dtype": candidate}
-    if unsupported == "float16":
-        return {"dtype": "bfloat16"}
+    if unsupported != "float16" and model_type not in blocklist:
+        return None
+    if cc and cc < 8.0:
+        return {"dtype": "float32"}  # no bfloat16 before SM80
     return {"dtype": "bfloat16"}
 
 
@@ -256,7 +309,9 @@ def _reduce_tensor_parallel(
     # don't constrain — use head divisibility only. Level 3 tests
     # extract gpu_count from real error output; Level 2 tests verify
     # head-divisibility math without hardware constraints.
-    gpu_count = int(extracted.get("gpu_count", 0) or plan.resource_allocation.get("gpu_count", 0))
+    # gpu_count is not printed by the divisibility error; it comes from the
+    # plan's requested execution (resource_allocation).
+    gpu_count = int(plan.resource_allocation.get("gpu_count", 0) or 0)
 
     for tp in range(current_tp - 1, 0, -1):
         if gpu_count > 0 and tp > gpu_count:
@@ -300,6 +355,79 @@ def _fallback_engine_config(
     return None
 
 
+def _cheapest(entries: list[CatalogEntry]) -> CatalogEntry | None:
+    return min(entries, key=lambda e: (e.hourly_rate, e.hardware.gpu_sku), default=None)
+
+
+def _retarget_memory(
+    extracted: Mapping[str, int | float | str],
+    plan: DeploymentPlan,
+    model_config: dict[str, Any],
+    hardware: HardwareSpec,
+    vr: dict[str, Any] | None,
+    context: CorrectionContext | None = None,
+    **_kw: Any,
+) -> dict[str, Any] | None:
+    """Weights do not fit: move to the cheapest GPU whose usable memory holds
+    the calculator's predicted total for this plan (not the error text)."""
+    if context is None or not context.predicted_total_bytes or not context.catalog:
+        return None
+    utilization = float(plan.engine_configuration.get("gpu_memory_utilization", "0.90"))
+    fits = [
+        e
+        for e in context.catalog
+        if e.hardware.gpu_sku != hardware.gpu_sku
+        and int(e.hardware.total_memory_bytes * utilization) >= context.predicted_total_bytes
+    ]
+    choice = _cheapest(fits)
+    return None if choice is None else {"gpu_sku": choice.hardware.gpu_sku}
+
+
+def _capability_int(cc: str) -> int:
+    major, _, minor = cc.partition(".")
+    return int(major) * 10 + int(minor or 0)
+
+
+def _retarget_capability(
+    extracted: Mapping[str, int | float | str],
+    plan: DeploymentPlan,
+    model_config: dict[str, Any],
+    hardware: HardwareSpec,
+    vr: dict[str, Any] | None,
+    rule: dict[str, Any] | None = None,
+    context: CorrectionContext | None = None,
+    **_kw: Any,
+) -> dict[str, Any] | None:
+    """Quantization needs a newer GPU: move to the cheapest GPU whose
+    architecture the method's kernels were *built for*.
+
+    ``cc >= min`` is not enough: an RTX 5090 (12.0) passes vLLM's check, but
+    fp_quant's QuTLASS kernels are compiled for SM100 only, so it would crash.
+    The rule's ``kernel_architectures`` names the built architectures per
+    method (PLAN §10.1).  Without an entry for the method there is no
+    evidence of where it runs, so there is no correction.
+    """
+    if context is None or not context.catalog:
+        return None
+    minimum = int(extracted.get("min_capability", 0) or 0)
+    if minimum <= 0:
+        return None
+    quant = model_config.get("quantization_config") or {}
+    method = str(quant.get("quant_method", "")) if isinstance(quant, dict) else ""
+    built = tuple((rule or {}).get("kernel_architectures", {}).get(method, ()))
+    if not built:
+        return None
+    candidates = [
+        e
+        for e in context.catalog
+        if e.hardware.gpu_sku != hardware.gpu_sku
+        and _capability_int(e.hardware.compute_capability) >= minimum
+        and e.hardware.compute_capability in built
+    ]
+    choice = _cheapest(candidates)
+    return None if choice is None else {"gpu_sku": choice.hardware.gpu_sku}
+
+
 _STRATEGIES: dict[str, Any] = {
     "reduce_memory_pressure": _reduce_memory_pressure,
     "clamp_max_model_len": _clamp_max_model_len,
@@ -307,6 +435,25 @@ _STRATEGIES: dict[str, Any] = {
     "reduce_tensor_parallel": _reduce_tensor_parallel,
     "remove_quantization": _remove_quantization,
     "fallback_engine_config": _fallback_engine_config,
+    "retarget_memory": _retarget_memory,
+    "retarget_capability": _retarget_capability,
+}
+
+# Keys each strategy reads from the extraction (§10.3 rule<->strategy alignment).
+STRATEGY_EXTRACTED_KEYS: dict[str, frozenset[str]] = {
+    "reduce_memory_pressure": frozenset({"estimated_max_model_len", "max_num_seqs_attempted"}),
+    "clamp_max_model_len": frozenset({"derived_max"}),
+    "fallback_dtype": frozenset({"model_type", "unsupported_dtype"}),
+    "reduce_tensor_parallel": frozenset({"num_heads"}),
+    "retarget_memory": frozenset(),
+    "retarget_capability": frozenset({"min_capability"}),
+}
+# Keys a strategy reads from the resolved config.json (F5) instead.
+STRATEGY_CONFIG_KEYS: dict[str, frozenset[str]] = {
+    "clamp_max_model_len": frozenset({"max_position_embeddings"}),
+    "fallback_dtype": frozenset({"model_type"}),
+    "reduce_tensor_parallel": frozenset({"num_attention_heads", "num_key_value_heads"}),
+    "retarget_capability": frozenset({"quantization_config"}),
 }
 
 

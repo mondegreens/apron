@@ -1,16 +1,14 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "max_model_len",
   "correction_strategy": "clamp_max_model_len",
   "extraction_schema": {
-    "max_model_len": "string",
-    "msg": "string",
-    "warning": "string",
-    "max_num_batched_tokens": "string",
-    "name": "string",
-    "value": "string"
+    "derived_max": {
+      "type": "int",
+      "source": "config/model.py:2502 ('the derived max_model_len ({max_len_key}={derived_max_model_len}')"
+    }
   },
   "source_sites": [
     {
@@ -42,5 +40,7 @@
     "{name} ({value}) must be less than max_model_len ({self.model_config.max_model_len})."
   ],
   "status": "hypothesis",
-  "count": 5
+  "count": 5,
+  "rule_version": 1,
+  "curation": "Hand-curated for the Phase 1b §10 fix proof: typed fields, each citing the vLLM v0.29.0 line that prints it. The source scanner must not overwrite this file."
 }

@@ -1,14 +1,10 @@
 {
   "schema_version": 1,
-  "roles": [
-    {
-      "role_id": "text-generator",
-      "prompt_template": "{input}",
-      "required_capabilities": [
-        "text_generation"
-      ]
-    }
+  "name": "phase-1a-text-generator",
+  "version": "1",
+  "prompt_template_revision": "{input}",
+  "logical_roles": [
+    "text-generator"
   ],
-  "agent_topology": null,
   "tool_definitions": []
 }

@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class PinnedFileEntry(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     source_path: str
     local_path: str
@@ -16,7 +16,7 @@ class PinnedFileEntry(BaseModel):
 
 
 class SourceLocation(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     repository: str | None
     revision: str | None
@@ -30,7 +30,7 @@ class SourceLocation(BaseModel):
 
 
 class ExternalFormatProvenance(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: int = 1
     source_name: str

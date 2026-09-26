@@ -1,14 +1,22 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "lora_config",
   "correction_strategy": "fallback_engine_config",
   "extraction_schema": {
-    "max_cpu_loras": "string",
-    "max_loras": "string",
-    "r": "string",
-    "lora_int_id": "string"
+    "max_cpu_loras": {
+      "type": "string"
+    },
+    "max_loras": {
+      "type": "string"
+    },
+    "r": {
+      "type": "string"
+    },
+    "lora_int_id": {
+      "type": "string"
+    }
   },
   "source_sites": [
     {
@@ -72,5 +80,6 @@
     "When using LoRA, vocab size must be <= 258048"
   ],
   "status": "hypothesis",
-  "count": 13
+  "count": 13,
+  "rule_version": 1
 }

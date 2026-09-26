@@ -24,7 +24,7 @@ ImportStatus = Literal["owner_attested_boot"]
 class ImportedBootObservation(BaseModel):
     """A boot observation from an external deployment catalogue."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     import_status: Annotated[ImportStatus, IDENTITY] = "owner_attested_boot"

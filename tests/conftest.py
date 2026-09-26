@@ -7,7 +7,64 @@ without LLM calls, for testing the pipeline logic in isolation.
 from __future__ import annotations
 
 import re
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
+
+import pytest
+
+# Fakes and suite inputs for the conformance suites (F9); see conformance/plugin.py.
+pytest_plugins = ["conformance.plugin"]
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator
+
+
+@pytest.fixture(autouse=True)
+def _no_test_writes_real_run_artifacts(
+    tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Point the real leaked-pods list at a temp file for every test.
+
+    ``_dev_notes/cohort-run/leaked_pods.json`` is a safety artifact; a test
+    that exercises a failed teardown must never append fake pods to it.
+    """
+    from apron.adapters.backends import runpod
+
+    monkeypatch.setattr(
+        runpod, "DEFAULT_LEAK_LOG", tmp_path_factory.mktemp("run") / "leaked_pods.json"
+    )
+
+
+@pytest.fixture(autouse=True)
+def _isolate_migration_registry() -> Iterator[None]:
+    """Restore the schema-migration registry; some tests clear it."""
+    import apron.domain.schemas.records  # noqa: F401 — registers DiagnosisRule v3→v4
+    from apron.domain.schemas import migrations
+
+    saved = dict(migrations._REGISTRY)
+    yield
+    migrations._REGISTRY.clear()
+    migrations._REGISTRY.update(saved)
+
+
+@pytest.fixture(autouse=True)
+def _isolate_calculator_registry() -> Iterator[None]:
+    """Restore the global calculator registry after every test.
+
+    Some tests clear it or register fakes; without this, a later test that
+    runs the real plan pipeline would dispatch to a leftover fake.
+    """
+    import apron.domain.mechanisms.calculator  # noqa: F401 — registers real calculators
+    from apron.domain import mechanisms
+
+    saved = dict(mechanisms._CALCULATOR_REGISTRY)
+    yield
+    mechanisms._CALCULATOR_REGISTRY.clear()
+    mechanisms._CALCULATOR_REGISTRY.update(saved)
+
+
+def _bytes(text: str) -> int:
+    value, unit = text.split()
+    return int(float(value) * (1 << 30 if unit == "GiB" else 1 << 20))
 
 
 class FakeDiagnosisEngine:
@@ -30,10 +87,13 @@ class FakeDiagnosisEngine:
         return self._engine_version
 
     _KEYWORDS: ClassVar[list[tuple[str, str]]] = [
-        ("OutOfMemoryError", "oom"),
-        ("CUDA out of memory", "oom"),
-        ("available KV cache memory", "oom"),
-        ("No available memory for the cache blocks", "oom"),
+        ("when warming up sampler", "oom_kv_cache"),
+        ("when warming up pooler", "oom_kv_cache"),
+        ("Failed to load model - not enough GPU memory", "oom_weight_load"),
+        ("OutOfMemoryError", "oom_weight_load"),
+        ("CUDA out of memory", "oom_weight_load"),
+        ("available KV cache memory", "oom_kv_cache"),
+        ("No available memory for the cache blocks", "oom_kv_cache"),
         ("max_model_len", "max_model_len"),
         ("does not support float16", "dtype_incompatible"),
         ("not supported for quantization", "dtype_incompatible"),
@@ -71,44 +131,37 @@ class FakeDiagnosisEngine:
         ("All options must be of the same type", "other_correctable"),
     ]
 
-    _EXTRACTORS: ClassVar[dict[str, list[tuple[str, re.Pattern[str], type]]]] = {
-        "oom": [
+    _EXTRACTORS: ClassVar[dict[str, list[tuple[str, re.Pattern[str], Callable[[str], Any]]]]] = {
+        "oom_weight_load": [
+            ("tried_to_allocate_bytes", re.compile(r"Tried to allocate ([\d.]+ [GM]iB)"), _bytes),
+            ("total_capacity_bytes", re.compile(r"total capacity of ([\d.]+ [GM]iB)"), _bytes),
+            ("free_bytes", re.compile(r"of which ([\d.]+ [GM]iB) is free"), _bytes),
+        ],
+        "oom_kv_cache": [
             (
                 "estimated_max_model_len",
                 re.compile(r"estimated maximum model length is (\d+)"),
                 int,
             ),
-            ("max_model_len", re.compile(r"max seq len\s*\((\d+)\)"), int),
-            ("needed_gib", re.compile(r"([\d.]+)\s*GiB KV\s*cache is needed"), float),
-            (
-                "available_gib",
-                re.compile(r"available KV cache\s*memory \(([\d.]+)\s*GiB\)"),
-                float,
-            ),
             (
                 "max_num_seqs_attempted",
-                re.compile(r"warming up (?:sampler|pooler) with\s*(\d+)"),
+                re.compile(r"warming up (?:sampler|pooler)[^\d]*with\s*(\d+)"),
                 int,
             ),
         ],
         "max_model_len": [
-            ("requested", re.compile(r"max_model_len \((\d+)\)"), int),
             ("derived_max", re.compile(r"derived max_model_len \([^=]+=(\d+)"), int),
-            ("max_len_key", re.compile(r"derived max_model_len \((\w+)="), str),
         ],
         "dtype_incompatible": [
             ("model_type", re.compile(r"model type '(\w+)'"), str),
             ("unsupported_dtype", re.compile(r"does not support (\w+)"), str),
-            ("supported_list", re.compile(r"Supported dtypes:\s*(.+)"), str),
         ],
         "tp_divisibility": [
             ("num_heads", re.compile(r"attention heads \((\d+)\)"), int),
-            ("tp_size", re.compile(r"tensor parallel size\s*\((\d+)\)"), int),
         ],
         "quant_compute_capability": [
-            ("method", re.compile(r"quantization method (\w+)"), str),
-            ("min_cap", re.compile(r"Minimum capability:\s*(\d+)"), int),
-            ("cur_cap", re.compile(r"Current capability:\s*(\d+)"), int),
+            ("min_capability", re.compile(r"Minimum capability:\s*(\d+)"), int),
+            ("current_capability", re.compile(r"Current capability:\s*(\d+)"), int),
         ],
         "lora_config": [
             (

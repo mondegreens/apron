@@ -51,25 +51,42 @@ class TestExitGateGpuFree:
 
     def test_task_suite_has_expected_fields(self) -> None:
         """Task suite cases all have expected field."""
-        task_suite = json.loads((FIXTURES_DIR / "task-suite-spec.json").read_text())
-        for case in task_suite["cases"]:
+        from apron.domain.schemas.tasks import TaskSuiteSpec
+
+        task_suite = TaskSuiteSpec.model_validate_json(
+            (FIXTURES_DIR / "task-suite-spec.json").read_text()
+        )
+        for case in task_suite.cases:
             assert "id" in case
             assert "prompt" in case
             assert "expected" in case
 
     def test_decision_request_budget(self) -> None:
         """Decision request budget is within MaintainerBaselineAllocation."""
-        dr = json.loads((FIXTURES_DIR / "decision-request.json").read_text())
-        assert dr["budget"]["max_usd"] <= 5.0
+        from apron.domain.schemas.authority import DecisionRequest
+
+        dr = DecisionRequest.model_validate_json(
+            (FIXTURES_DIR / "decision-request.json").read_text()
+        )
+        assert dr.budget_limit is not None
+        assert dr.budget_limit <= 5.0
 
     def test_scorer_accepts_task_suite(self) -> None:
-        """DeterministicScorer accepts the fixture task suite."""
+        """DeterministicScorer accepts the fixture task suite under its protocol."""
         from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
+        from apron.domain.schemas.solutions import EvaluationProtocol
+        from apron.domain.schemas.tasks import TaskSuiteSpec
 
         scorer = DeterministicScorer()
-        task_suite = json.loads((FIXTURES_DIR / "task-suite-spec.json").read_text())
-        assert scorer.accepts(task_suite) is True
-        prepared = scorer.prepare(task_suite)
+        task_suite = TaskSuiteSpec.model_validate_json(
+            (FIXTURES_DIR / "task-suite-spec.json").read_text()
+        )
+        protocol = EvaluationProtocol.model_validate_json(
+            (FIXTURES_DIR / "evaluation-protocol.json").read_text()
+        )
+        scorer_input = {"scorer_type": protocol.scorer, "cases": list(task_suite.cases)}
+        assert scorer.accepts(scorer_input) is True
+        prepared = scorer.prepare(scorer_input)
         assert len(prepared["cases"]) == 3
 
     def test_engine_adapter_conforms_to_protocol(self) -> None:
@@ -131,12 +148,19 @@ class TestExitGateGpuFree:
     def test_inv30_no_external_services(self) -> None:
         """Exit gate clause 15: self-hosted acceptance — no external
         eval services, no managed providers, no compound routing."""
-        eval_protocol = json.loads((FIXTURES_DIR / "evaluation-protocol.json").read_text())
-        assert eval_protocol["scorer_type"] == "deterministic_exact_match"
-        assert eval_protocol["judge_model"] is None
+        from apron.domain.schemas.authority import DecisionRequest
+        from apron.domain.schemas.solutions import EvaluationProtocol
 
-        dr = json.loads((FIXTURES_DIR / "decision-request.json").read_text())
-        assert dr["permitted_providers"] == ["runpod"]
+        eval_protocol = EvaluationProtocol.model_validate_json(
+            (FIXTURES_DIR / "evaluation-protocol.json").read_text()
+        )
+        assert eval_protocol.scorer == "deterministic_exact_match"
+        assert eval_protocol.judge_model is None
+
+        dr = DecisionRequest.model_validate_json(
+            (FIXTURES_DIR / "decision-request.json").read_text()
+        )
+        assert dr.permitted_providers == ("runpod",)
 
 
 # ---------------------------------------------------------------------------

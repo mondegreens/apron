@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "compilation_config",
@@ -8,15 +8,33 @@
     "source": "error_suggestion"
   },
   "extraction_schema": {
-    "join": "string",
-    "query_mode": "string",
-    "weight_bits": "string",
-    "supported": "string",
-    "prefix": "string",
-    "backend": "string",
-    "scheme": "string",
-    "name": "string",
-    "sorted": "string"
+    "join": {
+      "type": "string"
+    },
+    "query_mode": {
+      "type": "string"
+    },
+    "weight_bits": {
+      "type": "string"
+    },
+    "supported": {
+      "type": "string"
+    },
+    "prefix": {
+      "type": "string"
+    },
+    "backend": {
+      "type": "string"
+    },
+    "scheme": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "sorted": {
+      "type": "string"
+    }
   },
   "source_sites": [
     {
@@ -76,5 +94,6 @@
     "VLLM_XPU_INC_WNA16_BACKEND=w4a8 requires the int4_gemm_w4a8 op, which this build of vllm-xpu-kernels does not provide. Layer: {prefix}."
   ],
   "status": "hypothesis",
-  "count": 12
+  "count": 12,
+  "rule_version": 1
 }

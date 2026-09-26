@@ -37,6 +37,13 @@ repos:
         pass_filenames: false
         files: '(src/apron/domain/.*|tests/unit/test_ports\.py)'
 
+      - id: tests
+        name: tests
+        entry: uv run pytest tests -q
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: supply-chain
         name: supply-chain
         entry: bash -c 'uv export --format pylock.toml --no-hashes -o pylock.toml && git diff --exit-code pylock.toml'

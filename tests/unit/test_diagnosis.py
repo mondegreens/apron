@@ -21,12 +21,12 @@ def rules_dir(tmp_path: Path) -> Path:
 @pytest.fixture()
 def sample_rule() -> dict:
     return {
-        "schema_version": 1,
+        "schema_version": 4,
         "engine": "vllm",
         "engine_version": "v0.29.0",
         "error_family": "oom",
         "correction_strategy": "reduce_memory_pressure",
-        "source_sites": [{"module": "gpu_model_runner", "line": 5460}],
+        "source_sites": [{"file": "v1/worker/gpu_model_runner.py", "line": 5460}],
         "status": "hypothesis",
     }
 
@@ -72,6 +72,20 @@ class TestLoadRules:
         with pytest.raises(ValueError, match="missing required fields"):
             load_rules(rules_dir, "vllm", "v0.29")
 
+    def test_v3_rule_file_is_migrated(self, rules_dir: Path, sample_rule: dict) -> None:
+        v3 = {**sample_rule, "schema_version": 3, "extraction_schema": {"x": "string"}}
+        (rules_dir / "vllm-v0.29" / "oom.json").write_text(json.dumps(v3))
+        result = load_rules(rules_dir, "vllm", "v0.29")
+        assert result[0]["schema_version"] == 4
+        assert result[0]["extraction_schema"]["x"]["type"] == "string"
+
+    def test_unknown_rule_key_fails_loudly(self, rules_dir: Path, sample_rule: dict) -> None:
+        """F2: a rule file with a key the schema does not know is an error."""
+        bad = {**sample_rule, "corection_strategy": "typo"}
+        (rules_dir / "vllm-v0.29" / "oom.json").write_text(json.dumps(bad))
+        with pytest.raises(ValueError, match="corection_strategy"):
+            load_rules(rules_dir, "vllm", "v0.29")
+
     def test_version_strips_v_prefix(self, rules_dir: Path, sample_rule: dict) -> None:
         (rules_dir / "vllm-v0.29" / "oom.json").write_text(json.dumps(sample_rule))
         result = load_rules(rules_dir, "vllm", "v0.29")
@@ -92,12 +106,14 @@ class TestActualRules:
         assert len(rules) >= 6
         families = {r["error_family"] for r in rules}
         assert {
-            "oom",
+            "oom_weight_load",
+            "oom_kv_cache",
             "max_model_len",
             "dtype_incompatible",
             "tp_divisibility",
             "quant_compute_capability",
         }.issubset(families)
+        assert "oom" not in families  # split into weight-load and KV-cache (§10.1)
 
 
 # -------------------------------------------------------------------

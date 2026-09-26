@@ -1,20 +1,97 @@
 """Unit tests for vLLM EngineAdapter.
 
-Collects the EngineAdapter conformance suite via pytest_plugins.
+Collects the EngineAdapter conformance suite via pytest_plugins: the suite's
+tests are imported below and run against the real ``VllmEngineAdapter``.
+Only network I/O is mocked — the Anthropic API behind ``classify`` and the
+SSH channel behind ``verify``.
 """
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
+from conformance.test_engine_adapter import *  # noqa: F403 — the shared suite, on the real adapter
 
+from apron.adapters.backends.rule_loader import load_rules
 from apron.adapters.backends.vllm_engine import VllmEngineAdapter
 from apron.domain.protocols import EngineAdapter
 from apron.domain.schemas.primitives import HardwareSpec
 from apron.domain.schemas.solutions import DeploymentPlan
+
+pytest_plugins = ["conformance.plugin"]
+
+RULES_DIR = Path(__file__).parents[2] / "rules"
+
+# vLLM v0.29 startup lines the verify path parses (gpu_worker.py / scheduler.py).
+_VLLM_LOG = """\
+INFO Chunked prefill is enabled with max_num_batched_tokens=8192.
+DEBUG Memory profiling takes 3.21 seconds. Total non KV cache memory: 17.10GiB; \
+torch peak memory increase: 1.25GiB; total consumed (from mem_get_info): 17.60GiB; \
+weights memory: 15.27GiB
+INFO Available KV cache memory: 3.86 GiB
+INFO CUDA graph pool memory: 0.45 GiB (actual), 0.52 GiB (estimated)
+"""
+
+
+class _SshLogTarget:
+    """An ExecutionTarget whose command channel returns a real-shaped vLLM log."""
+
+    kind = "rented-provider"
+    execution_fingerprint = "1220" + "ee" * 32
+
+    def execute(self, command: str) -> dict[str, Any]:
+        if "curl" in command:
+            return {"stdout": "", "stderr": "", "exit_code": 0}
+        if "mem_get_info" in command:
+            return {"stdout": '{"post_free": 1073741824, "post_total": 25769803776}\n'}
+        return {"stdout": _VLLM_LOG, "stderr": "", "exit_code": 0}
+
+
+@pytest.fixture()
+def engine_adapter(monkeypatch: pytest.MonkeyPatch) -> VllmEngineAdapter:
+    """The real adapter; the Anthropic client is the only fake (network)."""
+    from apron.adapters.backends import llm_classifier
+
+    class _Messages:
+        def create(self, **kwargs: Any) -> Any:
+            block = SimpleNamespace(
+                type="tool_use",
+                input={"failure_class": "unknown", "confidence": 0.1, "evidence_span": ""},
+            )
+            return SimpleNamespace(content=[block])
+
+    fake = SimpleNamespace(Anthropic=lambda: SimpleNamespace(messages=_Messages()))
+    monkeypatch.setitem(sys.modules, "anthropic", fake)
+    llm_classifier._classification_cache.clear()
+    return VllmEngineAdapter(rules=load_rules(RULES_DIR, "vllm", "v0.29"))
+
+
+@pytest.fixture()
+def engine_verify_target() -> _SshLogTarget:
+    return _SshLogTarget()
+
+
+def test_real_profiling_shape_comes_from_the_log(engine_adapter: VllmEngineAdapter) -> None:
+    report = engine_adapter.verify(DeploymentPlan(), _SshLogTarget())
+    assert report["profiling_shape"] == {"max_num_batched_tokens": 8192}
+    assert report["model_weight_memory"] == int(15.27 * (1 << 30))
+
+
+def test_profiling_shape_unknown_without_evidence() -> None:
+    from apron.adapters.backends.vllm_engine import profiling_shape
+
+    assert profiling_shape({}, DeploymentPlan()) is None
+    plan = DeploymentPlan(engine_configuration={"max_num_seqs": "16"})
+    assert profiling_shape({"max_num_batched_tokens": 2048}, plan) == {
+        "max_num_batched_tokens": 2048,
+        "max_num_seqs": 16,
+    }
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -59,11 +136,11 @@ def test_satisfies_engine_adapter_protocol(engine: VllmEngineAdapter) -> None:
     assert isinstance(engine, EngineAdapter)
 
 
-def test_has_engine_name(engine: VllmEngineAdapter) -> None:
+def test_engine_name_is_vllm(engine: VllmEngineAdapter) -> None:
     assert engine.engine_name == "vllm"
 
 
-def test_has_engine_version(engine: VllmEngineAdapter) -> None:
+def test_engine_version_is_pinned(engine: VllmEngineAdapter) -> None:
     assert isinstance(engine.engine_version, str)
     assert engine.engine_version
 
@@ -281,9 +358,9 @@ def test_extraction_confidence_partial() -> None:
 
     rules = load_rules(Path(__file__).parents[2] / "rules", "vllm", "v0.29")
     schemas = build_extraction_schemas(rules)
-    tp_fields = [k for k, _ in schemas.get("tp_divisibility", [])]
-    extracted = {tp_fields[0]: 1} if tp_fields else {}
-    conf = extraction_confidence("tp_divisibility", extracted, schemas)
+    fields = [k for k, _ in schemas["oom_weight_load"]]
+    assert len(fields) == 3
+    conf = extraction_confidence("oom_weight_load", {fields[0]: 1}, schemas)
     assert 0.0 < conf < 1.0
 
 

@@ -15,7 +15,7 @@ from apron.domain.schemas.tasks import ServingWorkloadSpec
 
 
 class PlanningClaim(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     producer: Annotated[str, IDENTITY]
@@ -29,6 +29,9 @@ class PlanningClaim(BaseModel):
     uncertainty: Annotated[dict[str, float] | None, DISPLAY] = None
     unsupported_fields: Annotated[tuple[str, ...], DISPLAY] = ()
     opaque_fields: Annotated[tuple[str, ...], DISPLAY] = ()
+    # The solution this claim plans for (F4): prediction-error candidates
+    # (unknown mechanism, predicted infeasible) never execute but still have one.
+    solution_fingerprint: Annotated[FingerprintHex | None, DISPLAY] = None
 
 
 # ---------------------------------------------------------------------------
@@ -37,7 +40,7 @@ class PlanningClaim(BaseModel):
 
 
 class DeploymentPlan(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     tensor_parallel: Annotated[int, IDENTITY] = 1
@@ -60,7 +63,7 @@ class DeploymentPlan(BaseModel):
 
 
 class EvaluationProtocol(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     decision_request_digest: Annotated[str, IDENTITY]
@@ -86,12 +89,50 @@ class EvaluationProtocol(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# RequestedExecutionSpec and SolutionIdentity (Phase 1b F4)
+# ---------------------------------------------------------------------------
+
+
+class RequestedExecutionSpec(BaseModel):
+    """The execution a solution asks for, known before provisioning.
+
+    The observed execution (driver, CUDA, PyTorch, detected hardware) is
+    evidence on a VerificationReport, not part of the solution's identity.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    schema_version: Annotated[int, DISPLAY] = 1
+    provider: Annotated[str, IDENTITY]
+    gpu_sku: Annotated[str, IDENTITY]
+    gpu_count: Annotated[int, IDENTITY] = 1
+    cloud_type: Annotated[str, IDENTITY]
+    image_digest: Annotated[str, IDENTITY]
+
+
+class SolutionIdentity(BaseModel):
+    """What a self-hosted solution is: a model, a plan and a requested execution.
+
+    ``fingerprint_hex(SolutionIdentity(...))`` is the ``solution_fingerprint``
+    that task attempts, verification reports and evaluation protocols carry.
+    Two deployments of one model on different GPUs or plans differ.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    schema_version: Annotated[int, DISPLAY] = 1
+    model_spec_fingerprint: Annotated[FingerprintHex, IDENTITY]
+    deployment_plan_fingerprint: Annotated[FingerprintHex, IDENTITY]
+    requested_execution: Annotated[RequestedExecutionSpec, IDENTITY]
+
+
+# ---------------------------------------------------------------------------
 # RenderContext (Phase 1a-ii §Layer 3)
 # ---------------------------------------------------------------------------
 
 
 class RenderContext(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     plan: DeploymentPlan
     locator: ArtifactLocator

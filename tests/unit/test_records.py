@@ -123,6 +123,8 @@ def test_remediation_record_round_trip():
 
 def test_diagnosis_rule_round_trip():
     dr = DiagnosisRule(
+        engine="vllm",
+        engine_version="v0.29.0",
         exception_class="OutOfMemoryError",
         engine_callsite_module="vllm.worker",
         error_family="oom",
@@ -272,6 +274,8 @@ def test_derive_unverified():
 
 def test_diagnosis_rule_starts_as_hypothesis():
     dr = DiagnosisRule(
+        engine="vllm",
+        engine_version="v0.29.0",
         exception_class="OutOfMemoryError",
         engine_callsite_module="vllm.worker",
         error_family="oom",

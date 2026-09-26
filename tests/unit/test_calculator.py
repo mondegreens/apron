@@ -229,9 +229,16 @@ def test_build_model_spec_qwen3():
 
 
 def test_build_model_spec_unknown_arch():
-    config = {"architectures": ["NovelArchForCausalLM"]}
+    config = {"architectures": ["NovelArchForCausalLM"], "num_attention_heads": 16}
     spec = build_model_spec(config)
     assert spec.components[0].mechanism == "autoregressive_decode"
+
+
+def test_build_model_spec_causal_lm_without_attention_heads_is_unknown():
+    """F8 / INV-32: no attention heads means no autoregressive_decode branch applies."""
+    config = {"architectures": ["NovelArchForCausalLM"]}
+    spec = build_model_spec(config)
+    assert spec.components[0].mechanism == "unknown"
 
 
 def test_build_model_spec_no_architectures():

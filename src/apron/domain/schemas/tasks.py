@@ -18,7 +18,7 @@ from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex
 
 
 class TaskSuiteSpec(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     name: Annotated[str, IDENTITY]
@@ -42,7 +42,7 @@ class TaskSuiteSpec(BaseModel):
 
 
 class ApplicationSpec(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     name: Annotated[str, IDENTITY]
@@ -67,7 +67,7 @@ class ApplicationSpec(BaseModel):
 
 
 class ServingWorkloadSpec(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     request_distribution: Annotated[str | None, IDENTITY] = None
@@ -82,6 +82,10 @@ class ServingWorkloadSpec(BaseModel):
     availability_target: Annotated[float | None, IDENTITY] = None
     duration_hours: Annotated[float | None, IDENTITY] = None
     capacity_horizon: Annotated[str | None, IDENTITY] = None
+    input_sequence_length: Annotated[int | None, IDENTITY] = None
+    output_sequence_length: Annotated[int | None, IDENTITY] = None
+    p99_ttft_ms: Annotated[float | None, IDENTITY] = None
+    p99_tpot_ms: Annotated[float | None, IDENTITY] = None
 
 
 # ---------------------------------------------------------------------------
@@ -90,7 +94,7 @@ class ServingWorkloadSpec(BaseModel):
 
 
 class WorkloadSpec(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     task_suite_fingerprint: Annotated[FingerprintHex, IDENTITY]

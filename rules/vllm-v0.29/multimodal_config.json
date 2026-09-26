@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "multimodal_config",
@@ -8,18 +8,42 @@
     "field": "limit_mm_per_prompt"
   },
   "extraction_schema": {
-    "dumps": "string",
-    "max_duration_s": "string",
-    "file_duration_s": "string",
-    "native_sr": "string",
-    "frames": "string",
-    "channels": "string",
-    "metadata_duration_s": "string",
-    "total_samples": "string",
-    "sr": "string",
-    "max_batch_size": "string",
-    "min_tok": "string",
-    "token_budgets": "string"
+    "dumps": {
+      "type": "string"
+    },
+    "max_duration_s": {
+      "type": "string"
+    },
+    "file_duration_s": {
+      "type": "string"
+    },
+    "native_sr": {
+      "type": "string"
+    },
+    "frames": {
+      "type": "string"
+    },
+    "channels": {
+      "type": "string"
+    },
+    "metadata_duration_s": {
+      "type": "string"
+    },
+    "total_samples": {
+      "type": "string"
+    },
+    "sr": {
+      "type": "string"
+    },
+    "max_batch_size": {
+      "type": "string"
+    },
+    "min_tok": {
+      "type": "string"
+    },
+    "token_budgets": {
+      "type": "string"
+    }
   },
   "source_sites": [
     {
@@ -115,5 +139,6 @@
     "The configuration of this model indicates that it supports vision inputs, but you instantiated the text-only version of this model. Please use the vision model by setting `--hf-overrides '{json.dumps}"
   ],
   "status": "hypothesis",
-  "count": 21
+  "count": 21,
+  "rule_version": 1
 }
