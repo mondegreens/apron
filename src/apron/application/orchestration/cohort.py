@@ -93,6 +93,11 @@ _HARNESS_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
         re.compile(r"No such file or directory: '(ninja|nvcc|gcc|g\+\+|c\+\+)'"),
     ),
     (
+        # The provider had no instance to give (Secure capacity is volatile).
+        "harness:no_capacity",
+        re.compile(r"no longer any instances available", re.IGNORECASE),
+    ),
+    (
         "harness:network",
         re.compile(
             r"Temporary failure in name resolution|Max retries exceeded|ConnectionError|"

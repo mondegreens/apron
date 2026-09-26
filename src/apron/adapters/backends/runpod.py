@@ -95,6 +95,17 @@ _POD_COST_QUERY = """query Pod {{
   }}
 }}"""
 
+_STOCK_QUERY = """query Stock {{
+  gpuTypes(input: {{id: "{gpu}"}}) {{
+    id
+    lowestPrice(input: {{
+      gpuCount: {count}, secureCloud: true, allowedCudaVersions: ["{cuda}"]
+    }}) {{
+      stockStatus
+    }}
+  }}
+}}"""
+
 _POD_STATUS_QUERY = """query Pod {{
   pod(input: {{podId: "{pod_id}"}}) {{
     id
@@ -433,6 +444,25 @@ class RunPodTarget:
         if rate is None or uptime is None:
             return None
         return round(float(rate) * float(uptime) / 3600, 6)
+
+    def stock_status(
+        self, gpu_type: str | None = None, gpu_count: int | None = None
+    ) -> str | None:
+        """Secure stock for a GPU on hosts that can run the image (read-only, free).
+
+        RunPod's ``lowestPrice.stockStatus`` ("High"/"Medium"/"Low") under the
+        same Secure and CUDA filters ``provision`` uses; ``None`` means no
+        stock.  Stock is a hint, not a reservation: creation can still be
+        refused.  The GPU price listing is no capacity signal at all (L0-A).
+        """
+        gpu = gpu_type or self._gpu_type
+        count = gpu_count or self._gpu_count
+        query = _STOCK_QUERY.format(gpu=gpu, count=int(count), cuda=RUNNER_IMAGE_CUDA)
+        data = self._gql_status(query)
+        types = data.get("gpuTypes") or []
+        lowest = (types[0].get("lowestPrice") or {}) if types else {}
+        status = lowest.get("stockStatus")
+        return str(status) if status else None
 
     def execute(self, command: str, retries: int = 2) -> dict[str, Any]:
         import paramiko as _paramiko

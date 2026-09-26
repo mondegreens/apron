@@ -46,6 +46,57 @@ def _write(name: str, data: object) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Capacity (PLAN risk 2): wait for Secure stock, never spin on refusals
+# ---------------------------------------------------------------------------
+
+CAPACITY_POLL_SECONDS = int(os.environ.get("APRON_CAPACITY_POLL", "120"))
+CAPACITY_WAIT_SECONDS = int(os.environ.get("APRON_CAPACITY_WAIT", str(6 * 3600)))
+NO_CAPACITY = "no longer any instances available"
+
+
+def _log_wait(entry: dict) -> None:
+    RUN_DIR.mkdir(parents=True, exist_ok=True)
+    entry = {"at": time.strftime("%Y-%m-%dT%H:%M:%S%z"), **entry}
+    with (RUN_DIR / "capacity-waits.jsonl").open("a") as fh:
+        fh.write(json.dumps(entry) + "\n")
+    print("capacity:", entry, flush=True)
+
+
+def _await_capacity(gpu: str, count: int) -> None:
+    """Poll the free stock query until Secure stock exists for (gpu, count)."""
+    from apron.adapters.backends.runpod import RunPodTarget
+
+    probe = RunPodTarget(gpu_type=gpu, gpu_count=count)
+    deadline = time.monotonic() + CAPACITY_WAIT_SECONDS
+    waited = 0
+    while True:
+        status = probe.stock_status()
+        if status:
+            if waited:
+                _log_wait({"gpu": gpu, "count": count, "stock": status, "waited_s": waited})
+            return
+        if time.monotonic() > deadline:
+            _log_wait({"gpu": gpu, "count": count, "stock": None, "gave_up_after_s": waited})
+            pytest.fail(f"no Secure stock for {count}x {gpu} after {waited}s")
+        time.sleep(CAPACITY_POLL_SECONDS)
+        waited += CAPACITY_POLL_SECONDS
+
+
+def _when_available(gpu: str, count: int, run, attempts: int = 12):  # type: ignore[no-untyped-def]
+    """Run *run* once stock exists; a refusal at creation goes back to waiting."""
+    for attempt in range(attempts):
+        _await_capacity(gpu, count)
+        try:
+            return run()
+        except Exception as exc:
+            if NO_CAPACITY not in str(exc):
+                raise
+            _log_wait({"gpu": gpu, "count": count, "refused_attempt": attempt + 1})
+            time.sleep(CAPACITY_POLL_SECONDS)
+    pytest.fail(f"{count}x {gpu}: refused {attempts} times despite stock")
+
+
+# ---------------------------------------------------------------------------
 # L0-A: the pod safety net — SIGKILL, then the next start's orphan cleanup
 # ---------------------------------------------------------------------------
 
@@ -119,7 +170,13 @@ def test_l0a3_measurement_stability() -> None:
     for run in (1, 2):
         sp = planner.plan_seed(seed)
         sp = type(sp)(**{**sp.__dict__, "label": f"l0a3-run{run}"})
-        outcome = execute_solution(sp, inputs, ports, reason=f"l0a3_stability_run_{run}")
+        outcome = _when_available(
+            sp.requested.gpu_sku,
+            sp.requested.gpu_count,
+            lambda sp=sp, run=run: execute_solution(
+                sp, inputs, ports, reason=f"l0a3_stability_run_{run}"
+            ),
+        )
         assert outcome.healthy, outcome.log_tail[-2000:]
         assert outcome.token_check and outcome.token_check["token_free"], outcome.token_check
         reports.append(ports.store.retrieve(outcome.boot_report_digest or ""))
@@ -166,8 +223,12 @@ def test_l0f_failure_reproduction() -> None:
         if case.failure_class not in only:
             continue
         bad = planner.plan_for(case.broken_plan, f"class{case.failure_class}-broken")
-        outcome = execute_solution(
-            bad, inputs, ports, scope=RunScope(False, False), reason="fix_proof_broken_boot"
+        outcome = _when_available(
+            bad.requested.gpu_sku,
+            bad.requested.gpu_count,
+            lambda bad=bad: execute_solution(
+                bad, inputs, ports, scope=RunScope(False, False), reason="fix_proof_broken_boot"
+            ),
         )
         results[case.failure_class] = {
             "family": case.expected_family,

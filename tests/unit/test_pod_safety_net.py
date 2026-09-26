@@ -217,3 +217,17 @@ def test_age_zero_cleans_every_apron_pod_even_one_not_yet_running(
     with patch.dict(sys.modules, {"runpod": sdk}):
         assert _target(tmp_path).cleanup_orphaned_pods(max_age_seconds=0) == ["pulling"]
     assert sdk.terminated == ["pulling"]
+
+
+def test_stock_status_asks_secure_stock_under_the_image_cuda(tmp_path: Path) -> None:
+    target = _target(tmp_path, gpu_type="NVIDIA GeForce RTX 4090", gpu_count=4)
+    reply = {"gpuTypes": [{"id": "x", "lowestPrice": {"stockStatus": "Low"}}]}
+    with patch.object(target, "_gql_status", return_value=reply) as gql:
+        assert target.stock_status() == "Low"
+    query = gql.call_args.args[0]
+    assert 'id: "NVIDIA GeForce RTX 4090"' in query
+    assert "gpuCount: 4" in query and "secureCloud: true" in query
+    assert 'allowedCudaVersions: ["13.0"]' in query
+    empty = {"gpuTypes": [{"id": "x", "lowestPrice": {"stockStatus": None}}]}
+    with patch.object(target, "_gql_status", return_value=empty):
+        assert target.stock_status() is None

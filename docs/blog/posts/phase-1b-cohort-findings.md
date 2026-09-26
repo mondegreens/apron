@@ -39,7 +39,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | Runner image | `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
 | Models measured | — |
 | GPUs measured | — |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-26T21:58:56.556797+00:00 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-26T22:02:05.556018+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -98,10 +98,10 @@ Failed boots and retries are included.
 <!-- findings:cost -->
 | Solution | GPU | Cost $ | Failed boots ($) | Records |
 |---|---|---|---|---|
-| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.1332 | 1 (0.1332) | 1 |
-| **Records total** |  | **0.1332** |  |  |
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.1333 | 2 (0.1333) | 2 |
+| **Records total** |  | **0.1333** |  |  |
 | Classifier calls (ledger) |  | 0.0000 |  |  |
-| **Ledger spent** |  | **0.1332** |  | cap $100 |
+| **Ledger spent** |  | **0.1333** |  | cap $100 |
 <!-- /findings:cost -->
 
 ## How to reproduce

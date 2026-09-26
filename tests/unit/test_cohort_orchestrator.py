@@ -201,6 +201,11 @@ def test_harness_error_is_stored_retried_once_and_not_diagnosed(tmp_path: Path) 
             "(EngineCore pid=949) FileNotFoundError: [Errno 2] No such file or directory: 'ninja'",
             "harness:toolchain",
         ),
+        (
+            "QueryError: There are no longer any instances available with the requested "
+            "specifications. Please refresh and try again.",
+            "harness:no_capacity",
+        ),
         (KV_LOG, None),
     ],
 )
