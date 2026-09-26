@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 
-from apron.adapters.runner_image import RUNNER_IMAGE
+from apron.adapters.runner_image import RUNNER_IMAGE, RUNNER_IMAGE_CUDA
 from apron.application.orchestration.errors import PodLeakError
 from apron.application.sanitization import mask_secrets
 from apron.domain.canonical import canonicalize, digest_hex
@@ -281,6 +281,7 @@ class RunPodTarget:
             gpu_type_id=self._gpu_type,
             gpu_count=self._gpu_count,
             cloud_type=CLOUD_TYPE,
+            allowed_cuda_versions=[RUNNER_IMAGE_CUDA],
             ports="22/tcp,8000/http",
             volume_in_gb=100,
             container_disk_in_gb=50,

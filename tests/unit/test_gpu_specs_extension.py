@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import re
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 from unittest.mock import patch
@@ -10,6 +12,7 @@ from unittest.mock import patch
 import pytest
 
 from apron.adapters.backends.runpod import CLOUD_TYPE, GPU_SPECS, RunPodTarget
+from apron.adapters.runner_image import RUNNER_IMAGE_CUDA
 
 
 @pytest.mark.parametrize(
@@ -50,6 +53,7 @@ def test_gpu_count_reaches_create_pod_and_secure_cloud_only() -> None:
     assert created[0]["gpu_count"] == 4
     assert created[0]["cloud_type"] == CLOUD_TYPE == "SECURE"
     assert created[0]["name"] == "apron-run"
+    assert created[0]["allowed_cuda_versions"] == [RUNNER_IMAGE_CUDA]
 
 
 def test_gpu_count_in_execution_fingerprint() -> None:
@@ -93,3 +97,11 @@ def test_discovery_uses_secure_price_only() -> None:
     assert [g["gpu_type_id"] for g in found] == ["NVIDIA GeForce RTX 4090"]
     assert found[0]["hourly_rate_usd"] == 0.74
     assert "community_price" not in found[0]
+
+
+def test_required_cuda_version_is_the_images_toolkit() -> None:
+    """Pods must land on a driver that supports the image's CUDA (error 804 otherwise)."""
+    dockerfile = (Path(__file__).parents[2] / "docker" / "Dockerfile").read_text()
+    match = re.search(r"^ARG CUDA_VERSION=(\d+\.\d+)\.\d+$", dockerfile, re.MULTILINE)
+    assert match, "docker/Dockerfile declares no ARG CUDA_VERSION"
+    assert match.group(1) == RUNNER_IMAGE_CUDA
