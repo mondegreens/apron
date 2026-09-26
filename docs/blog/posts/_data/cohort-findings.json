@@ -111,7 +111,7 @@
   ],
   "memory": [],
   "prediction_errors": [],
-  "record_count": 12,
+  "record_count": 13,
   "repeat_measurements": [],
   "serving": [],
   "setup": {
@@ -124,7 +124,7 @@
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-26T23:08:52.671449+00:00",
+    "last_event": "2026-09-26T23:30:45.731723+00:00",
     "models_measured": [],
     "providers": [
       "runpod"

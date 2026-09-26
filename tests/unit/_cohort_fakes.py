@@ -68,6 +68,12 @@ CATALOG = {
         ),
         3.49,
     ),
+    "NVIDIA A100-SXM4-80GB": (
+        HardwareSpec(
+            gpu_sku="NVIDIA A100-SXM4-80GB", total_memory_bytes=80 * GIB, compute_capability="8.0"
+        ),
+        1.59,
+    ),
     "NVIDIA B200": (
         HardwareSpec(
             gpu_sku="NVIDIA B200", total_memory_bytes=179 * GIB, compute_capability="10.0"

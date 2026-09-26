@@ -120,3 +120,9 @@ unless marked.  Machine events are in `events.jsonl`.
 - **Class 2 (Qwen3-8B, max_model_len 40960, RTX 4090): failed as named.**
 - **Class 3 (Mistral-7B, max_model_len 999999, RTX 4090, $0.02): failed as
   named.**  This pod's host had the image cached: SSH up in 28 s.
+- **Class 5 capacity (23:30 UTC).**  No 3- or 4-GPU Secure stock on CUDA 13
+  hosts for any consumer/pro GPU; only A100-SXM (x3, x4 "Low") and H100.
+  Owner approved A100 or H100 for class 5; the broken case now uses
+  4x A100-SXM ($6.36/h).  The TP divisibility check does not depend on the
+  GPU model.  The earlier batch (classes 1,2,3,5) was stopped while waiting
+  for 4x4090 stock (no pod, no open hold); class 5 was re-queued last.

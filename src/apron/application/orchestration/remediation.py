@@ -66,6 +66,7 @@ if TYPE_CHECKING:
 
 _4090 = "NVIDIA GeForce RTX 4090"
 _H100 = "NVIDIA H100 80GB HBM3"
+_A100_SXM = "NVIDIA A100-SXM4-80GB"
 
 
 @dataclass(frozen=True)
@@ -134,10 +135,17 @@ SIX_CLASSES: tuple[BrokenCase, ...] = (
     BrokenCase(
         5,
         "tp_divisibility",
+        # A 4-GPU pod (world size 3 fits, TP 2 fits after the fix).  Secure had no
+        # multi-GPU 4090 stock on CUDA 13 hosts; the owner approved A100/H100
+        # (2026-09-26).  The divisibility check does not depend on the GPU model.
         DeploymentPlan(
             tensor_parallel=3,
             dtype="bfloat16",
-            resource_allocation={"model_id": "Qwen/Qwen3-8B", "gpu_sku": _4090, "gpu_count": "4"},
+            resource_allocation={
+                "model_id": "Qwen/Qwen3-8B",
+                "gpu_sku": _A100_SXM,
+                "gpu_count": "4",
+            },
         ),
         "config/model.py:1414",
         "must be divisible by tensor parallel size",

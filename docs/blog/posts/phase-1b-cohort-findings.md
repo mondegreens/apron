@@ -39,7 +39,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | Runner image | `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
 | Models measured | — |
 | GPUs measured | — |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-26T23:08:52.671449+00:00 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-26T23:30:45.731723+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
