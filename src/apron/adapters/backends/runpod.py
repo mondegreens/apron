@@ -91,6 +91,7 @@ _POD_COST_QUERY = """query Pod {{
   pod(input: {{podId: "{pod_id}"}}) {{
     id
     costPerHr
+    lastStartedAt
     runtime {{ uptimeInSeconds }}
   }}
 }}"""
@@ -450,7 +451,11 @@ class RunPodTarget:
         ]
 
     def pod_reported_cost(self, pod_id: str | None = None) -> float | None:
-        """Cost RunPod reports for a pod (default: the current one): costPerHr x uptime (M3).
+        """Cost of a pod at RunPod's rate (default: the current one), for the M3 reconcile.
+
+        costPerHr x time since the pod was rented (``lastStartedAt``): the image
+        pull is billed, and container uptime leaves it out (L0-A3 showed ~5x
+        less than the local clock on a short pod).
 
         Read before teardown, or by ledger replay for a pod a crashed run left
         behind; ``None`` when the API does not answer.
@@ -465,10 +470,9 @@ class RunPodTarget:
             return None
         pod = data.get("pod") or {}
         rate = pod.get("costPerHr")
-        uptime = (pod.get("runtime") or {}).get("uptimeInSeconds")
-        if rate is None or uptime is None:
+        if rate is None or not (pod.get("lastStartedAt") or pod.get("runtime")):
             return None
-        return round(float(rate) * float(uptime) / 3600, 6)
+        return round(float(rate) * _age_from(pod, time.time()) / 3600, 6)
 
     def stock_status(
         self, gpu_type: str | None = None, gpu_count: int | None = None

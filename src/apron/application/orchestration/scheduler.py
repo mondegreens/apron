@@ -11,8 +11,8 @@ The seed list is data (``CandidateSeed`` values), not code paths.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Literal
+from dataclasses import asdict, dataclass, field
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping, Sequence
@@ -24,7 +24,7 @@ HardwareClass = Literal["consumer", "professional", "datacenter"]
 _BOOT_MINUTES: dict[str, float] = {"small": 15.0, "mid": 25.0, "large": 35.0}
 DOWNLOAD_GB_PER_MINUTE = 6.0
 # Every pod pulls the 9.1 GiB runner image first.  Measured at L0-A,
-# 2026-09-26: RTX 4090 pod created 15:37:33, SSH up 15:46:25 (~9 min).
+# 2026-09-26: pod created to SSH up ~9 min (_dev_notes/cohort-run/notebook.md).
 # H1's formula (download + boot) predates this measurement.
 IMAGE_PULL_MINUTES = 9.0
 
@@ -180,3 +180,65 @@ def coverage_of(seeds: Sequence[CandidateSeed]) -> Coverage:
     for seed in seeds:
         coverage = _cover(coverage, seed)
     return coverage
+
+
+# ---------------------------------------------------------------------------
+# The ranking as a run artifact (exit gate §1 item 7)
+# ---------------------------------------------------------------------------
+
+
+def _coverage_dict(coverage: Coverage) -> dict[str, Any]:
+    return {k: sorted(v) if isinstance(v, frozenset) else v for k, v in asdict(coverage).items()}
+
+
+def ranking_record(
+    ranking: Ranking,
+    *,
+    candidates: Sequence[CandidateSeed],
+    existing: Coverage,
+    measured: Sequence[str],
+    remaining_budget: float,
+    rates: Mapping[str, float],
+) -> dict[str, Any]:
+    """Inputs and output of one ranking, so the choice can be re-derived later."""
+    return {
+        "inputs": {
+            "candidates": [{**asdict(s), "features": list(s.features)} for s in candidates],
+            "existing": _coverage_dict(existing),
+            "measured": list(measured),
+            "remaining_budget": remaining_budget,
+            "rates": dict(rates),
+        },
+        "ranked": [
+            {"key": r.seed.key, "cost": r.estimated_cost, "obligations": list(r.obligations)}
+            for r in ranking.ranked
+        ],
+        "skipped": [{"key": s.key, "reason": reason} for s, reason in ranking.skipped],
+    }
+
+
+def rerank(record: Mapping[str, Any]) -> Ranking:
+    """Run the scheduler again on a recorded ranking's inputs."""
+    inputs = record["inputs"]
+    seeds = [
+        CandidateSeed(**{**c, "features": tuple(c.get("features", ()))})
+        for c in inputs["candidates"]
+    ]
+    recorded: dict[str, Any] = inputs["existing"]
+    existing = Coverage(
+        sizes=frozenset(recorded["sizes"]),
+        hardware=frozenset(recorded["hardware"]),
+        mechanisms=frozenset(recorded["mechanisms"]),
+        features=frozenset(recorded["features"]),
+        quantized=bool(recorded["quantized"]),
+        prediction_error=bool(recorded["prediction_error"]),
+        models=frozenset(recorded["models"]),
+        gpus=frozenset(recorded["gpus"]),
+    )
+    return rank_candidates(
+        seeds,
+        existing,
+        measured=inputs["measured"],
+        remaining_budget=float(inputs["remaining_budget"]),
+        rates=inputs["rates"],
+    )

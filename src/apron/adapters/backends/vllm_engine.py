@@ -210,6 +210,7 @@ class VllmEngineAdapter:
             "evidence_span": result.get("evidence_span", ""),
             "classifier_model_id": result.get("classifier_model_id"),
             "classifier_input_digest": result.get("classifier_input_digest"),
+            "classifier_cost_usd": result.get("classifier_cost_usd"),
             "_full_extraction": result,
         }
 

@@ -353,8 +353,18 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
         row["cost"] = round(row["cost"], 6)
         row["failed_boot_cost"] = round(row["failed_boot_cost"], 6)
         row["records"].sort()
-    settled = sum(float(e["amount"]) for e in run.ledger if e["op"] == "settle")
-    classifier = sum(float(e["amount"]) for e in run.ledger if e["op"] == "spend")
+
+    def is_classifier(e: dict[str, Any]) -> bool:
+        return str(e.get("label", "")).startswith("classifier:")
+
+    settled = sum(
+        float(e["amount"]) for e in run.ledger if e["op"] == "settle" and not is_classifier(e)
+    )
+    classifier = sum(
+        float(e["amount"])
+        for e in run.ledger
+        if e["op"] in ("settle", "spend") and is_classifier(e)
+    )
     return {
         "authorized": authorized,
         "ledger_settled": round(settled, 6),

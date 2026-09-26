@@ -1,10 +1,10 @@
 {
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 0.739639,
+    "failed_boot_total": 1.208416,
     "ledger_classifier": 0,
-    "ledger_settled": 0.739639,
-    "ledger_spent": 0.739639,
+    "ledger_settled": 1.208416,
+    "ledger_spent": 1.208416,
     "per_solution": [
       {
         "cost": 0.606296,
@@ -19,20 +19,33 @@
         ]
       },
       {
-        "cost": 0.133343,
-        "failed_boot_cost": 0.133343,
-        "failed_boots": 2,
+        "cost": 0.492823,
+        "failed_boot_cost": 0.492823,
+        "failed_boots": 3,
         "gpu": "NVIDIA GeForce RTX 4090",
         "gpu_count": 1,
         "label": "l0a3-run1",
         "model": "Qwen/Qwen3-1.7B",
         "records": [
           "122016a2683145411b02d0b4db83379a2ef5c446c8727b73edd254490dbcd9fb0003",
+          "1220348ef02b049d4a023353f2614899f8df69eb5f5c12b9005401d3cdc9e6c56200",
           "1220c680fcc992ddaed4a2fe12932d260df60e27ac18a4aaa1aa6aa86176dad01242"
+        ]
+      },
+      {
+        "cost": 0.109297,
+        "failed_boot_cost": 0.109297,
+        "failed_boots": 1,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "class1-broken",
+        "model": "Qwen/Qwen3-14B",
+        "records": [
+          "1220233b18004d3c4d2a902d85f4579746fedf5a357d5e9f60e7c7228f49127f3aa3"
         ]
       }
     ],
-    "records_total": 0.739639
+    "records_total": 1.208416
   },
   "fixes": [
     {
@@ -74,7 +87,7 @@
   ],
   "memory": [],
   "prediction_errors": [],
-  "record_count": 5,
+  "record_count": 9,
   "repeat_measurements": [],
   "serving": [],
   "setup": {
@@ -87,7 +100,7 @@
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-26T22:40:50.708531+00:00",
+    "last_event": "2026-09-26T23:05:40.625869+00:00",
     "models_measured": [],
     "providers": [
       "runpod"

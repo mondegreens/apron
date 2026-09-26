@@ -230,6 +230,26 @@ _classification_cache: dict[str, dict[str, Any]] = {}
 
 DEFAULT_CLASSIFIER_MODEL = "claude-haiku-4-5-20251001"
 
+# $ per million tokens (input, output).  Anthropic models overview, read
+# 2026-09-26: Claude Haiku 4.5 at $1 input / $5 output.
+CLASSIFIER_PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
+    "claude-haiku-4-5-20251001": (1.00, 5.00),
+}
+
+
+def classifier_cost(model: str, input_tokens: int, output_tokens: int) -> float | None:
+    """Dollar cost of the classifier's tokens; ``None`` for an unpriced model."""
+    prices = CLASSIFIER_PRICES_PER_MTOK.get(model)
+    if prices is None:
+        return None
+    return round((input_tokens * prices[0] + output_tokens * prices[1]) / 1_000_000, 6)
+
+
+def _add_usage(total: dict[str, int], response: Any) -> None:
+    usage = getattr(response, "usage", None)
+    total["input_tokens"] += int(getattr(usage, "input_tokens", 0) or 0)
+    total["output_tokens"] += int(getattr(usage, "output_tokens", 0) or 0)
+
 
 def classifier_input_digest(model: str, system_prompt: str, classifier_input: str) -> str:
     """Digest of exactly what the classifier sees (F6 provenance)."""
@@ -263,7 +283,12 @@ def classify_and_extract(
 
     cache_key = hashlib.sha256(error.encode()[:8000]).hexdigest()
     if cache_key in _classification_cache:
-        return _classification_cache[cache_key]
+        # No call was made: the tokens were paid (and recorded) the first time.
+        return {
+            **_classification_cache[cache_key],
+            "classifier_cost_usd": 0.0,
+            "classifier_cached": True,
+        }
 
     classes = build_failure_classes(rules)
     schemas = build_extraction_schemas(rules)
@@ -275,6 +300,19 @@ def classify_and_extract(
         "classifier_model_id": model,
         "classifier_input_digest": classifier_input_digest(model, system_prompt, truncated),
     }
+    usage = {"input_tokens": 0, "output_tokens": 0}
+
+    def _done(result: dict[str, Any]) -> dict[str, Any]:
+        """Attach the tokens these calls used and their cost (D5/F6), then cache."""
+        final = {
+            **result,
+            "classifier_usage": dict(usage),
+            "classifier_cost_usd": classifier_cost(model, **usage),
+            "classifier_cached": False,
+        }
+        _classification_cache[cache_key] = final
+        return final
+
     logger.debug(
         "Classifier input (%d→%d chars): ...%s",
         len(error),
@@ -297,23 +335,18 @@ def classify_and_extract(
         ],
     )
 
+    _add_usage(usage, classification)
     tool_use = next((b for b in classification.content if b.type == "tool_use"), None)
     if tool_use is None:
-        unknown = {
-            "failure_class": "unknown",
-            "confidence": 0.0,
-            "evidence_span": "",
-            **provenance,
-        }
-        _classification_cache[cache_key] = unknown
-        return unknown
+        return _done(
+            {"failure_class": "unknown", "confidence": 0.0, "evidence_span": "", **provenance}
+        )
 
     result = {**dict(tool_use.input), **provenance}  # type: ignore[arg-type]
     failure_class = str(result.get("failure_class", "unknown"))
 
     if failure_class == "unknown" or failure_class not in schemas:
-        _classification_cache[cache_key] = result
-        return result
+        return _done(result)
 
     extract_tool: Any = _build_extraction_tool(
         failure_class, classes, schemas, build_extraction_enums(rules)
@@ -334,10 +367,10 @@ def classify_and_extract(
         ],
     )
 
+    _add_usage(usage, extraction)
     tool_use_2 = next((b for b in extraction.content if b.type == "tool_use"), None)
     if tool_use_2 is None:
-        _classification_cache[cache_key] = result
-        return result
+        return _done(result)
 
     extracted = dict(tool_use_2.input)  # type: ignore[arg-type]
     extracted["failure_class"] = failure_class
@@ -345,9 +378,7 @@ def classify_and_extract(
     extracted["evidence_span"] = result.get("evidence_span", "")
     extracted.update(provenance)
 
-    verified = _verify_evidence(extracted, error, schemas)
-    _classification_cache[cache_key] = verified
-    return verified
+    return _done(_verify_evidence(extracted, error, schemas))
 
 
 def _verify_evidence(

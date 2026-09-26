@@ -288,3 +288,28 @@ def test_one_function_runs_all_six_without_per_class_branches() -> None:
                     isinstance(comparator, ast.Constant) and comparator.value in range(1, 7)
                 )
     assert "prove_fix(case" in inspect.getsource(prove_all)
+
+
+def test_classifier_cost_is_settled_at_what_the_tokens_cost(tmp_path: Path) -> None:
+    """D5/F6: the ledger records the classifier's reported cost, not the estimate."""
+
+    class PricedEngine(FakeDiagnosisEngine):
+        def classify(self, error: str) -> dict[str, Any]:
+            return {**super().classify(error), "classifier_cost_usd": 0.0041}
+
+    cohort_ports, _, _, _ = ports(tmp_path, _scenario)
+    fix = FixProofPorts(
+        plan_solution=fix_plan_solution,
+        diagnosis_engine=PricedEngine(),
+        rules=RULES,
+        rule_repository=MemoryRuleRepository(RULES),
+        correction_context=correction_context,
+        hardware_for=lambda sku: CATALOG[sku][0],
+    )
+    prove_fix(SIX_CLASSES[2], accepted_inputs(), cohort_ports, fix)
+    entries = [
+        e for e in cohort_ports.budget.ledger.read_all() if e["label"] == "classifier:class3"
+    ]
+    assert [e["op"] for e in entries] == ["hold", "settle"]
+    assert entries[0]["amount"] == 0.02 and entries[1]["amount"] == 0.0041
+    assert "flag" not in entries[1]

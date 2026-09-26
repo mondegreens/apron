@@ -213,8 +213,22 @@ def test_graphql_error_message_does_not_leak_the_key(tmp_path: Path) -> None:
 def test_pod_reported_cost_uses_cost_per_hour_and_uptime(tmp_path: Path) -> None:
     target = _target(tmp_path)
     target._pod_id = "pod-c"
-    reply = {"pod": {"costPerHr": 0.74, "runtime": {"uptimeInSeconds": 1800}}}
-    with patch.object(target, "_gql_status", return_value=reply):
+    # Rented 1800 s ago, container up only 1200 s (600 s of image pull): the
+    # pull is billed, so the cost follows lastStartedAt.
+    reply = {
+        "pod": {
+            "costPerHr": 0.74,
+            "lastStartedAt": _started(1800),
+            "runtime": {"uptimeInSeconds": 1200},
+        }
+    }
+    with (
+        patch.object(target, "_gql_status", return_value=reply),
+        patch.object(runpod_module.time, "time", return_value=_NOW),
+    ):
+        assert target.pod_reported_cost() == pytest.approx(0.37)
+    runtime_only = {"pod": {"costPerHr": 0.74, "runtime": {"uptimeInSeconds": 1800}}}
+    with patch.object(target, "_gql_status", return_value=runtime_only):
         assert target.pod_reported_cost() == pytest.approx(0.37)
     with patch.object(target, "_gql_status", side_effect=RuntimeError("down")):
         assert target.pod_reported_cost() is None

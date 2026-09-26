@@ -74,6 +74,8 @@ class DiagnosisPipelineResult:
     classifier_model_id: str | None = None
     classifier_input_digest: str | None = None
     evidence_span: str = ""
+    # What the classifier calls cost (D5); None when the engine does not report it.
+    classifier_cost_usd: float | None = None
 
 
 def run_diagnosis_pipeline(
@@ -101,6 +103,7 @@ def run_diagnosis_pipeline(
         "classifier_model_id": classification.get("classifier_model_id"),
         "classifier_input_digest": classification.get("classifier_input_digest"),
         "evidence_span": str(classification.get("evidence_span") or ""),
+        "classifier_cost_usd": classification.get("classifier_cost_usd"),
     }
 
     version_match: bool | None = None

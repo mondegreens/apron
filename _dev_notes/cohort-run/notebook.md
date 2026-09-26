@@ -1,7 +1,7 @@
 # Cohort run notebook (PLAN §12)
 
 Timestamped, facts only: expected vs happened, surprises, availability
-waits, retries, dead ends, fixes that failed.  Times are local (UTC-5)
+waits, retries, dead ends, fixes that failed.  Times are local (UTC-6)
 unless marked.  Machine events are in `events.jsonl`.
 
 ## 2026-09-26 — L0-A (pod safety net)

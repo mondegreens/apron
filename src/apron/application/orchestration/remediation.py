@@ -256,18 +256,29 @@ def prove_fix(
         proof.notes.append("broken boot produced no log (harness failure only)")
         return proof
 
-    # 2. Diagnose (a paid classifier call, authorized and recorded — F6).
+    # 2. Diagnose (a paid classifier call, authorized and recorded — D5/F6):
+    #    hold the estimate before the call, settle what the tokens cost.
     _authorize_classification(inputs)
-    ports.budget.record_spend(fix.classifier_cost, f"classifier:class{case.failure_class}")
-    diagnosis = run_diagnosis_pipeline(
-        log,
-        fix.diagnosis_engine,
-        bad.plan,
-        diagnosis_model_config(dict(bad.model_config)),
-        fix.hardware_for(bad.requested.gpu_sku),
-        list(fix.rules),
-        correction_context=fix.correction_context(bad),
-    )
+    label = f"classifier:class{case.failure_class}"
+    ports.budget.hold(fix.classifier_cost, label)
+    try:
+        diagnosis = run_diagnosis_pipeline(
+            log,
+            fix.diagnosis_engine,
+            bad.plan,
+            diagnosis_model_config(dict(bad.model_config)),
+            fix.hardware_for(bad.requested.gpu_sku),
+            list(fix.rules),
+            correction_context=fix.correction_context(bad),
+        )
+    except Exception:
+        ports.budget.settle(fix.classifier_cost, label, flag="classifier_error:estimate")
+        raise
+    actual = diagnosis.classifier_cost_usd
+    if actual is None:
+        ports.budget.settle(fix.classifier_cost, label, flag="unreported:estimate")
+    else:
+        ports.budget.settle(actual, label)
     proof.diagnosed_family = diagnosis.failure_class
 
     # 3-4. Gates A and B.

@@ -45,6 +45,7 @@ from apron.application.orchestration.evidence import (
     solution_fingerprint,
 )
 from apron.application.orchestration.remediation import SIX_CLASSES
+from apron.application.orchestration.scheduler import rerank
 from apron.application.orchestration.serving import evaluate_serving_slos
 from apron.application.sanitization import contains_secret
 from apron.domain.fingerprints import fingerprint_hex
@@ -74,10 +75,12 @@ class GateRun:
     events: list[dict[str, Any]]
     scanned: dict[str, str]  # path -> text, for the secret scan
     authorized: float
+    ranking: dict[str, Any] | None = None  # cohort-ranking.json (§1 item 7)
 
 
 def load_run(run_dir: Path, rules_dir: Path, authorized: float) -> GateRun:
     loaded = load_cohort_run(run_dir, rules_dir)
+    ranking_path = run_dir / "cohort-ranking.json"
     scanned = {
         str(p.relative_to(root)): p.read_text("utf-8", errors="replace")
         for root in (run_dir, rules_dir)
@@ -92,6 +95,7 @@ def load_run(run_dir: Path, rules_dir: Path, authorized: float) -> GateRun:
         events=loaded.events,
         scanned=scanned,
         authorized=authorized,
+        ranking=json.loads(ranking_path.read_text("utf-8")) if ranking_path.exists() else None,
     )
 
 
@@ -514,6 +518,8 @@ def check_budget(run: GateRun) -> list[str]:
     for entry in run.ledger:
         if entry["op"] != "settle" or str(entry.get("flag", "")).startswith("replayed"):
             continue  # a replayed hold is a crashed pod: its records were never written
+        if str(entry["label"]).startswith("classifier:"):
+            continue  # classifier calls have no record fields; their cost is the ledger's
         sfp = label_to_solution.get(entry["label"])
         if sfp is None:
             problems.append(f"settle {entry['label']!r} has no hold event")
@@ -537,12 +543,57 @@ def check_budget(run: GateRun) -> list[str]:
     return problems
 
 
+# ---------------------------------------------------------------------------
+# §1 item 7 — candidates chosen by the scheduler, inside authorization
+# ---------------------------------------------------------------------------
+
+
+def check_selection(run: GateRun) -> list[str]:
+    """The recorded ranking re-derives from its inputs; every measured seed
+    solution was ranked; every execution sits inside the authorization."""
+    record = run.ranking
+    if record is None:
+        return ["no cohort ranking on record (cohort-ranking.json)"]
+    problems: list[str] = []
+    auth = record.get("authorization") or {}
+    providers = set(auth.get("permitted_providers") or ())
+    cloud = (auth.get("hard_target_constraints") or {}).get("cloud_type")
+    if not providers or not cloud:
+        problems.append("ranking carries no authorization (providers, cloud type)")
+    for e in run.records.solutions.values():
+        req = e.requested_execution
+        if providers and req.provider not in providers:
+            problems.append(f"{e.label}: provider {req.provider} outside authorization")
+        if cloud and req.cloud_type != cloud:
+            problems.append(f"{e.label}: cloud {req.cloud_type} outside authorization")
+    recorded = [r["key"] for r in record["ranked"]]
+    if [r.seed.key for r in rerank(record).ranked] != recorded:
+        problems.append("recorded ranking is not what the scheduler derives from its inputs")
+    entries, _ = _measured_entries(run)
+    for e in entries:
+        key = f"{e.model_id}@{e.requested_execution.gpu_sku}x{e.requested_execution.gpu_count}"
+        if e.coverage and key not in recorded:
+            problems.append(f"{key}: measured but never chosen by the scheduler")
+    return problems
+
+
+def test_scheduler_names_no_model_provider_or_gpu() -> None:
+    """No name is privileged or forbidden (§1 item 7): ranking reads seed data only."""
+    source = (REPO / "src/apron/application/orchestration/scheduler.py").read_text()
+    names = (
+        r"Qwen|[Ll]lama|[Mm]istral|[Gg]emma|[Dd]eep[Ss]eek|[Mm]amba"
+        r"|[Rr]un[Pp]od|NVIDIA|RTX|H100|A100|B200"
+    )
+    assert not re.findall(names, source)
+
+
 CHECKS = {
     "1-coverage": check_coverage,
     "2-six-classes": check_six_classes,
     "3-fingerprints": check_fingerprints,
     "4-costs": check_costs,
     "5-serving": check_serving,
+    "7a-selection": check_selection,
     "7-strict": check_strict,
     "8-secrets": check_secrets,
     "9-budget": check_budget,
@@ -784,6 +835,39 @@ def test_budget_ledger_must_equal_records(run: GateRun) -> None:
 
 def test_budget_spent_within_authorized(run: GateRun) -> None:
     assert any("authorized" in p for p in check_budget(replace(run, authorized=0.01)))
+
+
+def test_selection_needs_the_ranking(run: GateRun) -> None:
+    assert check_selection(replace(run, ranking=None)) == [
+        "no cohort ranking on record (cohort-ranking.json)"
+    ]
+
+
+def test_selection_rederives_the_order(run: GateRun) -> None:
+    assert run.ranking is not None
+    swapped = json.loads(json.dumps(run.ranking))
+    swapped["ranked"][0], swapped["ranked"][1] = swapped["ranked"][1], swapped["ranked"][0]
+    assert any("derives" in p for p in check_selection(replace(run, ranking=swapped)))
+
+
+def test_selection_flags_an_unranked_measurement(run: GateRun) -> None:
+    assert run.ranking is not None
+    trimmed = json.loads(json.dumps(run.ranking))
+    trimmed["ranked"] = [r for r in trimmed["ranked"] if not r["key"].startswith("mistralai/")]
+    assert any("never chosen" in p for p in check_selection(replace(run, ranking=trimmed)))
+
+
+def test_selection_flags_an_execution_outside_authorization(run: GateRun) -> None:
+    sfp, entry = next(iter(run.records.solutions.items()))
+    outside = entry.model_copy(
+        update={
+            "requested_execution": entry.requested_execution.model_copy(
+                update={"cloud_type": "COMMUNITY"}
+            )
+        }
+    )
+    doctored = _with(run, solutions={**run.records.solutions, sfp: outside})
+    assert any("outside authorization" in p for p in check_selection(doctored))
 
 
 # ---------------------------------------------------------------------------

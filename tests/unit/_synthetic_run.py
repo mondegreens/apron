@@ -8,6 +8,7 @@ then the six failure classes.
 
 from __future__ import annotations
 
+import json
 import shutil
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,7 @@ from typing import Any
 from conftest import FakeDiagnosisEngine
 from unit._cohort_fakes import (
     CATALOG,
+    MODELS,
     accepted_inputs,
     correction_context,
     fix_plan_solution,
@@ -27,6 +29,12 @@ from apron.adapters.backends.rule_loader import load_rules
 from apron.adapters.backends.rule_repository import FileRuleRepository
 from apron.application.orchestration.cohort import run_cohort
 from apron.application.orchestration.remediation import SIX_CLASSES, FixProofPorts, prove_all
+from apron.application.orchestration.scheduler import (
+    CandidateSeed,
+    Coverage,
+    rank_candidates,
+    ranking_record,
+)
 
 REPO = Path(__file__).resolve().parents[2]
 RULE_VERSION_DIR = REPO / "rules" / "vllm-v0.29"
@@ -68,6 +76,28 @@ _CLASS_LOGS = {
 }
 
 
+_MECHANISM = {
+    "deepseek-ai/DeepSeek-V2-Lite": "mla_decode",
+    "state-spaces/mamba-2.8b-hf": "unknown",
+}
+
+
+def _candidate(model: str, gpu: str, size: str, hw: str, features: list[str]) -> CandidateSeed:
+    """The seed row the scheduler ranks; prediction errors as in cohort/phase-1b-seed.json."""
+    infeasible = model == "Qwen/Qwen3-32B" and gpu == "NVIDIA GeForce RTX 4090"
+    return CandidateSeed(
+        model_id=model,
+        gpu_sku=gpu,
+        size_class=size,  # type: ignore[arg-type]
+        hardware_class=hw,  # type: ignore[arg-type]
+        mechanism=_MECHANISM.get(model, "autoregressive_decode"),
+        weight_gb=round(MODELS[model]["weights"] / 1e9, 2),
+        quantized="gptq_int4" in features,
+        prediction_error=infeasible or model in ("state-spaces/mamba-2.8b-hf",),
+        features=tuple(features),
+    )
+
+
 def _scenario(plan: Any, target: Any) -> str:
     for case in SIX_CLASSES:
         if plan is case.broken_plan:
@@ -87,6 +117,25 @@ def build_synthetic_run(run_dir: Path) -> Path:
         identities=JsonlLedger(run_dir / "solutions.jsonl"),
     )
     inputs = accepted_inputs()
+    seeds = [_candidate(*row) for row in _SEED]
+    rates = {gpu: rate for gpu, (_, rate) in CATALOG.items()}
+    ranking = rank_candidates(seeds, Coverage(), measured=[], remaining_budget=100.0, rates=rates)
+    (run_dir / "cohort-ranking.json").write_text(
+        json.dumps(
+            {
+                **ranking_record(
+                    ranking,
+                    candidates=seeds,
+                    existing=Coverage(),
+                    measured=[],
+                    remaining_budget=100.0,
+                    rates=rates,
+                ),
+                "authorization": inputs.authorization.model_dump(mode="json"),
+            }
+        )
+    )
+    rows = {_candidate(*row).key: row for row in _SEED}
     plans = [
         solution(
             model,
@@ -98,7 +147,7 @@ def build_synthetic_run(run_dir: Path) -> Path:
                 "features": features,
             },
         )
-        for model, gpu, size, hw, features in _SEED
+        for model, gpu, size, hw, features in (rows[r.seed.key] for r in ranking.ranked)
     ]
     result = run_cohort(plans, inputs, cohort_ports)
     assert result.stopped is None, result.stopped

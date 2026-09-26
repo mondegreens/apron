@@ -259,3 +259,11 @@ class TestEnumExtraction:
         )
         extracted = VllmEngineAdapter(rules=rules).extract("x", "dtype_incompatible")
         assert extracted == {"unsupported_dtype": "float16"}
+
+
+def test_classifier_cost_prices_the_tokens() -> None:
+    from apron.adapters.backends.llm_classifier import classifier_cost
+
+    # 3,000 input + 200 output tokens at $1 / $5 per million.
+    assert classifier_cost("claude-haiku-4-5-20251001", 3000, 200) == 0.004
+    assert classifier_cost("unpriced-model", 3000, 200) is None

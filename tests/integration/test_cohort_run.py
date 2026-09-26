@@ -257,7 +257,11 @@ def test_l0f_failure_reproduction() -> None:
 def test_cohort_run() -> None:
     _step("cohort")
     from apron.application.orchestration.cohort import qualify_cohort, run_cohort
-    from apron.application.orchestration.scheduler import Coverage, rank_candidates
+    from apron.application.orchestration.scheduler import (
+        Coverage,
+        rank_candidates,
+        ranking_record,
+    )
     from apron.interfaces.cohort_root import (
         CohortPlanner,
         build_ports,
@@ -276,6 +280,20 @@ def test_cohort_run() -> None:
     )
     plans = [planner.plan_seed(r.seed) for r in ranking.ranked]
     inputs = load_inputs()
+    _write(
+        "cohort-ranking.json",
+        {
+            **ranking_record(
+                ranking,
+                candidates=seeds,
+                existing=Coverage(),
+                measured=[],
+                remaining_budget=ports.budget.remaining,
+                rates=rates,
+            ),
+            "authorization": inputs.authorization.model_dump(mode="json"),
+        },
+    )
     result = run_cohort(plans, inputs, ports)
     report = qualify_cohort(plans, inputs, ports.store, ports.clock, ports.ids)
     _write(

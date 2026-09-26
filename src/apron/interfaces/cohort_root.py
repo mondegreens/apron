@@ -143,6 +143,26 @@ def hardware_for(gpu_sku: str) -> HardwareSpec:
     )
 
 
+def measurement_notes(run_dir: Path = RUN_DIR) -> tuple[str, ...]:
+    """Notes every prediction delta carries, from L0-A3's repeat boots (§6.1).
+
+    When the activation measurement varied more than 5% between two boots of
+    the same solution, every activation-dependent delta is that uncertain.
+    """
+    path = run_dir / "l0a3-stability.json"
+    if not path.exists():
+        return ()
+    result = json.loads(path.read_text("utf-8"))
+    if not result.get("activation_uncertainty_note_required"):
+        return ()
+    spread = float(result["activation_relative_difference"])
+    return (
+        f"activation varied {spread:.1%} between two boots of one solution "
+        "(L0-A3, above the 5% threshold); the total and activation deltas carry "
+        "that uncertainty",
+    )
+
+
 @dataclass
 class CohortPlanner:
     rates: dict[str, float]
@@ -256,6 +276,7 @@ class CohortPlanner:
             if observation
             else None,
             coverage=coverage or {},
+            notes=measurement_notes(),
         )
 
 
