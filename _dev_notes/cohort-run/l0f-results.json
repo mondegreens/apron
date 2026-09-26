@@ -1,0 +1,13 @@
+{
+  "6": {
+    "family": "quant_compute_capability",
+    "call_site": "config/vllm.py:791",
+    "healthy": false,
+    "failed_as_named": false,
+    "harness_failures": [],
+    "failed_boot_digests": [
+      "12202f6bb99809123f803dde4504f383ea73441de5a21ea108c9ea39271cbd4c5eb0"
+    ],
+    "cost": 0.606296
+  }
+}

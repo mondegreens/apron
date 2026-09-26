@@ -3,3 +3,8 @@
 {"amount": 0.133174, "at": "2026-09-26T21:58:56.542248+00:00", "estimate": 0.3043, "label": "l0a3-run1", "op": "settle"}
 {"amount": 0.3043, "at": "2026-09-26T22:02:04.730147+00:00", "label": "l0a3-run1", "op": "hold"}
 {"amount": 0.000169, "at": "2026-09-26T22:02:05.551525+00:00", "estimate": 0.3043, "label": "l0a3-run1", "op": "settle"}
+{"amount": 1.4542, "at": "2026-09-26T22:16:43.257093+00:00", "label": "class6-broken", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-26T22:26:22.433727+00:00", "label": "class6-broken", "op": "annotate", "pod_id": "myporq0l8cpm99"}
+{"amount": 0.606296, "at": "2026-09-26T22:27:08.664015+00:00", "estimate": 1.4542, "label": "class6-broken", "op": "settle"}
+{"amount": 0.3043, "at": "2026-09-26T22:27:14.368146+00:00", "label": "l0a3-run1", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-26T22:40:50.704432+00:00", "label": "l0a3-run1", "op": "annotate", "pod_id": "n99tlxduol1a1q"}

@@ -22,6 +22,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from apron.adapters.renderers.engine_flags import engine_flag_args
+
 if TYPE_CHECKING:
     from apron.domain.schemas.solutions import DeploymentPlan
 
@@ -160,8 +162,7 @@ class VllmEngineAdapter:
             args.extend(["--dtype", plan.dtype])
         if plan.tensor_parallel > 1:
             args.extend(["--tensor-parallel-size", str(plan.tensor_parallel)])
-        for key, value in plan.engine_configuration.items():
-            args.extend([f"--{key.replace('_', '-')}", str(value)])
+        args.extend(engine_flag_args(plan.engine_configuration))
         return {"args": args, "engine": self._engine_name, "tp": plan.tensor_parallel}
 
     def verify(
@@ -337,8 +338,7 @@ class VllmEngineAdapter:
         if plan.tensor_parallel > 1:
             parts.extend(["--tensor-parallel-size", str(plan.tensor_parallel)])
 
-        for key, value in plan.engine_configuration.items():
-            parts.extend([f"--{key.replace('_', '-')}", str(value)])
+        parts.extend(engine_flag_args(plan.engine_configuration))
 
         if resource.get("remote_code_required") == "true":
             parts.append("--trust-remote-code")

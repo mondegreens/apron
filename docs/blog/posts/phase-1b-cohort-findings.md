@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 0 on 0 GPU types
 - Failure classes fixed and re-verified: 0 of 6
-- Total cost: $0.13 of the $100 cap (failed boots included: $0.13)
+- Total cost: $0.74 of the $100 cap (failed boots included: $0.74)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -39,7 +39,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | Runner image | `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
 | Models measured | — |
 | GPUs measured | — |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-26T22:02:05.556018+00:00 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-26T22:40:50.708531+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -98,10 +98,11 @@ Failed boots and retries are included.
 <!-- findings:cost -->
 | Solution | GPU | Cost $ | Failed boots ($) | Records |
 |---|---|---|---|---|
+| ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.6063 | 1 (0.6063) | 1 |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.1333 | 2 (0.1333) | 2 |
-| **Records total** |  | **0.1333** |  |  |
+| **Records total** |  | **0.7396** |  |  |
 | Classifier calls (ledger) |  | 0.0000 |  |  |
-| **Ledger spent** |  | **0.1333** |  | cap $100 |
+| **Ledger spent** |  | **0.7396** |  | cap $100 |
 <!-- /findings:cost -->
 
 ## How to reproduce

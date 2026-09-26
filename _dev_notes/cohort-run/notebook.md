@@ -73,3 +73,19 @@ unless marked.  Machine events are in `events.jsonl`.
   full prek run with the keys loaded.
 - RunPod balance read at the same time: $10.07 — enough for the approved L0
   (≈$7.49), not for the full cohort (plan ≈$55–70): top-up needed before L5.
+
+## 2026-09-26 — L0-F (failure reproduction)
+
+- **16:16 — class 6 on H100 ($0.61): failed, NOT as named.**  Expected the
+  capability error at `config/vllm.py:791`.  Happened: `ValueError` at
+  `config/model.py:1334`, "The quantization method fp_quant is deprecated …
+  set `--allow-deprecated-quantization`".  The deprecation check runs before
+  the capability check.  fp_quant is the only v0.29.0 method with
+  `get_min_capability() == 100` (`fp_quant.py:64`), so no other method can
+  stand in.  Replacement broken plan (§6.1): same checkpoint on H100 with
+  `allow_deprecated_quantization: true` in the plan, which only warns and
+  reaches the capability check.  Found on the way: every boolean in
+  `engine_configuration` was rendered `--flag true`, which vLLM's
+  BooleanOptionalAction parser rejects; booleans now render `--flag` /
+  `--no-flag`.  The failed record stays as evidence.  The class 6 broken boot
+  must be re-run with the replacement plan.

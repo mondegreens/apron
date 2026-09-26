@@ -142,8 +142,12 @@ SIX_CLASSES: tuple[BrokenCase, ...] = (
     BrokenCase(
         6,
         "quant_compute_capability",
+        # fp_quant is the only v0.29.0 method needing cc 100 (fp_quant.py:64) and is
+        # deprecated: without the bypass the deprecation check (config/model.py:1334)
+        # fires first and the capability check is never reached (L0-F, 2026-09-26).
         DeploymentPlan(
             dtype="bfloat16",
+            engine_configuration={"allow_deprecated_quantization": "true"},
             resource_allocation={
                 "model_id": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
                 "gpu_sku": _H100,

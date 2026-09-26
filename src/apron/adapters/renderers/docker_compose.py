@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from apron.adapters.renderers.engine_flags import engine_flag_args
 from apron.adapters.runner_image import RUNNER_IMAGE
 from apron.domain.schemas.solutions import RenderContext
 
@@ -16,8 +17,7 @@ class DockerComposeRenderer:
         vllm_args.extend(["--dtype", context.plan.dtype or "auto"])
         if context.plan.tensor_parallel > 1:
             vllm_args.extend(["--tensor-parallel-size", str(context.plan.tensor_parallel)])
-        for key, value in context.plan.engine_configuration.items():
-            vllm_args.extend([f"--{key.replace('_', '-')}", str(value)])
+        vllm_args.extend(engine_flag_args(context.plan.engine_configuration))
 
         gpu_count = context.plan.tensor_parallel
         compose: dict[str, Any] = {
