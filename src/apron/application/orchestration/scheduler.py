@@ -23,6 +23,10 @@ HardwareClass = Literal["consumer", "professional", "datacenter"]
 # Boot time scales with size (H1): 15 min for small models, up to 35 for large.
 _BOOT_MINUTES: dict[str, float] = {"small": 15.0, "mid": 25.0, "large": 35.0}
 DOWNLOAD_GB_PER_MINUTE = 6.0
+# Every pod pulls the 9.1 GiB runner image first.  Measured at L0-A,
+# 2026-09-26: RTX 4090 pod created 15:37:33, SSH up 15:46:25 (~9 min).
+# H1's formula (download + boot) predates this measurement.
+IMAGE_PULL_MINUTES = 9.0
 
 
 @dataclass(frozen=True)
@@ -75,13 +79,17 @@ class Ranking:
 
 
 def estimate_cost(seed: CandidateSeed, hourly_rate: float) -> float:
-    """(download minutes + boot minutes, scaled by size) x pod rate (H1).
+    """(image pull + download minutes + boot minutes, scaled by size) x pod rate (H1).
 
     Prediction-error candidates spend no GPU and cost nothing.
     """
     if seed.prediction_error:
         return 0.0
-    minutes = seed.weight_gb / DOWNLOAD_GB_PER_MINUTE + _BOOT_MINUTES[seed.size_class]
+    minutes = (
+        IMAGE_PULL_MINUTES
+        + seed.weight_gb / DOWNLOAD_GB_PER_MINUTE
+        + _BOOT_MINUTES[seed.size_class]
+    )
     return round(minutes / 60 * hourly_rate * seed.gpu_count, 4)
 
 
