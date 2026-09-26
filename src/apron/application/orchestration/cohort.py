@@ -192,7 +192,10 @@ class CohortPorts:
     hourly_rate: Callable[[RequestedExecutionSpec], float]
     # The identity manifest: the objects behind every solution's digests (§11 item 3).
     identities: EventLog
-    boot_timeout: int = 900
+    # A cold first boot on a fresh pod JIT-compiles FlashInfer kernels after
+    # the CUDA graphs are captured; L0-A3 (2026-09-26) was still compiling at
+    # 15 min.  The deadline covers a cold boot; a broken plan fails far sooner.
+    boot_timeout: int = 1800
     # A pod that is not RUNNING by then (no Secure capacity, a stuck image
     # pull) is torn down and recorded as a failed attempt: it may be billing.
     provision_timeout: int = 1800

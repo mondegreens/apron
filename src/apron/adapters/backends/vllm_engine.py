@@ -61,6 +61,33 @@ VLLM_LOG = "/var/log/vllm.log"
 TOKEN_VARS = ("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN")
 # vLLM API server and its engine-core children.  The bracket keeps the
 # pattern from matching the shell that runs pgrep/pkill with it.
+_WAITING = re.compile(r"Waiting for \d+ local, \d+ remote core engine proc")
+
+
+def collapse_repeats(log: str) -> str:
+    """Fold the API server's 10-second "waiting for core engine" heartbeat.
+
+    On a slow boot those lines filled the whole stored tail (L0-A3), hiding
+    what the engine core last did.  Consecutive heartbeats become the first
+    one plus a count; every other line is kept.
+    """
+    out: list[str] = []
+    run = 0
+    for line in log.splitlines():
+        if _WAITING.search(line):
+            run += 1
+            if run == 1:
+                out.append(line)
+            continue
+        if run > 1:
+            out.append(f"[... {run - 1} more 'waiting for core engine' lines]")
+        run = 0
+        out.append(line)
+    if run > 1:
+        out.append(f"[... {run - 1} more 'waiting for core engine' lines]")
+    return "\n".join(out)
+
+
 # The container environment start.sh exports for SSH sessions (PATH, CUDA_*, ...).
 CONTAINER_ENV = "/etc/apron_environment"
 VLLM_PROCESS_PATTERN = "bin/[v]llm serve|[V]LLM::"
@@ -434,9 +461,12 @@ class VllmEngineAdapter:
             if "down" in str(alive.get("stdout", "")):
                 break
             time.sleep(10)
-        tail = target.execute(f"tail -200 {VLLM_LOG}")
+        tail = target.execute(f"tail -400 {VLLM_LOG}")
         return BootResult(
-            False, str(tail.get("stdout", "")), serve, round(time.monotonic() - start, 1)
+            False,
+            collapse_repeats(str(tail.get("stdout", ""))),
+            serve,
+            round(time.monotonic() - start, 1),
         )
 
     # ------------------------------------------------------------------

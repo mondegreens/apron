@@ -96,3 +96,14 @@ unless marked.  Machine events are in `events.jsonl`.
   (age 3600) would have terminated nothing.  Ages now come from
   `lastStartedAt` (covers a pod still pulling its image); verified live: the
   in-flight L0-A3 pod read 1644 s.
+- **L0-A3 run 1, second attempt (22:27-22:56 UTC, $0.36 local / $0.20
+  RunPod-rate): health deadline passed while the engine was still starting.**
+  Pod up 22:40 (13 min pull on this host), weights + profile + CUDA graphs
+  done 22:51:38, then silence until the 900 s deadline at 22:56 — the sampler
+  warm-up JIT-compiles FlashInfer on a cold pod (the earlier ninja failure
+  showed that path).  Checked FlashInfer 0.6.18: it compiles only for the
+  detected GPU unless FLASHINFER_CUDA_ARCH_LIST is set, so the image's
+  5-arch TORCH_CUDA_ARCH_LIST is not the cause.  Fixes: boot deadline 1800 s
+  (cold boot); the stored log folds the 10-second "waiting for core engine"
+  heartbeat that had filled the whole 8000-char tail; estimates use the
+  measured pull (13 min) and cold-boot times (+10 min per size class).

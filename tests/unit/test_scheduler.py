@@ -29,8 +29,8 @@ def _seed(model: str, gpu: str = "NVIDIA GeForce RTX 4090", **kw) -> CandidateSe
 def test_cost_estimate_is_weight_proportional_and_size_scaled() -> None:
     small = _seed("a", weight_gb=6.0)
     large = _seed("b", weight_gb=66.0, size_class="large")
-    assert estimate_cost(small, 0.74) == pytest.approx((9 + 1 + 15) / 60 * 0.74, abs=1e-3)
-    assert estimate_cost(large, 0.74) == pytest.approx((9 + 11 + 35) / 60 * 0.74, abs=1e-3)
+    assert estimate_cost(small, 0.74) == pytest.approx((13 + 1 + 25) / 60 * 0.74, abs=1e-3)
+    assert estimate_cost(large, 0.74) == pytest.approx((13 + 11 + 45) / 60 * 0.74, abs=1e-3)
 
 
 def test_multi_gpu_cost_scales_with_count() -> None:

@@ -1,10 +1,10 @@
 {
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 1.208416,
+    "failed_boot_total": 1.25145,
     "ledger_classifier": 0,
-    "ledger_settled": 1.208416,
-    "ledger_spent": 1.208416,
+    "ledger_settled": 1.25145,
+    "ledger_spent": 1.25145,
     "per_solution": [
       {
         "cost": 0.606296,
@@ -43,9 +43,33 @@
         "records": [
           "1220233b18004d3c4d2a902d85f4579746fedf5a357d5e9f60e7c7228f49127f3aa3"
         ]
+      },
+      {
+        "cost": 0.027297,
+        "failed_boot_cost": 0.027297,
+        "failed_boots": 1,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "class2-broken",
+        "model": "Qwen/Qwen3-8B",
+        "records": [
+          "1220736506a57c471f0412bcf80b35a1cabdd9a438f6e3ff2be500091464afad874d"
+        ]
+      },
+      {
+        "cost": 0.015737,
+        "failed_boot_cost": 0.015737,
+        "failed_boots": 1,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "class3-broken",
+        "model": "mistralai/Mistral-7B-Instruct-v0.3",
+        "records": [
+          "122082b8cebddc87b2ccaca644d351f8eef4f52c4526bbae1df2b3603c549a32b710"
+        ]
       }
     ],
-    "records_total": 1.208416
+    "records_total": 1.25145
   },
   "fixes": [
     {
@@ -87,7 +111,7 @@
   ],
   "memory": [],
   "prediction_errors": [],
-  "record_count": 9,
+  "record_count": 12,
   "repeat_measurements": [],
   "serving": [],
   "setup": {
@@ -100,7 +124,7 @@
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-26T23:05:40.625869+00:00",
+    "last_event": "2026-09-26T23:08:52.671449+00:00",
     "models_measured": [],
     "providers": [
       "runpod"

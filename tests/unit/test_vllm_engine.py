@@ -396,3 +396,22 @@ def test_detect_version_missing(engine: VllmEngineAdapter) -> None:
 def test_detect_version_different(engine: VllmEngineAdapter) -> None:
     output = "vLLM 0.30.1 loaded"
     assert engine.detect_engine_version(output) == "0.30.1"
+
+
+def test_waiting_heartbeat_is_folded_so_the_tail_keeps_the_cause() -> None:
+    from apron.adapters.backends.vllm_engine import collapse_repeats
+
+    beat = (
+        "(APIServer pid=338) DEBUG 09-26 22:5{i}:16 [v1/engine/utils.py:1295] "
+        "Waiting for 1 local, 0 remote core engine proc(s) to start."
+    )
+    log = "\n".join(
+        ["(EngineCore pid=820) INFO graph capture finished"]
+        + [beat.format(i=i) for i in range(5)]
+        + ["(APIServer pid=338) RuntimeError: Engine core initialization failed."]
+    )
+    folded = collapse_repeats(log).splitlines()
+    assert folded[0].endswith("graph capture finished")
+    assert sum("Waiting for 1 local" in line for line in folded) == 1
+    assert "[... 4 more 'waiting for core engine' lines]" in folded
+    assert folded[-1].endswith("Engine core initialization failed.")

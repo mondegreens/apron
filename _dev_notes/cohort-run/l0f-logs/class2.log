@@ -1,0 +1,200 @@
+(EngineCore pid=1178) DEBUG 09-26 23:07:24 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=232, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:24 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=232, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [00:02<00:02, 10.94it/s](EngineCore pid=1178) DEBUG 09-26 23:07:24 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=224, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:24 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=224, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=216, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=216, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [00:02<00:02, 11.30it/s](EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=208, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=208, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=200, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=200, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [00:02<00:02, 11.51it/s](EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=192, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=192, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=184, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=184, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [00:02<00:02, 11.57it/s](EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=176, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=176, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=168, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=168, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [00:02<00:01, 11.71it/s](EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=160, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=160, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=152, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=152, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [00:02<00:01, 11.87it/s](EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=144, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=144, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=136, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=136, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [00:03<00:01, 12.04it/s](EngineCore pid=1178) DEBUG 09-26 23:07:25 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=128, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:25 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=128, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=120, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=120, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [00:03<00:01, 11.84it/s](EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=112, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=112, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=104, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=104, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [00:03<00:01, 11.96it/s](EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=96, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=96, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=88, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=88, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [00:03<00:01, 11.87it/s](EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=80, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=80, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=72, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=72, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [00:03<00:00, 11.71it/s](EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=64, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=64, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=56, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=56, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [00:03<00:00, 11.83it/s](EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=48, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=48, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=40, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=40, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [00:04<00:00, 11.97it/s](EngineCore pid=1178) DEBUG 09-26 23:07:26 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=32, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:26 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=32, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:27 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=24, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:27 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=24, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [00:04<00:00, 12.01it/s](EngineCore pid=1178) DEBUG 09-26 23:07:27 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=16, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:27 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=16, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:27 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=8, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:27 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=8, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [00:04<00:00, 12.03it/s](EngineCore pid=1178) DEBUG 09-26 23:07:27 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=4, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:27 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=4, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=1178) DEBUG 09-26 23:07:27 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=2, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:27 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=2, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [00:04<00:00, 12.22it/s](EngineCore pid=1178) DEBUG 09-26 23:07:27 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=1, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:27 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=1, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:04<00:00, 10.77it/s]
+(EngineCore pid=1178) Capturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s](EngineCore pid=1178) DEBUG 09-26 23:07:27 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=FULL, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.FULL: 2>, num_tokens=256, num_reqs=256, uniform_token_count=1, max_query_len=None, num_active_loras=0)
+(EngineCore pid=1178) DEBUG 09-26 23:07:27 [v1/worker/gpu/cudagraph_utils.py:358] CG Capture: mode=FULL, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.FULL: 2>, num_tokens=248, num_reqs=248, uniform_token_count=1, max_query_len=None, num_active_loras=0)
+Capturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00, 19.24it/s]Capturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00, 19.21it/s]
+(EngineCore pid=1178) INFO 09-26 23:07:27 [v1/worker/gpu/model_runner.py:960] Graph capturing finished in 5 secs, took 0.38 GiB
+(EngineCore pid=1178) DEBUG 09-26 23:07:28 [v1/worker/gpu_worker.py:613] Initial free memory: 23.13 GiB; Requested memory: 0.920000 (util), 21.64 GiB
+(EngineCore pid=1178) DEBUG 09-26 23:07:28 [v1/worker/gpu_worker.py:619] Free memory after profiling: 7.6 GiB (total), 6.1 GiB (within requested)
+(EngineCore pid=1178) DEBUG 09-26 23:07:28 [v1/worker/gpu_worker.py:624] Memory profiling takes 39.37 seconds. Total non KV cache memory: 16.72GiB; torch peak memory increase: 1.19GiB; total consumed (from mem_get_info): 15.54GiB; weights memory: 15.27GiB.
+(EngineCore pid=1178) INFO 09-26 23:07:28 [v1/worker/gpu_worker.py:625] Available KV cache memory: 4.48 GiB
+(EngineCore pid=1178) INFO 09-26 23:07:28 [v1/worker/gpu_worker.py:640] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9016 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9384. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374] EngineCore failed to start.
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374] Traceback (most recent call last):
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1336, in run_engine_core
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]     engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]   File "/opt/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]     return func(*args, **kwargs)
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1093, in __init__
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]     super().__init__(
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 145, in __init__
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]     kv_cache_config = self._initialize_kv_caches(vllm_config)
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]   File "/opt/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]     return func(*args, **kwargs)
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 319, in _initialize_kv_caches
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]     kv_cache_configs = get_kv_cache_configs(
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]                        ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/core/kv_cache_utils.py", line 2331, in get_kv_cache_configs
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]     _check_enough_kv_cache_memory(
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/core/kv_cache_utils.py", line 879, in _check_enough_kv_cache_memory
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374]     raise ValueError(
+(EngineCore pid=1178) ERROR 09-26 23:07:28 [v1/engine/core.py:1374] ValueError: To serve at least one request with the model's max seq len (40960), (5.62 GiB KV cache is needed, which is larger than the available KV cache memory (4.48 GiB). Based on the available memory, the estimated maximum model length is 32640. Try increasing `gpu_memory_utilization` (which also controls CPU memory on the CPU backend) or decreasing `max_model_len` when initializing the engine. See https://docs.vllm.ai/en/latest/configuration/conserving_memory/ for more details.
+(EngineCore pid=1178) Process EngineCore:
+(EngineCore pid=1178) Traceback (most recent call last):
+(EngineCore pid=1178)   File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+(EngineCore pid=1178)     self.run()
+(EngineCore pid=1178)   File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+(EngineCore pid=1178)     self._target(*self._args, **self._kwargs)
+(EngineCore pid=1178)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1378, in run_engine_core
+(EngineCore pid=1178)     raise e
+(EngineCore pid=1178)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1336, in run_engine_core
+(EngineCore pid=1178)     engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+(EngineCore pid=1178)                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1178)   File "/opt/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=1178)     return func(*args, **kwargs)
+(EngineCore pid=1178)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1178)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1093, in __init__
+(EngineCore pid=1178)     super().__init__(
+(EngineCore pid=1178)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 145, in __init__
+(EngineCore pid=1178)     kv_cache_config = self._initialize_kv_caches(vllm_config)
+(EngineCore pid=1178)                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1178)   File "/opt/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=1178)     return func(*args, **kwargs)
+(EngineCore pid=1178)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1178)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 319, in _initialize_kv_caches
+(EngineCore pid=1178)     kv_cache_configs = get_kv_cache_configs(
+(EngineCore pid=1178)                        ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=1178)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/core/kv_cache_utils.py", line 2331, in get_kv_cache_configs
+(EngineCore pid=1178)     _check_enough_kv_cache_memory(
+(EngineCore pid=1178)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/core/kv_cache_utils.py", line 879, in _check_enough_kv_cache_memory
+(EngineCore pid=1178)     raise ValueError(
+(EngineCore pid=1178) ValueError: To serve at least one request with the model's max seq len (40960), (5.62 GiB KV cache is needed, which is larger than the available KV cache memory (4.48 GiB). Based on the available memory, the estimated maximum model length is 32640. Try increasing `gpu_memory_utilization` (which also controls CPU memory on the CPU backend) or decreasing `max_model_len` when initializing the engine. See https://docs.vllm.ai/en/latest/configuration/conserving_memory/ for more details.
+[rank0]:[W926 23:07:28.437346257 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+(APIServer pid=739) DEBUG 09-26 23:07:30 [v1/engine/core_client.py:431] [shutdown] MPClient: background resource cleanup start
+(APIServer pid=739) DEBUG 09-26 23:07:30 [v1/utils.py:610] [shutdown] Process manager: start process_count=1 timeout=5s names=EngineCore
+(APIServer pid=739) INFO 09-26 23:07:30 [v1/utils.py:620] [shutdown] Process manager: send sigterm to process EngineCore
+(APIServer pid=739) DEBUG 09-26 23:07:30 [v1/utils.py:652] [shutdown] Process manager: complete
+(APIServer pid=739) DEBUG 09-26 23:07:30 [v1/engine/core_client.py:488] [shutdown] MPClient: background resource cleanup complete
+(APIServer pid=739) Traceback (most recent call last):
+(APIServer pid=739)   File "/opt/venv/bin/vllm", line 10, in <module>
+(APIServer pid=739)     sys.exit(main())
+(APIServer pid=739)              ^^^^^^
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/cli/main.py", line 97, in main
+(APIServer pid=739)     args.dispatch_function(args)
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/cli/serve.py", line 153, in cmd
+(APIServer pid=739)     uvloop.run(run_server(args))
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/uvloop/__init__.py", line 96, in run
+(APIServer pid=739)     return __asyncio.run(
+(APIServer pid=739)            ^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/usr/lib/python3.12/asyncio/runners.py", line 195, in run
+(APIServer pid=739)     return runner.run(main)
+(APIServer pid=739)            ^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+(APIServer pid=739)     return self._loop.run_until_complete(task)
+(APIServer pid=739)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/uvloop/__init__.py", line 48, in wrapper
+(APIServer pid=739)     return await main
+(APIServer pid=739)            ^^^^^^^^^^
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 176, in run_server
+(APIServer pid=739)     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 190, in run_server_worker
+(APIServer pid=739)     async with build_async_engine_client(
+(APIServer pid=739)                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=739)     return await anext(self.gen)
+(APIServer pid=739)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 58, in build_async_engine_client
+(APIServer pid=739)     async with build_async_engine_client_from_engine_args(
+(APIServer pid=739)                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=739)     return await anext(self.gen)
+(APIServer pid=739)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 94, in build_async_engine_client_from_engine_args
+(APIServer pid=739)     async_llm = AsyncLLM.from_vllm_config(
+(APIServer pid=739)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 227, in from_vllm_config
+(APIServer pid=739)     return cls(
+(APIServer pid=739)            ^^^^
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 156, in __init__
+(APIServer pid=739)     self.engine_core = EngineCoreClient.make_async_mp_client(
+(APIServer pid=739)                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(APIServer pid=739)     return func(*args, **kwargs)
+(APIServer pid=739)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 139, in make_async_mp_client
+(APIServer pid=739)     return AsyncMPClient(*client_args)
+(APIServer pid=739)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(APIServer pid=739)     return func(*args, **kwargs)
+(APIServer pid=739)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 991, in __init__
+(APIServer pid=739)     super().__init__(
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 609, in __init__
+(APIServer pid=739)     with launch_core_engines(
+(APIServer pid=739)          ^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=739)   File "/usr/lib/python3.12/contextlib.py", line 144, in __exit__
+(APIServer pid=739)     next(self.gen)
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1240, in launch_core_engines
+(APIServer pid=739)     wait_for_engine_startup(
+(APIServer pid=739)   File "/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1320, in wait_for_engine_startup
+(APIServer pid=739)     raise RuntimeError(
+(APIServer pid=739) RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+(APIServer pid=739) DEBUG 09-26 23:07:30 [contextlib.py:478] [shutdown] HfRenderer

@@ -14,3 +14,7 @@
 {"amount": 0.109297, "at": "2026-09-26T23:05:21.986426+00:00", "estimate": 0.3083, "label": "class1-broken", "op": "settle"}
 {"amount": 0.3083, "at": "2026-09-26T23:05:22.629548+00:00", "label": "class2-broken", "op": "hold"}
 {"amount": 0.0, "at": "2026-09-26T23:05:40.624488+00:00", "label": "class2-broken", "op": "annotate", "pod_id": "1zyr660l6vlrdw"}
+{"amount": 0.027297, "at": "2026-09-26T23:07:35.427878+00:00", "estimate": 0.3083, "label": "class2-broken", "op": "settle"}
+{"amount": 0.3083, "at": "2026-09-26T23:07:36.109028+00:00", "label": "class3-broken", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-26T23:08:04.966656+00:00", "label": "class3-broken", "op": "annotate", "pod_id": "1hy0qrztswpvsn"}
+{"amount": 0.015737, "at": "2026-09-26T23:08:52.665799+00:00", "estimate": 0.3083, "label": "class3-broken", "op": "settle"}

@@ -20,13 +20,15 @@ if TYPE_CHECKING:
 SizeClass = Literal["small", "mid", "large"]
 HardwareClass = Literal["consumer", "professional", "datacenter"]
 
-# Boot time scales with size (H1): 15 min for small models, up to 35 for large.
-_BOOT_MINUTES: dict[str, float] = {"small": 15.0, "mid": 25.0, "large": 35.0}
+# Boot time scales with size (H1).  H1 said 15 / 25 / 35 min; a cold first
+# boot also JIT-compiles FlashInfer kernels after graph capture: L0-A3's
+# small model was still compiling 16 min after launch (notebook, 2026-09-26).
+_BOOT_MINUTES: dict[str, float] = {"small": 25.0, "mid": 35.0, "large": 45.0}
 DOWNLOAD_GB_PER_MINUTE = 6.0
-# Every pod pulls the 9.1 GiB runner image first.  Measured at L0-A,
-# 2026-09-26: pod created to SSH up ~9 min (_dev_notes/cohort-run/notebook.md).
-# H1's formula (download + boot) predates this measurement.
-IMAGE_PULL_MINUTES = 9.0
+# Every pod pulls the 9.1 GiB runner image first: 9 min (L0-A) and 13 min
+# (L0-A3) from pod creation to SSH, 2026-09-26 (_dev_notes/cohort-run/notebook.md).
+# H1's formula (download + boot) predates these measurements; the slower is used.
+IMAGE_PULL_MINUTES = 13.0
 
 
 @dataclass(frozen=True)

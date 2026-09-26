@@ -68,7 +68,7 @@ def test_failed_boot_returns_log_tail() -> None:
         {
             "curl -sf": {"exit_code": 7},
             "pgrep": {"stdout": "down\n"},
-            "tail -200": {"stdout": "ValueError: Numerical instability. Please use bfloat16"},
+            "tail -400": {"stdout": "ValueError: Numerical instability. Please use bfloat16"},
         }
     )
     result = VllmEngineAdapter().boot(_PLAN, target, health_timeout=30)
