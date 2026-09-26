@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 0 on 0 GPU types
 - Failure classes fixed and re-verified: 0 of 6
-- Total cost: $0.00 of the $100 cap (failed boots included: $0.00)
+- Total cost: $0.13 of the $100 cap (failed boots included: $0.13)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -33,7 +33,15 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 ## What was tested, and how
 
 <!-- findings:setup -->
-_No records yet._
+| Item | Value |
+|---|---|
+| Provider / cloud | runpod / SECURE |
+| Runner image | `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
+| Models measured | — |
+| GPUs measured | — |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-26T21:58:56.556797+00:00 |
+| Task suite | 3 cases, `1220e96408006e07` |
+| Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
 
 ## Memory: predicted vs measured
@@ -88,7 +96,12 @@ _No records yet._
 Failed boots and retries are included.
 
 <!-- findings:cost -->
-_No records yet._
+| Solution | GPU | Cost $ | Failed boots ($) | Records |
+|---|---|---|---|---|
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.1332 | 1 (0.1332) | 1 |
+| **Records total** |  | **0.1332** |  |  |
+| Classifier calls (ledger) |  | 0.0000 |  |  |
+| **Ledger spent** |  | **0.1332** |  | cap $100 |
 <!-- /findings:cost -->
 
 ## How to reproduce

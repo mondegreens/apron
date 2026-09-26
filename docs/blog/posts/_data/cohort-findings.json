@@ -1,12 +1,25 @@
 {
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 0,
+    "failed_boot_total": 0.133174,
     "ledger_classifier": 0,
-    "ledger_settled": 0,
-    "ledger_spent": 0,
-    "per_solution": [],
-    "records_total": 0
+    "ledger_settled": 0.133174,
+    "ledger_spent": 0.133174,
+    "per_solution": [
+      {
+        "cost": 0.133174,
+        "failed_boot_cost": 0.133174,
+        "failed_boots": 1,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "l0a3-run1",
+        "model": "Qwen/Qwen3-1.7B",
+        "records": [
+          "1220c680fcc992ddaed4a2fe12932d260df60e27ac18a4aaa1aa6aa86176dad01242"
+        ]
+      }
+    ],
+    "records_total": 0.133174
   },
   "fixes": [
     {
@@ -48,20 +61,36 @@
   ],
   "memory": [],
   "prediction_errors": [],
-  "record_count": 0,
+  "record_count": 2,
   "repeat_measurements": [],
   "serving": [],
   "setup": {
     "authorized": 100.0,
-    "cloud_types": [],
-    "first_event": null,
+    "cloud_types": [
+      "SECURE"
+    ],
+    "first_event": "2026-09-26T21:48:08.665977+00:00",
     "gpus_measured": [],
-    "image_digests": [],
-    "last_event": null,
+    "image_digests": [
+      "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
+    ],
+    "last_event": "2026-09-26T21:58:56.556797+00:00",
     "models_measured": [],
-    "providers": [],
-    "serving_workload": null,
-    "task_suite": null
+    "providers": [
+      "runpod"
+    ],
+    "serving_workload": {
+      "concurrency": 4,
+      "fingerprint": "1220556b148383a307704e4707d328f955a98e970297ec775659f64176cf99bd8f68",
+      "input_sequence_length": 512,
+      "output_sequence_length": 128,
+      "p99_tpot_ms": 100.0,
+      "p99_ttft_ms": 2000.0
+    },
+    "task_suite": {
+      "cases": 3,
+      "fingerprint": "1220e96408006e07d5195e411433887559500bfa58a8f533d2db5bab709a73cee159"
+    }
   },
   "tasks": []
 }
