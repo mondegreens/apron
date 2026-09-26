@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import atexit
 import json
+import re
 import sys
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
@@ -124,9 +125,11 @@ def test_teardown_final_failure_appends_to_leaked_list_masked(
 
 def test_orphan_cleanup_filters_by_name_and_age(tmp_path: Path) -> None:
     pods = [
-        {"id": "old", "name": "apron-run", "runtime": {"uptimeInSeconds": 7200}},
-        {"id": "young", "name": "apron-run", "runtime": {"uptimeInSeconds": 60}},
-        {"id": "other", "name": "someone-else", "runtime": {"uptimeInSeconds": 99999}},
+        # The shape runpod.get_pods() returns: uptimeSeconds at the top level,
+        # runtime holding ports only (runpod/api/queries/pods.py QUERY_POD).
+        {"id": "old", "name": "apron-run", "uptimeSeconds": 7200, "runtime": {"ports": []}},
+        {"id": "young", "name": "apron-run", "uptimeSeconds": 60, "runtime": {"ports": []}},
+        {"id": "other", "name": "someone-else", "uptimeSeconds": 99999, "runtime": None},
         {"id": "starting", "name": "apron-run", "runtime": None},
     ]
     sdk = _Sdk(pods=pods)
@@ -192,3 +195,25 @@ def test_wait_for_running_is_bounded_when_a_timeout_is_given() -> None:
         pytest.raises(TimeoutError, match="pod-stuck"),
     ):
         target._wait_for_running(10)
+
+
+def test_orphan_age_is_read_from_the_field_the_sdk_query_returns() -> None:
+    """L0-A found the cleanup blind: it read a field get_pods() never returns."""
+    from runpod.api.queries.pods import QUERY_POD
+
+    assert re.search(r"^\s*uptimeSeconds\s*$", QUERY_POD, re.MULTILINE)
+    assert "uptimeInSeconds" not in QUERY_POD
+
+
+def test_age_zero_cleans_every_apron_pod_even_one_not_yet_running(
+    tmp_path: Path, sleeps: list[float]
+) -> None:
+    sdk = _Sdk(
+        pods=[
+            {"id": "pulling", "name": "apron-run", "uptimeSeconds": 0, "runtime": None},
+            {"id": "other", "name": "someone-else", "uptimeSeconds": 0, "runtime": None},
+        ]
+    )
+    with patch.dict(sys.modules, {"runpod": sdk}):
+        assert _target(tmp_path).cleanup_orphaned_pods(max_age_seconds=0) == ["pulling"]
+    assert sdk.terminated == ["pulling"]

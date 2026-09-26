@@ -124,6 +124,19 @@ class _EphemeralHostKeyPolicy:
         logger.info("Ephemeral host key %s for %s", key.get_fingerprint().hex(), hostname)
 
 
+def _pod_uptime(pod: dict[str, Any]) -> int:
+    """Seconds a pod has been up, from ``runpod.get_pods()``.
+
+    The SDK's pod list query returns ``uptimeSeconds`` at the top level; its
+    ``runtime`` block carries only ports.  (The single-pod GraphQL status
+    query used while provisioning has ``runtime.uptimeInSeconds`` instead.)
+    """
+    value = pod.get("uptimeSeconds")
+    if value is None:
+        value = (pod.get("runtime") or {}).get("uptimeInSeconds")
+    return int(value or 0)
+
+
 class RunPodTarget:
     """ExecutionTarget for RunPod Secure Cloud GPUs."""
 
@@ -359,8 +372,9 @@ class RunPodTarget:
         """Terminate Apron pods older than *max_age_seconds* (H10).
 
         Runs at orchestrator start: a pod whose process was SIGKILLed has no
-        atexit guard.  Only pods named ``apron-run*`` with a reported uptime
-        above the age are touched.  Returns the terminated pod IDs.
+        atexit guard.  Only pods named ``apron-run*`` whose uptime reaches the
+        age are touched (``max_age_seconds=0``: every Apron pod).  Returns the
+        terminated pod IDs.
         """
         if not self._api_key:
             return []
@@ -370,9 +384,8 @@ class RunPodTarget:
         terminated: list[str] = []
         for pod in _runpod.get_pods() or []:
             name = str(pod.get("name") or "")
-            runtime = pod.get("runtime") or {}
-            uptime = int(runtime.get("uptimeInSeconds") or 0)
-            if not name.startswith(POD_NAME_PREFIX) or uptime <= max_age_seconds:
+            uptime = _pod_uptime(pod)
+            if not name.startswith(POD_NAME_PREFIX) or uptime < max_age_seconds:
                 continue
             try:
                 _runpod.terminate_pod(pod["id"])
@@ -394,7 +407,7 @@ class RunPodTarget:
             {
                 "id": pod.get("id"),
                 "name": pod.get("name"),
-                "uptime_seconds": (pod.get("runtime") or {}).get("uptimeInSeconds"),
+                "uptime_seconds": _pod_uptime(pod),
             }
             for pod in _runpod.get_pods() or []
             if str(pod.get("name") or "").startswith(POD_NAME_PREFIX)
