@@ -85,8 +85,11 @@ SIX_CLASSES: tuple[BrokenCase, ...] = (
             dtype="bfloat16",
             resource_allocation={"model_id": "Qwen/Qwen3-14B", "gpu_sku": _4090, "gpu_count": "1"},
         ),
-        "v1/worker/gpu_model_runner.py:5460",
-        "Failed to load model - not enough GPU memory",
+        # v0.29.0 loads through the v2 model runner (v1/worker/gpu/model_runner.py:384),
+        # which has no OOM wrapper: PyTorch's error comes from the weight
+        # allocation itself (L0-F, 2026-09-26).
+        "model_executor/layers/linear.py:192",
+        "torch.OutOfMemoryError: CUDA out of memory",
     ),
     BrokenCase(
         2,

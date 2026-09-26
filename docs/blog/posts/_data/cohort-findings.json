@@ -73,7 +73,7 @@
   },
   "fixes": [
     {
-      "call_site": "v1/worker/gpu_model_runner.py:5460",
+      "call_site": "model_executor/layers/linear.py:192",
       "class": 1,
       "family": "oom_weight_load",
       "status": "not run"

@@ -8,30 +8,35 @@
   "extraction_schema": {
     "tried_to_allocate_bytes": {
       "type": "int",
-      "source": "v1/worker/gpu_model_runner.py:5468 (PyTorch allocator message in '(original error: ...)': 'Tried to allocate X GiB')"
+      "source": "model_executor/layers/linear.py:192 (the torch.empty weight allocation in load_model, v1/worker/gpu/model_runner.py:384; PyTorch's allocator prints 'Tried to allocate X MiB')"
     },
     "total_capacity_bytes": {
       "type": "int",
-      "source": "v1/worker/gpu_model_runner.py:5468 (PyTorch allocator message: 'GPU 0 has a total capacity of X GiB')"
+      "source": "model_executor/layers/linear.py:192 (the torch.empty weight allocation in load_model, v1/worker/gpu/model_runner.py:384; PyTorch's allocator prints 'GPU 0 has a total capacity of X GiB')"
     },
     "free_bytes": {
       "type": "int",
-      "source": "v1/worker/gpu_model_runner.py:5468 (PyTorch allocator message: 'of which X GiB is free')"
+      "source": "model_executor/layers/linear.py:192 (the torch.empty weight allocation in load_model, v1/worker/gpu/model_runner.py:384; PyTorch's allocator prints 'of which X MiB is free')"
     }
   },
   "source_sites": [
     {
-      "file": "v1/worker/gpu_model_runner.py",
-      "line": 5460
+      "file": "model_executor/layers/linear.py",
+      "line": 192
+    },
+    {
+      "file": "v1/worker/gpu/model_runner.py",
+      "line": 384
     }
   ],
   "examples": [
-    "Failed to load model - not enough GPU memory. Try lowering --gpu-memory-utilization to free memory for weights, increasing --tensor-parallel-size, or using --quantization. See https://docs.vllm.ai/en/latest/configuration/conserving_memory/ for more tips. (original error: CUDA out of memory. Tried to allocate {x} GiB. GPU 0 has a total capacity of {y} GiB of which {z} MiB is free. ...)"
+    "torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 70.00 MiB. GPU 0 has a total capacity of 23.52 GiB of which 57.69 MiB is free. Process 1697959 has 23.45 GiB memory in use."
   ],
   "status": "hypothesis",
   "count": 1,
-  "curation": "Hand-curated for the Phase 1b §10 fix proof: typed fields, each citing the vLLM v0.29.0 line that prints it. The source scanner must not overwrite this file.",
+  "curation": "Hand-curated for the Phase 1b §10 fix proof: typed fields, each citing the vLLM v0.29.0 line involved. L0-F (2026-09-26, Qwen3-14B BF16 on an RTX 4090) showed v0.29.0 loads through the v2 model runner, which has no OOM wrapper: the legacy 'Failed to load model' handler (v1/worker/gpu_model_runner.py:5460) is not on this path. The source scanner must not overwrite this file.",
   "replaces": [
     "oom"
-  ]
+  ],
+  "exception_class": "torch.OutOfMemoryError"
 }

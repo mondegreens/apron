@@ -42,9 +42,9 @@ RULES = load_rules(Path(__file__).parents[2] / "rules", "vllm", "v0.29")
 
 # The class's error, in the pinned vLLM v0.29.0 format (call sites in SIX_CLASSES).
 CLASS_LOGS = {
-    1: "ERROR Failed to load model - not enough GPU memory. Try lowering "
-    "--gpu-memory-utilization ... (original error: CUDA out of memory. Tried to allocate "
-    "1.50 GiB. GPU 0 has a total capacity of 23.52 GiB of which 1.12 GiB is free.)",
+    1: "torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 70.00 MiB. "
+    "GPU 0 has a total capacity of 23.52 GiB of which 57.69 MiB is free. "
+    "Process 1697959 has 23.45 GiB memory in use.",
     2: "ValueError: To serve at least one request with the model's max seq len (40960), "
     "(5.62 GiB KV cache is needed, which is larger than the available KV cache memory "
     "(2.40 GiB). Based on the available memory, the estimated maximum model length is 17472.\n"

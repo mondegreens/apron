@@ -156,9 +156,10 @@ def test_declared_fields_are_read_by_the_strategy_or_are_evidence(family: str) -
 
 # A distinctive fragment of the message that prints each field (PLAN §10.3).
 FRAGMENTS = {
-    ("oom_weight_load", "tried_to_allocate_bytes"): "original error",
-    ("oom_weight_load", "total_capacity_bytes"): "original error",
-    ("oom_weight_load", "free_bytes"): "original error",
+    # PyTorch's allocator prints these; the cited vLLM line is the allocation it reports.
+    ("oom_weight_load", "tried_to_allocate_bytes"): "torch.empty",
+    ("oom_weight_load", "total_capacity_bytes"): "torch.empty",
+    ("oom_weight_load", "free_bytes"): "torch.empty",
     ("oom_kv_cache", "estimated_max_model_len"): "estimated maximum model length is",
     ("oom_kv_cache", "max_num_seqs_attempted"): "dummy requests",
     ("max_model_len", "derived_max"): "derived max_model_len",

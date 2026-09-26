@@ -71,7 +71,7 @@ measurement.
 <!-- findings:fixes -->
 | Class | Broken plan | vLLM source | Diagnosis | Change | Restart | Request | Label | Record |
 |---|---|---|---|---|---|---|---|---|
-| 1 oom_weight_load | — | `v1/worker/gpu_model_runner.py:5460` | not run | — | — | — | — | — |
+| 1 oom_weight_load | — | `model_executor/layers/linear.py:192` | not run | — | — | — | — | — |
 | 2 oom_kv_cache | — | `v1/core/kv_cache_utils.py:879` | not run | — | — | — | — | — |
 | 3 max_model_len | — | `config/model.py:2502` | not run | — | — | — | — | — |
 | 4 dtype_incompatible | — | `config/model.py:2262` | not run | — | — | — | — | — |

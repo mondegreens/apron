@@ -107,3 +107,16 @@ unless marked.  Machine events are in `events.jsonl`.
   (cold boot); the stored log folds the 10-second "waiting for core engine"
   heartbeat that had filled the whole 8000-char tail; estimates use the
   measured pull (13 min) and cold-boot times (+10 min per size class).
+- **Class 1 (Qwen3-14B BF16, RTX 4090, $0.11): weight-load OOM as expected,
+  but not at the named call site.**  vLLM v0.29.0 loads through the v2 model
+  runner (`v1/worker/gpu/model_runner.py:384`), which has no OOM wrapper; the
+  error is PyTorch's own `torch.OutOfMemoryError` from the `torch.empty`
+  weight allocation at `model_executor/layers/linear.py:192`.  The plan's
+  "Failed to load model - not enough GPU memory" handler
+  (`v1/worker/gpu_model_runner.py:5460`) is in the legacy runner, not on this
+  path.  The failure class is right; the rule and the broken case now cite
+  the real path (pinned source checked).  No replacement plan needed: any
+  weight-load OOM takes this path.
+- **Class 2 (Qwen3-8B, max_model_len 40960, RTX 4090): failed as named.**
+- **Class 3 (Mistral-7B, max_model_len 999999, RTX 4090, $0.02): failed as
+  named.**  This pod's host had the image cached: SSH up in 28 s.
