@@ -29,6 +29,7 @@ from apron.domain.schemas.authority import DecisionRequest
 from apron.domain.schemas.migrations import load_record
 from apron.domain.schemas.models import ModelSpec
 from apron.domain.schemas.records import (
+    DiagnosisRule,
     RemediationRecord,
     TaskAttemptRecord,
     VerificationReport,
@@ -230,3 +231,14 @@ def _identity(entry: SolutionEntry) -> dict[str, Any]:
     for key in _RUN_METADATA:
         data.pop(key)
     return data
+
+
+@dataclass
+class CohortRun:
+    """A run directory as the exit gate and the findings read it."""
+
+    records: CohortRecords
+    rules: list[DiagnosisRule]  # every version: current and history
+    rule_errors: list[str]
+    ledger: list[dict[str, Any]]
+    events: list[dict[str, Any]]

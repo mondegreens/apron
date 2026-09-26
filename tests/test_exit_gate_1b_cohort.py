@@ -33,50 +33,32 @@ from collections import defaultdict
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
-from conftest import FakeDiagnosisEngine
-from pydantic import BaseModel, ValidationError
-from unit._cohort_fakes import (
-    CATALOG,
-    accepted_inputs,
-    correction_context,
-    fix_plan_solution,
-    ports,
-    solution,
-)
+from unit._synthetic_run import RULE_VERSION_DIR, build_synthetic_run
 
-from apron.adapters.backends.ledger_file import JsonlLedger
 from apron.adapters.backends.local_store import LocalRecordStore
-from apron.adapters.backends.rule_loader import load_rules
-from apron.adapters.backends.rule_repository import FileRuleRepository
 from apron.application.orchestration.budget import BudgetTracker
-from apron.application.orchestration.cohort import run_cohort
-from apron.application.orchestration.cohort_records import (
-    CohortRecords,
-    SolutionEntry,
-    load_cohort_records,
-)
 from apron.application.orchestration.evidence import (
     decision_request_digest,
     solution_fingerprint,
 )
-from apron.application.orchestration.remediation import (
-    SIX_CLASSES,
-    FixProofPorts,
-    prove_all,
-)
+from apron.application.orchestration.remediation import SIX_CLASSES
 from apron.application.orchestration.serving import evaluate_serving_slos
 from apron.application.sanitization import contains_secret
 from apron.domain.fingerprints import fingerprint_hex
-from apron.domain.schemas.migrations import load_record
-from apron.domain.schemas.records import DiagnosisRule
 from apron.domain.schemas.reports import CandidateEconomics, DecisionReport
 from apron.domain.verdicts import task_verdict
+from apron.interfaces.cohort_root import load_cohort_run
+
+if TYPE_CHECKING:
+    from pydantic import BaseModel
+
+    from apron.application.orchestration.cohort_records import CohortRecords, SolutionEntry
+    from apron.domain.schemas.records import DiagnosisRule
 
 REPO = Path(__file__).resolve().parents[1]
-RULE_VERSION_DIR = REPO / "rules" / "vllm-v0.29"
 
 # ---------------------------------------------------------------------------
 # The run, as the checks see it
@@ -95,15 +77,7 @@ class GateRun:
 
 
 def load_run(run_dir: Path, rules_dir: Path, authorized: float) -> GateRun:
-    manifest = JsonlLedger(run_dir / "solutions.jsonl").read_all()
-    records = load_cohort_records(LocalRecordStore(run_dir / "records"), manifest)
-    rules: list[DiagnosisRule] = []
-    rule_errors: list[str] = []
-    for path in sorted([*rules_dir.glob("*.json"), *rules_dir.glob("history/*.json")]):
-        try:
-            rules.append(load_record(DiagnosisRule, json.loads(path.read_text("utf-8"))))
-        except (ValidationError, ValueError) as exc:
-            rule_errors.append(f"{path.name}: {exc}")
+    loaded = load_cohort_run(run_dir, rules_dir)
     scanned = {
         str(p.relative_to(root)): p.read_text("utf-8", errors="replace")
         for root in (run_dir, rules_dir)
@@ -111,11 +85,11 @@ def load_run(run_dir: Path, rules_dir: Path, authorized: float) -> GateRun:
         if p.is_file()
     }
     return GateRun(
-        records=records,
-        rules=rules,
-        rule_errors=rule_errors,
-        ledger=JsonlLedger(run_dir / "ledger.jsonl").read_all(),
-        events=JsonlLedger(run_dir / "events.jsonl").read_all(),
+        records=loaded.records,
+        rules=loaded.rules,
+        rule_errors=loaded.rule_errors,
+        ledger=loaded.ledger,
+        events=loaded.events,
         scanned=scanned,
         authorized=authorized,
     )
@@ -371,6 +345,10 @@ def check_fingerprints(run: GateRun) -> list[str]:
     for digest, c in rec.claims.items():
         if (c.solution_fingerprint or "") not in rec.solutions:
             problems.append(f"claim {digest[:12]}: solution not in the manifest")
+    claimed = {c.solution_fingerprint for c in rec.claims.values()}
+    for digest, r in rec.reports.items():
+        if r.predicted_minus_measured and r.solution_fingerprint not in claimed:
+            problems.append(f"report {digest[:12]}: prediction delta without its PlanningClaim")
 
     plans = {fingerprint_hex(e.deployment_plan): e for e in rec.solutions.values()}
     for digest, m in rec.remediations.items():
@@ -570,98 +548,6 @@ CHECKS = {
     "9-budget": check_budget,
 }
 
-# ---------------------------------------------------------------------------
-# Synthetic run: the real orchestrator and fix proof over the mock provider
-# ---------------------------------------------------------------------------
-
-_4090, _L4, _A6000, _H100 = (
-    "NVIDIA GeForce RTX 4090",
-    "NVIDIA L4",
-    "NVIDIA RTX A6000",
-    "NVIDIA H100 80GB HBM3",
-)
-_SEED = (
-    ("Qwen/Qwen3-1.7B", _4090, "small", "consumer", ["gqa"]),
-    ("Qwen/Qwen3-1.7B", _L4, "small", "datacenter", ["gqa"]),
-    ("google/gemma-2-2b-it", _4090, "small", "consumer", ["gqa", "sliding_window"]),
-    ("mistralai/Mistral-7B-Instruct-v0.3", _4090, "mid", "consumer", ["gqa", "sliding_window"]),
-    ("deepseek-ai/DeepSeek-V2-Lite", _A6000, "large", "professional", ["mla", "moe"]),
-    ("JunHowie/Qwen3-8B-GPTQ-Int4", _4090, "mid", "consumer", ["gqa", "gptq_int4"]),
-    ("Qwen/Qwen3-32B", _H100, "large", "datacenter", ["gqa"]),
-    ("Qwen/Qwen3-32B", _4090, "large", "consumer", ["gqa"]),  # predicted infeasible
-    ("state-spaces/mamba-2.8b-hf", _4090, "mid", "consumer", ["ssm"]),  # unknown mechanism
-)
-_BROKEN = {id(case.broken_plan) for case in SIX_CLASSES}
-_CLASS_LOGS = {
-    1: "ERROR Failed to load model - not enough GPU memory. (original error: CUDA out of "
-    "memory. Tried to allocate 1.50 GiB. GPU 0 has a total capacity of 23.52 GiB of which "
-    "1.12 GiB is free.)",
-    2: "ValueError: To serve at least one request with the model's max seq len (40960), "
-    "(5.62 GiB KV cache is needed, which is larger than the available KV cache memory "
-    "(2.40 GiB). Based on the available memory, the estimated maximum model length is 17472.\n"
-    "RuntimeError: Engine core initialization failed. See root cause above.",
-    3: "ValueError: User-specified max_model_len (999999) is greater than the derived "
-    "max_model_len (max_position_embeddings=32768 or model_max_length=None in model's "
-    "config.json).",
-    4: "ValueError: The model type 'gemma2' does not support float16. Reason: Numerical "
-    "instability. Please use bfloat16 or float32 instead.",
-    5: "ValueError: Total number of attention heads (32) must be divisible by tensor "
-    "parallel size (3).",
-    6: "ValueError: The quantization method fp_quant is not supported for the current GPU. "
-    "Minimum capability: 100. Current capability: 90.",
-}
-
-
-def _scenario(plan: Any, target: Any) -> str:
-    for case in SIX_CLASSES:
-        if plan is case.broken_plan:
-            return _CLASS_LOGS[case.failure_class]
-    return "healthy"
-
-
-def build_synthetic_run(run_dir: Path) -> Path:
-    """A complete run in *run_dir*; returns its rule directory."""
-    rules_dir = run_dir / "rules" / "vllm-v0.29"
-    shutil.copytree(RULE_VERSION_DIR, rules_dir)
-    cohort_ports, _, _, _ = ports(
-        run_dir,
-        _scenario,
-        events=JsonlLedger(run_dir / "events.jsonl"),
-        ledger=JsonlLedger(run_dir / "ledger.jsonl"),
-        identities=JsonlLedger(run_dir / "solutions.jsonl"),
-    )
-    inputs = accepted_inputs()
-    plans = [
-        solution(
-            model,
-            gpu,
-            coverage={
-                "size_class": size,
-                "hardware_class": hw,
-                "quantized": "gptq_int4" in features,
-                "features": features,
-            },
-        )
-        for model, gpu, size, hw, features in _SEED
-    ]
-    result = run_cohort(plans, inputs, cohort_ports)
-    assert result.stopped is None, result.stopped
-    rules = load_rules(rules_dir.parent, "vllm", "v0.29")
-    prove_all(
-        inputs,
-        cohort_ports,
-        FixProofPorts(
-            plan_solution=fix_plan_solution,
-            diagnosis_engine=FakeDiagnosisEngine(),
-            rules=rules,
-            rule_repository=FileRuleRepository(rules_dir),
-            correction_context=correction_context,
-            hardware_for=lambda sku: CATALOG[sku][0],
-        ),
-    )
-    (run_dir / "notebook.md").write_text("# Run notebook\n\nsynthetic run\n", "utf-8")
-    return rules_dir
-
 
 @pytest.fixture(scope="module")
 def synthetic(tmp_path_factory: pytest.TempPathFactory) -> tuple[Path, Path]:
@@ -808,6 +694,11 @@ def test_fingerprints_catch_a_tampered_plan(run: GateRun) -> None:
     )
     problems = check_fingerprints(_with(run, solutions={**run.records.solutions, sfp: tampered}))
     assert any("solution fingerprint does not reproduce" in p for p in problems)
+
+
+def test_fingerprints_need_the_prediction_on_record(run: GateRun) -> None:
+    doctored = _with(run, claims={})
+    assert any("without its PlanningClaim" in p for p in check_fingerprints(doctored))
 
 
 def test_costs_required_on_every_record(run: GateRun) -> None:

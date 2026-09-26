@@ -9,6 +9,7 @@ theme:
 
 plugins:
   - search
+  - blog
   - mkdocstrings:
       handlers:
         python:
@@ -30,6 +31,8 @@ nav:
   - Failure Knowledge Base: failure-knowledge-base.md
   - Distribution: distribution.md
   - Architecture Dispatch Proof: architecture-dispatch-proof.md
+  - Findings:
+      - blog/index.md
   - Architecture Decision Records:
       - ADR-001 Execution Environment: adr/ADR-001-execution-environment.md
       - ADR-002 External Evidence: adr/ADR-002-external-evidence-and-interop.md

@@ -37,6 +37,7 @@ from apron.application.orchestration.cohort import (
     SolutionPlan,
     predicted_feasible,
 )
+from apron.application.orchestration.cohort_records import CohortRun, load_cohort_records
 from apron.application.orchestration.correction import CatalogEntry, CorrectionContext
 from apron.application.orchestration.evidence import protocol_template, solution_fingerprint
 from apron.application.orchestration.plan_pipeline import run_plan_pipeline
@@ -46,8 +47,10 @@ from apron.application.sanitization import SecretMaskingFilter
 from apron.domain.artifacts.identity import ArtifactIdentity
 from apron.domain.ports import UuidIdGenerator, WallClock
 from apron.domain.schemas.authority import AuthorizationEnvelope, DecisionRequest
+from apron.domain.schemas.migrations import load_record
 from apron.domain.schemas.models import ArtifactSpec
 from apron.domain.schemas.primitives import HardwareSpec
+from apron.domain.schemas.records import DiagnosisRule
 from apron.domain.schemas.solutions import (
     DeploymentPlan,
     EvaluationProtocol,
@@ -339,6 +342,28 @@ def build_ports(
         provision_env=provision_env,
         hourly_rate=rate_for,
         identities=JsonlLedger(run_dir / "solutions.jsonl"),
+    )
+
+
+def load_cohort_run(
+    run_dir: Path = RUN_DIR, rules_dir: Path = RULES_DIR / "vllm-v0.29"
+) -> CohortRun:
+    """Read a run directory: records, identity manifest, ledger, events, rule versions."""
+    manifest = JsonlLedger(run_dir / "solutions.jsonl").read_all()
+    records = load_cohort_records(LocalRecordStore(run_dir / "records"), manifest)
+    rules: list[DiagnosisRule] = []
+    rule_errors: list[str] = []
+    for path in sorted([*rules_dir.glob("*.json"), *rules_dir.glob("history/*.json")]):
+        try:
+            rules.append(load_record(DiagnosisRule, json.loads(path.read_text("utf-8"))))
+        except ValueError as exc:  # pydantic's ValidationError is a ValueError
+            rule_errors.append(f"{path.name}: {exc}")
+    return CohortRun(
+        records=records,
+        rules=rules,
+        rule_errors=rule_errors,
+        ledger=JsonlLedger(run_dir / "ledger.jsonl").read_all(),
+        events=JsonlLedger(run_dir / "events.jsonl").read_all(),
     )
 
 

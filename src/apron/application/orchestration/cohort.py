@@ -345,6 +345,7 @@ def execute_solution(
     )
     rate = ports.hourly_rate(sp.requested)
     record_identity(sp, inputs, ports, ctx)
+    store_claim_once(sp, ports)
 
     ports.budget.hold(sp.estimate, sp.label)
     _event(ports, "hold", sp, estimate=sp.estimate, rate=rate)
@@ -599,6 +600,17 @@ def record_identity(
     )
 
 
+def store_claim_once(
+    sp: SolutionPlan, ports: CohortPorts, recorded: RecordedEvidence | None = None
+) -> None:
+    """Store the solution's PlanningClaim unless one is on record: every measured
+    prediction delta needs the prediction it was computed from."""
+    recorded = recorded or recorded_evidence(ports.store, sp.solution_fp)
+    if not recorded.claims:
+        claim = sp.claim.model_copy(update={"solution_fingerprint": sp.solution_fp})
+        recorded.claims.append(store_validated(ports.store, claim))
+
+
 def _close_open_phases(timing: PhaseTiming) -> None:
     """A phase interrupted by an error ends at teardown (its time was still paid)."""
     if timing.task_eval_start is not None and timing.task_eval_end is None:
@@ -835,9 +847,7 @@ def run_cohort(
                 result.prediction_errors[sp.label] = store_validated(ports.store, claim)
                 _event(ports, "prediction_error", sp, status=sp.status)
             continue
-        if not recorded.claims:
-            claim = sp.claim.model_copy(update={"solution_fingerprint": sp.solution_fp})
-            store_validated(ports.store, claim)
+        store_claim_once(sp, ports, recorded)
         scope = recorded.missing(sp)
         if scope is None:
             result.skipped[sp.label] = "already measured"

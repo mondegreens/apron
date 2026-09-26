@@ -1,0 +1,67 @@
+{
+  "cost": {
+    "authorized": 100.0,
+    "failed_boot_total": 0,
+    "ledger_classifier": 0,
+    "ledger_settled": 0,
+    "ledger_spent": 0,
+    "per_solution": [],
+    "records_total": 0
+  },
+  "fixes": [
+    {
+      "call_site": "v1/worker/gpu_model_runner.py:5460",
+      "class": 1,
+      "family": "oom_weight_load",
+      "status": "not run"
+    },
+    {
+      "call_site": "v1/core/kv_cache_utils.py:879",
+      "class": 2,
+      "family": "oom_kv_cache",
+      "status": "not run"
+    },
+    {
+      "call_site": "config/model.py:2502",
+      "class": 3,
+      "family": "max_model_len",
+      "status": "not run"
+    },
+    {
+      "call_site": "config/model.py:2262",
+      "class": 4,
+      "family": "dtype_incompatible",
+      "status": "not run"
+    },
+    {
+      "call_site": "config/model.py:1414",
+      "class": 5,
+      "family": "tp_divisibility",
+      "status": "not run"
+    },
+    {
+      "call_site": "config/vllm.py:791",
+      "class": 6,
+      "family": "quant_compute_capability",
+      "status": "not run"
+    }
+  ],
+  "memory": [],
+  "prediction_errors": [],
+  "record_count": 0,
+  "repeat_measurements": [],
+  "serving": [],
+  "setup": {
+    "authorized": 100.0,
+    "cloud_types": [],
+    "first_event": null,
+    "gpus_measured": [],
+    "image_digests": [],
+    "last_event": null,
+    "models_measured": [],
+    "providers": [],
+    "serving_workload": null,
+    "task_suite": null
+  },
+  "tasks": []
+}

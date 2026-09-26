@@ -78,7 +78,7 @@ dev = [
     "huggingface-hub>=1",
 ]
 docs = [
-    "zensical==0.0.60",
+    "zensical==0.0.65",
     "mkdocstrings-python>=2.0",
     "mike>=2.2",
 ]
