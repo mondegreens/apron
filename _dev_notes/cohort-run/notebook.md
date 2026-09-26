@@ -44,3 +44,21 @@ unless marked.  Machine events are in `events.jsonl`.
   every run would have tripped the 1.5x overrun stop on an estimate error.
   `estimate_cost` now adds the measured 9 min pull.
 - Spend so far ≈ $0.26.
+
+## 2026-09-26 — L0-A3 (measurement stability)
+
+- **~16:00 — run 1 boot failed (4090, ~11 min, $0.133 local clock / $0.027
+  RunPod-reported).**  Expected: healthy Qwen3-1.7B.  Happened: EngineCore
+  died in FlashInfer's first JIT build, `FileNotFoundError: 'ninja'`, surfaced
+  as "Engine core initialization failed".  Cause: the new SSH-driven boot
+  (F7) runs `vllm serve` in sshd's default environment; start.sh exports the
+  container's PATH/CUDA_HOME to /etc/apron_environment but only ~/.bashrc
+  sources it, which a non-interactive SSH command never reads.  Phase 1a
+  booted from start.sh and inherited the container env, so this was new.
+  Fix: serve and bench commands source /etc/apron_environment first (then
+  `env -u` the tokens).  Stored as a failed boot record — a harness defect,
+  not a model failure; it is not diagnosis material.
+- Note: local-clock cost and RunPod-reported cost differ ~5x on a short pod
+  (RunPod appears to count from container start, after the image pull).  Both
+  are recorded (M3); the ledger settles on the local clock (conservative).
+- Spend so far ≈ $0.39 (local clock).

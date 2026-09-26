@@ -48,6 +48,10 @@ def test_boot_serves_local_path_with_tokens_unset() -> None:
     assert "vllm serve /workspace/models/meta-llama/Llama-3.1-8B-Instruct" in launch
     assert "--served-model-name meta-llama/Llama-3.1-8B-Instruct" in launch
     assert "hf_" not in launch
+    # The container environment (PATH with ninja, CUDA_HOME) is loaded first,
+    # then the tokens are removed: L0-A3's first boot died on a missing ninja.
+    assert launch.startswith(". /etc/apron_environment && ")
+    assert launch.index("/etc/apron_environment") < launch.index("env -u HF_TOKEN")
 
 
 def test_download_reads_token_file_and_never_carries_the_value() -> None:

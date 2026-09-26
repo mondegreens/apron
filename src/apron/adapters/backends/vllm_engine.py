@@ -59,6 +59,8 @@ VLLM_LOG = "/var/log/vllm.log"
 TOKEN_VARS = ("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN")
 # vLLM API server and its engine-core children.  The bracket keeps the
 # pattern from matching the shell that runs pgrep/pkill with it.
+# The container environment start.sh exports for SSH sessions (PATH, CUDA_*, ...).
+CONTAINER_ENV = "/etc/apron_environment"
 VLLM_PROCESS_PATTERN = "bin/[v]llm serve|[V]LLM::"
 
 # Same logic as docker/apron-download: the only process that reads the token
@@ -410,8 +412,13 @@ class VllmEngineAdapter:
         """
         model_id = plan.resource_allocation.get("model_id", "")
         serve = self._build_serve_command(plan, target, model_path=self.model_dir(model_id))
+        # A non-interactive SSH command gets sshd's default environment, not
+        # the container's: without PATH/CUDA_HOME from start.sh's export,
+        # FlashInfer's JIT cannot find ninja or nvcc (L0-A3).  The export
+        # holds no token; env -u runs after it anyway.
         command = (
-            f"cd /workspace && env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 "
+            f". {CONTAINER_ENV} && cd /workspace && "
+            f"env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 "
             f"nohup /opt/venv/bin/{serve} > {VLLM_LOG} 2>&1 &"
         )
         start = time.monotonic()
@@ -459,7 +466,8 @@ class VllmEngineAdapter:
         name = f"bench-{int(time.time())}.json"
         command = " ".join(
             [
-                "cd /workspace && HF_HUB_OFFLINE=1 /opt/venv/bin/vllm bench serve",
+                f". {CONTAINER_ENV} && cd /workspace && HF_HUB_OFFLINE=1",
+                "/opt/venv/bin/vllm bench serve",
                 "--backend vllm --base-url http://localhost:8000",
                 f"--model {shlex.quote(model_id)}",
                 f"--tokenizer {shlex.quote(self.model_dir(model_id))}",
