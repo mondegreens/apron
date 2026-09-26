@@ -34,6 +34,7 @@ from apron.application.orchestration.budget import (
     attribute_costs,
     verification_cost_fields,
 )
+from apron.application.orchestration.cohort_records import identity_entry
 from apron.application.orchestration.errors import (
     HarnessError,
     PodLeakError,
@@ -178,6 +179,8 @@ class CohortPorts:
     events: EventLog
     provision_env: Callable[[SolutionPlan], dict[str, str]]
     hourly_rate: Callable[[RequestedExecutionSpec], float]
+    # The identity manifest: the objects behind every solution's digests (§11 item 3).
+    identities: EventLog
     boot_timeout: int = 900
 
 
@@ -225,6 +228,9 @@ class SolutionPlan:
     estimate: float = 0.0
     notes: tuple[str, ...] = ()
     artifact_spec: ArtifactSpec | None = None
+    # The seed row's declared coverage (size_class, hardware_class, quantized,
+    # features); empty for fix-proof solutions, which have no seed row.
+    coverage: Mapping[str, Any] = field(default_factory=dict)
 
     @property
     def deployment_feasible(self) -> bool:
@@ -338,6 +344,7 @@ def execute_solution(
         solution_fp=sp.solution_fp,
     )
     rate = ports.hourly_rate(sp.requested)
+    record_identity(sp, inputs, ports, ctx)
 
     ports.budget.hold(sp.estimate, sp.label)
     _event(ports, "hold", sp, estimate=sp.estimate, rate=rate)
@@ -554,6 +561,42 @@ def execute_solution(
         _event(ports, "candidate_error", sp, error=f"{type(error).__name__}: {error}")
         raise error
     return outcome
+
+
+def record_identity(
+    sp: SolutionPlan,
+    inputs: AcceptedInputs,
+    ports: CohortPorts,
+    ctx: EvidenceContext | None = None,
+) -> None:
+    """Append the solution's identity objects to the manifest (§8, §11 item 3)."""
+    model_id = sp.plan.resource_allocation.get("model_id", sp.model_id)
+    ctx = ctx or EvidenceContext.bind(
+        request=inputs.request_for(model_id),
+        task_suite=inputs.task_suite,
+        application=inputs.application,
+        protocol_template=inputs.protocol_template,
+        solution_fp=sp.solution_fp,
+    )
+    ports.identities.append(
+        identity_entry(
+            at=ports.clock.now().isoformat(),
+            solution_fingerprint=sp.solution_fp,
+            label=sp.label,
+            model_id=model_id,
+            status=sp.status,
+            coverage=sp.coverage,
+            model_config=sp.model_config,
+            model_spec=sp.model_spec,
+            plan=sp.plan,
+            requested=sp.requested,
+            request=ctx.request,
+            task_suite=ctx.task_suite,
+            application=ctx.application,
+            protocol=ctx.protocol,
+            serving_workload=inputs.serving_workload,
+        )
+    )
 
 
 def _close_open_phases(timing: PhaseTiming) -> None:
@@ -783,6 +826,7 @@ def run_cohort(
     unexpected_in_a_row = 0
     for sp in plans:
         recorded = recorded_evidence(ports.store, sp.solution_fp)
+        record_identity(sp, inputs, ports)
         if sp.status != "planned":
             if recorded.claims:
                 result.prediction_errors[sp.label] = recorded.claims[0]

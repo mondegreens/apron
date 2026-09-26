@@ -154,6 +154,32 @@ MODELS: dict[str, dict[str, Any]] = {
             "num_hidden_layers": 64,
         },
     },
+    "deepseek-ai/DeepSeek-V2-Lite": {
+        "weights": 31_410_000_000,
+        "config": {
+            "architectures": ["DeepseekV2ForCausalLM"],
+            "model_type": "deepseek_v2",
+            "num_attention_heads": 16,
+            "num_key_value_heads": 16,
+            "kv_lora_rank": 512,
+            "qk_rope_head_dim": 64,
+            "n_routed_experts": 64,
+            "max_position_embeddings": 163840,
+            "torch_dtype": "bfloat16",
+        },
+    },
+    "JunHowie/Qwen3-8B-GPTQ-Int4": {
+        "weights": 6_100_000_000,
+        "config": {
+            "architectures": ["Qwen3ForCausalLM"],
+            "model_type": "qwen3",
+            "num_attention_heads": 32,
+            "num_key_value_heads": 8,
+            "max_position_embeddings": 40960,
+            "quantization_config": {"quant_method": "gptq", "bits": 4},
+            "torch_dtype": "float16",
+        },
+    },
     "Qwen/Qwen3-32B": {
         "weights": 65_520_000_000,
         "config": {
@@ -408,7 +434,7 @@ def claim_for(model_id: str, hardware: HardwareSpec) -> PlanningClaim:
         return PlanningClaim(
             producer="apron-calculator",
             version="0.1",
-            input_fingerprint="1220" + "11" * 32,
+            input_fingerprint=digest_hex(canonicalize({"m": model_id, "hw": hardware.gpu_sku})),
             proposed_configuration={"status": "unknown"},
             claim_scope="memory",
             producer_epistemic_tier="UNKNOWN",
@@ -430,7 +456,11 @@ def claim_for(model_id: str, hardware: HardwareSpec) -> PlanningClaim:
 
 
 def plan_solution(
-    plan: DeploymentPlan, label: str, *, check_feasibility: bool = True
+    plan: DeploymentPlan,
+    label: str,
+    *,
+    check_feasibility: bool = True,
+    coverage: dict[str, Any] | None = None,
 ) -> SolutionPlan:
     """GPU-free step 1 for a given plan; keeps the plan *object* (identity guard).
 
@@ -469,18 +499,25 @@ def plan_solution(
         artifact_spec=ArtifactSpec(
             identity=ArtifactIdentity(content_digest=digest_hex(canonicalize(info["config"])))
         ),
+        coverage=coverage or {},
     )
 
 
 def solution(
-    model_id: str, gpu: str, *, count: int = 1, label: str | None = None, **plan_fields: Any
+    model_id: str,
+    gpu: str,
+    *,
+    count: int = 1,
+    label: str | None = None,
+    coverage: dict[str, Any] | None = None,
+    **plan_fields: Any,
 ) -> SolutionPlan:
     plan = DeploymentPlan(
         dtype=plan_fields.pop("dtype", "bfloat16"),
         resource_allocation={"model_id": model_id, "gpu_sku": gpu, "gpu_count": str(count)},
         **plan_fields,
     )
-    return plan_solution(plan, label or f"{model_id}@{gpu}x{count}")
+    return plan_solution(plan, label or f"{model_id}@{gpu}x{count}", coverage=coverage)
 
 
 def ports(
@@ -489,10 +526,14 @@ def ports(
     *,
     authorized: float = 100.0,
     evaluator: FakeEvaluator | None = None,
-) -> tuple[CohortPorts, FakeEngine, list[FakeTarget], MemoryLog]:
+    events: Any = None,
+    ledger: Any = None,
+    identities: Any = None,
+) -> tuple[CohortPorts, FakeEngine, list[FakeTarget], Any]:
+    """Fake ports; pass file-backed ``events``/``ledger``/``identities`` for a run dir."""
     engine = FakeEngine(scenario)
     targets: list[FakeTarget] = []
-    events = MemoryLog()
+    events = events if events is not None else MemoryLog()
     clock = StepClock()
 
     def target_factory(requested: RequestedExecutionSpec) -> FakeTarget:
@@ -500,7 +541,9 @@ def ports(
         targets.append(target)
         return target
 
-    budget = BudgetTracker(authorized=authorized, ledger=MemoryLog(), clock=clock)
+    budget = BudgetTracker(
+        authorized=authorized, ledger=ledger if ledger is not None else MemoryLog(), clock=clock
+    )
     return (
         CohortPorts(
             target_factory=target_factory,
@@ -513,6 +556,7 @@ def ports(
             events=events,
             provision_env=lambda sp: {"VLLM_LOGGING_LEVEL": "DEBUG"},
             hourly_rate=lambda requested: CATALOG[requested.gpu_sku][1] * requested.gpu_count,
+            identities=identities or MemoryLog(),
         ),
         engine,
         targets,

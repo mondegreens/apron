@@ -155,6 +155,12 @@ class CohortPlanner:
             seed.key,
             check_feasibility=True,
             estimate=estimate_cost(seed, self.rates.get(seed.gpu_sku, 0.0)),
+            coverage={
+                "size_class": seed.size_class,
+                "hardware_class": seed.hardware_class,
+                "quantized": seed.quantized,
+                "features": list(seed.features),
+            },
         )
 
     def plan_for(self, plan: DeploymentPlan, label: str) -> SolutionPlan:
@@ -206,6 +212,7 @@ class CohortPlanner:
         *,
         check_feasibility: bool,
         estimate: float,
+        coverage: dict[str, Any] | None = None,
     ) -> SolutionPlan:
         alloc = plan.resource_allocation
         count = int(alloc.get("gpu_count", "1"))
@@ -245,6 +252,7 @@ class CohortPlanner:
             )
             if observation
             else None,
+            coverage=coverage or {},
         )
 
 
@@ -330,6 +338,7 @@ def build_ports(
         events=JsonlLedger(run_dir / "events.jsonl"),
         provision_env=provision_env,
         hourly_rate=rate_for,
+        identities=JsonlLedger(run_dir / "solutions.jsonl"),
     )
 
 
