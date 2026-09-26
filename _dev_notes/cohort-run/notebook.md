@@ -89,3 +89,10 @@ unless marked.  Machine events are in `events.jsonl`.
   BooleanOptionalAction parser rejects; booleans now render `--flag` /
   `--no-flag`.  The failed record stays as evidence.  The class 6 broken boot
   must be re-run with the replacement plan.
+- **L0-A3 (in flight): the pod-age fix of L0-A was wrong too.**  For a pod up
+  810 s, `get_pods()` reported `uptimeSeconds: 0`; only the single-pod query
+  has a real age (`lastStartedAt`, `runtime.uptimeInSeconds`).  The L0-A pass
+  did not catch it because its cleanup uses age 0.  The start-of-run cleanup
+  (age 3600) would have terminated nothing.  Ages now come from
+  `lastStartedAt` (covers a pod still pulling its image); verified live: the
+  in-flight L0-A3 pod read 1644 s.

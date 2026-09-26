@@ -123,20 +123,61 @@ def test_teardown_final_failure_appends_to_leaked_list_masked(
     assert len(unregistered) == 1
 
 
+# get_pods() as L0-A3 saw it: uptimeSeconds 0 for a pod up 810 s, runtime
+# holding ports only.  Ages come from the single-pod query (lastStartedAt).
+_LISTED = [
+    {"id": "old", "name": "apron-run", "uptimeSeconds": 0, "runtime": {"ports": []}},
+    {"id": "young", "name": "apron-run", "uptimeSeconds": 0, "runtime": {"ports": []}},
+    {"id": "pulling", "name": "apron-run", "uptimeSeconds": 0, "runtime": None},
+    {"id": "other", "name": "someone-else", "uptimeSeconds": 0, "runtime": None},
+]
+_NOW = 1_790_000_000.0
+
+
+def _started(seconds_ago: int) -> str:
+    from datetime import UTC, datetime
+
+    return datetime.fromtimestamp(_NOW - seconds_ago, UTC).isoformat().replace("+00:00", "Z")
+
+
+_AGES = {
+    "old": {"lastStartedAt": _started(7200), "runtime": {"uptimeInSeconds": 6600}},
+    "young": {"lastStartedAt": _started(60), "runtime": None},
+    "pulling": {"lastStartedAt": _started(4000), "runtime": None},  # never came up; bills
+    "other": {"lastStartedAt": _started(99999), "runtime": None},
+}
+
+
+def _age_reply(query: str) -> dict[str, Any]:
+    pod_id = re.search(r'podId: "([^"]+)"', query).group(1)  # type: ignore[union-attr]
+    return {"pod": _AGES[pod_id]}
+
+
 def test_orphan_cleanup_filters_by_name_and_age(tmp_path: Path) -> None:
-    pods = [
-        # The shape runpod.get_pods() returns: uptimeSeconds at the top level,
-        # runtime holding ports only (runpod/api/queries/pods.py QUERY_POD).
-        {"id": "old", "name": "apron-run", "uptimeSeconds": 7200, "runtime": {"ports": []}},
-        {"id": "young", "name": "apron-run", "uptimeSeconds": 60, "runtime": {"ports": []}},
-        {"id": "other", "name": "someone-else", "uptimeSeconds": 99999, "runtime": None},
-        {"id": "starting", "name": "apron-run", "runtime": None},
-    ]
-    sdk = _Sdk(pods=pods)
-    with patch.dict(sys.modules, {"runpod": sdk}):
-        terminated = _target(tmp_path).cleanup_orphaned_pods(max_age_seconds=3600)
-    assert terminated == ["old"]
-    assert sdk.terminated == ["old"]
+    sdk = _Sdk(pods=_LISTED)
+    target = _target(tmp_path)
+    with (
+        patch.dict(sys.modules, {"runpod": sdk}),
+        patch.object(target, "_gql_status", side_effect=_age_reply),
+        patch.object(runpod_module.time, "time", return_value=_NOW),
+    ):
+        terminated = target.cleanup_orphaned_pods(max_age_seconds=3600)
+    # "pulling" is aged from when it was rented, although it has no runtime yet.
+    assert terminated == ["old", "pulling"]
+    assert sdk.terminated == ["old", "pulling"]
+
+
+def test_listed_uptime_is_never_the_age_source(tmp_path: Path) -> None:
+    """get_pods() said 0 s for a pod up 810 s; trusting it made the cleanup blind."""
+    sdk = _Sdk(pods=[{"id": "old", "name": "apron-run", "uptimeSeconds": 0, "runtime": None}])
+    target = _target(tmp_path)
+    with (
+        patch.dict(sys.modules, {"runpod": sdk}),
+        patch.object(target, "_gql_status", side_effect=_age_reply),
+        patch.object(runpod_module.time, "time", return_value=_NOW),
+    ):
+        listed = target.list_apron_pods()
+    assert listed[0]["uptime_seconds"] == 7200
 
 
 def test_second_provision_tears_down_the_live_pod_first(
@@ -197,14 +238,6 @@ def test_wait_for_running_is_bounded_when_a_timeout_is_given() -> None:
         target._wait_for_running(10)
 
 
-def test_orphan_age_is_read_from_the_field_the_sdk_query_returns() -> None:
-    """L0-A found the cleanup blind: it read a field get_pods() never returns."""
-    from runpod.api.queries.pods import QUERY_POD
-
-    assert re.search(r"^\s*uptimeSeconds\s*$", QUERY_POD, re.MULTILINE)
-    assert "uptimeInSeconds" not in QUERY_POD
-
-
 def test_age_zero_cleans_every_apron_pod_even_one_not_yet_running(
     tmp_path: Path, sleeps: list[float]
 ) -> None:
@@ -214,8 +247,12 @@ def test_age_zero_cleans_every_apron_pod_even_one_not_yet_running(
             {"id": "other", "name": "someone-else", "uptimeSeconds": 0, "runtime": None},
         ]
     )
-    with patch.dict(sys.modules, {"runpod": sdk}):
-        assert _target(tmp_path).cleanup_orphaned_pods(max_age_seconds=0) == ["pulling"]
+    target = _target(tmp_path)
+    with (
+        patch.dict(sys.modules, {"runpod": sdk}),
+        patch.object(target, "_gql_status", return_value={"pod": {"runtime": None}}),
+    ):
+        assert target.cleanup_orphaned_pods(max_age_seconds=0) == ["pulling"]
     assert sdk.terminated == ["pulling"]
 
 

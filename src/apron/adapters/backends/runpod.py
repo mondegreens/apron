@@ -135,17 +135,29 @@ class _EphemeralHostKeyPolicy:
         logger.info("Ephemeral host key %s for %s", key.get_fingerprint().hex(), hostname)
 
 
-def _pod_uptime(pod: dict[str, Any]) -> int:
-    """Seconds a pod has been up, from ``runpod.get_pods()``.
+_POD_AGE_QUERY = """query PodAge {{
+  pod(input: {{podId: "{pod_id}"}}) {{
+    lastStartedAt
+    runtime {{ uptimeInSeconds }}
+  }}
+}}"""
 
-    The SDK's pod list query returns ``uptimeSeconds`` at the top level; its
-    ``runtime`` block carries only ports.  (The single-pod GraphQL status
-    query used while provisioning has ``runtime.uptimeInSeconds`` instead.)
+
+def _age_from(pod: dict[str, Any], now: float) -> int:
+    """Seconds since the pod was rented (``lastStartedAt``), else its runtime uptime.
+
+    ``runpod.get_pods()`` is no age source: its ``uptimeSeconds`` read 0 for a
+    pod up 810 s (L0-A3, 2026-09-26) and its ``runtime`` holds only ports.
+    ``lastStartedAt`` is set when the pod is rented, so a pod still pulling
+    its image (no runtime yet) is aged too — it bills from then.
     """
-    value = pod.get("uptimeSeconds")
-    if value is None:
-        value = (pod.get("runtime") or {}).get("uptimeInSeconds")
-    return int(value or 0)
+    started = pod.get("lastStartedAt")
+    if started:
+        from datetime import datetime
+
+        stamp = datetime.fromisoformat(str(started).replace("Z", "+00:00"))
+        return max(0, int(now - stamp.timestamp()))
+    return int((pod.get("runtime") or {}).get("uptimeInSeconds") or 0)
 
 
 class RunPodTarget:
@@ -395,8 +407,10 @@ class RunPodTarget:
         terminated: list[str] = []
         for pod in _runpod.get_pods() or []:
             name = str(pod.get("name") or "")
-            uptime = _pod_uptime(pod)
-            if not name.startswith(POD_NAME_PREFIX) or uptime < max_age_seconds:
+            if not name.startswith(POD_NAME_PREFIX):
+                continue
+            uptime = self._pod_age(pod["id"])
+            if uptime < max_age_seconds:
                 continue
             try:
                 _runpod.terminate_pod(pod["id"])
@@ -406,6 +420,17 @@ class RunPodTarget:
                 logger.error("Orphan cleanup failed for %s: %s", pod["id"], mask_secrets(str(exc)))
                 self._record_leaked_pod(pod["id"], str(exc))
         return terminated
+
+    def _pod_age(self, pod_id: str | None) -> int:
+        """Age of one pod from the single-pod query (see ``_age_from``); 0 if unknown."""
+        if not pod_id:
+            return 0
+        try:
+            data = self._gql_status(_POD_AGE_QUERY.format(pod_id=pod_id))
+        except Exception:
+            logger.warning("pod age query failed for %s", pod_id)
+            return 0
+        return _age_from(data.get("pod") or {}, time.time())
 
     def list_apron_pods(self) -> list[dict[str, Any]]:
         """Pods named ``apron-run*`` on the account — the before/after session check."""
@@ -418,7 +443,7 @@ class RunPodTarget:
             {
                 "id": pod.get("id"),
                 "name": pod.get("name"),
-                "uptime_seconds": _pod_uptime(pod),
+                "uptime_seconds": self._pod_age(pod.get("id")),
             }
             for pod in _runpod.get_pods() or []
             if str(pod.get("name") or "").startswith(POD_NAME_PREFIX)
