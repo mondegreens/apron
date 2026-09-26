@@ -87,6 +87,12 @@ _HARNESS_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
         re.compile(r"404 Client Error|RepositoryNotFoundError|EntryNotFoundError", re.IGNORECASE),
     ),
     (
+        # The image's build toolchain missing from the process environment
+        # (L0-A3: FlashInfer's JIT could not find ninja).  Not a model failure.
+        "harness:toolchain",
+        re.compile(r"No such file or directory: '(ninja|nvcc|gcc|g\+\+|c\+\+)'"),
+    ),
+    (
         "harness:network",
         re.compile(
             r"Temporary failure in name resolution|Max retries exceeded|ConnectionError|"

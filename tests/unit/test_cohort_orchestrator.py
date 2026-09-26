@@ -197,6 +197,10 @@ def test_harness_error_is_stored_retried_once_and_not_diagnosed(tmp_path: Path) 
         ("huggingface_hub.errors.GatedRepoError: 401 Client Error", "harness:hf_auth"),
         ("RepositoryNotFoundError: 404 Client Error", "harness:hf_not_found"),
         ("Temporary failure in name resolution", "harness:network"),
+        (
+            "(EngineCore pid=949) FileNotFoundError: [Errno 2] No such file or directory: 'ninja'",
+            "harness:toolchain",
+        ),
         (KV_LOG, None),
     ],
 )
