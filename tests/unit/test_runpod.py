@@ -1,19 +1,29 @@
 """Unit tests for RunPod ExecutionTarget adapter.
 
-Collects the ExecutionTarget conformance suite via pytest_plugins.
-The execution_target fixture below provides a pre-provisioned RunPodTarget
-that satisfies conformance without real API calls.
+Collects the ExecutionTarget conformance suite via pytest_plugins: the
+suite's tests are imported below and run against the real RunPodTarget.
+The execution_target fixture provides a provisioned RunPodTarget with only
+network I/O mocked — the RunPod SDK, the GraphQL status call and SSH.
 """
 
 from __future__ import annotations
 
-from typing import Any
+import json
+import sys
+from types import SimpleNamespace
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+from conformance.test_execution_target import *  # noqa: F403 — the shared suite, on the real adapter
 
 from apron.adapters.backends.runpod import RunPodTarget
 from apron.domain.schemas.primitives import ExecutionTarget
+
+pytest_plugins = ["conformance.plugin"]
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -56,8 +66,11 @@ class FakeSSHClient:
 
 
 @pytest.fixture()
-def runpod_target() -> RunPodTarget:
-    return RunPodTarget(api_key="test-key", ssh_key_path="/tmp/test_key")
+def runpod_target(tmp_path: Any, monkeypatch: pytest.MonkeyPatch) -> RunPodTarget:
+    monkeypatch.setattr("apron.adapters.backends.runpod.time.sleep", lambda s: None)
+    return RunPodTarget(
+        api_key="test-key", ssh_key_path="/tmp/test_key", leak_log=tmp_path / "leaked.json"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -162,13 +175,19 @@ def test_teardown_with_closed_ssh(runpod_target: RunPodTarget) -> None:
     assert runpod_target._ssh is None
 
 
-def test_teardown_sdk_failure_does_not_raise(runpod_target: RunPodTarget) -> None:
+def test_teardown_sdk_failure_raises_pod_leak_after_recording(runpod_target: RunPodTarget) -> None:
+    """A pod that cannot be terminated is an owner stop condition: the caller sees it."""
+    from apron.application.orchestration.errors import PodLeakError
+
     runpod_target._pod_id = "pod-123"
     mock_runpod = MagicMock()
     mock_runpod.terminate_pod.side_effect = RuntimeError("network")
-    with patch.dict("sys.modules", {"runpod": mock_runpod}):
+    with patch.dict("sys.modules", {"runpod": mock_runpod}), pytest.raises(PodLeakError) as exc:
         runpod_target.teardown()
+    assert exc.value.pod_id == "pod-123"
+    assert mock_runpod.terminate_pod.call_count == 3
     assert runpod_target._pod_id is None
+    runpod_target.teardown()  # idempotent afterwards
 
 
 # ---------------------------------------------------------------------------
@@ -210,3 +229,82 @@ def test_proxy_url_with_pod() -> None:
     target = RunPodTarget(api_key="key")
     target._pod_id = "abc123"
     assert target.proxy_url == "https://abc123-8000.proxy.runpod.net"
+
+
+# ---------------------------------------------------------------------------
+# Conformance suite fixture (F9) — network mocked, adapter real
+# ---------------------------------------------------------------------------
+
+_HW = {
+    "gpu_name": "NVIDIA GeForce RTX 4090",
+    "total_memory_bytes": 25_386_352_640,
+    "compute_capability": "8.9",
+    "driver_version": "570.124.06",
+    "cuda_version": "12.8",
+    "pytorch_version": "2.9.0",
+}
+
+
+class _PodSSH(FakeSSHClient):
+    """SSH to a pod: answers hardware detection, nvidia-smi and plain commands."""
+
+    def exec_command(self, command: str, timeout: int | None = None):  # type: ignore[no-untyped-def]
+        self._commands.append(command)
+        if "get_device_properties" in command:
+            out = json.dumps(_HW).encode()
+        elif "nvidia-smi --query-gpu=utilization" in command:
+            out = b"3, 512, 24564\n"
+        else:
+            out = b"hello\n"
+        stdout, stderr = MagicMock(), MagicMock()
+        stdout.read.return_value = out
+        stderr.read.return_value = b""
+        stdout.channel.recv_exit_status.return_value = 0
+        return MagicMock(), stdout, stderr
+
+    def open_sftp(self) -> MagicMock:
+        sftp = MagicMock()
+        sftp.file.return_value.read.return_value = b"log"
+        return sftp
+
+
+def _graphql_response(*args: Any, **kwargs: Any) -> MagicMock:
+    response = MagicMock()
+    response.json.return_value = {
+        "data": {
+            "pod": {
+                "id": "pod-conf",
+                "runtime": {
+                    "uptimeInSeconds": 12,
+                    "ports": [
+                        {"ip": "203.0.113.7", "privatePort": 22, "publicPort": 40022},
+                    ],
+                },
+            }
+        }
+    }
+    return response
+
+
+@pytest.fixture()
+def execution_target() -> Iterator[RunPodTarget]:
+    sdk = SimpleNamespace(
+        api_key=None,
+        get_gpu=lambda gpu_id: {"securePrice": 0.69, "communityPrice": 0.34},
+        create_pod=lambda **kwargs: {"id": "pod-conf"},
+        terminate_pod=lambda pod_id: None,
+    )
+    with (
+        patch.dict(sys.modules, {"runpod": sdk}),
+        patch("apron.adapters.backends.runpod.httpx.post", side_effect=_graphql_response),
+        patch("paramiko.SSHClient", _PodSSH),
+        patch("apron.adapters.backends.runpod.time.sleep"),
+    ):
+        target = RunPodTarget(
+            api_key="test-key",
+            ssh_key_path="/tmp/test_key",
+            gpu_type="NVIDIA GeForce RTX 4090",
+        )
+        target.provision()
+        yield target
+        target.teardown()

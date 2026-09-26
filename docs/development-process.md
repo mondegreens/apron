@@ -122,7 +122,7 @@ every time. The surface grows as phases complete.
 ### Open now (no prior approval needed)
 
 - **Challenge a decision.** Every ADR records its reasoning. Open a
-  challenge in [Discussions](../../discussions); amendments pass by lazy
+  challenge in [Discussions](https://github.com/mondegreens/apron/discussions); amendments pass by lazy
   consensus.
 - **Check the dispatch proof** against the pinned vLLM source. It is a
   claim about code and can be wrong.

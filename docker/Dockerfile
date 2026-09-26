@@ -24,7 +24,7 @@ ENV DEBIAN_FRONTEND=noninteractive TZ=UTC \
     PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64 \
     PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 \
-    TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0" \
+    TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0;10.0" \
     HF_HUB_ENABLE_HF_TRANSFER=1
 
 WORKDIR /workspace
@@ -55,8 +55,8 @@ RUN --mount=type=cache,target=/tmp/uv-cache \
     && pip install --upgrade pip setuptools wheel \
     && uv pip install --cache-dir /tmp/uv-cache -r requirements.txt
 
-COPY start.sh parallel_downloader.py ./
-RUN chmod +x start.sh
+COPY start.sh parallel_downloader.py apron-download ./
+RUN chmod +x start.sh apron-download
 
 ###############################################################################
 # STAGE 2 — runtime (cudnn-devel, not runtime — JIT compilation needs it)
@@ -71,7 +71,7 @@ ENV DEBIAN_FRONTEND=noninteractive TZ=UTC \
     NVIDIA_DISABLE_REQUIRE=true \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/workspace \
-    TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0" \
+    TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0;10.0" \
     HF_HUB_ENABLE_HF_TRANSFER=1
 
 WORKDIR /workspace
@@ -99,7 +99,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /workspace/start.sh /start.sh
 COPY --from=builder /workspace/parallel_downloader.py /workspace/parallel_downloader.py
-RUN chmod +x /start.sh
+COPY --from=builder /workspace/apron-download /usr/local/bin/apron-download
+RUN chmod +x /start.sh /usr/local/bin/apron-download
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1

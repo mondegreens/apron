@@ -19,10 +19,26 @@ if [ -n "$PUBLIC_KEY" ]; then
 fi
 
 # --------------------------------------------------------------------------- #
+# HuggingFace token (INV-13): used for the download step only
+# --------------------------------------------------------------------------- #
+# The token moves from the environment into a root-only file that only the
+# download step reads.  It is never exported to SSH sessions and never
+# reaches the vLLM process (verified via /proc/<pid>/environ, F7).
+
+mkdir -p /run/apron && chmod 700 /run/apron
+if [ -n "$HF_TOKEN" ] || [ -n "$HUGGING_FACE_HUB_TOKEN" ]; then
+    umask 077
+    printf '%s' "${HF_TOKEN:-$HUGGING_FACE_HUB_TOKEN}" > /run/apron/hf_token
+    umask 022
+fi
+unset HF_TOKEN HUGGING_FACE_HUB_TOKEN
+
+# --------------------------------------------------------------------------- #
 # Export env vars for SSH sessions (container env vars are not inherited)
 # --------------------------------------------------------------------------- #
 
 printenv | grep -E '^VLLM_|^HF_|^NVIDIA_|^NCCL_|^CUDA_|^PATH=|^LD_LIBRARY_PATH=' \
+    | grep -v -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)=' \
     | awk -F = '{ print "export " $1 "=\"" $2 "\"" }' >> /etc/apron_environment
 echo 'source /etc/apron_environment' >> ~/.bashrc
 
@@ -116,17 +132,22 @@ if [ "$VLLM_LOAD_FORMAT" = "runai_streamer" ]; then
 fi
 
 # --------------------------------------------------------------------------- #
-# HuggingFace token
-# --------------------------------------------------------------------------- #
-
-if [ -n "$HF_TOKEN" ]; then
-    export HUGGING_FACE_HUB_TOKEN="$HF_TOKEN"
-    export HF_TOKEN
-fi
-
-# --------------------------------------------------------------------------- #
 # Launch vLLM
 # --------------------------------------------------------------------------- #
+
+# No model configured: the orchestrator boots vLLM over SSH from a rendered
+# DeploymentPlan (apron-download + apron-serve below).  Keep the container up.
+if [ -z "$VLLM_MODEL" ]; then
+    echo "No VLLM_MODEL set — waiting for an SSH-driven boot"
+    sleep infinity
+fi
+
+# Weights are downloaded in a separate step that alone reads the token, then
+# vLLM serves from the local path with no token in its environment (F7).
+MODEL_DIR="/workspace/models/$VLLM_MODEL"
+/usr/local/bin/apron-download "$VLLM_MODEL" "$MODEL_DIR" || exit 1
+ARGS=$(echo "$ARGS" | sed "s#^ *$VLLM_MODEL#$MODEL_DIR --served-model-name $VLLM_MODEL#")
+ARGS=$(echo "$ARGS" | sed "s#--tokenizer $VLLM_TOKENIZER#--tokenizer $MODEL_DIR#")
 
 SAFE_ARGS=$(echo "$ARGS" | sed 's/--hf-token [^ ]*/--hf-token ***REDACTED***/g')
 echo "Starting vLLM: vllm serve $SAFE_ARGS"
@@ -134,7 +155,8 @@ echo "Starting vLLM: vllm serve $SAFE_ARGS"
 # Run vLLM in background with tee to log file. NOT exec — so killing
 # vLLM for OOM injection doesn't kill the container. The shell stays
 # alive as the container's main process; tini reaps children.
-vllm serve $ARGS 2>&1 | tee /var/log/vllm.log &
+env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 \
+    vllm serve $ARGS 2>&1 | tee /var/log/vllm.log &
 VLLM_PID=$!
 
 # Keep the container alive — wait for vLLM or any signal

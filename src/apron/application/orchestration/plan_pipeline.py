@@ -15,13 +15,33 @@ from apron.domain.mechanisms.model_spec_builder import build_model_spec
 from apron.domain.schemas.solutions import DeploymentPlan, RenderContext
 
 if TYPE_CHECKING:
+    from apron.domain.artifacts import ArtifactSourceObservation
     from apron.domain.ports import Clock, IdGenerator
     from apron.domain.protocols import ArtifactSourceResolver, PlanningSource
+    from apron.domain.schemas.models import ModelSpec
     from apron.domain.schemas.primitives import HardwareSpec
 
 
 class PlanPipelineResult:
-    __slots__ = ("claim", "context", "error", "plan")
+    """Outcome of the plan pipeline.
+
+    ``observation`` is the resolved artifact observation (F12), ``model_spec``
+    the spec built from ``config.json``, and ``model_config`` the resolved
+    ``config.json`` itself, which diagnosis needs (F5).  A prediction-error
+    candidate (unknown mechanism) keeps ``claim``, ``model_spec`` and
+    ``observation`` with ``error`` set, so the claim can be stored.
+    """
+
+    __slots__ = (
+        "chat_template",
+        "claim",
+        "context",
+        "error",
+        "model_config",
+        "model_spec",
+        "observation",
+        "plan",
+    )
 
     def __init__(
         self,
@@ -30,11 +50,19 @@ class PlanPipelineResult:
         context: RenderContext | None = None,
         claim: Any = None,
         error: str | None = None,
+        observation: ArtifactSourceObservation | None = None,
+        model_spec: ModelSpec | None = None,
+        model_config: dict[str, Any] | None = None,
+        chat_template: str | None = None,
     ) -> None:
         self.plan = plan
         self.context = context
         self.claim = claim
         self.error = error
+        self.observation = observation
+        self.model_spec = model_spec
+        self.model_config = model_config
+        self.chat_template = chat_template
 
     @property
     def ok(self) -> bool:
@@ -84,7 +112,11 @@ def run_plan_pipeline(
 
     if claim.proposed_configuration.get("status") == "unknown":
         return PlanPipelineResult(
-            error="unknown model mechanism — calculator cannot predict memory"
+            claim=claim,
+            error="unknown model mechanism — calculator cannot predict memory",
+            observation=result.observation,
+            model_spec=model_spec,
+            model_config=config,
         )
 
     deployment_plan = build_plan(
@@ -100,13 +132,42 @@ def run_plan_pipeline(
     assert result.locator is not None
     ctx = RenderContext(plan=deployment_plan, locator=result.locator, hardware=hardware)
 
-    return PlanPipelineResult(plan=deployment_plan, context=ctx, claim=claim)
+    return PlanPipelineResult(
+        plan=deployment_plan,
+        context=ctx,
+        claim=claim,
+        observation=result.observation,
+        model_spec=model_spec,
+        model_config=config,
+        chat_template=_download_chat_template(
+            resolver, model_id, result.observation.resolved_revision
+        ),
+    )
 
 
 def _download_config(resolver: Any, model_id: str, revision: str) -> bytes | None:
     if hasattr(resolver, "_download_file"):
         return resolver._download_file(model_id, "config.json", revision)
     return None
+
+
+def _download_chat_template(resolver: Any, model_id: str, revision: str) -> str | None:
+    """The model's chat template: ``chat_template.jinja``, else the
+    ``chat_template`` field of ``tokenizer_config.json`` (a string or a list
+    of named templates, the ``default`` one first).  ``None`` if absent."""
+    if not hasattr(resolver, "_download_file"):
+        return None
+    jinja = resolver._download_file(model_id, "chat_template.jinja", revision)
+    if jinja is not None:
+        return jinja.decode("utf-8")
+    raw = resolver._download_file(model_id, "tokenizer_config.json", revision)
+    if raw is None:
+        return None
+    template = json.loads(raw).get("chat_template")
+    if isinstance(template, list):
+        named = {t.get("name"): t.get("template") for t in template if isinstance(t, dict)}
+        template = named.get("default") or next(iter(named.values()), None)
+    return template if isinstance(template, str) else None
 
 
 def _resolve_weight_bytes(resolver: Any, model_id: str, observation: Any) -> int:

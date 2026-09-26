@@ -1,0 +1,19 @@
+{
+  "_provenance": "PLAN §9.2 seed list (Phase 1b Part 4). Data, not code: the evidence-gap scheduler ranks these by coverage obligations, mechanism diversity and cost; no name is privileged. weight_gb is the safetensors total the runner downloads (Hugging Face API, 2026-09-26; Meta/Mistral-native duplicates excluded). Gated models need approved access for HF_TOKEN; fallbacks are listed per §9.2.",
+  "candidates": [
+    {"model_id": "Qwen/Qwen3-1.7B", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "small", "hardware_class": "consumer", "mechanism": "autoregressive_decode", "weight_gb": 4.06, "features": ["gqa"]},
+    {"model_id": "Qwen/Qwen3-1.7B", "gpu_sku": "NVIDIA L4", "size_class": "small", "hardware_class": "datacenter", "mechanism": "autoregressive_decode", "weight_gb": 4.06, "features": ["gqa"]},
+    {"model_id": "google/gemma-2-2b-it", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "small", "hardware_class": "consumer", "mechanism": "autoregressive_decode", "weight_gb": 5.23, "gated": true, "features": ["gqa", "sliding_window"], "fallback": "Qwen/Qwen2.5-3B-Instruct"},
+    {"model_id": "meta-llama/Llama-3.1-8B-Instruct", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "mid", "hardware_class": "consumer", "mechanism": "autoregressive_decode", "weight_gb": 16.06, "gated": true, "features": ["gqa"], "fallback": "tiiuae/falcon-7b-instruct"},
+    {"model_id": "meta-llama/Llama-3.1-8B-Instruct", "gpu_sku": "NVIDIA RTX A6000", "size_class": "mid", "hardware_class": "professional", "mechanism": "autoregressive_decode", "weight_gb": 16.06, "gated": true, "features": ["gqa"], "fallback": "tiiuae/falcon-7b-instruct"},
+    {"model_id": "mistralai/Mistral-7B-Instruct-v0.3", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "mid", "hardware_class": "consumer", "mechanism": "autoregressive_decode", "weight_gb": 14.5, "features": ["gqa", "sliding_window"]},
+    {"model_id": "mistralai/Mistral-7B-Instruct-v0.3", "gpu_sku": "NVIDIA L4", "size_class": "mid", "hardware_class": "datacenter", "mechanism": "autoregressive_decode", "weight_gb": 14.5, "features": ["gqa", "sliding_window"]},
+    {"model_id": "Qwen/Qwen3-32B", "gpu_sku": "NVIDIA A100 80GB PCIe", "size_class": "large", "hardware_class": "datacenter", "mechanism": "autoregressive_decode", "weight_gb": 65.52, "features": ["gqa"]},
+    {"model_id": "Qwen/Qwen3-32B", "gpu_sku": "NVIDIA H100 80GB HBM3", "size_class": "large", "hardware_class": "datacenter", "mechanism": "autoregressive_decode", "weight_gb": 65.52, "features": ["gqa"]},
+    {"model_id": "Qwen/Qwen3-32B", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "large", "hardware_class": "consumer", "mechanism": "autoregressive_decode", "weight_gb": 65.52, "prediction_error": true, "features": ["gqa"]},
+    {"model_id": "deepseek-ai/DeepSeek-V2-Lite", "gpu_sku": "NVIDIA RTX A6000", "size_class": "large", "hardware_class": "professional", "mechanism": "mla_decode", "weight_gb": 31.41, "features": ["mla", "moe"]},
+    {"model_id": "deepseek-ai/DeepSeek-V2-Lite", "gpu_sku": "NVIDIA A100 80GB PCIe", "size_class": "large", "hardware_class": "datacenter", "mechanism": "mla_decode", "weight_gb": 31.41, "features": ["mla", "moe"]},
+    {"model_id": "JunHowie/Qwen3-8B-GPTQ-Int4", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "mid", "hardware_class": "consumer", "mechanism": "autoregressive_decode", "weight_gb": 6.1, "quantized": true, "features": ["gqa", "gptq_int4"], "licence_check": "apache-2.0 (Hugging Face card, 2026-09-26); ungated; INV-15"},
+    {"model_id": "state-spaces/mamba-2.8b-hf", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "mid", "hardware_class": "consumer", "mechanism": "unknown", "weight_gb": 11.07, "prediction_error": true, "features": ["ssm"]}
+  ]
+}

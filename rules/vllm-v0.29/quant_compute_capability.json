@@ -1,19 +1,36 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "quant_compute_capability",
-  "correction_strategy": "remove_quantization",
-  "extraction_schema": {},
+  "rule_version": 1,
+  "correction_strategy": "retarget_capability",
+  "extraction_schema": {
+    "min_capability": {
+      "type": "int",
+      "source": "config/vllm.py:794 ('Minimum capability: {quant_config.get_min_capability()}', raised at :791)"
+    },
+    "current_capability": {
+      "type": "int",
+      "source": "config/vllm.py:795 ('Current capability: {capability}')"
+    }
+  },
   "source_sites": [
     {
-      "file": "config/mamba.py",
-      "line": 98
+      "file": "config/vllm.py",
+      "line": 791
     }
   ],
+  "kernel_architectures": {
+    "fp_quant": [
+      "10.0"
+    ]
+  },
+  "kernel_architectures_source": "cmake/external_projects/qutlass.cmake:56-85 (QuTLASS compiled for SM100; SM100 selected when SM120 is also requested, :72-79); fp_quant.py:64 min capability 100",
   "examples": [
-    "Stochastic rounding for Mamba cache with triton backend requires compute capability 10.0 (data center Blackwell). The `cvt.rs` PTX instruction is not supported on your GPU. Please do not specify `--en"
+    "The quantization method fp_quant is not supported for the current GPU. Minimum capability: 100. Current capability: 90."
   ],
   "status": "hypothesis",
-  "count": 1
+  "count": 1,
+  "curation": "Hand-curated for the Phase 1b §10 fix proof: typed fields, each citing the vLLM v0.29.0 line that prints it. The source scanner must not overwrite this file. Replaces the scanner rule that pointed at config/mamba.py:98 with remove_quantization, which cannot fix a pre-quantized checkpoint."
 }

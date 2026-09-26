@@ -22,6 +22,7 @@ nav:
   - Target Architecture: target-architecture.md
   - Phase Plan: phase-plan.md
   - Framework Specification: framework-spec.md
+  - Fingerprint Migration (Phase 1b): fingerprint-migration-phase-1b.md
   - Development Process: development-process.md
   - Phase 0 Brief: phase-0-brief.md
   - Engineering Standards: engineering-standards.md

@@ -25,7 +25,6 @@ import json
 import os
 import time
 from pathlib import Path
-from typing import Any
 
 import pytest
 
@@ -49,10 +48,39 @@ class TestFixtureRun:
         from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
         from apron.adapters.evidence.hf_hub import HFHubResolver
         from apron.adapters.planning.calculator_source import CalculatorPlanningSource
+        from apron.adapters.runner_image import RUNNER_IMAGE_DIGEST
+        from apron.application.orchestration.diagnosis_pipeline import diagnosis_model_config
+        from apron.application.orchestration.evidence import (
+            EvidenceContext,
+            build_task_attempt,
+            chat_template_kwargs,
+            decision_request_digest,
+            protocol_template,
+            scorer_input,
+            solution_fingerprint,
+            store_validated,
+        )
         from apron.application.orchestration.plan_pipeline import run_plan_pipeline
-        from apron.domain.canonical import canonicalize, digest_hex
+        from apron.domain.fingerprints import fingerprint_hex
         from apron.domain.ports import UuidIdGenerator, WallClock
+        from apron.domain.schemas.authority import DecisionRequest
         from apron.domain.schemas.primitives import HardwareSpec
+        from apron.domain.schemas.records import RemediationRecord, VerificationReport
+        from apron.domain.schemas.solutions import EvaluationProtocol, RequestedExecutionSpec
+        from apron.domain.schemas.tasks import ApplicationSpec, TaskSuiteSpec
+
+        request = DecisionRequest.model_validate_json(
+            (FIXTURES_DIR / "decision-request.json").read_text()
+        )
+        task_suite = TaskSuiteSpec.model_validate_json(
+            (FIXTURES_DIR / "task-suite-spec.json").read_text()
+        )
+        application = ApplicationSpec.model_validate_json(
+            (FIXTURES_DIR / "application-spec.json").read_text()
+        )
+        protocol_fixture = EvaluationProtocol.model_validate_json(
+            (FIXTURES_DIR / "evaluation-protocol.json").read_text()
+        )
 
         store = LocalRecordStore(tmp_path / "records")
         clock = WallClock()
@@ -77,7 +105,8 @@ class TestFixtureRun:
 
         plan = pipeline_result.plan
         claim = pipeline_result.claim
-        store.store(claim.model_dump(mode="json"))
+        assert pipeline_result.model_spec is not None
+        store_validated(store, claim)
 
         # ---------------------------------------------------------------
         # Steps 3-6: Initial verification on a single GPU pod
@@ -137,6 +166,21 @@ class TestFixtureRun:
                 pytest.skip("No GPU currently available on RunPod")
             detected_hw = target.hardware
             assert detected_hw.gpu_sku
+            requested = RequestedExecutionSpec(
+                provider="runpod",
+                gpu_sku=target._gpu_type or "",
+                gpu_count=target.gpu_count,
+                cloud_type="SECURE",
+                image_digest=RUNNER_IMAGE_DIGEST,
+            )
+            solution_fp = solution_fingerprint(pipeline_result.model_spec, plan, requested)
+            ctx = EvidenceContext.bind(
+                request=request,
+                task_suite=task_suite,
+                application=application,
+                protocol_template=protocol_template(protocol_fixture),
+                solution_fp=solution_fp,
+            )
 
             # Step 3-4: Wait for health + collect profiling
             endpoint = target.proxy_url
@@ -145,14 +189,23 @@ class TestFixtureRun:
             verification_report = engine.verify(plan, target, health_timeout=600)
             assert verification_report["initial_total_memory"] > 0
 
-            report_record = {
-                **verification_report,
-                "claim_scope": "memory",
-                "production_mode": False,
-                "reason": "Phase 1a initial verification",
-                "lifecycle": "observed",
-            }
-            store.store(report_record)
+            report_digest = store_validated(
+                store,
+                VerificationReport.model_validate(
+                    {
+                        **verification_report,
+                        "operator": target.operator,
+                        "provider": target.provider,
+                        "solution_fingerprint": solution_fp,
+                        "deployment_plan_digest": fingerprint_hex(plan),
+                        "boot_outcome": "healthy",
+                        "claim_scope": "memory",
+                        "production_mode": False,
+                        "reason": "Phase 1a initial verification",
+                        "lifecycle": "observed",
+                    }
+                ),
+            )
 
             # Prediction delta
             predicted_total = prediction.get("total_required_bytes", 0)
@@ -161,11 +214,13 @@ class TestFixtureRun:
             assert measured_consumption > 0
 
             # Step 5: Run task suite
-            task_suite = json.loads((FIXTURES_DIR / "task-suite-spec.json").read_text())
             eval_protocol = scorer.prepare(
                 {
-                    **task_suite,
-                    "model_id": MODEL_ID,
+                    **scorer_input(
+                        ctx,
+                        model_id=MODEL_ID,
+                        chat_template_kwargs=chat_template_kwargs(pipeline_result.chat_template),
+                    ),
                     "endpoint": endpoint,
                 }
             )
@@ -173,20 +228,15 @@ class TestFixtureRun:
             scorer.collect(initial_attempts)
 
             for attempt in initial_attempts:
-                attempt_record = {
-                    **attempt,
-                    "claim_scope": "task_outcome",
-                    "production_mode": False,
-                    "reason": "Phase 1a initial task evaluation",
-                    "lifecycle": "observed",
-                    "decision_fingerprint": "1220" + "00" * 32,
-                    "task_suite_fingerprint": digest_hex(canonicalize(task_suite)),
-                    "application_fingerprint": "1220" + "00" * 32,
-                    "evaluation_protocol_fingerprint": "1220" + "00" * 32,
-                    "solution_fingerprint": "1220" + "00" * 32,
-                    "attempt_id": id_gen.generate(),
-                }
-                store.store(attempt_record)
+                store_validated(
+                    store,
+                    build_task_attempt(
+                        ctx,
+                        attempt,
+                        attempt_id=id_gen.generate(),
+                        trace_references=(report_digest,),
+                    ),
+                )
 
             # ---------------------------------------------------------------
             # Steps 7-9: OOM injection + classification + correction
@@ -220,7 +270,7 @@ class TestFixtureRun:
                 oom_output,
                 engine,
                 plan,
-                claim.proposed_configuration,
+                diagnosis_model_config(pipeline_result.model_config or {}),
                 detected_hw,
                 rules,
                 verification_report,
@@ -256,49 +306,59 @@ class TestFixtureRun:
             # Steps 10-12: Remediation proof
             # ---------------------------------------------------------------
 
-            corrected_report = engine.verify(plan, target, health_timeout=60)
-            corrected_report["reason"] = "Phase 1a corrected verification"
+            corrected_report = engine.verify(diagnosis.corrected_plan, target, health_timeout=60)
             assert corrected_report["initial_total_memory"] > 0
-            store.store(corrected_report)
+            corrected_digest = store_validated(
+                store,
+                VerificationReport.model_validate(
+                    {
+                        **corrected_report,
+                        "operator": target.operator,
+                        "provider": target.provider,
+                        "solution_fingerprint": solution_fp,
+                        "deployment_plan_digest": fingerprint_hex(diagnosis.corrected_plan),
+                        "boot_outcome": "healthy",
+                        "claim_scope": "memory",
+                        "production_mode": False,
+                        "reason": "Phase 1a corrected verification",
+                        "lifecycle": "observed",
+                    }
+                ),
+            )
 
             # Step 11: Replay task suite
             replay_attempts = scorer.execute(eval_protocol, endpoint)
             scorer.collect(replay_attempts)
 
-            for attempt in replay_attempts:
-                attempt_record = {
-                    **attempt,
-                    "claim_scope": "task_outcome",
-                    "production_mode": False,
-                    "reason": "Phase 1a replay after correction",
-                    "lifecycle": "observed",
-                    "decision_fingerprint": "1220" + "00" * 32,
-                    "task_suite_fingerprint": digest_hex(canonicalize(task_suite)),
-                    "application_fingerprint": "1220" + "00" * 32,
-                    "evaluation_protocol_fingerprint": "1220" + "00" * 32,
-                    "solution_fingerprint": "1220" + "00" * 32,
-                    "attempt_id": id_gen.generate(),
-                }
-                store.store(attempt_record)
+            replay_digests = [
+                store_validated(
+                    store,
+                    build_task_attempt(
+                        ctx,
+                        attempt,
+                        attempt_id=id_gen.generate(),
+                        trace_references=(corrected_digest,),
+                    ),
+                )
+                for attempt in replay_attempts
+            ]
 
-            # Step 12: Remediation record
-            remediation_record: dict[str, Any] = {
-                "schema_version": 1,
-                "mechanism_outcome": "verified",
-                "request_outcome": "satisfied",
-                "accepted_request_digest": digest_hex(
-                    canonicalize(json.loads((FIXTURES_DIR / "decision-request.json").read_text()))
+            # Step 12: Remediation record — fingerprints from validated objects
+            store_validated(
+                store,
+                RemediationRecord(
+                    mechanism_outcome="verified",
+                    request_outcome="satisfied",
+                    accepted_request_digest=decision_request_digest(request),
+                    task_fingerprint=ctx.task_suite_fingerprint,
+                    application_fingerprint=ctx.application_fingerprint,
+                    evaluation_fingerprint=ctx.evaluation_protocol_fingerprint,
+                    corrected_plan_digest=fingerprint_hex(diagnosis.corrected_plan),
+                    corrects=fingerprint_hex(plan),
+                    proving_record_fingerprints=(corrected_digest, *replay_digests),
+                    reason="OOM injection corrected by the diagnosis pipeline",
                 ),
-                "task_fingerprint": digest_hex(canonicalize(task_suite)),
-                "application_fingerprint": "1220" + "00" * 32,
-                "evaluation_fingerprint": "1220" + "00" * 32,
-                "corrected_plan_digest": digest_hex(canonicalize(plan.model_dump(mode="json"))),
-                "claim_scope": "remediation",
-                "production_mode": False,
-                "reason": "OOM injection corrected by reducing gpu_memory_utilization",
-                "lifecycle": "observed",
-            }
-            store.store(remediation_record)
+            )
 
             # ---------------------------------------------------------------
             # Step 13: Assertions

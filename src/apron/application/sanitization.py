@@ -1,17 +1,64 @@
-"""Sanitization — credential stripping and provenance validation."""
+"""Sanitization — credential stripping and provenance validation.
+
+Two tools: ``sanitize`` redacts whole string values in a record that carry a
+secret (records never store half a credential), and ``mask_secrets`` masks
+only the secret spans in free text such as logs and captured log tails, so
+the surrounding diagnostic text survives.  ``SecretMaskingFilter`` applies
+``mask_secrets`` to every log record it sees (F6).
+"""
 
 import copy
+import logging
 import re
 from typing import Any
 
 from apron.domain.protocols import RecordStore
 
-SENSITIVE_PATTERNS = [
-    re.compile(r"RUNPOD_API_KEY|HF_TOKEN|HUGGING_FACE_HUB_TOKEN"),
-    re.compile(r"Bearer\s+\S+"),
+# Secret *values*.  Order matters for masking: specific prefixes first.
+SECRET_VALUE_PATTERNS = [
+    re.compile(r"sk-ant-[A-Za-z0-9_-]{20,}"),
+    re.compile(r"sk-proj-[A-Za-z0-9_-]{20,}"),
     re.compile(r"sk-[a-zA-Z0-9]{20,}"),
-    re.compile(r"rp_[a-zA-Z0-9]{20,}"),
+    re.compile(r"hf_[A-Za-z0-9]{30,}"),
+    re.compile(r"rpa?_[a-zA-Z0-9]{20,}"),
+    re.compile(r"Bearer\s+\S+"),
+    re.compile(r"api_key=[^&\s\"']+"),
+    re.compile(
+        r"(?:RUNPOD_API_KEY|HF_TOKEN|HUGGING_FACE_HUB_TOKEN|ANTHROPIC_API_KEY)\s*[=:]\s*\S+"
+    ),
 ]
+
+SENSITIVE_PATTERNS = [
+    re.compile(r"RUNPOD_API_KEY|HF_TOKEN|HUGGING_FACE_HUB_TOKEN|ANTHROPIC_API_KEY"),
+    *SECRET_VALUE_PATTERNS,
+]
+
+REDACTED = "[REDACTED]"
+
+
+def contains_secret(text: str) -> bool:
+    """True if *text* holds a secret value (used by publication scans)."""
+    return any(p.search(text) for p in SECRET_VALUE_PATTERNS)
+
+
+def mask_secrets(text: str) -> str:
+    """Replace each secret span in *text* with ``[REDACTED]``; keep the rest."""
+    for pattern in SECRET_VALUE_PATTERNS:
+        text = pattern.sub(REDACTED, text)
+    return text
+
+
+class SecretMaskingFilter(logging.Filter):
+    """Logging filter that masks secrets in the formatted message."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        message = record.getMessage()
+        masked = mask_secrets(message)
+        if masked != message:
+            record.msg = masked
+            record.args = None
+        return True
+
 
 _FINGERPRINT_PATTERN = re.compile(r"^1220[0-9a-f]{64}$")
 
@@ -21,7 +68,7 @@ def _redact_value(value: str) -> str:
         return value
     for pattern in SENSITIVE_PATTERNS:
         if pattern.search(value):
-            return "[REDACTED]"
+            return REDACTED
     return value
 
 

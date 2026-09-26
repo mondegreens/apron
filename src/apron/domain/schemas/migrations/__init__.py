@@ -11,6 +11,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from pydantic import BaseModel
+
 MigrationFn = Callable[[dict[str, Any]], dict[str, Any]]
 
 _REGISTRY: dict[tuple[str, int], MigrationFn] = {}
@@ -48,3 +50,18 @@ def migrate(schema_name: str, data: dict[str, Any], target_version: int) -> dict
 def clear_registry() -> None:
     """Remove all registered migrations (for tests only)."""
     _REGISTRY.clear()
+
+
+def load_record[M: BaseModel](cls: type[M], data: dict[str, Any]) -> M:
+    """Load a stored record through the migration path, then validate strictly.
+
+    Every stored record is migrated forward to the current schema version and
+    validated with the model's ``extra="forbid"`` config.  A record with keys
+    the schema does not know fails loudly with a ``ValidationError`` naming
+    the field and its path; nothing is silently stripped.
+    """
+    field = cls.model_fields.get("schema_version")
+    if field is None or not isinstance(field.default, int):
+        return cls.model_validate(data)
+    migrated = migrate(cls.__name__, data, field.default)
+    return cls.model_validate(migrated)

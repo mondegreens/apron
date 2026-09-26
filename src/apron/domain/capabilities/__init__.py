@@ -20,7 +20,7 @@ from apron.domain.fingerprints import (
 
 
 class CapabilitySignature(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     operation: Annotated[str, IDENTITY]

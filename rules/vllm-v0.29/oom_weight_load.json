@@ -1,0 +1,37 @@
+{
+  "schema_version": 4,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "oom_weight_load",
+  "rule_version": 1,
+  "correction_strategy": "retarget_memory",
+  "extraction_schema": {
+    "tried_to_allocate_bytes": {
+      "type": "int",
+      "source": "v1/worker/gpu_model_runner.py:5468 (PyTorch allocator message in '(original error: ...)': 'Tried to allocate X GiB')"
+    },
+    "total_capacity_bytes": {
+      "type": "int",
+      "source": "v1/worker/gpu_model_runner.py:5468 (PyTorch allocator message: 'GPU 0 has a total capacity of X GiB')"
+    },
+    "free_bytes": {
+      "type": "int",
+      "source": "v1/worker/gpu_model_runner.py:5468 (PyTorch allocator message: 'of which X GiB is free')"
+    }
+  },
+  "source_sites": [
+    {
+      "file": "v1/worker/gpu_model_runner.py",
+      "line": 5460
+    }
+  ],
+  "examples": [
+    "Failed to load model - not enough GPU memory. Try lowering --gpu-memory-utilization to free memory for weights, increasing --tensor-parallel-size, or using --quantization. See https://docs.vllm.ai/en/latest/configuration/conserving_memory/ for more tips. (original error: CUDA out of memory. Tried to allocate {x} GiB. GPU 0 has a total capacity of {y} GiB of which {z} MiB is free. ...)"
+  ],
+  "status": "hypothesis",
+  "count": 1,
+  "curation": "Hand-curated for the Phase 1b §10 fix proof: typed fields, each citing the vLLM v0.29.0 line that prints it. The source scanner must not overwrite this file.",
+  "replaces": [
+    "oom"
+  ]
+}

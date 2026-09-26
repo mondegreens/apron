@@ -20,7 +20,7 @@ from apron.domain.fingerprints import (
 
 
 class HardwareSpec(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     gpu_sku: Annotated[str, IDENTITY]
@@ -37,7 +37,7 @@ class HardwareSpec(BaseModel):
 
 
 class ArtifactLocator(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     source_kind: Annotated[str, IDENTITY]
@@ -51,21 +51,21 @@ class ArtifactLocator(BaseModel):
 
 
 class DerivedStatus(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     kind: Annotated[Literal["derived"], IDENTITY]
     derivation_method: Annotated[str, IDENTITY]
     source_references: Annotated[tuple[str, ...], IDENTITY] = ()
 
 
 class ProvenConstraintStatus(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     kind: Annotated[Literal["proven_constraint"], IDENTITY]
     constraint_source: Annotated[str, IDENTITY]
     verification_method: Annotated[str, IDENTITY]
 
 
 class PredictedStatus(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     kind: Annotated[Literal["predicted"], IDENTITY]
     prediction_method: Annotated[str, IDENTITY]
     uncertainty_lower: Annotated[float | None, IDENTITY] = None
@@ -74,7 +74,7 @@ class PredictedStatus(BaseModel):
 
 
 class MeasuredStatus(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     kind: Annotated[Literal["measured"], IDENTITY]
     measurement_method: Annotated[str, IDENTITY]
     execution_fingerprint: Annotated[str, IDENTITY]

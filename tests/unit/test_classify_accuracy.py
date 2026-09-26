@@ -18,23 +18,35 @@ def _classify(error: str) -> str:
 
 class TestOom:
     def test_torch_cuda_oom(self) -> None:
-        assert _classify("torch.cuda.OutOfMemoryError: CUDA error: out of memory") == "oom"
+        assert (
+            _classify("torch.cuda.OutOfMemoryError: CUDA error: out of memory")
+            == "oom_weight_load"
+        )
+
+    def test_weight_load_oom(self) -> None:
+        error = (
+            "Failed to load model - not enough GPU memory. Try lowering "
+            "--gpu-memory-utilization ... (original error: CUDA out of memory. "
+            "Tried to allocate 1.50 GiB. GPU 0 has a total capacity of 23.52 GiB "
+            "of which 1.12 GiB is free.)"
+        )
+        assert _classify(error) == "oom_weight_load"
 
     def test_warmup_oom(self) -> None:
         assert (
             _classify(
                 "CUDA out of memory occurred when warming up sampler with 256 dummy requests."
             )
-            == "oom"
+            == "oom_kv_cache"
         )
 
     def test_kv_cache_oom(self) -> None:
         error = "cache is needed, which is larger than the available KV cache memory (6.20 GiB)."
-        assert _classify(error) == "oom"
+        assert _classify(error) == "oom_kv_cache"
 
     def test_no_available_memory(self) -> None:
         error = "No available memory for the cache blocks."
-        assert _classify(error) == "oom"
+        assert _classify(error) == "oom_kv_cache"
 
 
 class TestMaxModelLen:

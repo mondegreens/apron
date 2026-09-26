@@ -28,7 +28,7 @@ class ComponentMechanism(BaseModel):
     vae_decode, vocoder, or a namespaced extension.
     """
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     mechanism: Annotated[str, IDENTITY]
@@ -41,21 +41,21 @@ class ComponentMechanism(BaseModel):
 
 
 class TextWorkload(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     kind: Annotated[Literal["text"], IDENTITY]
     input_length: Annotated[int, IDENTITY]
     output_length: Annotated[int, IDENTITY]
 
 
 class AudioWorkload(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     kind: Annotated[Literal["audio"], IDENTITY]
     duration_seconds: Annotated[float, IDENTITY]
     chunk_size_ms: Annotated[int | None, IDENTITY] = None
 
 
 class ImageWorkload(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     kind: Annotated[Literal["image"], IDENTITY]
     width: Annotated[int, IDENTITY]
     height: Annotated[int, IDENTITY]
@@ -76,7 +76,7 @@ WorkloadShape = Annotated[
 class CalculatorInput(BaseModel):
     """Consumed inputs for a calculator function."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     mechanism: ComponentMechanism
     workload: TextWorkload | AudioWorkload | ImageWorkload

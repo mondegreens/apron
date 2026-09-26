@@ -384,6 +384,8 @@ def _build_remediation() -> dict[str, Any]:
     )
 
     diagnosis = DiagnosisRule(
+        engine="vllm",
+        engine_version="v0.29.0",
         exception_class="OutOfMemoryError",
         engine_callsite_module="vllm.worker",
         error_family="oom",

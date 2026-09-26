@@ -22,6 +22,19 @@ ARCHITECTURE_MECHANISMS: dict[str, str] = {
 }
 
 
+UNKNOWN_MECHANISM = "unknown"
+
+
+def _is_attention_free(config: dict[str, Any]) -> bool:
+    """No attention heads declared: a state-space (Mamba) or other non-attention model.
+
+    INV-32: such a model is not ``autoregressive_decode`` even though its
+    architecture name ends in ``ForCausalLM``; the calculator has no branch
+    for it, so the mechanism is an explicit unknown.
+    """
+    return not config.get("num_attention_heads")
+
+
 def _has_mla_fields(config: dict[str, Any]) -> bool:
     """Detect Multi-Latent Attention from config.json fields."""
     return config.get("kv_lora_rank") is not None and config.get("qk_rope_head_dim") is not None
@@ -32,6 +45,8 @@ def _infer_mechanism(architecture: str, config: dict[str, Any]) -> str:
         return "mla_decode"
     for suffix, mechanism in ARCHITECTURE_MECHANISMS.items():
         if architecture.endswith(suffix):
+            if mechanism == "autoregressive_decode" and _is_attention_free(config):
+                return UNKNOWN_MECHANISM
             return mechanism
     return architecture
 

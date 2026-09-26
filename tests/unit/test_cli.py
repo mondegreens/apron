@@ -132,7 +132,8 @@ def test_verify_displays_cost_and_deadline(tmp_path: Path):
         json.dumps(
             {
                 "schema_version": 1,
-                "budget": {"max_usd": 5.0},
+                "objective": "verify Qwen3-8B",
+                "budget_limit": 5.0,
                 "permitted_providers": ["runpod"],
             }
         )
@@ -146,11 +147,24 @@ def test_verify_displays_cost_and_deadline(tmp_path: Path):
 
 def test_verify_prompts_without_yes(tmp_path: Path):
     request_file = tmp_path / "request.json"
-    request_file.write_text(json.dumps({"schema_version": 1, "budget": {"max_usd": 5.0}}))
+    request_file.write_text(
+        json.dumps({"schema_version": 1, "objective": "o", "budget_limit": 5.0})
+    )
     result = runner.invoke(
         app, ["verify", str(request_file), "--model", "test/model"], input="n\n"
     )
     assert result.exit_code != 0
+    assert "Proceed with verification?" in result.output
+
+
+def test_verify_rejects_unknown_request_fields_loudly(tmp_path: Path):
+    """F2: the old ``budget.max_usd`` shape used to be read ad hoc; now it is an error."""
+    request_file = tmp_path / "request.json"
+    request_file.write_text(json.dumps({"schema_version": 1, "budget": {"max_usd": 5.0}}))
+    result = runner.invoke(app, ["verify", str(request_file), "--model", "m", "--yes"])
+    assert result.exit_code != 0
+    assert "neither a DecisionRequest nor a DeploymentPlan" in result.output
+    assert "budget" in result.output
 
 
 def test_submit_requires_confirmation():

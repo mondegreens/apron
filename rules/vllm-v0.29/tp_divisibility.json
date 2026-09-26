@@ -1,33 +1,14 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "tp_divisibility",
   "correction_strategy": "reduce_tensor_parallel",
   "extraction_schema": {
-    "total_num_attention_heads": "string",
-    "tensor_parallel_size": "string",
-    "num_q_per_kv": "string",
-    "decode_context_parallel_size": "string",
-    "intermediate_size_per_partition": "string",
-    "group_size": "string",
-    "w13_n": "string",
-    "packed_factor": "string",
-    "hidden_size": "string",
-    "layer_name": "string",
-    "input_size_per_partition": "string",
-    "output_size_per_partition": "string",
-    "embed_dim": "string",
-    "num_heads": "string",
-    "total_num_heads": "string",
-    "tp_size": "string",
-    "adapter_hidden_size": "string",
-    "encoder_attention_heads": "string",
-    "attention_hidden_size": "string",
-    "num_attention_heads": "string",
-    "embedding_dim": "string",
-    "ngram_heads": "string",
-    "ple_embed_dim": "string"
+    "num_heads": {
+      "type": "int",
+      "source": "config/model.py:1415 ('Total number of attention heads ({total_num_attention_heads})', raised at :1414)"
+    }
   },
   "source_sites": [
     {
@@ -199,5 +180,7 @@
     "CompressedTensors WNA16 MoE: gate+up output channels per TP rank (2 * intermediate_size_per_partition = {w13_n}) must be divisible by packed_factor ({self.packed_factor}). Use a TP size where 2 * inte"
   ],
   "status": "hypothesis",
-  "count": 40
+  "count": 40,
+  "rule_version": 1,
+  "curation": "Hand-curated for the Phase 1b §10 fix proof: typed fields, each citing the vLLM v0.29.0 line that prints it. The source scanner must not overwrite this file. gpu_count is not printed by this error; the strategy reads it from the plan's resource_allocation (the requested execution)."
 }

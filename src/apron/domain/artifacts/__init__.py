@@ -18,7 +18,7 @@ from apron.domain.fingerprints import (
 
 
 class FileDigest(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     path: Annotated[str, IDENTITY]
     sha256: Annotated[str, IDENTITY]
@@ -31,7 +31,7 @@ class FileDigest(BaseModel):
 
 
 class ArtifactSourceObservation(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     source_kind: Annotated[str, IDENTITY]
@@ -50,7 +50,7 @@ class ArtifactSourceObservation(BaseModel):
 
 
 class ModelLineage(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     family: Annotated[str, IDENTITY]
@@ -64,7 +64,7 @@ class ModelLineage(BaseModel):
 
 
 class QuantizationSpec(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     weight_format: Annotated[str, IDENTITY]
@@ -88,7 +88,7 @@ class QuantizationSpec(BaseModel):
 
 
 class OfflineTransformSpec(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     producer: Annotated[str, IDENTITY]
@@ -104,7 +104,7 @@ class OfflineTransformSpec(BaseModel):
 
 
 class RuntimeTransformSpec(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     kind: Annotated[str, IDENTITY]

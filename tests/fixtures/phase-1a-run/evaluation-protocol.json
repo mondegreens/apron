@@ -1,13 +1,27 @@
 {
   "schema_version": 1,
-  "scorer_type": "deterministic_exact_match",
-  "seeds": [42],
-  "repetitions": 1,
-  "concurrency": 1,
-  "judge_model": null,
-  "judge_prompt": null,
-  "sampling_temperature": 0,
+  "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+  "task_suite_fingerprint": "1220e96408006e07d5195e411433887559500bfa58a8f533d2db5bab709a73cee159",
+  "application_fingerprint": "1220a7546eb86d288d80a784fba7ddebd59a553d0b679e81b0c443a918ba0269fc1e",
+  "solution_fingerprint": "12203b8609db806e989fd860a368bac270c8a5d48b41c36462ac8d32492f0cfe1bbe",
+  "harness": "deterministic_exact_match",
+  "harness_version": "0.1",
+  "dataset_snapshot": null,
+  "scorer": "deterministic_exact_match",
+  "rubric": null,
   "deterministic_checks": [
     "whitespace_normalized_exact_match"
-  ]
+  ],
+  "judge_model": null,
+  "judge_prompt": null,
+  "sampling_temperature": 0.0,
+  "sampling_top_p": null,
+  "seeds": [
+    42
+  ],
+  "repetitions": 1,
+  "concurrency": 1,
+  "stopping_rules": [],
+  "aggregation_method": "pass_rate",
+  "uncertainty_method": null
 }

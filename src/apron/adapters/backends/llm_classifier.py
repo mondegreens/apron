@@ -11,7 +11,12 @@ import logging
 import re
 from typing import Any
 
-from apron.domain.diagnosis import build_extraction_schemas, build_failure_classes
+from apron.domain.canonical import canonicalize, digest_hex
+from apron.domain.diagnosis import (
+    build_extraction_enums,
+    build_extraction_schemas,
+    build_failure_classes,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +38,46 @@ _NOISE_PATTERNS = re.compile(
 )
 
 
+# vLLM's engine-core wrapper: the real cause is printed above it
+# (v1/engine/utils.py:1320-1322).  Classifying the wrapper line is wrong.
+ENGINE_WRAPPER = "Engine core initialization failed. See root cause above."
+_EXCEPTION_LINE = re.compile(r"^\S*(Error|Exception)\b.*:", re.MULTILINE)
+
+
+def root_cause_window(error: str, context_lines: int = 40) -> str | None:
+    """The root-cause exception above vLLM's engine-core wrapper, with context.
+
+    Returns ``None`` when the log has no wrapper.  Otherwise returns the
+    ``context_lines`` before the last exception line that precedes the
+    wrapper, through that line — so the classifier sees the cause, never
+    only the wrapper.
+    """
+    at = error.rfind(ENGINE_WRAPPER)
+    if at < 0:
+        return None
+    wrapper_line_start = error.rfind("\n", 0, at) + 1
+    before = error[:wrapper_line_start]
+    causes = list(_EXCEPTION_LINE.finditer(before))
+    if not causes:
+        return None
+    cause = causes[-1]
+    line_end = before.find("\n", cause.end())
+    line_end = len(before) if line_end < 0 else line_end
+    lines = before[:line_end].splitlines()
+    return "\n".join(lines[-context_lines:])
+
+
 def _extract_relevant(error: str, limit: int = 8000) -> str:
-    """Extract error-relevant lines, stripping download/init noise."""
+    """Extract error-relevant lines, stripping download/init noise.
+
+    When the log ends in the engine-core wrapper, the root-cause window is
+    placed first so truncation can never drop it.
+    """
+    window = root_cause_window(error)
+    if window is not None:
+        tail = error[-min(2000, limit // 4) :]
+        joined = f"ROOT CAUSE (above the engine-core wrapper):\n{window}\n...\n{tail}"
+        return joined[:limit]
     if len(error) <= limit:
         return error
     lines = error.splitlines(keepends=True)
@@ -54,17 +97,27 @@ Failure classes:
 {class_list}
 - unknown: None of the above, or insufficient information to classify
 
+When the log ends with a wrapper such as "Engine core initialization failed. See root cause \
+above.", classify the root-cause exception printed above the wrapper — never the wrapper itself.
+
 For each extracted value, include the verbatim substring from the error where you found it.
-If a value is not present in the error text, set it to null — never guess.\
+If a value is not present in the error text, set it to null — never guess.
+Byte fields (names ending in _bytes) are integers: convert "1.50 GiB" to 1610612736.\
 """
 
 
 _CLASS_DESCRIPTIONS: dict[str, str] = {
-    "oom": (
-        "Out of memory — CUDA OOM, KV cache insufficient, or weight loading fails. "
-        "Includes errors mentioning 'available KV cache memory', 'OutOfMemoryError', "
-        "'estimated maximum model length'. Use this even when max_model_len appears "
-        "in the error, if the root cause is insufficient memory."
+    "oom_weight_load": (
+        "Out of memory while loading model weights: 'Failed to load model - not enough "
+        "GPU memory' with a torch.cuda.OutOfMemoryError (original error: CUDA out of "
+        "memory. Tried to allocate ...). The weights do not fit on this GPU."
+    ),
+    "oom_kv_cache": (
+        "Memory pressure after the weights loaded: the KV cache cannot hold one full "
+        "sequence ('larger than the available KV cache memory', 'estimated maximum "
+        "model length'), 'No available memory for the cache blocks', or CUDA OOM while "
+        "warming up the sampler/pooler with N dummy requests. Use this even when "
+        "max_model_len appears in the error, if the root cause is insufficient memory."
     ),
     "max_model_len": (
         "User-specified max_model_len exceeds the model's derived maximum from "
@@ -108,8 +161,10 @@ def _build_extraction_tool(
     failure_class: str,
     classes: list[str],
     schemas: dict[str, list[tuple[str, type]]],
+    enums: dict[str, dict[str, tuple[str, ...]]] | None = None,
 ) -> dict[str, Any]:
     schema = schemas.get(failure_class, [])
+    allowed = (enums or {}).get(failure_class, {})
 
     properties: dict[str, Any] = {
         "failure_class": {"type": "string", "enum": classes},
@@ -129,6 +184,8 @@ def _build_extraction_tool(
             "type": [type_str, "null"],
             "description": "Extracted from error text. Null if not found.",
         }
+        if field_name in allowed:
+            properties[field_name]["enum"] = [*allowed[field_name], None]
         properties[f"{field_name}_evidence"] = {
             "type": ["string", "null"],
             "description": (
@@ -171,17 +228,31 @@ def _classify_tool(classes: list[str]) -> dict[str, Any]:
 
 _classification_cache: dict[str, dict[str, Any]] = {}
 
+DEFAULT_CLASSIFIER_MODEL = "claude-haiku-4-5-20251001"
+
+
+def classifier_input_digest(model: str, system_prompt: str, classifier_input: str) -> str:
+    """Digest of exactly what the classifier sees (F6 provenance)."""
+    return digest_hex(
+        canonicalize({"model": model, "system": system_prompt, "input": classifier_input})
+    )
+
 
 def classify_and_extract(
     error: str,
     rules: list[dict[str, Any]] | None = None,
-    model: str = "claude-haiku-4-5-20251001",
+    model: str = DEFAULT_CLASSIFIER_MODEL,
 ) -> dict[str, Any]:
     """Classify an error and extract typed values via LLM.
 
     Results are cached by error content hash within the process
     lifetime — same error always returns the same classification,
     preserving determinism for records and corrections.
+
+    Every result carries ``classifier_model_id`` and
+    ``classifier_input_digest`` so a remediation record can state which
+    classifier saw which input (F6).  The API key comes from the
+    environment only (``anthropic.Anthropic()`` reads ``ANTHROPIC_API_KEY``).
     """
     import hashlib
 
@@ -200,6 +271,10 @@ def classify_and_extract(
 
     client = anthropic.Anthropic()
     truncated = _extract_relevant(error, limit=8000)
+    provenance = {
+        "classifier_model_id": model,
+        "classifier_input_digest": classifier_input_digest(model, system_prompt, truncated),
+    }
     logger.debug(
         "Classifier input (%d→%d chars): ...%s",
         len(error),
@@ -224,18 +299,25 @@ def classify_and_extract(
 
     tool_use = next((b for b in classification.content if b.type == "tool_use"), None)
     if tool_use is None:
-        unknown = {"failure_class": "unknown", "confidence": 0.0, "evidence_span": ""}
+        unknown = {
+            "failure_class": "unknown",
+            "confidence": 0.0,
+            "evidence_span": "",
+            **provenance,
+        }
         _classification_cache[cache_key] = unknown
         return unknown
 
-    result = dict(tool_use.input)  # type: ignore[arg-type]
+    result = {**dict(tool_use.input), **provenance}  # type: ignore[arg-type]
     failure_class = str(result.get("failure_class", "unknown"))
 
     if failure_class == "unknown" or failure_class not in schemas:
         _classification_cache[cache_key] = result
         return result
 
-    extract_tool: Any = _build_extraction_tool(failure_class, classes, schemas)
+    extract_tool: Any = _build_extraction_tool(
+        failure_class, classes, schemas, build_extraction_enums(rules)
+    )
     extraction = client.messages.create(
         model=model,
         max_tokens=512,
@@ -261,6 +343,7 @@ def classify_and_extract(
     extracted["failure_class"] = failure_class
     extracted["confidence"] = result.get("confidence", 0.0)
     extracted["evidence_span"] = result.get("evidence_span", "")
+    extracted.update(provenance)
 
     verified = _verify_evidence(extracted, error, schemas)
     _classification_cache[cache_key] = verified

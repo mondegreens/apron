@@ -1,17 +1,25 @@
 """Unit tests for DeterministicScorer EvaluationAdapter.
 
-Collects the EvaluationAdapter conformance suite via pytest_plugins.
+Collects the EvaluationAdapter conformance suite via pytest_plugins: the
+suite's tests are imported below and run against the real scorer, with only
+the HTTP call to the endpoint mocked.
 """
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+from conformance.test_evaluation_adapter import *  # noqa: F403 — the shared suite, on the real adapter
 
 from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
 from apron.domain.protocols import EvaluationAdapter
+
+pytest_plugins = ["conformance.plugin"]
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -223,3 +231,102 @@ def test_execute_sends_temperature_zero_and_seed(scorer: DeterministicScorer) ->
     body = call_args.kwargs.get("json") or call_args[1].get("json")
     assert body["temperature"] == 0
     assert body["seed"] == 42
+
+
+# ---------------------------------------------------------------------------
+# Conformance suite fixtures (F9) — the real scorer, network mocked
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def evaluation_adapter() -> Iterator[DeterministicScorer]:
+    """The real scorer; the endpoint answers "4" to everything, so c2 fails."""
+    with patch(
+        "apron.adapters.evaluations.deterministic_scorer.httpx.post",
+        return_value=_make_fake_response("4"),
+    ):
+        yield DeterministicScorer()
+
+
+@pytest.fixture()
+def evaluation_input() -> dict[str, Any]:
+    return {
+        "scorer_type": "deterministic_exact_match",
+        "cases": [
+            {"id": "c1", "prompt": "2+2?", "expected": "4", "max_tokens": "8"},
+            {"id": "c2", "prompt": "Capital of France?", "expected": "Paris", "max_tokens": "8"},
+        ],
+    }
+
+
+@pytest.fixture()
+def unknown_evaluation_input() -> dict[str, Any]:
+    return {"scorer_type": "llm_judge"}
+
+
+# ---------------------------------------------------------------------------
+# Template-aware kwargs and declared normalization (§9.1 step 4, M9)
+# ---------------------------------------------------------------------------
+
+
+def _sent_body(scorer: DeterministicScorer, protocol: dict[str, Any]) -> dict[str, Any]:
+    with patch(
+        "apron.adapters.evaluations.deterministic_scorer.httpx.post",
+        return_value=_make_fake_response("4"),
+    ) as post:
+        scorer.execute(scorer.prepare(protocol), "http://e")
+    return post.call_args.kwargs["json"]
+
+
+_ONE = [{"id": "c1", "prompt": "q", "expected": "4", "max_tokens": "8"}]
+
+
+def test_chat_template_kwargs_not_sent_by_default(scorer: DeterministicScorer) -> None:
+    body = _sent_body(scorer, {"scorer_type": "deterministic_exact_match", "cases": _ONE})
+    assert "chat_template_kwargs" not in body
+    assert body["max_tokens"] == 8
+
+
+def test_chat_template_kwargs_sent_when_template_accepts(scorer: DeterministicScorer) -> None:
+    protocol = {
+        "scorer_type": "deterministic_exact_match",
+        "cases": _ONE,
+        "chat_template_kwargs": {"enable_thinking": False},
+    }
+    assert _sent_body(scorer, protocol)["chat_template_kwargs"] == {"enable_thinking": False}
+
+
+def test_declared_normalization_is_applied(scorer: DeterministicScorer) -> None:
+    protocol = scorer.prepare(
+        {
+            "cases": [{"id": "c1", "prompt": "q", "expected": "Paris", "max_tokens": "8"}],
+            "deterministic_checks": [
+                "whitespace_normalized_exact_match",
+                "strip_terminal_punctuation",
+                "casefold",
+            ],
+        }
+    )
+    with patch(
+        "apron.adapters.evaluations.deterministic_scorer.httpx.post",
+        return_value=_make_fake_response("  paris. "),
+    ):
+        attempts = scorer.execute(protocol, "http://e")
+    assert attempts[0]["accepted"] is True
+
+
+def test_undeclared_normalization_is_not_applied(scorer: DeterministicScorer) -> None:
+    protocol = scorer.prepare(
+        {"cases": [{"id": "c1", "prompt": "q", "expected": "Paris", "max_tokens": "8"}]}
+    )
+    with patch(
+        "apron.adapters.evaluations.deterministic_scorer.httpx.post",
+        return_value=_make_fake_response("Paris."),
+    ):
+        attempts = scorer.execute(protocol, "http://e")
+    assert attempts[0]["accepted"] is False
+
+
+def test_unknown_check_is_an_error(scorer: DeterministicScorer) -> None:
+    with pytest.raises(ValueError, match="Unknown deterministic checks"):
+        scorer.prepare({"cases": _ONE, "deterministic_checks": ["fuzzy_match"]})
