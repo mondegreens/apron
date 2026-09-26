@@ -241,7 +241,10 @@ def test_l0f_failure_reproduction() -> None:
         }
         (RUN_DIR / "l0f-logs").mkdir(parents=True, exist_ok=True)
         (RUN_DIR / "l0f-logs" / f"class{case.failure_class}.log").write_text(outcome.log_tail)
-    _write("l0f-results.json", results)
+    path = RUN_DIR / "l0f-results.json"
+    merged = json.loads(path.read_text()) if path.exists() else {}
+    merged.update({str(k): v for k, v in results.items()})  # classes run in batches
+    _write("l0f-results.json", merged)
     # Reported, not asserted: a broken plan that does not fail as named is
     # replaced (§6.1) — that is a finding for the owner, not a test failure.
 

@@ -62,3 +62,14 @@ unless marked.  Machine events are in `events.jsonl`.
   (RunPod appears to count from container start, after the image pull).  Both
   are recorded (M3); the ledger settles on the local clock (conservative).
 - Spend so far ≈ $0.39 (local clock).
+- **Incident (~17:10): prek ran the suite with keys loaded.**  I ran
+  `prek run --all-files` in a shell where `.env` was sourced; the `tests`
+  hook then ran the key-gated integration tests (`test_fixture_run`,
+  `test_level2_real_llm`, `test_level3_gpu`) live for ~10 min before I killed
+  it.  After: 0 pods on the account, `currentSpendPerHr` 0, no leaked-pod
+  log, no new ledger or record entries.  Likely spend: a few Anthropic Haiku
+  calls (cents); not provable from here.  Fix: the `tests` hook now runs
+  `env -u RUNPOD_API_KEY -u ANTHROPIC_API_KEY -u HF_TOKEN`, verified by a
+  full prek run with the keys loaded.
+- RunPod balance read at the same time: $10.07 — enough for the approved L0
+  (≈$7.49), not for the full cohort (plan ≈$55–70): top-up needed before L5.

@@ -39,7 +39,9 @@ repos:
 
       - id: tests
         name: tests
-        entry: uv run pytest tests -q
+        # Keys stripped: a local check must never create pods or call paid APIs,
+        # even from a shell that has them (opt-in GPU/LLM tests then skip).
+        entry: env -u RUNPOD_API_KEY -u ANTHROPIC_API_KEY -u HF_TOKEN uv run pytest tests -q
         language: system
         types: [python]
         pass_filenames: false
