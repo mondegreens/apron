@@ -50,10 +50,13 @@ def _write(name: str, data: object) -> None:
 # ---------------------------------------------------------------------------
 
 _PROVISION_AND_HANG = """
-import sys, time
+import os, sys, time
+from pathlib import Path
 from apron.adapters.backends.runpod import RunPodTarget
+key = os.environ.get("RUNPOD_SSH_KEY_PATH") or RunPodTarget._detect_ssh_key()
+public_key = Path(key + ".pub").read_text().strip()
 t = RunPodTarget(gpu_type=sys.argv[1], leak_log=None)
-t.provision(env=RunPodTarget.build_env())
+t.provision(env=RunPodTarget.build_env(ssh_public_key=public_key), wait_timeout=1800)
 print(t.pod_id, flush=True)
 time.sleep(3600)
 """
@@ -66,6 +69,8 @@ def test_l0a_sigkill_then_orphan_cleanup() -> None:
     gpu = os.environ.get("APRON_L0A_GPU", "NVIDIA RTX A5000")
     probe = RunPodTarget()
     before = probe.list_apron_pods()
+    # The cleanup below uses max_age 0: it would terminate any apron pod.
+    assert not before, f"apron pods already running, refusing to start: {before}"
     child = subprocess.Popen(
         [sys.executable, "-c", _PROVISION_AND_HANG, gpu], stdout=subprocess.PIPE, text=True
     )
