@@ -282,3 +282,24 @@ def test_stock_status_asks_secure_stock_under_the_image_cuda(tmp_path: Path) -> 
     empty = {"gpuTypes": [{"id": "x", "lowestPrice": {"stockStatus": None}}]}
     with patch.object(target, "_gql_status", return_value=empty):
         assert target.stock_status() is None
+
+
+def test_execute_gives_up_on_a_command_that_never_finishes(tmp_path: Path) -> None:
+    """recv_exit_status ignores the channel timeout; the deadline must be ours (L0-A3)."""
+    from apron.adapters.backends.runpod import RemoteCommandTimeout
+
+    channel = MagicMock()
+    channel.status_event.wait.return_value = False  # never finishes
+    stdout = MagicMock(channel=channel)
+    ssh = MagicMock()
+    ssh.exec_command.return_value = (MagicMock(), stdout, MagicMock())
+    target = _target(tmp_path)
+    target._ssh = ssh
+    with (
+        patch.object(target, "_ensure_ssh"),
+        pytest.raises(RemoteCommandTimeout, match="did not finish in 7s"),
+    ):
+        target.execute("vllm serve &", timeout=7)
+    channel.status_event.wait.assert_called_once_with(7)
+    channel.close.assert_called_once()
+    assert ssh.exec_command.call_count == 1  # a timeout is not retried like a lost connection

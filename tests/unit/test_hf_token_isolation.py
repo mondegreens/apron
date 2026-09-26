@@ -24,7 +24,7 @@ class _Recorder:
         self.commands: list[str] = []
         self._replies = replies or {}
 
-    def execute(self, command: str) -> dict[str, Any]:
+    def execute(self, command: str, timeout: int | None = None) -> dict[str, Any]:
         self.commands.append(command)
         for needle, reply in self._replies.items():
             if needle in command:
@@ -50,8 +50,9 @@ def test_boot_serves_local_path_with_tokens_unset() -> None:
     assert "hf_" not in launch
     # The container environment (PATH with ninja, CUDA_HOME) is loaded first,
     # then the tokens are removed: L0-A3's first boot died on a missing ninja.
-    assert launch.startswith(". /etc/apron_environment && ")
+    assert launch.startswith("( . /etc/apron_environment && ")
     assert launch.index("/etc/apron_environment") < launch.index("env -u HF_TOKEN")
+    assert launch.endswith("2>&1 < /dev/null &")
 
 
 def test_download_reads_token_file_and_never_carries_the_value() -> None:

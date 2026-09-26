@@ -161,6 +161,10 @@ def _age_from(pod: dict[str, Any], now: float) -> int:
     return int((pod.get("runtime") or {}).get("uptimeInSeconds") or 0)
 
 
+class RemoteCommandTimeout(RuntimeError):
+    """A remote command ran past its deadline (not a connection loss: never retried)."""
+
+
 class RunPodTarget:
     """ExecutionTarget for RunPod Secure Cloud GPUs."""
 
@@ -493,14 +497,28 @@ class RunPodTarget:
         status = lowest.get("stockStatus")
         return str(status) if status else None
 
-    def execute(self, command: str, retries: int = 2) -> dict[str, Any]:
+    def execute(
+        self, command: str, retries: int = 2, timeout: int | None = None
+    ) -> dict[str, Any]:
+        """Run *command* over SSH; raise RemoteCommandTimeout past the deadline.
+
+        paramiko's ``recv_exit_status`` ignores the channel timeout, so a command
+        whose channel never closes would block forever on a billed pod (L0-A3).
+        """
         import paramiko as _paramiko
 
+        deadline = timeout or self._command_timeout
         for attempt in range(retries + 1):
             try:
                 self._ensure_ssh()
                 assert self._ssh is not None
-                _, stdout, stderr = self._ssh.exec_command(command, timeout=self._command_timeout)
+                _, stdout, stderr = self._ssh.exec_command(command, timeout=deadline)
+                if not stdout.channel.status_event.wait(deadline):
+                    stdout.channel.close()
+                    raise RemoteCommandTimeout(
+                        f"remote command did not finish in {deadline}s: "
+                        f"{mask_secrets(command[:120])}"
+                    )
                 exit_code = stdout.channel.recv_exit_status()
                 return {
                     "stdout": stdout.read().decode(),

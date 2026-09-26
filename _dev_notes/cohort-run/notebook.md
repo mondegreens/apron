@@ -126,3 +126,19 @@ unless marked.  Machine events are in `events.jsonl`.
   4x A100-SXM ($6.36/h).  The TP divisibility check does not depend on the
   GPU model.  The earlier batch (classes 1,2,3,5) was stopped while waiting
   for 4x4090 stock (no pod, no open hold); class 5 was re-queued last.
+- **Class 4 (gemma-2-2b-it float16, real Gemma, 4090, $0.07): failed as named.**
+- **Class 6 re-run (H100, with allow_deprecated_quantization, $0.31): failed as
+  named** at the capability check.
+- **L0-A3 run 1, third attempt (23:36-23:56 UTC): hung — my bug.**  Owner
+  asked whether the pod was working; I checked inside it over SSH: vLLM was
+  healthy (/health 200, 21.5 GiB in use) but had received no request.  The
+  launch `. env && cd && env … nohup vllm … &` backgrounds the whole list; the
+  subshell (not exec'd since the env-file change) kept the SSH channel's
+  output open, so the launch command never returned and the harness never
+  polled health.  paramiko's recv_exit_status ignores the channel timeout, so
+  nothing bounded the wait.  Stopped with SIGINT: `finally` tore the pod
+  down; the next step's ledger replay settled the open hold at the estimate
+  ($0.48, flagged `replayed:estimate`).  Fixes: the launch redirects the
+  whole group and execs vLLM (a pipe test reproduces the hang: old 8.0 s vs
+  new 0.0 s); `execute()` enforces its own deadline and raises
+  RemoteCommandTimeout (never retried); downloads get a longer one.

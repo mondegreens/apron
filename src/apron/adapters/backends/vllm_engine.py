@@ -88,6 +88,32 @@ def collapse_repeats(log: str) -> str:
     return "\n".join(out)
 
 
+def launch_command(
+    serve: str,
+    *,
+    env_file: str | None = None,
+    log: str | None = None,
+    bin_dir: str = "/opt/venv/bin/",
+) -> str:
+    """The detached ``vllm serve`` launch sent over SSH.
+
+    - The container environment is loaded first: a non-interactive SSH command
+      gets sshd's default environment, and without PATH/CUDA_HOME FlashInfer's
+      JIT cannot find ninja or nvcc (L0-A3).  The export holds no token, and
+      ``env -u`` removes the tokens after it anyway (F7).
+    - The whole group's stdin/stdout/stderr are redirected and vLLM is exec'd:
+      otherwise a background subshell keeps the SSH channel's output open and
+      the command never returns while vLLM runs (L0-A3 hung on exactly that).
+    """
+    env_file = env_file or CONTAINER_ENV
+    log = log or VLLM_LOG
+    return (
+        f"( . {env_file} && cd /workspace && "
+        f"exec env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 "
+        f"{bin_dir}{serve} ) > {log} 2>&1 < /dev/null &"
+    )
+
+
 # The container environment start.sh exports for SSH sessions (PATH, CUDA_*, ...).
 CONTAINER_ENV = "/etc/apron_environment"
 VLLM_PROCESS_PATTERN = "bin/[v]llm serve|[V]LLM::"
@@ -425,7 +451,7 @@ class VllmEngineAdapter:
             f"{shlex.quote(model_id)} {shlex.quote(dest)} 2>&1 | tail -20"
         )
         start = time.monotonic()
-        result = target.execute(command)
+        result = target.execute(command, timeout=timeout + 120)
         return {
             "ok": result.get("exit_code", 1) == 0,
             "seconds": round(time.monotonic() - start, 1),
@@ -440,15 +466,7 @@ class VllmEngineAdapter:
         """
         model_id = plan.resource_allocation.get("model_id", "")
         serve = self._build_serve_command(plan, target, model_path=self.model_dir(model_id))
-        # A non-interactive SSH command gets sshd's default environment, not
-        # the container's: without PATH/CUDA_HOME from start.sh's export,
-        # FlashInfer's JIT cannot find ninja or nvcc (L0-A3).  The export
-        # holds no token; env -u runs after it anyway.
-        command = (
-            f". {CONTAINER_ENV} && cd /workspace && "
-            f"env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 "
-            f"nohup /opt/venv/bin/{serve} > {VLLM_LOG} 2>&1 &"
-        )
+        command = launch_command(serve)
         start = time.monotonic()
         target.execute(command)
         deadline = start + health_timeout

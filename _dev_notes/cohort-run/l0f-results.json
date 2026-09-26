@@ -3,11 +3,22 @@
     "family": "quant_compute_capability",
     "call_site": "config/vllm.py:791",
     "healthy": false,
-    "failed_as_named": false,
+    "failed_as_named": true,
     "harness_failures": [],
     "failed_boot_digests": [
-      "12202f6bb99809123f803dde4504f383ea73441de5a21ea108c9ea39271cbd4c5eb0"
+      "12206934f05d600271723a5ac029b87c9b0ad51380cc5a1f7f47beb8cf7b333f8392"
     ],
-    "cost": 0.606296
+    "cost": 0.309909
+  },
+  "4": {
+    "family": "dtype_incompatible",
+    "call_site": "config/model.py:2262",
+    "healthy": false,
+    "failed_as_named": true,
+    "harness_failures": [],
+    "failed_boot_digests": [
+      "12209c87b885bbbdfdd0f97817b184ea0ce5d6b287c0e2c5317ab981af67a5a1c881"
+    ],
+    "cost": 0.068333
   }
 }

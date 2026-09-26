@@ -44,7 +44,7 @@ class _SshLogTarget:
     kind = "rented-provider"
     execution_fingerprint = "1220" + "ee" * 32
 
-    def execute(self, command: str) -> dict[str, Any]:
+    def execute(self, command: str, timeout: int | None = None) -> dict[str, Any]:
         if "curl" in command:
             return {"stdout": "", "stderr": "", "exit_code": 0}
         if "mem_get_info" in command:
@@ -120,7 +120,7 @@ class FakeTarget:
             compute_capability="8.9",
         )
 
-    def execute(self, command: str) -> dict[str, Any]:
+    def execute(self, command: str, timeout: int | None = None) -> dict[str, Any]:
         return {"stdout": "", "stderr": "", "exit_code": 0}
 
     def collect(self, paths: list[str] | None = None) -> dict[str, Any]:
@@ -415,3 +415,30 @@ def test_waiting_heartbeat_is_folded_so_the_tail_keeps_the_cause() -> None:
     assert sum("Waiting for 1 local" in line for line in folded) == 1
     assert "[... 4 more 'waiting for core engine' lines]" in folded
     assert folded[-1].endswith("Engine core initialization failed.")
+
+
+def test_launch_detaches_so_the_ssh_command_returns(tmp_path: Path) -> None:
+    """L0-A3 hung: a background subshell held the SSH channel open while vLLM ran.
+
+    A pipe behaves like sshd's channel (both wait for every holder of stdout to
+    close), so the launch must return at once while the server keeps running.
+    """
+    import subprocess
+    import time
+
+    from apron.adapters.backends.vllm_engine import launch_command
+
+    env_file = tmp_path / "env.sh"
+    env_file.write_text("export APRON_TEST=1\n")
+    command = launch_command(
+        "sleep 5", env_file=str(env_file), log=str(tmp_path / "v.log"), bin_dir=""
+    ).replace("cd /workspace", f"cd {tmp_path}")
+    start = time.monotonic()
+    proc = subprocess.Popen(
+        ["bash", "-c", command],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    proc.communicate(timeout=10)
+    assert time.monotonic() - start < 2, "the launch held the channel open"

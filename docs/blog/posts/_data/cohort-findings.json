@@ -1,10 +1,10 @@
 {
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 1.25145,
+    "failed_boot_total": 1.629692,
     "ledger_classifier": 0,
-    "ledger_settled": 1.25145,
-    "ledger_spent": 1.25145,
+    "ledger_settled": 2.106692,
+    "ledger_spent": 2.106692,
     "per_solution": [
       {
         "cost": 0.606296,
@@ -16,6 +16,18 @@
         "model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
         "records": [
           "12202f6bb99809123f803dde4504f383ea73441de5a21ea108c9ea39271cbd4c5eb0"
+        ]
+      },
+      {
+        "cost": 0.309909,
+        "failed_boot_cost": 0.309909,
+        "failed_boots": 1,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "class6-broken",
+        "model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
+        "records": [
+          "12206934f05d600271723a5ac029b87c9b0ad51380cc5a1f7f47beb8cf7b333f8392"
         ]
       },
       {
@@ -57,6 +69,18 @@
         ]
       },
       {
+        "cost": 0.068333,
+        "failed_boot_cost": 0.068333,
+        "failed_boots": 1,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "class4-broken",
+        "model": "google/gemma-2-2b-it",
+        "records": [
+          "12209c87b885bbbdfdd0f97817b184ea0ce5d6b287c0e2c5317ab981af67a5a1c881"
+        ]
+      },
+      {
         "cost": 0.015737,
         "failed_boot_cost": 0.015737,
         "failed_boots": 1,
@@ -69,7 +93,7 @@
         ]
       }
     ],
-    "records_total": 1.25145
+    "records_total": 1.629692
   },
   "fixes": [
     {
@@ -111,7 +135,7 @@
   ],
   "memory": [],
   "prediction_errors": [],
-  "record_count": 13,
+  "record_count": 17,
   "repeat_measurements": [],
   "serving": [],
   "setup": {
@@ -124,7 +148,7 @@
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-26T23:30:45.731723+00:00",
+    "last_event": "2026-09-26T23:56:06.901392+00:00",
     "models_measured": [],
     "providers": [
       "runpod"
