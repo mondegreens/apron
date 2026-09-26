@@ -164,3 +164,23 @@ def test_spent_never_exceeds_authorized_when_actuals_stay_within_holds(ops) -> N
             t.record_spend(amount * fraction, "s")
         assert t.spent <= t.authorized + 1e-9
         assert t.spent + t.held <= t.authorized + 1e-9
+
+
+def test_replay_settles_every_open_hold_even_past_the_cap() -> None:
+    """Two leaked pods whose real cost passes the cap: both are settled and flagged."""
+    ledger = _MemoryLedger()
+    crashed = _tracker(authorized=10.0, ledger=ledger)
+    crashed.hold(4.0, "a")
+    crashed.annotate_hold("a", "pod-a")
+    crashed.hold(4.0, "b")
+    crashed.annotate_hold("b", "pod-b")
+
+    replayed = BudgetTracker.replay(
+        authorized=10.0, ledger=ledger, clock=_Clock(), pod_cost=lambda pod: 7.0
+    )
+    settles = [e for e in ledger.read_all() if e["op"] == "settle"]
+    assert [e["label"] for e in settles] == ["a", "b"]
+    assert replayed.spent == pytest.approx(14.0)
+    assert replayed.holds == {}
+    assert "over_authorized" in replayed.flags
+    assert not replayed.can_afford(0.01)

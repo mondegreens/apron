@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -59,9 +60,17 @@ class TestScanSource:
 
 
 class TestClassifyError:
-    def test_oom(self) -> None:
+    def test_oom_weight_load(self) -> None:
         entry = {"message": "CUDA out of memory during warmup", "file": "worker.py"}
-        assert classify_error(entry) == "oom"
+        assert classify_error(entry) == "oom_weight_load"
+
+    def test_oom_kv_cache(self) -> None:
+        entry = {
+            "message": "{estimated} KV cache is needed, which is larger than the available "
+            "KV cache memory",
+            "file": "kv_cache_utils.py",
+        }
+        assert classify_error(entry) == "oom_kv_cache"
 
     def test_max_model_len(self) -> None:
         entry = {"message": "max_model_len (131072) is greater", "file": "config/model.py"}
@@ -135,3 +144,18 @@ class TestDeriveCorrectionSpec:
         }
         spec = derive_correction_spec(entry)
         assert spec["action"] == "fallback"
+
+
+def test_scan_never_overwrites_curated_or_promoted_rules(tmp_path: Path) -> None:
+    from apron.adapters.backends.source_scanner import _must_keep
+
+    curated = tmp_path / "tp_divisibility.json"
+    curated.write_text(json.dumps({"curation": "hand-checked", "status": "hypothesis"}))
+    promoted = tmp_path / "dtype_incompatible.json"
+    promoted.write_text(json.dumps({"status": "mechanism_verified"}))
+    scanned = tmp_path / "lora_config.json"
+    scanned.write_text(json.dumps({"status": "hypothesis"}))
+    assert _must_keep(curated)
+    assert _must_keep(promoted)
+    assert not _must_keep(scanned)
+    assert not _must_keep(tmp_path / "new_family.json")

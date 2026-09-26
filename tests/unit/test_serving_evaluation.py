@@ -60,7 +60,10 @@ def test_tpot_fail() -> None:
     assert result.reasons == ("p99_tpot_ms 150.0 exceeds SLO 100.0",)
 
 
-def test_none_declared_is_a_measurement_not_a_pass() -> None:
+def test_none_declared_is_reported_as_such_and_violates_nothing() -> None:
+    """No SLO declared: the measurement is stored with verdict ``none_declared``;
+    nothing was promised, so nothing is violated (D2 — measure against the
+    declared SLO).  Exit gate item 5 counts only computed pass/fail verdicts."""
     result = evaluate_serving_slos(_report(), ServingWorkloadSpec(concurrency=4))
     assert result.verdict == "none_declared"
     assert result.passed

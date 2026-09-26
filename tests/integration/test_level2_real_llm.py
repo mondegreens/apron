@@ -29,6 +29,7 @@ from conftest import FakeDiagnosisEngine
 
 from apron.adapters.backends.llm_classifier import classify_and_extract
 from apron.adapters.backends.rule_loader import load_rules
+from apron.application.orchestration.correction import CatalogEntry, CorrectionContext
 from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
 from apron.domain.schemas.primitives import HardwareSpec
 from apron.domain.schemas.solutions import DeploymentPlan
@@ -123,7 +124,7 @@ class TestOomKvCache:
     """Qwen3-1.7B on 4090 with --max-model-len 131072.
 
     This error mentions both KV cache and max_model_len — the LLM must
-    classify as oom (KV cache), not max_model_len.
+    classify as oom_kv_cache, not max_model_len.
     """
 
     ERROR = (
@@ -139,14 +140,13 @@ class TestOomKvCache:
     ) -> None:
         llm_result = llm_engine.classify(self.ERROR)
         fake_result = fake_engine.classify(self.ERROR)
-        assert llm_result["failure_class"] == "oom"
+        assert llm_result["failure_class"] == "oom_kv_cache"
         assert fake_result["failure_class"] == llm_result["failure_class"]
 
     def test_extraction(self, llm_engine: LlmDiagnosisEngine) -> None:
-        extracted = llm_engine.extract(self.ERROR, "oom")
-        has_max_len = extracted.get("max_model_len") is not None
-        has_estimated = extracted.get("estimated_msg") is not None
-        assert has_max_len or has_estimated
+        extracted = llm_engine.extract(self.ERROR, "oom_kv_cache")
+        # oom_kv_cache declares a typed int (kv_cache_utils.py:876 prints it).
+        assert extracted.get("estimated_max_model_len") == 8192
 
     def test_correction(
         self,
@@ -165,7 +165,7 @@ class TestOomKvCache:
             hardware_4090,
             rules,
         )
-        assert result.failure_class == "oom"
+        assert result.failure_class == "oom_kv_cache"
         assert result.corrected_plan is not None
         corrected_config = result.corrected_plan.engine_configuration
         corrected_len = int(corrected_config.get("max_model_len", "131072"))
@@ -188,7 +188,7 @@ class TestOomTorch:
     ) -> None:
         llm_result = llm_engine.classify(self.ERROR)
         fake_result = fake_engine.classify(self.ERROR)
-        assert llm_result["failure_class"] == "oom"
+        assert llm_result["failure_class"] == "oom_weight_load"
         assert fake_result["failure_class"] == llm_result["failure_class"]
 
     def test_correction(
@@ -203,6 +203,9 @@ class TestOomTorch:
                 "max_num_seqs": "256",
             },
         )
+        a6000 = HardwareSpec(
+            gpu_sku="NVIDIA RTX A6000", total_memory_bytes=48 * (1 << 30), compute_capability="8.6"
+        )
         result = run_diagnosis_pipeline(
             self.ERROR,
             llm_engine,
@@ -210,10 +213,14 @@ class TestOomTorch:
             {"num_attention_heads": 32, "num_kv_heads": 4},
             hardware_4090,
             rules,
+            correction_context=CorrectionContext(
+                catalog=(CatalogEntry(hardware_4090, 0.69), CatalogEntry(a6000, 0.49)),
+                predicted_total_bytes=30_000_000_000,
+            ),
         )
-        assert result.failure_class == "oom"
+        assert result.failure_class == "oom_weight_load"
         assert result.corrected_plan is not None
-        assert result.corrected_plan.engine_configuration["gpu_memory_utilization"] == "0.90"
+        assert result.corrected_plan.resource_allocation["gpu_sku"] == "NVIDIA RTX A6000"
 
 
 class TestMaxModelLen:

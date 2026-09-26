@@ -17,7 +17,7 @@ The specification, published before the code.
 - [`target-architecture.md`](docs/target-architecture.md), [`phase-plan.md`](docs/phase-plan.md) and [`framework-spec.md`](docs/framework-spec.md): the shape, the exit gates, and the invariants, extension-point contracts and metrics.
 - [`adr/`](docs/adr/): thirteen architecture decision records, each with its context, decision and consequences.
 - [`architecture-dispatch-proof.md`](docs/architecture-dispatch-proof.md): the derivation, from the pinned vLLM source, of how resource calculation must dispatch.
-- [Findings](docs/blog/index.md): results of the evidence runs; every number is generated from, and cites, a stored record.
+- [Findings](docs/blog/index.md): where results of the evidence runs are published; every number in a post is generated from, and cites, a stored record.
 
 ## What the specification fixes
 

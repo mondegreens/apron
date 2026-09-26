@@ -1,3 +1,15 @@
+# Update v4 — 2026-09-26 (owner "go" for GPU-free work and the image rebuild)
+
+| # | Task | Status |
+|---|------|--------|
+| 19 | Layer F gate | completed (stop point 1 reported) |
+| 22 | L6 exit gate — check logic over records | completed on synthetic records (`tests/test_exit_gate_1b_cohort.py`, one doctored-record test per check); real-record run waits on #21 (`APRON_COHORT_GATE=1`); item 6 strict xfail pending Part 3 |
+| 23 | L7 — findings tooling | completed: `scripts/cohort_findings.py`, `application/orchestration/findings.py`, `tests/unit/test_cohort_findings.py`, draft post skeleton, blog enabled (zensical 0.0.65); article text waits on #21 |
+| 27 | Code review / 25 blast radius | running on PR #42 |
+| 29 | Runner image rc8 | building (tag `runner-v0.29.0-rc8` at 4ab0bb6) |
+
+New since v3: the identity manifest `solutions.jsonl` (objects behind every digest, §11 item 3) and a PlanningClaim stored for every executed solution.
+
 # Task dashboard snapshot v3 — 2026-09-26 (Layer F gate, second resubmission)
 
 Status / blockedBy, one row per task (supervisor has no TaskList tool; this file mirrors it).

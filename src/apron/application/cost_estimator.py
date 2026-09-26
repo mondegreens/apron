@@ -56,8 +56,7 @@ def estimate_cost(
     allocation = plan_data.get("resource_allocation", {})
     gpu_sku = allocation.get("gpu_sku", "")
     gpu_count = int(allocation.get("gpu_count", "1") or 1)
-    per_gpu = PROVIDER_RATES.get(provider, {}).get(gpu_sku, 0.0)
-    hourly = per_gpu * gpu_count
+    hourly, _ = hourly_rate(provider, gpu_sku, gpu_count=gpu_count)  # unknown SKU raises
 
     if estimated_duration_minutes is None:
         weight_str = allocation.get("weight_bytes", "0")

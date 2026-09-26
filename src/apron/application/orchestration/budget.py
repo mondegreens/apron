@@ -103,12 +103,15 @@ class BudgetTracker:
 
     def settle(self, actual: float, label: str, *, flag: str | None = None) -> None:
         """Convert a hold into spend at the actual cost."""
+        self._settle(actual, label, flag, replaying=False)
+
+    def _settle(self, actual: float, label: str, flag: str | None, *, replaying: bool) -> None:
         hold = self.holds.get(label)
         if hold is None:
             raise KeyError(f"no open hold {label!r}")
         self._append("settle", label, actual, estimate=hold.estimate, flag=flag)
         del self.holds[label]
-        self._spend(actual, label, hold.estimate, flag)
+        self._spend(actual, label, hold.estimate, flag, replaying=replaying)
 
     def release_hold(self, label: str) -> None:
         """Drop a hold that spent nothing (M2), e.g. provisioning never happened."""
@@ -152,7 +155,9 @@ class BudgetTracker:
 
         Unsettled holds are settled at the provider-reported pod cost when
         ``pod_cost`` answers for the hold's pod, else at the estimate, and
-        flagged ``replayed``.
+        flagged ``replayed``.  Every open hold is settled even when the total
+        passes the authorized amount — the money is gone — and the tracker is
+        then flagged ``over_authorized``; it can afford nothing more.
         """
         tracker = cls(authorized=authorized, ledger=ledger, clock=clock)
         for entry in ledger.read_all():
@@ -172,7 +177,9 @@ class BudgetTracker:
             reported = pod_cost(hold.pod_id) if (pod_cost and hold.pod_id) else None
             source = "provider_reported" if reported is not None else "estimate"
             actual = reported if reported is not None else hold.estimate
-            tracker.settle(actual, label, flag=f"replayed:{source}")
+            tracker._settle(actual, label, f"replayed:{source}", replaying=True)
+        if tracker.spent > tracker.authorized + 1e-9:
+            tracker.flags.append("over_authorized")
         return tracker
 
     # ------------------------------------------------------------------

@@ -182,6 +182,9 @@ class CohortPorts:
     # The identity manifest: the objects behind every solution's digests (§11 item 3).
     identities: EventLog
     boot_timeout: int = 900
+    # A pod that is not RUNNING by then (no Secure capacity, a stuck image
+    # pull) is torn down and recorded as a failed attempt: it may be billing.
+    provision_timeout: int = 1800
 
 
 @dataclass(frozen=True)
@@ -358,7 +361,7 @@ def execute_solution(
     leaked: PodLeakError | None = None
     try:
         timing.provision_start = _seconds(clock)
-        target.provision(env=ports.provision_env(sp))
+        target.provision(env=ports.provision_env(sp), wait_timeout=ports.provision_timeout)
         ports.budget.annotate_hold(sp.label, target.pod_id)
         _event(ports, "provisioned", sp, pod_id=target.pod_id)
         if not engine.runner_supports_token_isolation(target):

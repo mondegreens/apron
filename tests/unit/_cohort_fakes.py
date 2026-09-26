@@ -239,9 +239,16 @@ class FakeTarget:
     pod_id: str | None = None
     torn_down: bool = False
     provisioned_env: dict[str, str] = field(default_factory=dict)
+    wait_timeout: int | None = None
+    never_running: bool = False
 
-    def provision(self, env: dict[str, str] | None = None) -> dict[str, Any]:
+    def provision(
+        self, env: dict[str, str] | None = None, wait_timeout: int = 0
+    ) -> dict[str, Any]:
         self.pod_id = f"pod-{self.requested.gpu_sku[-4:]}-{id(self) % 1000}"
+        self.wait_timeout = wait_timeout
+        if self.never_running:
+            raise TimeoutError(f"Pod {self.pod_id} did not reach RUNNING within {wait_timeout}s")
         self.provisioned_env = dict(env or {})
         return {"pod_id": self.pod_id}
 

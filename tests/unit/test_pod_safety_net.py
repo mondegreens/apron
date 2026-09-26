@@ -178,3 +178,17 @@ def test_pod_reported_cost_uses_cost_per_hour_and_uptime(tmp_path: Path) -> None
 
 def test_mock_is_not_leaking_into_other_tests() -> None:
     assert not isinstance(runpod_module.time.sleep, MagicMock)
+
+
+def test_wait_for_running_is_bounded_when_a_timeout_is_given() -> None:
+    """A pod that never reports uptime raises instead of polling forever."""
+    target = RunPodTarget(api_key="rp_test", gpu_type="NVIDIA GeForce RTX 4090")
+    target._pod_id = "pod-stuck"
+    clock = iter([0.0, 0.0, 5.0, 11.0])
+    with (
+        patch.object(target, "_gql_status", return_value={"pod": {"runtime": None}}),
+        patch.object(runpod_module.time, "monotonic", side_effect=lambda: next(clock)),
+        patch.object(runpod_module.time, "sleep"),
+        pytest.raises(TimeoutError, match="pod-stuck"),
+    ):
+        target._wait_for_running(10)

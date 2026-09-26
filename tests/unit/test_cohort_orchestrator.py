@@ -441,7 +441,7 @@ def test_provision_error_is_settled_and_recorded(tmp_path: Path) -> None:
     def failing_factory(requested: Any) -> Any:
         target = original(requested)
 
-        def boom(env: Any = None) -> Any:
+        def boom(env: Any = None, wait_timeout: int = 0) -> Any:
             raise ConnectionError("RunPod API unreachable")
 
         target.provision = boom  # type: ignore[method-assign]
@@ -452,6 +452,33 @@ def test_provision_error_is_settled_and_recorded(tmp_path: Path) -> None:
     assert "ConnectionError" in result.skipped[sp.label]
     assert targets[0].torn_down
     assert cohort_ports.budget.holds == {}
+    assert _cost_on_records(cohort_ports.store) == pytest.approx(
+        cohort_ports.budget.spent, abs=1e-4
+    )
+
+
+def test_pod_that_never_runs_times_out_and_is_torn_down(tmp_path: Path) -> None:
+    """No Secure capacity or a stuck image pull: the wait is bounded, never forever."""
+    cohort_ports, _, targets, _ = ports(tmp_path, _healthy)
+    sp = solution("Qwen/Qwen3-1.7B", "NVIDIA GeForce RTX 4090")
+    original = cohort_ports.target_factory
+
+    def stuck_factory(requested: Any) -> Any:
+        target = original(requested)
+        target.never_running = True
+        return target
+
+    object.__setattr__(cohort_ports, "target_factory", stuck_factory)
+    result = run_cohort([sp], accepted_inputs(), cohort_ports)
+    assert "TimeoutError" in result.skipped[sp.label]
+    assert targets[0].wait_timeout == cohort_ports.provision_timeout > 0
+    assert targets[0].torn_down
+    assert cohort_ports.budget.holds == {}
+    failed = [
+        load_record(VerificationReport, cohort_ports.store.retrieve(d) or {})
+        for d in recorded_evidence(cohort_ports.store, sp.solution_fp).failed_boots
+    ]
+    assert [r.failures for r in failed] == [("harness:exception:TimeoutError",)]
     assert _cost_on_records(cohort_ports.store) == pytest.approx(
         cohort_ports.budget.spent, abs=1e-4
     )

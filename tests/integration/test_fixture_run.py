@@ -275,7 +275,12 @@ class TestFixtureRun:
                 rules,
                 verification_report,
             )
-            assert diagnosis.failure_class in ("oom", "config_incompatible", "model_runtime"), (
+            assert diagnosis.failure_class in (
+                "oom_kv_cache",
+                "oom_weight_load",
+                "config_incompatible",
+                "model_runtime",
+            ), (
                 f"Expected oom-related class, got: {diagnosis.failure_class}"
                 f"\nvLLM output (last 500 chars): {oom_output[-500:]}"
             )

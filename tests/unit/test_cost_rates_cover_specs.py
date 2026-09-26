@@ -46,3 +46,9 @@ def test_estimate_cost_multiplies_by_gpu_count() -> None:
     result = estimate_cost(plan, "runpod")
     assert result["hourly_rate_usd"] == pytest.approx(2.96)
     assert result["gpu_count"] == 4
+
+
+def test_estimate_cost_refuses_an_unknown_sku() -> None:
+    plan = {"resource_allocation": {"gpu_sku": "NVIDIA Imaginary 9000", "gpu_count": "1"}}
+    with pytest.raises(KeyError, match="Imaginary"):
+        estimate_cost(plan, "runpod")

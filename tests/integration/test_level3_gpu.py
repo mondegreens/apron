@@ -53,7 +53,7 @@ class InjectionCase:
 _4090_INJECTIONS = [
     InjectionCase(
         name="oom_kv_cache",
-        failure_class="oom",
+        failure_class="oom_kv_cache",
         model_id="Qwen/Qwen3-1.7B",
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
@@ -62,14 +62,14 @@ _4090_INJECTIONS = [
     ),
     InjectionCase(
         name="oom_torch",
-        failure_class="oom",
+        failure_class="oom_kv_cache",
         model_id="Qwen/Qwen3-8B",
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=(
             "--dtype bfloat16 --gpu-memory-utilization 0.99 --max-num-batched-tokens 65536"
         ),
-        accept_classes=("oom", "other_correctable"),
+        accept_classes=("oom_kv_cache", "oom_weight_load", "other_correctable"),
     ),
     InjectionCase(
         name="max_model_len",
@@ -87,7 +87,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype float16 --max-model-len 640",
-        accept_classes=("oom", "other_correctable"),
+        accept_classes=("oom_kv_cache", "oom_weight_load", "other_correctable"),
     ),
     InjectionCase(
         name="lora_config",
@@ -96,7 +96,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype bfloat16 --max-model-len 640 --lora-modules test=/nonexistent",
-        accept_classes=("oom", "other_correctable"),
+        accept_classes=("oom_kv_cache", "oom_weight_load", "other_correctable"),
     ),
     InjectionCase(
         name="scheduler_config",
@@ -105,7 +105,7 @@ _4090_INJECTIONS = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=("--dtype bfloat16 --max-model-len 2048 --max-num-batched-tokens 128"),
-        accept_classes=("oom", "other_correctable"),
+        accept_classes=("oom_kv_cache", "oom_weight_load", "other_correctable"),
     ),
     InjectionCase(
         name="compilation_config",
@@ -154,7 +154,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
             " --otlp-traces-endpoint http://localhost:4317"
             " --collect-detailed-traces all"
         ),
-        accept_classes=("oom", "other_correctable"),
+        accept_classes=("oom_kv_cache", "oom_weight_load", "other_correctable"),
     ),
     InjectionCase(
         name="multimodal_config",
@@ -208,7 +208,7 @@ _4090_INJECTIONS_CORRECTION_SPEC = [
         gpu_type="NVIDIA GeForce RTX 4090",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags=("--dtype bfloat16 --max-model-len 640 --load-format dummy"),
-        accept_classes=("oom", "other_correctable"),
+        accept_classes=("oom_kv_cache", "oom_weight_load", "other_correctable"),
     ),
 ]
 
@@ -229,7 +229,7 @@ _A100_INJECTIONS = [
     # capability error. The cc check fires at kernel selection time
     # (cutlass.py:288), not config validation — so vLLM passes config
     # validation, starts loading the model, then OOMs during init.
-    # Classification as oom is accepted. The quant_compute_capability
+    # Classification as either OOM family is accepted. The quant_compute_capability
     # class is verified by Level 2 tests with the exact error string.
     InjectionCase(
         name="quant_compute_capability",
@@ -238,7 +238,7 @@ _A100_INJECTIONS = [
         gpu_type="NVIDIA A100-SXM4-80GB",
         good_flags={"max_model_len": "640", "gpu_memory_utilization": "0.90"},
         bad_flags="--dtype bfloat16 --quantization fp8 --max-model-len 640",
-        accept_classes=("oom",),
+        accept_classes=("oom_kv_cache", "oom_weight_load"),
     ),
 ]
 

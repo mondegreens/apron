@@ -198,7 +198,7 @@ def load_cohort_records(
             continue
         try:
             record = load_record(cls, dict(raw))
-        except ValidationError as exc:
+        except (KeyError, ValueError) as exc:  # no migration path, or failed validation
             out.invalid.append((digest, f"{cls.__name__}: {exc}"))
             continue
         getattr(out, _BUCKETS[cls])[digest] = record
