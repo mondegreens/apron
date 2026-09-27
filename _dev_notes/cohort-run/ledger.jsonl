@@ -268,3 +268,5 @@
 {"amount": 0.1535, "at": "2026-09-27T19:33:40.016929+00:00", "label": "stage:Qwen/Qwen3-32B", "op": "hold"}
 {"amount": 0.1535, "at": "2026-09-27T19:39:32.248134+00:00", "estimate": 0.1535, "flag": "replayed:estimate", "label": "stage:Qwen/Qwen3-32B", "op": "settle"}
 {"amount": -0.1535, "at": "2026-09-27T19:39:53.879795+00:00", "label": "stage:Qwen/Qwen3-32B", "op": "correct", "source": "interrupted stager f4v1gvrczhj9mi (EUR-IS-1) was never annotated: the estimate is withdrawn and its bill enters as reconcile:unledgered:f4v1gvrczhj9mi"}
+{"amount": 0.005571, "at": "2026-09-27T20:19:09.249062+00:00", "label": "reconcile:correct:7l0uecp1u30fhb", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.008261, "at": "2026-09-27T20:19:09.249376+00:00", "label": "reconcile:correct:mp8toichl9aavu", "op": "correct", "source": "runpod billing API"}

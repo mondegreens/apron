@@ -1,11 +1,10 @@
 {
-  "billed_total": 9.904105,
+  "billed_total": 11.174188,
   "differing": [],
-  "ledger_pod_total": 11.160354,
+  "ledger_pod_total": 11.176186,
   "mismatched": [],
   "not_yet_billed": [
-    "7l0uecp1u30fhb",
-    "mp8toichl9aavu"
+    "f9vbojnauynvah"
   ],
   "pods": [
     {
@@ -37,9 +36,9 @@
       "pod": "1zyr660l6vlrdw"
     },
     {
-      "billed": null,
-      "difference": null,
-      "ledger": 0.098761,
+      "billed": 0.104332,
+      "difference": 0.0,
+      "ledger": 0.104332,
       "named_by_run": true,
       "pod": "7l0uecp1u30fhb"
     },
@@ -70,6 +69,13 @@
       "ledger": 0.143771,
       "named_by_run": true,
       "pod": "de5pcy04eqo3f1"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.002,
+      "named_by_run": true,
+      "pod": "f9vbojnauynvah"
     },
     {
       "billed": 0.095492,
@@ -142,9 +148,9 @@
       "pod": "ljf4phxhq229f1"
     },
     {
-      "billed": null,
-      "difference": null,
-      "ledger": 1.15749,
+      "billed": 1.165751,
+      "difference": 0.0,
+      "ledger": 1.165751,
       "named_by_run": true,
       "pod": "mp8toichl9aavu"
     },
@@ -242,7 +248,7 @@
   ],
   "unledgered": [],
   "window": {
-    "end": "2026-09-27T18:39:39Z",
+    "end": "2026-09-27T20:19:08Z",
     "start": "2026-09-26T00:00:00Z"
   }
 }
