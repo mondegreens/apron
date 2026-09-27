@@ -330,3 +330,36 @@ def test_undeclared_normalization_is_not_applied(scorer: DeterministicScorer) ->
 def test_unknown_check_is_an_error(scorer: DeterministicScorer) -> None:
     with pytest.raises(ValueError, match="Unknown deterministic checks"):
         scorer.prepare({"cases": _ONE, "deterministic_checks": ["fuzzy_match"]})
+
+
+# ---------------------------------------------------------------------------
+# Protocol sampling fields reach the request (L5 review: declared, never sent)
+# ---------------------------------------------------------------------------
+
+
+def test_top_p_and_stop_are_sent_when_the_protocol_sets_them(scorer: DeterministicScorer) -> None:
+    prepared = scorer.prepare(
+        {
+            "cases": [{"id": "c1", "prompt": "2+2?", "expected": "4", "max_tokens": 8}],
+            "model_id": "m",
+            "sampling_top_p": 0.9,
+            "stopping_rules": ["\n"],
+        }
+    )
+    with patch("apron.adapters.evaluations.deterministic_scorer.httpx.post") as mock_post:
+        mock_post.return_value = _make_fake_response("4")
+        scorer.execute(prepared, "http://localhost:8000")
+    body = mock_post.call_args.kwargs["json"]
+    assert body["top_p"] == 0.9
+    assert body["stop"] == ["\n"]
+
+
+def test_unset_top_p_and_stop_are_not_sent(scorer: DeterministicScorer) -> None:
+    prepared = scorer.prepare(
+        {"cases": [{"id": "c1", "prompt": "2+2?", "expected": "4"}], "model_id": "m"}
+    )
+    with patch("apron.adapters.evaluations.deterministic_scorer.httpx.post") as mock_post:
+        mock_post.return_value = _make_fake_response("4")
+        scorer.execute(prepared, "http://localhost:8000")
+    body = mock_post.call_args.kwargs["json"]
+    assert "top_p" not in body and "stop" not in body

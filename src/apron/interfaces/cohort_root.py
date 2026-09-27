@@ -53,6 +53,7 @@ from apron.application.orchestration.remediation import FixProofPorts
 from apron.application.orchestration.scheduler import CandidateSeed, estimate_cost
 from apron.application.sanitization import SecretMaskingFilter
 from apron.domain.artifacts.identity import ArtifactIdentity
+from apron.domain.canonical import digest_hex
 from apron.domain.ports import UuidIdGenerator, WallClock
 from apron.domain.schemas.authority import AuthorizationEnvelope, DecisionRequest
 from apron.domain.schemas.migrations import load_record
@@ -288,6 +289,11 @@ class CohortPlanner:
             artifact_spec=ArtifactSpec(
                 identity=ArtifactIdentity.from_observation(observation),
                 observations=(observation,),
+                # The template turns every task prompt into what the model
+                # reads; its digest says which one the measurement used.
+                chat_template_identity=digest_hex(pipeline.chat_template.encode("utf-8"))
+                if pipeline.chat_template
+                else None,
             )
             if observation
             else None,

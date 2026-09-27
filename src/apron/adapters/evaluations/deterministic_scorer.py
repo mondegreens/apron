@@ -90,6 +90,10 @@ class DeterministicScorer:
         }
         if protocol.get("chat_template_kwargs"):
             prepared["chat_template_kwargs"] = dict(protocol["chat_template_kwargs"])
+        if protocol.get("sampling_top_p") is not None:
+            prepared["top_p"] = float(protocol["sampling_top_p"])
+        if protocol.get("stopping_rules"):
+            prepared["stop"] = [str(s) for s in protocol["stopping_rules"]]
         return prepared
 
     def execute(self, protocol: dict[str, Any], endpoint: str) -> list[dict[str, Any]]:
@@ -141,6 +145,10 @@ class DeterministicScorer:
         }
         if protocol.get("chat_template_kwargs"):
             body["chat_template_kwargs"] = protocol["chat_template_kwargs"]
+        if protocol.get("top_p") is not None:
+            body["top_p"] = protocol["top_p"]
+        if protocol.get("stop"):
+            body["stop"] = list(protocol["stop"])
 
         start = time.monotonic()
         try:

@@ -243,14 +243,27 @@ def scorer_input(
     ``chat_template_kwargs`` is included only when the caller established that
     the model's chat template accepts it (§9.1 step 4).
     """
+    protocol = ctx.protocol
+    # The deterministic harness sends each case once, one request at a time.
+    # A protocol asking for more is refused, never run as if it had not asked.
+    if protocol.repetitions != 1:
+        raise ValueError(f"repetitions={protocol.repetitions}: the harness runs each case once")
+    if protocol.concurrency not in (None, 1):
+        raise ValueError(
+            f"concurrency={protocol.concurrency}: the harness sends one request at a time"
+        )
     data: dict[str, Any] = {
-        "scorer_type": ctx.protocol.scorer,
+        "scorer_type": protocol.scorer,
         "cases": [dict(case) for case in ctx.task_suite.cases],
         "model_id": model_id,
-        "deterministic_checks": list(ctx.protocol.deterministic_checks),
-        "sampling_temperature": ctx.protocol.sampling_temperature,
-        "seeds": list(ctx.protocol.seeds),
+        "deterministic_checks": list(protocol.deterministic_checks),
+        "sampling_temperature": protocol.sampling_temperature,
+        "seeds": list(protocol.seeds),
     }
+    if protocol.sampling_top_p is not None:
+        data["sampling_top_p"] = protocol.sampling_top_p
+    if protocol.stopping_rules:
+        data["stopping_rules"] = list(protocol.stopping_rules)
     if chat_template_kwargs:
         data["chat_template_kwargs"] = dict(chat_template_kwargs)
     return data
