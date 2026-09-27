@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 1 on 1 GPU types
 - Failure classes fixed and re-verified: 0 of 6
-- Total cost: $2.83 of the $100 cap (failed boots included: $2.15)
+- Total cost: $2.89 of the $100 cap (failed boots included: $2.15)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -117,9 +117,9 @@ Failed boots and retries are included.
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 0.0683 | 1 (0.0683) | 1 |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0157 | 1 (0.0157) | 1 |
 | **Records total** |  | **2.3483** |  |  |
-| Classifier calls (ledger) |  | 0.0000 |  |  |
+| Classifier calls (ledger) |  | 0.0638 |  |  |
 | Pooled pods between solutions (ledger) |  | 0.0000 |  |  |
-| **Ledger spent** |  | **2.8253** |  | cap $100 |
+| **Ledger spent** |  | **2.8891** |  | cap $100 |
 <!-- /findings:cost -->
 
 ## How to reproduce

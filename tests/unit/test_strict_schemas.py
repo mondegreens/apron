@@ -184,6 +184,18 @@ def _pinned_third_party() -> dict[Path, dict[str, Any]]:
     return pinned
 
 
+def _recorded_runs() -> list[Path]:
+    """Recorded responses from real runs (L0-F classifier), with their own strict schema."""
+    return sorted((FIXTURES / "l0f").glob("class*.json"))
+
+
+@pytest.mark.parametrize("path", _recorded_runs(), ids=lambda p: str(p.relative_to(FIXTURES)))
+def test_recorded_run_validates_strictly(path: Path) -> None:
+    from unit._l0f_fixture import L0FRecording
+
+    L0FRecording.load(json.loads(path.read_text()))
+
+
 def test_every_fixture_file_is_accounted_for() -> None:
     """Each file under tests/fixtures/ is exactly one of: an Apron document
     validated strictly (above), a pinned third-party file whose bytes match
@@ -193,10 +205,11 @@ def test_every_fixture_file_is_accounted_for() -> None:
     documents = set(_domain_fixture_files())
     pinned = set(_pinned_third_party())
     synthetic = {FIXTURES / rel for rel in _SYNTHETIC}
+    recorded = set(_recorded_runs())
     unaccounted = [
         str(p.relative_to(FIXTURES))
         for p in sorted(FIXTURES.rglob("*"))
-        if p.is_file() and p not in documents | pinned | synthetic
+        if p.is_file() and p not in documents | pinned | synthetic | recorded
     ]
     assert unaccounted == []
     for path in synthetic:

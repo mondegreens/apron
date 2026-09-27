@@ -174,3 +174,16 @@ unless marked.  Machine events are in `events.jsonl`.
   other GPU types ran; fixed: one live pod at a time and the chosen solutions
   run grouped by execution.  Synthetic cohort + fix proofs: 18 executions on
   10 pods.  Not yet verified on RunPod.
+
+## 2026-09-27 — before L5
+
+- Owner topped up RunPod: balance $37.37.  Llama access now granted.
+- Capacity waiting built into `run_cohort` (stock poll before a new pod,
+  refusals retried, never counted as failures).  Checked live (read-only):
+  1x4090 stock yes, 4x4090 no, 4xA100-SXM yes.
+- **#32 done.**  The production classifier (Haiku 4.5) run on each real
+  L0-F log tail exactly as the fix proof reads it: all six diagnosed as their
+  class; typed extractions match the log (class 1's byte counts within 0.2%,
+  evidence-only fields).  $0.064, recorded in the ledger.  Replayed in CI
+  through the real pipeline: 1 → RTX A6000 (predicted 31.9 GiB), 2 →
+  max_model_len 32640, 3 → 32768, 4 → bfloat16, 5 → TP 2, 6 → B200.
