@@ -20,6 +20,9 @@
     {"model_id": "Qwen/Qwen3-0.6B-FP8", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "small", "hardware_class": "consumer", "mechanism": "autoregressive_decode", "weight_gb": 1.06, "quantized": true, "features": ["gqa", "fp8"]},
     {"model_id": "Qwen/Qwen3-8B", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "mid", "hardware_class": "consumer", "mechanism": "autoregressive_decode", "weight_gb": 16.38, "features": ["gqa"]},
     {"model_id": "Qwen/Qwen3-14B", "gpu_sku": "NVIDIA RTX A6000", "size_class": "large", "hardware_class": "professional", "mechanism": "autoregressive_decode", "weight_gb": 29.54, "features": ["gqa"]},
-    {"model_id": "state-spaces/mamba-2.8b-hf", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "mid", "hardware_class": "consumer", "mechanism": "ssm_decode", "weight_gb": 11.07, "features": ["ssm"]}
+    {"model_id": "state-spaces/mamba-2.8b-hf", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "mid", "hardware_class": "consumer", "mechanism": "ssm_decode", "weight_gb": 11.07, "features": ["ssm"]},
+    {"model_id": "openai/gpt-oss-20b", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "mid", "hardware_class": "consumer", "mechanism": "autoregressive_decode", "weight_gb": 13.8, "features": ["gqa", "sliding_window", "moe", "mxfp4"]},
+    {"model_id": "openai/gpt-oss-120b", "gpu_sku": "NVIDIA H100 80GB HBM3", "size_class": "large", "hardware_class": "datacenter", "mechanism": "autoregressive_decode", "weight_gb": 65.3, "features": ["gqa", "sliding_window", "moe", "mxfp4"]},
+    {"model_id": "zai-org/GLM-4.7-Flash", "gpu_sku": "NVIDIA H100 80GB HBM3", "size_class": "large", "hardware_class": "datacenter", "mechanism": "mla_decode", "weight_gb": 62.5, "features": ["mla", "moe"]}
   ]
 }
