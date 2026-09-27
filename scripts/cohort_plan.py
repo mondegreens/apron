@@ -63,6 +63,9 @@ def main() -> int:
             f"{row['predicted_total_gb']!s:>7} GB  {', '.join(row['obligations'])}"
         )
     print(f"total estimate ${sum(r['estimate_usd'] for r in rows):.2f}")
+    if os.environ.get("RUNPOD_API_KEY"):
+        _capacity_and_pooling(ranking, planned, rates)
+        _fix_proof_boots(planner, rates)
     for seed, reason in ranking.skipped:
         print(f"skipped  {seed.key}: {reason}")
     for key, reason in blocked.items():
@@ -71,6 +74,88 @@ def main() -> int:
         with open(args.json_out, "w") as fh:
             json.dump({"rates": source, "ranked": rows, "blocked": blocked}, fh, indent=2)
     return 0
+
+
+def _capacity_and_pooling(ranking, planned, rates) -> None:  # type: ignore[no-untyped-def]
+    """Which ranked rows have image-compatible Secure stock now; cost with pod reuse."""
+    from apron.adapters.backends.runpod import RunPodTarget
+    from apron.application.orchestration.scheduler import IMAGE_PULL_MINUTES
+
+    print("\ncapacity now (Secure, hosts running CUDA 13.x) and cost with pod reuse:")
+    groups: dict[tuple[str, int], list] = {}
+    for r in ranking.ranked:
+        seed = r.seed
+        if seed.prediction_error:
+            print(f"   GPU-free        {seed.key}")
+            continue
+        stock = RunPodTarget(gpu_type=seed.gpu_sku, gpu_count=seed.gpu_count).stock_status()
+        print(f"   {stock or 'NO CAPACITY'!s:15s} {seed.key}  ${r.estimated_cost:.2f}")
+        if stock:
+            groups.setdefault((seed.gpu_sku, seed.gpu_count), []).append(r)
+    total = 0.0
+    for (gpu, count), rs in groups.items():
+        pull = IMAGE_PULL_MINUTES / 60 * rates.get(gpu, 0.0) * count
+        pooled = sum(r.estimated_cost for r in rs) - pull * (len(rs) - 1)
+        total += pooled
+        print(f"   pod {count}x {gpu}: {len(rs)} solutions, ${pooled:.2f} (one image pull)")
+    print(f"runnable now, pooled: ${total:.2f}")
+
+
+def _fix_proof_boots(planner, rates) -> None:  # type: ignore[no-untyped-def]
+    """The six fixed boots: the correction from each recorded L0-F log, today's GPUs."""
+    import json as _json
+
+    from apron.adapters.backends.rule_loader import load_rules
+    from apron.application.orchestration.correction import CorrectionContext
+    from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
+    from apron.application.orchestration.remediation import SIX_CLASSES
+    from apron.application.orchestration.scheduler import (
+        _BOOT_MINUTES,
+        DOWNLOAD_GB_PER_MINUTE,
+        IMAGE_PULL_MINUTES,
+    )
+    from apron.interfaces.cohort_root import REPO, RULES_DIR, available_catalog, hardware_for
+
+    rules = load_rules(RULES_DIR, "vllm", "v0.29.0")
+    print("\nfix proofs — fixed boots (broken boots are the stored L0-F boots):")
+    total = 0.0
+    for case in SIX_CLASSES:
+        fx = _json.loads(
+            (REPO / "tests/fixtures/l0f" / f"class{case.failure_class}.json").read_text()
+        )
+
+        class _Replay:
+            def classify(self, error, fx=fx):  # type: ignore[no-untyped-def]
+                return dict(fx["classification"])
+
+            def extract(self, error, failure_class, fx=fx):  # type: ignore[no-untyped-def]
+                return dict(fx["extraction"])
+
+        count = int(case.broken_plan.resource_allocation.get("gpu_count", "1"))
+        result = run_diagnosis_pipeline(
+            fx["log"],
+            _Replay(),
+            case.broken_plan,
+            fx["model_config"],
+            hardware_for(fx["gpu_sku"]),
+            rules,
+            correction_context=CorrectionContext(
+                catalog=available_catalog(rates, count),
+                predicted_total_bytes=fx["predicted_total_bytes"],
+            ),
+        )
+        fixed = result.corrected_plan
+        if fixed is None:
+            print(f"   class {case.failure_class}: NO CORRECTION with today's GPUs")
+            continue
+        gpu = fixed.resource_allocation["gpu_sku"]
+        sp = planner.plan_for(fixed, f"class{case.failure_class}-fixed")
+        weight = (sp.claim.proposed_configuration.get("weight_memory_bytes") or 0) / 1e9
+        minutes = IMAGE_PULL_MINUTES + weight / DOWNLOAD_GB_PER_MINUTE + _BOOT_MINUTES["mid"]
+        cost = minutes / 60 * rates.get(gpu, 0.0) * count
+        total += cost
+        print(f"   class {case.failure_class}: {count}x {gpu}  ~{minutes:.0f} min  ${cost:.2f}")
+    print(f"fix proofs total ≈ ${total:.2f} (+ classifier calls ≈ $0.07)")
 
 
 if __name__ == "__main__":
