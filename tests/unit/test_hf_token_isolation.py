@@ -63,6 +63,8 @@ def test_download_reads_token_file_and_never_carries_the_value() -> None:
     assert "/run/apron/hf_token" in command
     assert "hf_" not in command.replace("hf_token", "")
     assert "env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN" in command
+    # every repo file is checked on disk after the download (L5 tokenizer incident)
+    assert "DOWNLOAD_INCOMPLETE" in command and "files_metadata=True" in command
 
 
 def test_failed_boot_returns_log_tail() -> None:

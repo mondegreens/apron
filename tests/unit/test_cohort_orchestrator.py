@@ -206,6 +206,10 @@ def test_harness_error_is_stored_retried_once_and_not_diagnosed(tmp_path: Path) 
             "specifications. Please refresh and try again.",
             "harness:no_capacity",
         ),
+        (
+            "DOWNLOAD_INCOMPLETE: missing vocab.json; size merges.txt 0!=1671853",
+            "harness:download_incomplete",
+        ),
         (KV_LOG, None),
     ],
 )

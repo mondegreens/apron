@@ -14,9 +14,9 @@ drafted from _dev_notes/cohort-run/notebook.md after the run, then the owner
 rewrites it. This post stays `draft: true` until the owner publishes it. -->
 
 <!-- findings:headline -->
-- Models measured: 1 on 1 GPU types
+- Models measured: 6 on 2 GPU types
 - Failure classes fixed and re-verified: 0 of 6
-- Total cost: $2.89 of the $100 cap (failed boots included: $2.15)
+- Total cost: $3.44 of the $100 cap (failed boots included: $2.24)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -37,9 +37,9 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 |---|---|
 | Provider / cloud | runpod / SECURE |
 | Runner image | `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
-| Models measured | Qwen/Qwen3-1.7B |
-| GPUs measured | NVIDIA GeForce RTX 4090 |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T00:18:27.164895+00:00 |
+| Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-1.7B, deepseek-ai/DeepSeek-V2-Lite, google/gemma-2-2b-it, meta-llama/Llama-3.1-8B-Instruct, mistralai/Mistral-7B-Instruct-v0.3 |
+| GPUs measured | NVIDIA A100 80GB PCIe, NVIDIA GeForce RTX 4090 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T01:26:01.807112+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -49,8 +49,13 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:memory -->
 | Model | GPU | Weights pred. GiB | Weights meas. GiB | Δ weights | Total pred. GiB | Persistent meas. GiB | Δ total | Record |
 |---|---|---|---|---|---|---|---|---|
+| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 x1 | 5.68 | 5.68 | +0.00 | 7.82 | 5.97 | +1.85 | `1220b9e409435a57` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 3.78 | 3.22 | +0.56 | 5.65 | 4.11 | +1.54 | `1220066392da9480` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 3.78 | 3.22 | +0.56 | 5.65 | 4.11 | +1.54 | `122056e563edf84b` |
+| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe x1 | 29.26 | 29.32 | -0.06 | 30.81 | 30.00 | +0.81 | `1220697d834da838` |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 4.87 | 4.94 | -0.07 | 6.82 | 5.36 | +1.46 | `12207b314f3982aa` |
+| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 x1 | 14.96 | 15.00 | -0.04 | 17.98 | 15.25 | +2.73 | `1220636ca167b3f0` |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 13.50 | 13.51 | -0.01 | 16.37 | 13.65 | +2.72 | `122075e500841efe` |
 <!-- /findings:memory -->
 
 Repeat boots of one solution bound the measurement noise:
@@ -64,7 +69,10 @@ Repeat boots of one solution bound the measurement noise:
 Candidates that never ran, by prediction:
 
 <!-- findings:prediction_errors -->
-_No records yet._
+| Model | GPU | Outcome | Mechanism | Predicted total GiB | Record |
+|---|---|---|---|---|---|
+| Qwen/Qwen3-32B | NVIDIA GeForce RTX 4090 | infeasible | autoregressive_decode | 68.96 | `12206215ba48b5b8` |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | unknown | unknown | — | `1220f74c726d3633` |
 <!-- /findings:prediction_errors -->
 
 ## Failures and fixes
@@ -89,7 +97,12 @@ measurement.
 <!-- findings:tasks -->
 | Model | GPU | Accepted / cases | Attempts (retries) | Passed |
 |---|---|---|---|---|
+| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | 3 / 3 | 3 (0) | True |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 3 / 3 | 6 (0) | True |
+| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe | 0 / 3 | 3 (0) | False |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | 3 / 3 | 3 (0) | True |
+| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 | 2 / 3 | 3 (0) | True |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | 3 / 3 | 3 (0) | True |
 <!-- /findings:tasks -->
 
 ## Serving against the declared SLO
@@ -97,8 +110,13 @@ measurement.
 <!-- findings:serving -->
 | Model | GPU | p99 TTFT ms | p99 TPOT ms | SLO TTFT / TPOT ms | Completed / failed | Verdict | Record |
 |---|---|---|---|---|---|---|---|
+| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | 208.824 | 8.15893 | 2000 / 100 | 50 / 0 | pass | `12206a93cab1c283` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 52.7041 | 5.49613 | 2000 / 100 | 50 / 0 | pass | `1220073713910e21` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 50.7468 | 5.44501 | 2000 / 100 | 50 / 0 | pass | `1220d33394092906` |
+| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe | 930.256 | 11.5969 | 2000 / 100 | 50 / 0 | pass | `122061f72e5d7004` |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | 81.3753 | 7.58064 | 2000 / 100 | 50 / 0 | pass | `12203ec9f9ea5b21` |
+| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 | 221.69 | 18.366 | 2000 / 100 | 50 / 0 | pass | `1220c62d62ae67ec` |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | 212.999 | 17.5106 | 2000 / 100 | 50 / 0 | pass | `1220dcda4554108a` |
 <!-- /findings:serving -->
 
 ## What it cost
@@ -110,16 +128,22 @@ Failed boots and retries are included.
 |---|---|---|---|---|
 | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.6063 | 1 (0.6063) | 1 |
 | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.3099 | 1 (0.3099) | 1 |
+| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 x1 | 0.1181 | 0 (0.0000) | 5 |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.6918 | 3 (0.4928) | 13 |
 | Qwen/Qwen3-14B | NVIDIA GeForce RTX 4090 x1 | 0.1093 | 1 (0.1093) | 1 |
+| Qwen/Qwen3-32B | NVIDIA A100 80GB PCIe x1 | 0.0924 | 1 (0.0924) | 1 |
 | Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB x4 | 0.5196 | 1 (0.5196) | 1 |
 | Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 x1 | 0.0273 | 1 (0.0273) | 1 |
+| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe x1 | 0.2497 | 0 (0.0000) | 5 |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 0.0253 | 0 (0.0000) | 5 |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 0.0683 | 1 (0.0683) | 1 |
+| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 x1 | 0.0304 | 0 (0.0000) | 5 |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0313 | 0 (0.0000) | 5 |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0157 | 1 (0.0157) | 1 |
-| **Records total** |  | **2.3483** |  |  |
+| **Records total** |  | **2.8954** |  |  |
 | Classifier calls (ledger) |  | 0.0638 |  |  |
-| Pooled pods between solutions (ledger) |  | 0.0000 |  |  |
-| **Ledger spent** |  | **2.8891** |  | cap $100 |
+| Pooled pods between solutions (ledger) |  | 0.0007 |  |  |
+| **Ledger spent** |  | **3.4369** |  | cap $100 |
 <!-- /findings:cost -->
 
 ## How to reproduce

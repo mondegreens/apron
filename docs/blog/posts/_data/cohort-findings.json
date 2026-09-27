@@ -1,11 +1,11 @@
 {
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 2.149275,
+    "failed_boot_total": 2.241699,
     "ledger_classifier": 0.06381,
-    "ledger_pod_idle": 0,
-    "ledger_settled": 2.825273,
-    "ledger_spent": 2.889083,
+    "ledger_pod_idle": 0.000659,
+    "ledger_settled": 3.372446,
+    "ledger_spent": 3.436915,
     "per_solution": [
       {
         "cost": 0.606296,
@@ -29,6 +29,22 @@
         "model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
         "records": [
           "12206934f05d600271723a5ac029b87c9b0ad51380cc5a1f7f47beb8cf7b333f8392"
+        ]
+      },
+      {
+        "cost": 0.118071,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "JunHowie/Qwen3-8B-GPTQ-Int4@NVIDIA GeForce RTX 4090x1",
+        "model": "JunHowie/Qwen3-8B-GPTQ-Int4",
+        "records": [
+          "12206a93cab1c283344ad2039ba5a3a9415c64850bc54372523f112e33225a34c82c",
+          "1220750ac695032ee7818f2ba8e6e06bad0c7f3153e1555f0231474ff6622b53d0b0",
+          "1220a7877dd7e888e743fd90a99cff2d93777ecbdf332e3e23ccd635525fb63ddd45",
+          "1220b9e409435a57a94ec162cf8e0d401bf53a8967bbb168a213dbeb6482f7596ca6",
+          "1220c78063be278806620433e9a2430eb978a597e0307d3dc8e62fc935c061e15949"
         ]
       },
       {
@@ -68,6 +84,18 @@
         ]
       },
       {
+        "cost": 0.092424,
+        "failed_boot_cost": 0.092424,
+        "failed_boots": 1,
+        "gpu": "NVIDIA A100 80GB PCIe",
+        "gpu_count": 1,
+        "label": "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1",
+        "model": "Qwen/Qwen3-32B",
+        "records": [
+          "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321"
+        ]
+      },
+      {
         "cost": 0.519583,
         "failed_boot_cost": 0.519583,
         "failed_boots": 1,
@@ -92,6 +120,38 @@
         ]
       },
       {
+        "cost": 0.249715,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA A100 80GB PCIe",
+        "gpu_count": 1,
+        "label": "deepseek-ai/DeepSeek-V2-Lite@NVIDIA A100 80GB PCIex1",
+        "model": "deepseek-ai/DeepSeek-V2-Lite",
+        "records": [
+          "12200ac2fd197bfb3739f5b145510feed8256e6b3f90df263688d362e3138ce9097a",
+          "122061f72e5d7004a287bada68fc73c6d61a02140a24be883c82d676d48a02f0a518",
+          "1220697d834da838ea2b058265f8dc1159098f8868d943b13b0f887b05fbb10162b9",
+          "122091e1cf984bc6c153ae71bcbb84d5373554407d6fd49d08c6cee0c632fda74f05",
+          "12209e38a5f726490e019088aa99a69d9fdd008b78a93b70eee1a6355aeecc9d5c95"
+        ]
+      },
+      {
+        "cost": 0.025271,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "google/gemma-2-2b-it@NVIDIA GeForce RTX 4090x1",
+        "model": "google/gemma-2-2b-it",
+        "records": [
+          "122010775bd1c04f22c2713405eafc0e4a8b5e6647afa2f9ee4a214b23e0905a3f3c",
+          "12203ec9f9ea5b2117b8c85fd07962e4e303cca3524c8d71219340d8a96221198ac1",
+          "12205a99eed24ad06e68bbec2c4dbe9df15aff9015d54bfd330ac4104b19addf409d",
+          "12207b314f3982aa828ce37adf4c6fb200cb9fe744a48dda8b483cd7e494d95bfec4",
+          "12207c8d129ea3d8b84f6f681aa518de8ff36ddd793832fda2c1bc1c1d2eff988550"
+        ]
+      },
+      {
         "cost": 0.068333,
         "failed_boot_cost": 0.068333,
         "failed_boots": 1,
@@ -101,6 +161,38 @@
         "model": "google/gemma-2-2b-it",
         "records": [
           "12209c87b885bbbdfdd0f97817b184ea0ce5d6b287c0e2c5317ab981af67a5a1c881"
+        ]
+      },
+      {
+        "cost": 0.03038,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "meta-llama/Llama-3.1-8B-Instruct@NVIDIA GeForce RTX 4090x1",
+        "model": "meta-llama/Llama-3.1-8B-Instruct",
+        "records": [
+          "1220636ca167b3f0c240df5c80fa2aec588bd2bec55f7a763fb5acc33fe1bcfb5cec",
+          "122084195d84d5675e8cbcf0b9afbca0b5bf292dc6b280ddbc11c1c1e5b2d4891751",
+          "12208c23032bd47caf2ff2ce057e1a5e98c528a12336204280ce26bafb1a40f60d01",
+          "1220b871596474c6147fd47a73849565c4864919debdf7d64c4865163609b583760d",
+          "1220c62d62ae67ec438ebca7e7facc6f53eb71e65853a9e6b29aee797a3e470e5948"
+        ]
+      },
+      {
+        "cost": 0.031313,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA GeForce RTX 4090x1",
+        "model": "mistralai/Mistral-7B-Instruct-v0.3",
+        "records": [
+          "1220533c7088dda6eb4272dc3aec8e9c820e7f526a5bb24b8921223bdb51da8c4b63",
+          "122075e500841efea613add26e52f3a827c8b87c32ddca193ffdf8fd23c0867db745",
+          "1220a6224c34845b72053479b0ae0c2c8ea77977f58c09c225906774734ac21c8509",
+          "1220dcda4554108a677ca6f2ec1c9f90512c74bbbae40cf7f24f29b0f583c563d383",
+          "1220f4cdf74d42208d6a32e1ca691e2694379191b3b9d51fcf7be445d90eb9689126"
         ]
       },
       {
@@ -116,7 +208,7 @@
         ]
       }
     ],
-    "records_total": 2.348271
+    "records_total": 2.895445
   },
   "fixes": [
     {
@@ -158,6 +250,21 @@
   ],
   "memory": [
     {
+      "claim": "1220ef8986ad02b10d62c74c796b83469c5385e82f2352b5309c045d611a527ad1b8",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 629455411,
+      "measured_persistent_bytes": 6410238689,
+      "measured_weight_bytes": 6098853560,
+      "model": "JunHowie/Qwen3-8B-GPTQ-Int4",
+      "notes": [],
+      "predicted_total_bytes": 8391653632,
+      "predicted_weight_bytes": 6103787520,
+      "record": "1220b9e409435a57a94ec162cf8e0d401bf53a8967bbb168a213dbeb6482f7596ca6",
+      "total_delta_bytes": 1981414943,
+      "weight_delta_bytes": 4933960
+    },
+    {
       "claim": "12206a26099b8f3a1fe281ef226476fe0d1e907bbcf4e194e51ff6a80ca2c69f631e",
       "gpu": "NVIDIA GeForce RTX 4090",
       "gpu_count": 1,
@@ -186,10 +293,87 @@
       "record": "122056e563edf84b102233abdb30ce90733de29eaa8ba8e23b06bbf302188c3ca8e6",
       "total_delta_bytes": 1650350172,
       "weight_delta_bytes": 606031135
+    },
+    {
+      "claim": "122001a3fa3351e82534d27e6861f214efdd19163876827b8677cf9bb75ba6057031",
+      "gpu": "NVIDIA A100 80GB PCIe",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 858352102,
+      "measured_persistent_bytes": 32212254720,
+      "measured_weight_bytes": 31482110279,
+      "model": "deepseek-ai/DeepSeek-V2-Lite",
+      "notes": [],
+      "predicted_total_bytes": 33087091267,
+      "predicted_weight_bytes": 31412968448,
+      "record": "1220697d834da838ea2b058265f8dc1159098f8868d943b13b0f887b05fbb10162b9",
+      "total_delta_bytes": 874836547,
+      "weight_delta_bytes": -69141831
+    },
+    {
+      "claim": "1220b9b0d4284c090e2b911a085e6bd7b7d459e8c754362856f37b348cc5cd4f527c",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 743813489,
+      "measured_persistent_bytes": 5755256176,
+      "measured_weight_bytes": 5304284610,
+      "model": "google/gemma-2-2b-it",
+      "notes": [],
+      "predicted_total_bytes": 7324181913,
+      "predicted_weight_bytes": 5228683776,
+      "record": "12207b314f3982aa828ce37adf4c6fb200cb9fe744a48dda8b483cd7e494d95bfec4",
+      "total_delta_bytes": 1568925737,
+      "weight_delta_bytes": -75600834
+    },
+    {
+      "claim": "12207fb485bc2e4171db73b4a5ccddcdbbc092d79b101c5cec40e60262878a1adbea",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "gpu_count": 1,
+      "kv_consistency_bytes": -594852136,
+      "measured_persistent_bytes": 16374562816,
+      "measured_weight_bytes": 16106127360,
+      "model": "meta-llama/Llama-3.1-8B-Instruct",
+      "notes": [],
+      "predicted_total_bytes": 19302119065,
+      "predicted_weight_bytes": 16060522496,
+      "record": "1220636ca167b3f0c240df5c80fa2aec588bd2bec55f7a763fb5acc33fe1bcfb5cec",
+      "total_delta_bytes": 2927556249,
+      "weight_delta_bytes": -45604864
+    },
+    {
+      "claim": "1220f03dd95e2b39929e1925db9e0c277cfebbe602a26bf66a924e431818b9c1b009",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "gpu_count": 1,
+      "kv_consistency_bytes": -1365010237,
+      "measured_persistent_bytes": 14656575897,
+      "measured_weight_bytes": 14506252042,
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "notes": [],
+      "predicted_total_bytes": 17581196134,
+      "predicted_weight_bytes": 14496047104,
+      "record": "122075e500841efea613add26e52f3a827c8b87c32ddca193ffdf8fd23c0867db745",
+      "total_delta_bytes": 2924620237,
+      "weight_delta_bytes": -10204938
     }
   ],
-  "prediction_errors": [],
-  "record_count": 28,
+  "prediction_errors": [
+    {
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "mechanism": "autoregressive_decode",
+      "model": "Qwen/Qwen3-32B",
+      "predicted_total_bytes": 74047759820,
+      "record": "12206215ba48b5b8445dae19fdcca11e4598b15d6be30961a4956c78bc6b04b885e0",
+      "status": "infeasible"
+    },
+    {
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "mechanism": "unknown",
+      "model": "state-spaces/mamba-2.8b-hf",
+      "predicted_total_bytes": null,
+      "record": "1220f74c726d3633edebd22d7fafe9a656a41ec8a6f01cfc7265de06729206206d3c",
+      "status": "unknown"
+    }
+  ],
+  "record_count": 63,
   "repeat_measurements": [
     {
       "activation_spread_pct": 0.0,
@@ -205,6 +389,20 @@
     }
   ],
   "serving": [
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "JunHowie/Qwen3-8B-GPTQ-Int4",
+      "output_token_throughput": 451.7444657943099,
+      "p99_tpot_ms": 8.158931521933496,
+      "p99_ttft_ms": 208.82394800661132,
+      "recomputed_verdict": "pass",
+      "record": "12206a93cab1c283344ad2039ba5a3a9415c64850bc54372523f112e33225a34c82c",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
     {
       "completed": 50,
       "failed": 0,
@@ -232,6 +430,62 @@
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
       "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA A100 80GB PCIe",
+      "model": "deepseek-ai/DeepSeek-V2-Lite",
+      "output_token_throughput": 316.3572444177437,
+      "p99_tpot_ms": 11.59694513395854,
+      "p99_ttft_ms": 930.2557383896783,
+      "recomputed_verdict": "pass",
+      "record": "122061f72e5d7004a287bada68fc73c6d61a02140a24be883c82d676d48a02f0a518",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "google/gemma-2-2b-it",
+      "output_token_throughput": 495.36276902404194,
+      "p99_tpot_ms": 7.580636022282456,
+      "p99_ttft_ms": 81.37534461915493,
+      "recomputed_verdict": "pass",
+      "record": "12203ec9f9ea5b2117b8c85fd07962e4e303cca3524c8d71219340d8a96221198ac1",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "meta-llama/Llama-3.1-8B-Instruct",
+      "output_token_throughput": 205.15691850343964,
+      "p99_tpot_ms": 18.366002946575065,
+      "p99_ttft_ms": 221.69030246324837,
+      "recomputed_verdict": "pass",
+      "record": "1220c62d62ae67ec438ebca7e7facc6f53eb71e65853a9e6b29aee797a3e470e5948",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "output_token_throughput": 215.7628203823365,
+      "p99_tpot_ms": 17.510629600284283,
+      "p99_ttft_ms": 212.99922600155696,
+      "recomputed_verdict": "pass",
+      "record": "1220dcda4554108a677ca6f2ec1c9f90512c74bbbae40cf7f24f29b0f583c563d383",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
     }
   ],
   "setup": {
@@ -241,14 +495,20 @@
     ],
     "first_event": "2026-09-26T21:48:08.665977+00:00",
     "gpus_measured": [
+      "NVIDIA A100 80GB PCIe",
       "NVIDIA GeForce RTX 4090"
     ],
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-27T00:18:27.164895+00:00",
+    "last_event": "2026-09-27T01:26:01.807112+00:00",
     "models_measured": [
-      "Qwen/Qwen3-1.7B"
+      "JunHowie/Qwen3-8B-GPTQ-Int4",
+      "Qwen/Qwen3-1.7B",
+      "deepseek-ai/DeepSeek-V2-Lite",
+      "google/gemma-2-2b-it",
+      "meta-llama/Llama-3.1-8B-Instruct",
+      "mistralai/Mistral-7B-Instruct-v0.3"
     ],
     "providers": [
       "runpod"
@@ -269,6 +529,20 @@
   "tasks": [
     {
       "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "JunHowie/Qwen3-8B-GPTQ-Int4",
+      "passed": true,
+      "records": [
+        "1220750ac695032ee7818f2ba8e6e06bad0c7f3153e1555f0231474ff6622b53d0b0",
+        "1220a7877dd7e888e743fd90a99cff2d93777ecbdf332e3e23ccd635525fb63ddd45",
+        "1220c78063be278806620433e9a2430eb978a597e0307d3dc8e62fc935c061e15949"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 3,
       "attempts": 6,
       "cases": 3,
       "gpu": "NVIDIA GeForce RTX 4090",
@@ -281,6 +555,62 @@
         "1220805d46a1bfc0cf068b7cb3ee1b80853defa0a8eeed341867f5a0b877cf7d01d0",
         "1220d50f1d7cd237f0dcc7326728546cbc0fb44e7f2ed0e564b3960b3d0502c5225f",
         "1220df2ce6e23fc836a75e0623ff0b72ab9e301c43cca97af775c0545e74cf8d4aa4"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 0,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA A100 80GB PCIe",
+      "model": "deepseek-ai/DeepSeek-V2-Lite",
+      "passed": false,
+      "records": [
+        "12200ac2fd197bfb3739f5b145510feed8256e6b3f90df263688d362e3138ce9097a",
+        "122091e1cf984bc6c153ae71bcbb84d5373554407d6fd49d08c6cee0c632fda74f05",
+        "12209e38a5f726490e019088aa99a69d9fdd008b78a93b70eee1a6355aeecc9d5c95"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "google/gemma-2-2b-it",
+      "passed": true,
+      "records": [
+        "122010775bd1c04f22c2713405eafc0e4a8b5e6647afa2f9ee4a214b23e0905a3f3c",
+        "12205a99eed24ad06e68bbec2c4dbe9df15aff9015d54bfd330ac4104b19addf409d",
+        "12207c8d129ea3d8b84f6f681aa518de8ff36ddd793832fda2c1bc1c1d2eff988550"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 2,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "meta-llama/Llama-3.1-8B-Instruct",
+      "passed": true,
+      "records": [
+        "122084195d84d5675e8cbcf0b9afbca0b5bf292dc6b280ddbc11c1c1e5b2d4891751",
+        "12208c23032bd47caf2ff2ce057e1a5e98c528a12336204280ce26bafb1a40f60d01",
+        "1220b871596474c6147fd47a73849565c4864919debdf7d64c4865163609b583760d"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "passed": true,
+      "records": [
+        "1220533c7088dda6eb4272dc3aec8e9c820e7f526a5bb24b8921223bdb51da8c4b63",
+        "1220a6224c34845b72053479b0ae0c2c8ea77977f58c09c225906774734ac21c8509",
+        "1220f4cdf74d42208d6a32e1ca691e2694379191b3b9d51fcf7be445d90eb9689126"
       ],
       "retries": 0
     }

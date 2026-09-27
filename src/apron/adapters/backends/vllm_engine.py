@@ -138,12 +138,26 @@ VLLM_PROCESS_PATTERN = "bin/[v]llm serve|[V]LLM::"
 # Llama repos ship original/*.pth (16 GB).  vLLM loads the HF-format files.
 DOWNLOAD_IGNORE = ("original/*", "consolidated*", "*.pth", "*.pt", "*.gguf")
 _DOWNLOAD_PY = (
-    "import pathlib,sys\n"
-    "from huggingface_hub import snapshot_download\n"
+    "import fnmatch,pathlib,sys\n"
+    "from huggingface_hub import HfApi,snapshot_download\n"
     "f=pathlib.Path('/run/apron/hf_token')\n"
     "t=f.read_text().strip() if f.exists() else None\n"
+    f"ign={list(DOWNLOAD_IGNORE)!r}\n"
     "snapshot_download(repo_id=sys.argv[1],local_dir=sys.argv[2],token=t or None,"
-    f"ignore_patterns={list(DOWNLOAD_IGNORE)!r})\n"
+    "ignore_patterns=ign)\n"
+    # Verify: every repo file vLLM may read is on disk at its listed size.  A
+    # tokenizer file missing on a reused pod was once recorded as a model
+    # failure (L5, Qwen3-32B on A100); this makes it a harness failure.
+    "info=HfApi().model_info(sys.argv[1],files_metadata=True,token=t or None)\n"
+    "bad=[]\n"
+    "for s in info.siblings:\n"
+    "  if any(fnmatch.fnmatch(s.rfilename,g) for g in ign): continue\n"
+    "  p=pathlib.Path(sys.argv[2])/s.rfilename\n"
+    "  if not p.exists(): bad.append(f'missing {s.rfilename}')\n"
+    "  elif s.size is not None and p.stat().st_size!=s.size:"
+    " bad.append(f'size {s.rfilename} {p.stat().st_size}!={s.size}')\n"
+    "print('DOWNLOAD_INCOMPLETE: '+'; '.join(bad) if bad else 'DOWNLOAD_VERIFIED')\n"
+    "sys.exit(3 if bad else 0)\n"
 )
 
 
@@ -468,7 +482,8 @@ class VllmEngineAdapter:
         command = (
             f"mkdir -p {shlex.quote(dest)} && "
             f"env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN /opt/venv/bin/python3 -c {script} "
-            f"{shlex.quote(model_id)} {shlex.quote(dest)} 2>&1 | tail -20"
+            f"{shlex.quote(model_id)} {shlex.quote(dest)} > /tmp/apron-download.log 2>&1; "
+            "rc=$?; tail -20 /tmp/apron-download.log; exit $rc"
         )
         start = time.monotonic()
         result = target.execute(command, timeout=timeout + 120)

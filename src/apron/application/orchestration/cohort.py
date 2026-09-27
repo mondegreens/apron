@@ -94,6 +94,11 @@ _HARNESS_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
         re.compile(r"No such file or directory: '(ninja|nvcc|gcc|g\+\+|c\+\+)'"),
     ),
     (
+        # A download that did not produce every repo file at its listed size.
+        "harness:download_incomplete",
+        re.compile(r"DOWNLOAD_INCOMPLETE"),
+    ),
+    (
         # The provider had no instance to give (Secure capacity is volatile).
         "harness:no_capacity",
         re.compile(r"no longer any instances available", re.IGNORECASE),
