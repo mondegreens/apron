@@ -28,6 +28,7 @@ from collections import Counter
 from typing import TYPE_CHECKING, Any
 
 from apron.adapters.backends.vllm_quantization import (
+    ENGINE_VERSION,
     QUANT_MIN_CAPABILITY,
     load_problems,
     min_capability,
@@ -229,7 +230,7 @@ class HubLineage:
         for repo, downloads, listed in self.quantized_from(base):
             method = str((listed.get("quantization_config") or {}).get("quant_method", ""))
             if method not in _LOADABLE:
-                dropped[f"format not loadable by vLLM v0.29.0: {method or 'none'}"] += 1
+                dropped[f"format not loadable by vLLM {ENGINE_VERSION}: {method or 'none'}"] += 1
                 continue
             try:
                 full = self.config(repo)

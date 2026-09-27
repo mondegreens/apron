@@ -1,0 +1,121 @@
+{
+  "aliases": {
+    "auto_awq": "awq",
+    "auto_gptq": "gptq",
+    "awq_marlin": "awq",
+    "gptq_marlin": "gptq"
+  },
+  "compressed_tensors": {
+    "config_min_capability": 70,
+    "config_min_capability_source": "model_executor/layers/quantization/compressed_tensors/compressed_tensors.py:117",
+    "schemes": {
+      "w8a8_fp8": {
+        "min_capability": 89,
+        "min_capability_source": "model_executor/layers/quantization/compressed_tensors/schemes/compressed_tensors_w8a8_fp8.py:85",
+        "parameters": [
+          "input_scale",
+          "weight",
+          "weight_scale"
+        ],
+        "parameters_source": "model_executor/layers/quantization/compressed_tensors/schemes/compressed_tensors_w8a8_fp8.py:87 (CompressedTensorsW8A8Fp8.create_weights)"
+      },
+      "w8a8_int8": {
+        "min_capability": 75,
+        "min_capability_source": "model_executor/layers/quantization/compressed_tensors/schemes/compressed_tensors_w8a8_int8.py:37",
+        "parameters": [
+          "azp_adj",
+          "input_scale",
+          "input_zero_point",
+          "weight",
+          "weight_scale"
+        ],
+        "parameters_source": "model_executor/layers/quantization/compressed_tensors/schemes/compressed_tensors_w8a8_int8.py:39 (CompressedTensorsW8A8Int8.create_weights)"
+      },
+      "wNa16": {
+        "min_capability": 75,
+        "min_capability_source": "model_executor/layers/quantization/compressed_tensors/schemes/compressed_tensors_wNa16.py:100",
+        "parameters": [
+          "weight_g_idx",
+          "weight_packed",
+          "weight_scale",
+          "weight_shape",
+          "weight_zero_point"
+        ],
+        "parameters_source": "model_executor/layers/quantization/compressed_tensors/schemes/compressed_tensors_wNa16.py:102 (CompressedTensorsWNA16.create_weights)"
+      }
+    }
+  },
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "generated_by": "scripts/generate_vllm_facts.py",
+  "methods": {
+    "awq": {
+      "min_capability": 75,
+      "min_capability_source": "model_executor/layers/quantization/auto_awq.py:231",
+      "parameters": [
+        "qweight",
+        "qzeros",
+        "scales"
+      ],
+      "parameters_source": "model_executor/layers/quantization/auto_awq.py:414 (AutoAWQMarlinLinearMethod.create_weights)"
+    },
+    "fbgemm_fp8": {
+      "min_capability": 80,
+      "min_capability_source": "model_executor/layers/quantization/fbgemm_fp8.py:67",
+      "parameters": [
+        "weight",
+        "weight_scale"
+      ],
+      "parameters_source": "model_executor/layers/quantization/fbgemm_fp8.py:99 (FBGEMMFp8LinearMethod.create_weights)"
+    },
+    "fp8": {
+      "min_capability": 75,
+      "min_capability_source": "model_executor/layers/quantization/fp8.py:144",
+      "parameters": [
+        "input_scale",
+        "weight",
+        "weight_scale",
+        "weight_scale_inv"
+      ],
+      "parameters_source": "model_executor/layers/quantization/fp8.py:292 (Fp8LinearMethod.create_weights)"
+    },
+    "fp_quant": {
+      "min_capability": 100,
+      "min_capability_source": "model_executor/layers/quantization/fp_quant.py:64",
+      "parameters": [
+        "act_global_scale",
+        "forward_hadamard_matrix",
+        "qweight",
+        "scales",
+        "weight_global_scale"
+      ],
+      "parameters_source": "model_executor/layers/quantization/fp_quant.py:106 (FPQuantLinearMethod.create_weights)"
+    },
+    "gptq": {
+      "min_capability": 60,
+      "min_capability_source": "model_executor/layers/quantization/auto_gptq.py:188",
+      "parameters": [
+        "g_idx",
+        "qweight",
+        "qzeros",
+        "scales"
+      ],
+      "parameters_source": "model_executor/layers/quantization/auto_gptq.py:326 (AutoGPTQLinearMethod.create_weights)"
+    },
+    "modelopt": {
+      "min_capability": 80,
+      "min_capability_source": "model_executor/layers/quantization/modelopt.py:407",
+      "parameters": [
+        "input_scale",
+        "weight",
+        "weight_scale"
+      ],
+      "parameters_source": "model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights)"
+    },
+    "mxfp4": {
+      "min_capability": 80,
+      "min_capability_source": "model_executor/layers/quantization/mxfp4.py:62"
+    }
+  },
+  "source_commit": "98dff2a81d747d1dba01a47f939f48c3526d4206"
+}
