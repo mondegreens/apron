@@ -9,7 +9,7 @@ unregistered.
 
 from __future__ import annotations
 
-from apron.adapters.backends.vllm_quantization import load_problems
+from apron.adapters.backends.vllm_quantization import load_problems, min_capability
 
 _FPQ = {"quant_method": "fp_quant", "forward_dtype": "mxfp4"}
 _LAYER = "model.layers.0.mlp.down_proj"
@@ -50,3 +50,45 @@ def test_what_cannot_be_checked_says_so() -> None:
         load_problems(["x.weight"], {"quant_method": "compressed-tensors", "config_groups": mixed})
         is None
     )
+
+
+# nvidia/Qwen3-8B-NVFP4 (config.json and index read 2026-09-27): quant_method
+# "modelopt" with quant_algo "NVFP4", and FP8 KV-cache scales stored as
+# self_attn.k_proj.k_scale / v_proj.v_scale.  The first class 6 lineage search
+# on Qwen3-8B dropped it as "would not load"; vLLM loads it.
+_NVFP4 = {
+    "quant_method": "modelopt",
+    "quant_algo": "NVFP4",
+    "config_groups": {
+        "group_0": {
+            "weights": {"num_bits": 4, "type": "float"},
+            "input_activations": {"num_bits": 4, "type": "float"},
+        }
+    },
+    "kv_cache_scheme": {"num_bits": 8, "type": "float"},
+}
+_NVFP4_NAMES = [
+    f"model.layers.0.self_attn.k_proj.{s}"
+    for s in ("weight", "input_scale", "weight_scale", "weight_scale_2", "k_scale")
+] + ["model.layers.0.self_attn.v_proj.v_scale"]
+
+
+def test_modelopt_nvfp4_resolves_to_its_own_method_and_loads() -> None:
+    assert load_problems(_NVFP4_NAMES, _NVFP4) == ()
+    assert min_capability(_NVFP4) == 75  # ModelOptNvFp4Config, not the FP8 config's 80
+    assert min_capability({"quant_method": "modelopt", "quant_algo": "FP8"}) == 80
+
+
+def test_kv_cache_scales_count_only_for_configs_with_a_kv_cache_method() -> None:
+    fp8 = [f"{_LAYER}.weight", f"{_LAYER}.weight_scale_inv", "model.layers.0.self_attn.k_scale"]
+    assert load_problems(fp8, {"quant_method": "fp8"}) == ()
+    awq = [f"{_LAYER}.{s}" for s in ("qweight", "qzeros", "scales")]
+    problems = load_problems([*awq, "model.layers.0.self_attn.k_scale"], {"quant_method": "awq"})
+    assert problems is not None and problems[0].startswith("k_scale x1")
+
+
+def test_modelopt_algorithms_without_listed_facts_stay_unknown() -> None:
+    weight_only = {**_NVFP4, "config_groups": {"g": {"weights": {}, "input_activations": None}}}
+    assert load_problems(_NVFP4_NAMES, weight_only) is None  # W4A16 linear method
+    assert load_problems(_NVFP4_NAMES, {**_NVFP4, "quant_algo": "FP8_PB_WO"}) is None
+    assert min_capability({"quant_method": "modelopt", "quant_algo": "MXFP8"}) is None

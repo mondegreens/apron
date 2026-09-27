@@ -270,12 +270,12 @@
   "cost": {
     "authorized": 100.0,
     "failed_boot_total": 5.086735,
-    "ledger_classifier": 0.191646,
+    "ledger_classifier": 0.193358,
     "ledger_corrected": -0.099768,
     "ledger_pod_idle": 0.230238,
     "ledger_reconciled": 0.650187,
     "ledger_settled": 10.380046,
-    "ledger_spent": 11.352349,
+    "ledger_spent": 11.354061,
     "per_solution": [
       {
         "cost": 1.392902,
@@ -837,7 +837,7 @@
     },
     {
       "boots": 2,
-      "cause": "a broken plan that failed at an earlier check (replaced)",
+      "cause": "an earlier broken plan, since replaced",
       "cost": 0.916205,
       "records": [
         "12202f6bb99809123f803dde4504f383ea73441de5a21ea108c9ea39271cbd4c5eb0",
@@ -846,7 +846,7 @@
     },
     {
       "boots": 2,
-      "cause": "the harness: harness:tokenizer_files_missing (from the log)",
+      "cause": "the harness: a full disk cut the download short (a tokenizer error) (classified from the log)",
       "cost": 0.77824,
       "records": [
         "122076c27e44225ebf05c45d63ba6ed34a6211f7aabfe2d24e94b6c46e042ff71399",
@@ -855,7 +855,7 @@
     },
     {
       "boots": 1,
-      "cause": "the harness: harness:boot_deadline (from the log)",
+      "cause": "the harness: engine still starting when the harness gave up (classified from the log)",
       "cost": 0.35948,
       "records": [
         "1220348ef02b049d4a023353f2614899f8df69eb5f5c12b9005401d3cdc9e6c56200"
@@ -863,7 +863,7 @@
     },
     {
       "boots": 1,
-      "cause": "the harness: harness:toolchain (from the log)",
+      "cause": "the harness: compiler missing from the engine's environment (classified from the log)",
       "cost": 0.133174,
       "records": [
         "1220c680fcc992ddaed4a2fe12932d260df60e27ac18a4aaa1aa6aa86176dad01242"
@@ -871,7 +871,7 @@
     },
     {
       "boots": 2,
-      "cause": "the harness: harness:download_incomplete",
+      "cause": "the harness: download check flagged a complete file",
       "cost": 0.004076,
       "records": [
         "1220c29b418403035748d2d55fcecdee03deaa643650f50268c2baea28f817e08973",
@@ -880,7 +880,7 @@
     },
     {
       "boots": 2,
-      "cause": "the harness: harness:exception:QueryError",
+      "cause": "the harness: GPU provider API error",
       "cost": 0.000349,
       "records": [
         "122016a2683145411b02d0b4db83379a2ef5c446c8727b73edd254490dbcd9fb0003",

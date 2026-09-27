@@ -432,3 +432,45 @@ unless marked.  Machine events are in `events.jsonl`.
   is the sampler's logits.  All 16 points within 0.02 GiB.  And the FPQuant
   failure: vLLM regression #44122; vLLM's own test used our checkpoint but
   never ran (no test_ prefix); our invocation does not affect loading.
+
+## 2026-09-27 — class 6 on Qwen3-8B (owner's go), and a load-check error
+
+- **Why re-run class 6.**  The exit gate now follows PLAN §10.2 to the letter
+  (a class ending `violated` does not satisfy item 4).  On Qwen3-0.6B no
+  substitute could meet the 0.60 task floor: every 0.6B variant answers
+  "2 + 2" with "2", in vLLM and in transformers on CPU (pass 3).  Owner's
+  decision: the broken plan uses `ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4` on
+  the same H100 with `allow_deprecated_quantization`.  The 0.6B record stays
+  in the evidence.
+- **Broken boot (H100, pod `mp8toichl9aavu`, $0.76 with the image pull):**
+  failed as named, capability check `config/vllm.py:791`.
+- **Correction:** classifier (Haiku 4.5, $0.0017) → quant_compute_capability;
+  proposed base `Qwen/Qwen3-8B`, confirmed on the Hub.  89 listed checkpoints
+  had a format v0.29.0 loads; dropped: two speculative-decoding draft models
+  listed as "quantized from" Qwen3-8B (another architecture), fine-tunes by
+  final-norm weights.  Chosen `Qwen/Qwen3-8B-AWQ` (base publisher, 4 bits like
+  the request) on the same H100.
+- **Fixed boot:** healthy; weights 5.68 predicted / 5.82 GiB measured;
+  tasks 3/3 ("4", "50", "Paris"); serving SLO pass → mechanism verified +
+  request satisfied = **Fixed**; rule `quant_compute_capability` v4 promoted
+  citing the boot.  $0.19, plus $0.20 of pod idle between the two boots.
+- **Engine facts generated from source** (owner agreed): the minimum
+  capabilities and registered parameter names now come from the pinned vLLM
+  by `scripts/generate_vllm_facts.py`; a test ties them to the image's vLLM
+  pin.  Generating replaced one hand-written error (modelopt FP8 params).
+- **Found while writing the article: the load check dropped a loadable
+  candidate.**  `nvidia/Qwen3-8B-NVFP4` was dropped as "would not load:
+  k_scale x36, v_scale x36" — wrong twice: (1) a `modelopt` checkpoint with
+  quant_algo NVFP4 is served by ModelOptNvFp4Config (min capability 75,
+  its own linear method), not the FP8 config (`modelopt.py:1063-1070`);
+  (2) k/v_scale belong to the attention layer's KV-cache method
+  (`kv_cache.py:57`), mapped from checkpoint names by
+  `base_config.py:195`.  Fixed from source (generated), with tests; the
+  lineage search re-recorded (Haiku $0.0017): 64 candidates, NVFP4 now one of
+  them, the choice unchanged (AWQ first by publisher).  Still not recognised
+  (reported as such, never as "will not load"): compressed-tensors NVFP4,
+  ModelOpt MXFP8 / mixed precision / W4A16.
+- **Billing at 18:40 UTC:** RunPod has not billed pods `7l0uecp1u30fhb`
+  (pass 4) and `mp8toichl9aavu` (class 6) yet; ledger pods $11.16 vs billed
+  $9.90 — the difference is these two pods.  Re-run the reconciliation once
+  they post.

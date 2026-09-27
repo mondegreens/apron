@@ -438,6 +438,20 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
     }
 
 
+# What each harness failure tag means, for the reader (the JSON keeps the tag).
+HARNESS_NAMES: dict[str, str] = {
+    "harness:tokenizer_files_missing": "a full disk cut the download short (a tokenizer error)",
+    "harness:boot_deadline": "engine still starting when the harness gave up",
+    "harness:toolchain": "compiler missing from the engine's environment",
+    "harness:download_incomplete": "download check flagged a complete file",
+    "harness:exception:QueryError": "GPU provider API error",
+}
+
+
+def _harness(tag: str) -> str:
+    return HARNESS_NAMES.get(tag, tag)
+
+
 def _failed_spend(run: CohortRun) -> list[dict[str, Any]]:
     """Every failed boot, grouped by why it failed.
 
@@ -460,14 +474,14 @@ def _failed_spend(run: CohortRun) -> list[dict[str, Any]]:
         if case is not None and failed_as_named(case, log):
             cause = "a broken plan, failing as its class names (on purpose)"
         elif case is not None or r.reason == "fix_proof_broken_boot":
-            # Booted as a broken plan, but not the class's current one or not
-            # at its named check: an earlier draft, replaced (class 6's first
-            # attempt stopped at the deprecation check).
-            cause = "a broken plan that failed at an earlier check (replaced)"
+            # Booted as a broken plan that is not the class's current one:
+            # class 6's first plan stopped at the deprecation check, and its
+            # Qwen3-0.6B plan was replaced by the Qwen3-8B one.
+            cause = "an earlier broken plan, since replaced"
         elif recorded:
-            cause = f"the harness: {', '.join(recorded)}"
+            cause = f"the harness: {'; '.join(_harness(t) for t in recorded)}"
         elif (kind := classify_harness_error(log)) is not None:
-            cause = f"the harness: {kind} (from the log)"
+            cause = f"the harness: {_harness(kind)} (classified from the log)"
         elif r.deployment_plan_digest in fixes:
             cause = "a fix that did not work"
         else:

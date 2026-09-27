@@ -310,11 +310,11 @@ Failed boots and retries are included.
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 0.0987 | 0 (0.0000) | `1220092662ec5a95` +4 |
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 0.0314 | 0 (0.0000) | `12200ac02bfdf76a` +7 |
 | **Records total** |  | **9.9030** |  |  |
-| Diagnosis model calls (Claude Haiku) |  | 0.1916 |  |  |
+| Diagnosis model calls (Claude Haiku) |  | 0.1934 |  |  |
 | Idle time of reused pods |  | 0.2302 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  | 0.6502 |  |  |
 | Corrections to RunPod's bill (estimates, clock differences) |  | -0.0998 |  |  |
-| **Ledger spent** |  | **11.3523** |  | cap $100 |
+| **Ledger spent** |  | **11.3541** |  | cap $100 |
 | RunPod billed, same window |  | 9.9041 |  | not billed yet: 2 pod(s) |
 <!-- /findings:cost -->
 

@@ -258,3 +258,4 @@
 {"amount": 0.01076, "at": "2026-09-27T18:17:04.589351+00:00", "label": "classifier:record-l0f-class6", "op": "spend"}
 {"amount": 0.001652, "at": "2026-09-27T18:17:07.440229+00:00", "label": "classifier:base-model:ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4", "op": "spend"}
 {"amount": 0.001692, "at": "2026-09-27T18:21:22.119466+00:00", "label": "classifier:base-model:ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4", "op": "spend"}
+{"amount": 0.001712, "at": "2026-09-27T18:43:14.504245+00:00", "label": "classifier:base-model:ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4", "op": "spend"}
