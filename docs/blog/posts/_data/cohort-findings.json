@@ -31,7 +31,7 @@
     {
       "activation_at_run": 278405120,
       "activation_measured": 558345748,
-      "activation_now": 556810240,
+      "activation_now": 557056000,
       "dtype": "float32",
       "gpu": "NVIDIA GeForce RTX 4090",
       "model": "state-spaces/mamba-2.8b-hf",
@@ -157,7 +157,7 @@
     {
       "activation_at_run": 1638147072,
       "activation_measured": 225485783,
-      "activation_now": 655884288,
+      "activation_now": 211255296,
       "dtype": "bfloat16",
       "gpu": "NVIDIA A100-SXM4-80GB",
       "model": "Qwen/Qwen3-8B",
