@@ -461,6 +461,9 @@ def load_cohort_run(
         rule_errors=rule_errors,
         ledger=JsonlLedger(run_dir / "ledger.jsonl").read_all(),
         events=JsonlLedger(run_dir / "events.jsonl").read_all(),
+        billing=json.loads((run_dir / "billing-reconciliation.json").read_text())
+        if (run_dir / "billing-reconciliation.json").exists()
+        else None,
     )
 
 

@@ -242,3 +242,5 @@ class CohortRun:
     rule_errors: list[str]
     ledger: list[dict[str, Any]]
     events: list[dict[str, Any]]
+    # The provider's bill for the run window (scripts/reconcile_billing.py), if read.
+    billing: dict[str, Any] | None = None

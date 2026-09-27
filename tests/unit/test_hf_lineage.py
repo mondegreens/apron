@@ -32,8 +32,13 @@ class _Hub(HubLineage):
 
 def _repos(**overrides: dict[str, Any]) -> dict[str, dict[str, Any]]:
     repos = {
-        "lab/Q-FPQuant": {"config": {**_SHAPE, "quantization_config": {
-            "quant_method": "fp_quant", "forward_dtype": "mxfp4"}}, "norm": _NORM},
+        "lab/Q-FPQuant": {
+            "config": {
+                **_SHAPE,
+                "quantization_config": {"quant_method": "fp_quant", "forward_dtype": "mxfp4"},
+            },
+            "norm": _NORM,
+        },
         "org/Q": {"config": dict(_SHAPE), "norm": _NORM},
         "org/Q-FP8": {"config": {**_SHAPE, "quantization_config": _FP8}, "norm": _NORM},
         "x/Q-tuned-FP8": {"config": {**_SHAPE, "quantization_config": _FP8}, "norm": (9.0,)},
@@ -86,7 +91,15 @@ def test_weight_bits_by_format() -> None:
     assert weight_bits({"quantization_config": _FP8}) == 8
     assert weight_bits({"quantization_config": {"quant_method": "gptq", "bits": 4}}) == 4
     groups = {"g": {"weights": {"num_bits": 4}}}
-    assert weight_bits(
-        {"quantization_config": {"quant_method": "compressed-tensors", "config_groups": groups}}
-    ) == 4
+    assert (
+        weight_bits(
+            {
+                "quantization_config": {
+                    "quant_method": "compressed-tensors",
+                    "config_groups": groups,
+                }
+            }
+        )
+        == 4
+    )
     assert weight_bits({"quantization_config": {"quant_method": "hqq"}}) is None

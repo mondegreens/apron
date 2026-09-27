@@ -234,6 +234,26 @@ def test_pod_reported_cost_uses_cost_per_hour_and_uptime(tmp_path: Path) -> None
         assert target.pod_reported_cost() is None
 
 
+def test_a_terminated_pod_is_costed_from_the_bill(tmp_path: Path) -> None:
+    """The pod API forgets a terminated pod; RunPod's billing does not.  A crash
+    replay used to settle such a pod at the estimate: 0.48 against 0.24 billed."""
+    target = _target(tmp_path)
+    rows = [
+        {"podId": "pod-gone", "amount": 0.2431, "time": "2026-09-26 00:00:00"},
+        {"podId": "other", "amount": 9.0, "time": "2026-09-26 00:00:00"},
+    ]
+    with (
+        patch.object(target, "_gql_status", return_value={"pod": None}),
+        patch.object(target, "billing", return_value=rows),
+    ):
+        assert target.pod_reported_cost("pod-gone") == pytest.approx(0.2431)
+    with (
+        patch.object(target, "_gql_status", return_value={"pod": None}),
+        patch.object(target, "billing", return_value=[]),
+    ):
+        assert target.pod_reported_cost("pod-gone") is None  # not billed yet
+
+
 def test_mock_is_not_leaking_into_other_tests() -> None:
     assert not isinstance(runpod_module.time.sleep, MagicMock)
 

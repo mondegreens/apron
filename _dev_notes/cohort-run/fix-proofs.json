@@ -1,5 +1,30 @@
 [
   {
+    "failure_class": 1,
+    "expected_family": "oom_weight_load",
+    "broken_solution_fp": null,
+    "broken_failed": true,
+    "diagnosed_family": "oom_weight_load",
+    "gate_a": true,
+    "gate_b": true,
+    "corrected_plan": {
+      "resource_allocation.gpu_sku": [
+        "NVIDIA GeForce RTX 4090",
+        "NVIDIA RTX A6000"
+      ]
+    },
+    "fixed_solution_fp": "12205a2fa72648dafae6450e98fa5d2d85160a503b00ccb900c952ebf8a3b7382b63",
+    "mechanism_outcome": "verified",
+    "request_outcome": "satisfied",
+    "label": "Fixed",
+    "remediation_digest": "1220f4b5d596eaa32d5258547db991a2136c5f01b9b39faba9c78211705c6e152de3",
+    "promoted_rule_digest": "122086922dd909b8f4043e41915d2e0dbdf8da7f1d1b65d0996cacd11ef85d1cf998",
+    "violated_constraints": [],
+    "notes": [
+      "rebuilt from the stored RemediationRecord on 2026-09-27: the run's own summary entry was overwritten by a later single-class run (fixed since)"
+    ]
+  },
+  {
     "failure_class": 2,
     "expected_family": "oom_kv_cache",
     "broken_solution_fp": "1220537da4c968b10b19a28d891c04dab36501f522263d4a1d99cffdc4fbe8219ba5",

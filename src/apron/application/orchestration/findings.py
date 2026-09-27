@@ -19,6 +19,7 @@ import re
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any
 
+from apron.application.orchestration.billing import RECONCILE_PREFIX
 from apron.application.orchestration.remediation import SIX_CLASSES
 from apron.application.orchestration.serving import evaluate_serving_slos
 from apron.domain.fingerprints import fingerprint_hex
@@ -374,12 +375,24 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
         for e in run.ledger
         if e["op"] in ("settle", "spend") and is_classifier(e)
     )
+    reconciled = sum(
+        float(e["amount"])
+        for e in run.ledger
+        if e["op"] == "spend" and str(e.get("label", "")).startswith(RECONCILE_PREFIX)
+    )
+    billing = run.billing or {}
     return {
         "authorized": authorized,
         "ledger_settled": round(settled, 6),
         "ledger_classifier": round(classifier, 6),
         "ledger_pod_idle": round(pod_idle, 6),
-        "ledger_spent": round(settled + classifier + pod_idle, 6),
+        "ledger_reconciled": round(reconciled, 6),
+        "ledger_spent": round(settled + classifier + pod_idle + reconciled, 6),
+        "provider_billed": billing.get("billed_total"),
+        "provider_not_yet_billed": list(billing.get("not_yet_billed", [])),
+        "provider_mismatched": [
+            {k: m[k] for k in ("pod", "ledger", "billed")} for m in billing.get("mismatched", [])
+        ],
         "records_total": round(sum(row["cost"] for row in rows), 6),
         "failed_boot_total": round(sum(row["failed_boot_cost"] for row in rows), 6),
         "per_solution": rows,
@@ -647,6 +660,13 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
                     "",
                 ],
                 [
+                    "Pods billed but missing from the ledger (reconciled)",
+                    "",
+                    f"{cost.get('ledger_reconciled', 0):.4f}",
+                    "",
+                    "",
+                ],
+                [
                     "**Ledger spent**",
                     "",
                     f"**{cost['ledger_spent']:.4f}**",
@@ -654,6 +674,19 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
                     f"cap ${cost['authorized']:.0f}",
                 ],
             ]
+            + (
+                [
+                    [
+                        "RunPod billed, same window",
+                        "",
+                        f"{cost['provider_billed']:.4f}",
+                        "",
+                        f"not billed yet: {len(cost['provider_not_yet_billed'])} pod(s)",
+                    ]
+                ]
+                if cost.get("provider_billed") is not None
+                else []
+            )
             if cost["per_solution"]
             else []
         ),

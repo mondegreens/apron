@@ -179,3 +179,8 @@
 {"amount": 0.717091, "at": "2026-09-27T04:12:35.437544+00:00", "estimate": 1.4542, "label": "class6-fixed", "op": "settle"}
 {"amount": 0.000495, "at": "2026-09-27T04:12:35.947239+00:00", "estimate": 0.581667, "label": "pod-idle:uek7y94mhlfqam", "op": "settle"}
 {"amount": 0.001719, "at": "2026-09-27T04:30:51.061223+00:00", "label": "classifier:base-model:ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4", "op": "spend"}
+{"amount": 0.096501, "at": "2026-09-27T04:36:52.904728+00:00", "label": "reconcile:unledgered:1whhoofog4ig7t", "op": "spend"}
+{"amount": 0.113302, "at": "2026-09-27T04:36:52.905160+00:00", "label": "reconcile:unledgered:bdjkw5nbsj625z", "op": "spend"}
+{"amount": 0.06602, "at": "2026-09-27T04:36:52.905396+00:00", "label": "reconcile:unledgered:ljf4phxhq229f1", "op": "spend"}
+{"amount": 0.256863, "at": "2026-09-27T04:36:52.905589+00:00", "label": "reconcile:unledgered:oxlwqogyhgfc2m", "op": "spend"}
+{"amount": 0.117501, "at": "2026-09-27T04:36:52.905771+00:00", "label": "reconcile:unledgered:pcx46p9oe2n3cz", "op": "spend"}

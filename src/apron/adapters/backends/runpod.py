@@ -33,6 +33,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 GRAPHQL_URL = "https://api.runpod.io/graphql"
+BILLING_URL = "https://rest.runpod.io/v1/billing/pods"
 DEFAULT_IMAGE = RUNNER_IMAGE
 DEFAULT_MAX_UPTIME = 3600
 POD_NAME_PREFIX = "apron-run"
@@ -480,8 +481,42 @@ class RunPodTarget:
         pod = data.get("pod") or {}
         rate = pod.get("costPerHr")
         if rate is None or not (pod.get("lastStartedAt") or pod.get("runtime")):
-            return None
+            # A terminated pod is gone from the pod API; its bill is not
+            # (L0-A3: a crash replay fell back to a 2x estimate, 2026-09-27).
+            return self.billed_cost(pod_id)
         return round(float(rate) * _age_from(pod, time.time()) / 3600, 6)
+
+    def billed_cost(self, pod_id: str) -> float | None:
+        """What RunPod billed for a pod (its billing API; running or terminated).
+
+        ``None`` when the API does not answer or has not posted the pod yet
+        (billing lags termination by minutes).
+        """
+        rows = self.billing()
+        amounts = [float(r["amount"]) for r in rows if r.get("podId") == pod_id]
+        return round(sum(amounts), 6) if amounts else None
+
+    def billing(self, start: str | None = None, end: str | None = None) -> list[dict[str, Any]]:
+        """Per-pod, per-day billing rows (``podId``, ``amount``, ``timeBilledMs``,
+        ``time``); ``[]`` when the API does not answer."""
+        params = {"bucketSize": "day", "grouping": "podId"}
+        if start:
+            params["startTime"] = start
+        if end:
+            params["endTime"] = end
+        try:
+            resp = httpx.get(
+                BILLING_URL,
+                params=params,
+                headers={"Authorization": f"Bearer {self._api_key}"},
+                timeout=30,
+            )
+            resp.raise_for_status()
+            rows = resp.json()
+        except Exception:
+            logger.debug("billing query failed", exc_info=True)
+            return []
+        return rows if isinstance(rows, list) else []
 
     def stock_status(
         self, gpu_type: str | None = None, gpu_count: int | None = None

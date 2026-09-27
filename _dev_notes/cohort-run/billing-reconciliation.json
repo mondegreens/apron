@@ -1,0 +1,233 @@
+{
+  "billed_total": 8.66396,
+  "ledger_pod_total": 9.500288,
+  "mismatched": [
+    {
+      "billed": 0.243082,
+      "difference": 0.233918,
+      "ledger": 0.477,
+      "named_by_run": true,
+      "pod": "i4wm7xzhu4r1wz"
+    },
+    {
+      "billed": 0.371994,
+      "difference": -0.012514,
+      "ledger": 0.35948,
+      "named_by_run": true,
+      "pod": "n99tlxduol1a1q"
+    }
+  ],
+  "not_yet_billed": [
+    "uek7y94mhlfqam"
+  ],
+  "pods": [
+    {
+      "billed": 0.212553,
+      "difference": -0.007304,
+      "ledger": 0.205249,
+      "named_by_run": true,
+      "pod": "17xicayf2q4xfm"
+    },
+    {
+      "billed": 0.01782,
+      "difference": -0.002083,
+      "ledger": 0.015737,
+      "named_by_run": true,
+      "pod": "1hy0qrztswpvsn"
+    },
+    {
+      "billed": 0.096501,
+      "difference": 0.0,
+      "ledger": 0.096501,
+      "named_by_run": true,
+      "pod": "1whhoofog4ig7t"
+    },
+    {
+      "billed": 0.031128,
+      "difference": -0.003831,
+      "ledger": 0.027297,
+      "named_by_run": true,
+      "pod": "1zyr660l6vlrdw"
+    },
+    {
+      "billed": 1.397699,
+      "difference": -0.003848,
+      "ledger": 1.393851,
+      "named_by_run": true,
+      "pod": "9be0zp7egjw2mn"
+    },
+    {
+      "billed": 0.138746,
+      "difference": -0.005572,
+      "ledger": 0.133174,
+      "named_by_run": true,
+      "pod": "adf11ef12rl1qa"
+    },
+    {
+      "billed": 0.113302,
+      "difference": 0.0,
+      "ledger": 0.113302,
+      "named_by_run": true,
+      "pod": "bdjkw5nbsj625z"
+    },
+    {
+      "billed": 0.143771,
+      "difference": -0.005555,
+      "ledger": 0.138216,
+      "named_by_run": true,
+      "pod": "de5pcy04eqo3f1"
+    },
+    {
+      "billed": 0.095492,
+      "difference": -0.003803,
+      "ledger": 0.091689,
+      "named_by_run": true,
+      "pod": "fv58mbh1ieedqv"
+    },
+    {
+      "billed": 0.692682,
+      "difference": -0.006415,
+      "ledger": 0.686267,
+      "named_by_run": true,
+      "pod": "fy7vvlu4f5l5l5"
+    },
+    {
+      "billed": 0.868655,
+      "difference": -0.003875,
+      "ledger": 0.86478,
+      "named_by_run": true,
+      "pod": "hi4g7vmxjzj6gc"
+    },
+    {
+      "billed": 0.243082,
+      "difference": 0.233918,
+      "ledger": 0.477,
+      "named_by_run": true,
+      "pod": "i4wm7xzhu4r1wz"
+    },
+    {
+      "billed": 0.97169,
+      "difference": -0.008048,
+      "ledger": 0.963642,
+      "named_by_run": true,
+      "pod": "ib72nxo5ln3a0n"
+    },
+    {
+      "billed": 0.113136,
+      "difference": -0.003839,
+      "ledger": 0.109297,
+      "named_by_run": true,
+      "pod": "j4fbisf6dwj12x"
+    },
+    {
+      "billed": 0.111138,
+      "difference": -0.003829,
+      "ledger": 0.107309,
+      "named_by_run": true,
+      "pod": "jaw52t8omxeh6w"
+    },
+    {
+      "billed": 0.312853,
+      "difference": -0.002944,
+      "ledger": 0.309909,
+      "named_by_run": true,
+      "pod": "koirwqhngdflxi"
+    },
+    {
+      "billed": 0.06602,
+      "difference": 0.0,
+      "ledger": 0.06602,
+      "named_by_run": true,
+      "pod": "ljf4phxhq229f1"
+    },
+    {
+      "billed": 0.611023,
+      "difference": -0.004727,
+      "ledger": 0.606296,
+      "named_by_run": true,
+      "pod": "myporq0l8cpm99"
+    },
+    {
+      "billed": 0.371994,
+      "difference": -0.012514,
+      "ledger": 0.35948,
+      "named_by_run": true,
+      "pod": "n99tlxduol1a1q"
+    },
+    {
+      "billed": 0.520128,
+      "difference": -0.000545,
+      "ledger": 0.519583,
+      "named_by_run": true,
+      "pod": "nuuqycrd55wa07"
+    },
+    {
+      "billed": 0.07389,
+      "difference": -0.005557,
+      "ledger": 0.068333,
+      "named_by_run": true,
+      "pod": "os8pm9616t4z9v"
+    },
+    {
+      "billed": 0.305531,
+      "difference": -0.005304,
+      "ledger": 0.300227,
+      "named_by_run": true,
+      "pod": "ot51tsgbndl8ju"
+    },
+    {
+      "billed": 0.256863,
+      "difference": 0.0,
+      "ledger": 0.256863,
+      "named_by_run": true,
+      "pod": "oxlwqogyhgfc2m"
+    },
+    {
+      "billed": 0.117501,
+      "difference": 0.0,
+      "ledger": 0.117501,
+      "named_by_run": true,
+      "pod": "pcx46p9oe2n3cz"
+    },
+    {
+      "billed": 0.113213,
+      "difference": -0.005642,
+      "ledger": 0.107571,
+      "named_by_run": true,
+      "pod": "rpxdrib9e80tkn"
+    },
+    {
+      "billed": 0.347876,
+      "difference": -0.005293,
+      "ledger": 0.342583,
+      "named_by_run": true,
+      "pod": "tbwmztvyaiaej2"
+    },
+    {
+      "billed": 0.128319,
+      "difference": -0.00737,
+      "ledger": 0.120949,
+      "named_by_run": true,
+      "pod": "uctmsoz02bawey"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.717586,
+      "named_by_run": true,
+      "pod": "uek7y94mhlfqam"
+    },
+    {
+      "billed": 0.191352,
+      "difference": -0.007276,
+      "ledger": 0.184076,
+      "named_by_run": true,
+      "pod": "uen772hwen7url"
+    }
+  ],
+  "unledgered": [],
+  "window": {
+    "end": "2026-09-27T04:36:52Z",
+    "start": "2026-09-26T00:00:00Z"
+  }
+}

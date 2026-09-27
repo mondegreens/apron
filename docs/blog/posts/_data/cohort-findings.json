@@ -4,8 +4,9 @@
     "failed_boot_total": 4.324673,
     "ledger_classifier": 0.165115,
     "ledger_pod_idle": 0.027383,
+    "ledger_reconciled": 0.650187,
     "ledger_settled": 8.823067,
-    "ledger_spent": 9.015565,
+    "ledger_spent": 9.665752,
     "per_solution": [
       {
         "cost": 1.392902,
@@ -372,6 +373,22 @@
           "1220f42f4f523a5a979b719998a96fd13d31b7233f1655e1b759518a699d6957d500"
         ]
       }
+    ],
+    "provider_billed": 8.66396,
+    "provider_mismatched": [
+      {
+        "billed": 0.243082,
+        "ledger": 0.477,
+        "pod": "i4wm7xzhu4r1wz"
+      },
+      {
+        "billed": 0.371994,
+        "ledger": 0.35948,
+        "pod": "n99tlxduol1a1q"
+      }
+    ],
+    "provider_not_yet_billed": [
+      "uek7y94mhlfqam"
     ],
     "records_total": 8.346069
   },
