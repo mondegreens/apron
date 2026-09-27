@@ -22,7 +22,12 @@ from apron.application.orchestration.cohort import (
     SolutionPlan,
     predicted_feasible,
 )
-from apron.application.orchestration.correction import CatalogEntry, CorrectionContext
+from apron.application.orchestration.correction import (
+    ArtifactCandidate,
+    ArtifactSearch,
+    CatalogEntry,
+    CorrectionContext,
+)
 from apron.application.orchestration.evidence import protocol_template, solution_fingerprint
 from apron.application.orchestration.pods import TargetPool
 from apron.domain.artifacts.identity import ArtifactIdentity
@@ -149,6 +154,19 @@ MODELS: dict[str, dict[str, Any]] = {
             "num_key_value_heads": 8,
             "max_position_embeddings": 40960,
             "quantization_config": {"quant_method": "fp_quant"},
+            "torch_dtype": "bfloat16",
+        },
+    },
+    # The class 6 substitute (substitute_artifact): same network, fp8 (cc 75).
+    "Qwen/Qwen3-0.6B-FP8": {
+        "weights": 750_000_000,
+        "config": {
+            "architectures": ["Qwen3ForCausalLM"],
+            "model_type": "qwen3",
+            "num_attention_heads": 16,
+            "num_key_value_heads": 8,
+            "max_position_embeddings": 40960,
+            "quantization_config": {"quant_method": "fp8"},
             "torch_dtype": "bfloat16",
         },
     },
@@ -597,10 +615,32 @@ def fix_plan_solution(plan: DeploymentPlan, label: str) -> SolutionPlan:
     return plan_solution(plan, label, check_feasibility=False)
 
 
+def _shape(model_id: str) -> dict[str, Any]:
+    config = MODELS[model_id]["config"]
+    return {k: config.get(k) for k in ("architectures", "model_type", "num_attention_heads")}
+
+
+# The Hub lineage search, as HubLineage would return it for the class 6 checkpoint.
+LINEAGE: dict[str, ArtifactSearch] = {
+    "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4": ArtifactSearch(
+        requested_model_id="ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
+        base_model_id="Qwen/Qwen3-0.6B",
+        requested_weight_bits=4,
+        requested_shape=_shape("ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4"),
+        candidates=(
+            ArtifactCandidate(
+                "Qwen/Qwen3-0.6B-FP8", _shape("Qwen/Qwen3-0.6B-FP8"), 8, 75, "fp8", 300_000
+            ),
+        ),
+    )
+}
+
+
 def correction_context(sp: SolutionPlan) -> CorrectionContext:
     return CorrectionContext(
         catalog=tuple(CatalogEntry(hw, rate) for hw, rate in CATALOG.values()),
         predicted_total_bytes=sp.predicted_total_bytes,
+        artifacts=lambda: LINEAGE.get(sp.model_id),
     )
 
 

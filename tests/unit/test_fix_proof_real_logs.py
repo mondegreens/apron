@@ -24,7 +24,7 @@ from apron.application.orchestration.correction import CatalogEntry, CorrectionC
 from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
 from apron.application.orchestration.remediation import SIX_CLASSES
 from apron.domain.fingerprints import fingerprint_hex
-from apron.interfaces.cohort_root import hardware_for
+from apron.interfaces.cohort_root import hardware_for, search_from_json
 
 REPO = Path(__file__).resolve().parents[2]
 FIXTURES = REPO / "tests" / "fixtures" / "l0f"
@@ -53,10 +53,18 @@ def _fixture(n: int) -> dict[str, Any]:
     return json.loads((FIXTURES / f"class{n}.json").read_text("utf-8"))
 
 
+def _lineage(n: int) -> dict[str, Any] | None:
+    """The recorded same-lineage search (``scripts/record_class6_lineage.py``)."""
+    path = FIXTURES / f"class{n}-lineage.json"
+    return json.loads(path.read_text("utf-8")) if path.exists() else None
+
+
 def _diagnose(n: int) -> tuple[Any, Any, dict[str, Any]]:
     case = SIX_CLASSES[n - 1]
     fx = _fixture(n)
     assert fx["broken_plan_digest"] == fingerprint_hex(case.broken_plan), "fixture is stale"
+    lineage = _lineage(n)
+    search = search_from_json(lineage["search"]) if lineage and lineage["search"] else None
     result = run_diagnosis_pipeline(
         fx["log"],
         RecordedEngine(fx),
@@ -65,7 +73,9 @@ def _diagnose(n: int) -> tuple[Any, Any, dict[str, Any]]:
         hardware_for(fx["gpu_sku"]),
         RULES,
         correction_context=CorrectionContext(
-            catalog=CATALOG, predicted_total_bytes=fx["predicted_total_bytes"]
+            catalog=CATALOG,
+            predicted_total_bytes=fx["predicted_total_bytes"],
+            artifacts=lambda: search,
         ),
     )
     return case, result, fx
@@ -121,11 +131,25 @@ def test_class5_reduces_tensor_parallel_to_a_divisor_that_fits() -> None:
     assert 32 % tp == 0 and tp <= int(case.broken_plan.resource_allocation["gpu_count"])
 
 
-def test_class6_retargets_to_a_gpu_the_kernels_were_built_for() -> None:
-    _, result, _ = _diagnose(6)
-    chosen = result.corrected_plan.resource_allocation["gpu_sku"]
-    assert hardware_for(chosen).compute_capability == "10.0"
-    assert chosen == "NVIDIA B200"
+def test_class6_substitutes_the_official_fp8_checkpoint_on_the_same_gpu() -> None:
+    """v1 moved to a B200, where the checkpoint's format did not load (boot
+    report 1220e2bb…); v2 serves the same network in a format the H100 runs."""
+    case, result, _ = _diagnose(6)
+    allocation = result.corrected_plan.resource_allocation
+    assert allocation["model_id"] == "Qwen/Qwen3-0.6B-FP8"
+    assert allocation["gpu_sku"] == case.broken_plan.resource_allocation["gpu_sku"]
+    assert result.correction_strategy == "substitute_artifact"
+
+
+def test_class6_base_model_was_proposed_then_confirmed_by_the_hub() -> None:
+    lineage = _lineage(6)
+    assert lineage is not None
+    base = lineage["evidence"]["base_model"]
+    assert base["source"] == "proposed" and base["confirmed"] is True
+    assert base["proposal"]["classifier_model_id"] and base["proposal"]["classifier_cost_usd"]
+    search = search_from_json(lineage["search"])
+    assert search.base_model_id == base["id"]
+    assert all(dict(c.shape) == dict(search.requested_shape) for c in search.candidates)
 
 
 def test_class1_never_retargets_to_a_gpu_without_capacity() -> None:

@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any
 
 import apron.domain.mechanisms.calculator  # noqa: F401 — registers calculators
 from apron.adapters.backends.ledger_file import JsonlLedger
+from apron.adapters.backends.llm_classifier import guess_base_model
 from apron.adapters.backends.local_store import LocalRecordStore
 from apron.adapters.backends.rule_loader import load_rules
 from apron.adapters.backends.rule_repository import FileRuleRepository
@@ -27,6 +28,7 @@ from apron.adapters.backends.runpod import CLOUD_TYPE, GPU_SPECS, RunPodTarget
 from apron.adapters.backends.vllm_engine import VllmEngineAdapter
 from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
 from apron.adapters.evidence.hf_hub import HFHubResolver
+from apron.adapters.evidence.hf_lineage import HubLineage
 from apron.adapters.planning.calculator_source import CalculatorPlanningSource
 from apron.adapters.runner_image import RUNNER_IMAGE, RUNNER_IMAGE_DIGEST
 from apron.application.cost_estimator import hourly_rate
@@ -38,7 +40,12 @@ from apron.application.orchestration.cohort import (
     predicted_feasible,
 )
 from apron.application.orchestration.cohort_records import CohortRun, load_cohort_records
-from apron.application.orchestration.correction import CatalogEntry, CorrectionContext
+from apron.application.orchestration.correction import (
+    ArtifactCandidate,
+    ArtifactSearch,
+    CatalogEntry,
+    CorrectionContext,
+)
 from apron.application.orchestration.evidence import protocol_template, solution_fingerprint
 from apron.application.orchestration.plan_pipeline import run_plan_pipeline
 from apron.application.orchestration.pods import TargetPool
@@ -60,6 +67,8 @@ from apron.domain.schemas.solutions import (
 from apron.domain.schemas.tasks import ApplicationSpec, ServingWorkloadSpec, TaskSuiteSpec
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from apron.domain.ports import Clock, IdGenerator
 
 REPO = Path(__file__).resolve().parents[3]
@@ -464,13 +473,74 @@ def available_catalog(
     return tuple(entries)
 
 
-def build_fix_ports(planner: CohortPlanner, rates: dict[str, float]) -> FixProofPorts:
+LINEAGE_DIR = RUN_DIR / "artifact-lineage"
+
+
+def lineage_search(
+    model_id: str, record_spend: Callable[[float, str], None] | None = None
+) -> ArtifactSearch | None:
+    """Same-lineage checkpoints for *model_id* (class 6 fallback, PLAN §10.1).
+
+    The base-model proposal is a paid classifier call (D5): its cost is
+    recorded as ``classifier:base-model:<id>``.  Every step of the search is
+    written to ``artifact-lineage/`` so the choice can be re-read later.
+    """
+
+    def propose(repo: str, config: dict[str, Any]) -> dict[str, Any]:
+        answer = guess_base_model(repo, config)
+        cost = answer.get("classifier_cost_usd")
+        if record_spend is not None and cost:
+            record_spend(float(cost), f"classifier:base-model:{repo}")
+        return answer
+
+    search, evidence = HubLineage().search(model_id, propose)
+    LINEAGE_DIR.mkdir(parents=True, exist_ok=True)
+    (LINEAGE_DIR / f"{model_id.replace('/', '--')}.json").write_text(
+        json.dumps(
+            {
+                "evidence": evidence,
+                "search": None if search is None else search_to_json(search),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    )
+    return search
+
+
+def search_to_json(search: ArtifactSearch) -> dict[str, Any]:
+    return {
+        "requested_model_id": search.requested_model_id,
+        "base_model_id": search.base_model_id,
+        "requested_weight_bits": search.requested_weight_bits,
+        "requested_shape": dict(search.requested_shape),
+        "candidates": [{**c.__dict__, "shape": dict(c.shape)} for c in search.candidates],
+    }
+
+
+def search_from_json(data: dict[str, Any]) -> ArtifactSearch:
+    return ArtifactSearch(
+        requested_model_id=data["requested_model_id"],
+        base_model_id=data["base_model_id"],
+        requested_weight_bits=data["requested_weight_bits"],
+        requested_shape=data["requested_shape"],
+        candidates=tuple(ArtifactCandidate(**c) for c in data["candidates"]),
+    )
+
+
+def build_fix_ports(
+    planner: CohortPlanner,
+    rates: dict[str, float],
+    record_spend: Callable[[float, str], None] | None = None,
+) -> FixProofPorts:
     rules = load_rules(RULES_DIR, "vllm", "v0.29.0")
 
     def correction_context(sp: SolutionPlan) -> CorrectionContext:
         return CorrectionContext(
             catalog=available_catalog(rates, sp.requested.gpu_count),
             predicted_total_bytes=sp.predicted_total_bytes,
+            artifacts=lambda: lineage_search(sp.model_id, record_spend),
         )
 
     return FixProofPorts(

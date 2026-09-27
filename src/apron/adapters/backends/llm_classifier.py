@@ -409,3 +409,88 @@ def _verify_evidence(
             result[evidence_key] = None
 
     return result
+
+
+# ---------------------------------------------------------------------------
+# Lineage: which model a checkpoint was derived from
+# ---------------------------------------------------------------------------
+
+_BASE_MODEL_SYSTEM = """\
+You identify the Hugging Face model a checkpoint was derived from. Checkpoints \
+are often quantized or converted copies of a published model and name it only \
+implicitly (in the repo id or the config). Answer with the repo id of the \
+original, unquantized model it was derived from, exactly as it is published on \
+the Hugging Face Hub (owner/name). If the evidence does not identify one, \
+answer with an empty string. Your answer is checked against the Hub: a wrong \
+guess is rejected, never used."""
+
+_BASE_MODEL_TOOL: dict[str, Any] = {
+    "name": "name_base_model",
+    "description": "Name the Hub repo id this checkpoint was derived from.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "base_model_id": {
+                "type": "string",
+                "description": "owner/name on the Hugging Face Hub, or empty if unknown",
+            },
+            "reason": {"type": "string", "description": "one sentence: what identifies it"},
+        },
+        "required": ["base_model_id", "reason"],
+    },
+}
+
+
+def guess_base_model(
+    model_id: str,
+    config: dict[str, Any],
+    model: str = DEFAULT_CLASSIFIER_MODEL,
+) -> dict[str, Any]:
+    """Propose the base model of a checkpoint whose card declares none.
+
+    A proposal only: the caller confirms it against the Hub (the base must
+    exist and have the same architecture) before anything uses it.  Returns
+    ``base_model_id`` ("" when the model declines), ``reason`` and the same
+    provenance and cost fields a classification carries (F6, D5).
+    """
+    import json
+
+    import anthropic
+
+    shown = {
+        k: config[k]
+        for k in (
+            "architectures",
+            "model_type",
+            "hidden_size",
+            "num_hidden_layers",
+            "num_attention_heads",
+            "num_key_value_heads",
+            "intermediate_size",
+            "vocab_size",
+            "quantization_config",
+            "_name_or_path",
+        )
+        if k in config
+    }
+    prompt = f"Checkpoint: {model_id}\nconfig.json (excerpt):\n{json.dumps(shown, indent=1)}"
+    usage = {"input_tokens": 0, "output_tokens": 0}
+    response = anthropic.Anthropic().messages.create(
+        model=model,
+        max_tokens=256,
+        system=_BASE_MODEL_SYSTEM,
+        tools=[_BASE_MODEL_TOOL],  # type: ignore[list-item]
+        tool_choice={"type": "tool", "name": "name_base_model"},
+        messages=[{"role": "user", "content": prompt}],
+    )
+    _add_usage(usage, response)
+    tool_use = next((b for b in response.content if b.type == "tool_use"), None)
+    answer = dict(tool_use.input) if tool_use is not None else {}  # type: ignore[arg-type]
+    return {
+        "base_model_id": str(answer.get("base_model_id") or "").strip(),
+        "reason": str(answer.get("reason") or ""),
+        "classifier_model_id": model,
+        "classifier_input_digest": classifier_input_digest(model, _BASE_MODEL_SYSTEM, prompt),
+        "classifier_usage": dict(usage),
+        "classifier_cost_usd": classifier_cost(model, **usage),
+    }

@@ -15,7 +15,12 @@ import pytest
 from conftest import FakeDiagnosisEngine
 
 from apron.adapters.backends.rule_loader import load_rules
-from apron.application.orchestration.correction import CatalogEntry, CorrectionContext
+from apron.application.orchestration.correction import (
+    ArtifactCandidate,
+    ArtifactSearch,
+    CatalogEntry,
+    CorrectionContext,
+)
 from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
 from apron.domain.schemas.primitives import HardwareSpec
 from apron.domain.schemas.solutions import DeploymentPlan
@@ -58,6 +63,17 @@ _H100 = HardwareSpec(
 _B200 = HardwareSpec(
     gpu_sku="NVIDIA B200", total_memory_bytes=179 << 30, compute_capability="10.0"
 )
+_QWEN3_SHAPE = {"architectures": ["Qwen3ForCausalLM"], "model_type": "qwen3"}
+_LINEAGE = ArtifactSearch(
+    requested_model_id="lab/Qwen3-FPQuant",
+    base_model_id="Qwen/Qwen3",
+    requested_weight_bits=4,
+    requested_shape=_QWEN3_SHAPE,
+    candidates=(
+        ArtifactCandidate("Qwen/Qwen3", _QWEN3_SHAPE, 16, 0),
+        ArtifactCandidate("Qwen/Qwen3-FP8", _QWEN3_SHAPE, 8, 75, "fp8"),
+    ),
+)
 _CONTEXT = CorrectionContext(
     catalog=(
         CatalogEntry(_4090, 0.74),
@@ -66,6 +82,7 @@ _CONTEXT = CorrectionContext(
         CatalogEntry(_B200, 6.79),
     ),
     predicted_total_bytes=33_000_000_000,
+    artifacts=lambda: _LINEAGE,
 )
 
 _ENGINE_WRAPPER = (
@@ -158,10 +175,15 @@ _SIX_CLASSES = [
         "ValueError: The quantization method fp_quant is not supported for the current GPU. "
         "Minimum capability: 100. Current capability: 90.",
         DeploymentPlan(
-            dtype="bfloat16", resource_allocation={"gpu_sku": _H100.gpu_sku, "gpu_count": "1"}
+            dtype="bfloat16",
+            resource_allocation={
+                "model_id": "lab/Qwen3-FPQuant",
+                "gpu_sku": _H100.gpu_sku,
+                "gpu_count": "1",
+            },
         ),
         _H100,
-        ("resource_allocation", "gpu_sku", "NVIDIA B200"),
+        ("resource_allocation", "model_id", "Qwen/Qwen3-FP8"),
         id="6-quant_compute_capability",
     ),
     pytest.param(

@@ -152,24 +152,35 @@ class TestPipelinePerClass:
         model_config: dict,
         rules: list[dict],
     ) -> None:
-        from apron.application.orchestration.correction import CatalogEntry, CorrectionContext
+        from apron.application.orchestration.correction import (
+            ArtifactCandidate,
+            ArtifactSearch,
+            CorrectionContext,
+        )
 
+        requested = "lab/Model-FPQuant"
         plan = DeploymentPlan(
             engine_configuration={"max_model_len": "4096"},
-            resource_allocation={"gpu_sku": hardware.gpu_sku, "gpu_count": "1"},
+            resource_allocation={
+                "model_id": requested,
+                "gpu_sku": hardware.gpu_sku,
+                "gpu_count": "1",
+            },
         )
         error = (
             "The quantization method fp_quant "
             "is not supported for the current GPU. Minimum "
             "capability: 100. Current capability: 89."
         )
-        catalog = (
-            CatalogEntry(hardware, 0.74),
-            CatalogEntry(
-                HardwareSpec(
-                    gpu_sku="NVIDIA B200", total_memory_bytes=179 << 30, compute_capability="10.0"
-                ),
-                6.79,
+        shape = {"architectures": ["LlamaForCausalLM"], "hidden_size": 4096}
+        search = ArtifactSearch(
+            requested_model_id=requested,
+            base_model_id="org/Model",
+            requested_weight_bits=4,
+            requested_shape=shape,
+            candidates=(
+                ArtifactCandidate("org/Model", shape, 16, 0),
+                ArtifactCandidate("org/Model-FP8", shape, 8, 75, "fp8"),
             ),
         )
         result = run_diagnosis_pipeline(
@@ -179,13 +190,15 @@ class TestPipelinePerClass:
             {**model_config, "quantization_config": {"quant_method": "fp_quant"}},
             hardware,
             rules,
-            correction_context=CorrectionContext(catalog=catalog),
+            correction_context=CorrectionContext(artifacts=lambda: search),
         )
         assert result.failure_class == "quant_compute_capability"
         assert result.corrected_plan is not None
-        # retarget_capability moves the solution to a GPU the kernels were built
-        # for; the checkpoint's quantization stays (it cannot be removed).
-        assert result.corrected_plan.resource_allocation["gpu_sku"] == "NVIDIA B200"
+        # substitute_artifact serves the same network in a format this GPU runs;
+        # the GPU and the engine flags stay (v1's B200 retarget did not load).
+        allocation = result.corrected_plan.resource_allocation
+        assert allocation["model_id"] == "org/Model-FP8"
+        assert allocation["gpu_sku"] == hardware.gpu_sku
         assert result.corrected_plan.engine_configuration == plan.engine_configuration
 
 

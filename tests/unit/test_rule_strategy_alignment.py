@@ -34,7 +34,7 @@ SIX = {
     "max_model_len": "clamp_max_model_len",
     "dtype_incompatible": "fallback_dtype",
     "tp_divisibility": "reduce_tensor_parallel",
-    "quant_compute_capability": "retarget_capability",
+    "quant_compute_capability": "substitute_artifact",
 }
 
 

@@ -185,15 +185,20 @@ def _pinned_third_party() -> dict[Path, dict[str, Any]]:
 
 
 def _recorded_runs() -> list[Path]:
-    """Recorded responses from real runs (L0-F classifier), with their own strict schema."""
+    """Recorded responses from real runs (L0-F classifier, class 6 lineage search),
+    each with its own strict schema."""
     return sorted((FIXTURES / "l0f").glob("class*.json"))
 
 
 @pytest.mark.parametrize("path", _recorded_runs(), ids=lambda p: str(p.relative_to(FIXTURES)))
 def test_recorded_run_validates_strictly(path: Path) -> None:
-    from unit._l0f_fixture import L0FRecording
+    from unit._l0f_fixture import L0FRecording, LineageRecording
 
-    L0FRecording.load(json.loads(path.read_text()))
+    data = json.loads(path.read_text())
+    if path.name.endswith("-lineage.json"):
+        LineageRecording.model_validate(data)
+    else:
+        L0FRecording.load(data)
 
 
 def test_every_fixture_file_is_accounted_for() -> None:

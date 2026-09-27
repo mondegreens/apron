@@ -360,11 +360,15 @@ def test_fix_proofs() -> None:
     rates = live_rates(os.environ["RUNPOD_API_KEY"])
     ports = build_ports(rates=rates)
     planner = CohortPlanner(rates=rates)
-    fix = build_fix_ports(planner, rates)
+    fix = build_fix_ports(planner, rates, ports.budget.record_spend)
     inputs = load_inputs()
     only = {int(c) for c in os.environ.get("APRON_FIX_CLASSES", "1,2,3,4,5,6").split(",")}
     try:
         proofs = [prove_fix(c, inputs, ports, fix) for c in SIX_CLASSES if c.failure_class in only]
     finally:
         close_pool(ports)
-    _write("fix-proofs.json", [p.__dict__ for p in proofs])
+    # A re-run of some classes replaces only those classes' entries.
+    path = RUN_DIR / "fix-proofs.json"
+    kept = json.loads(path.read_text()) if path.exists() else []
+    merged = {p["failure_class"]: p for p in kept} | {p.failure_class: p.__dict__ for p in proofs}
+    _write("fix-proofs.json", [merged[k] for k in sorted(merged)])

@@ -85,7 +85,7 @@ EXPECTED_CHANGE = {
     3: ("engine_configuration", "max_model_len", "32768"),
     4: ("plan", "dtype", "bfloat16"),
     5: ("plan", "tensor_parallel", 2),
-    6: ("resource_allocation", "gpu_sku", "NVIDIA B200"),
+    6: ("resource_allocation", "model_id", "Qwen/Qwen3-0.6B-FP8"),
 }
 
 
@@ -349,7 +349,7 @@ def test_a_refused_fixed_boot_waits_and_proceeds(tmp_path: Path) -> None:
 
     def refusing(requested: Any) -> Any:
         target = original(requested)
-        if requested.gpu_sku == "NVIDIA B200" and refusals["left"]:
+        if requested.gpu_sku == "NVIDIA RTX A6000" and refusals["left"]:
             refusals["left"] -= 1
 
             def refuse(env: Any = None, wait_timeout: int = 0) -> Any:
@@ -363,8 +363,8 @@ def test_a_refused_fixed_boot_waits_and_proceeds(tmp_path: Path) -> None:
 
     object.__setattr__(cohort_ports.pool, "factory", refusing)
     repo = MemoryRuleRepository(RULES)
-    proof = prove_fix(SIX_CLASSES[5], accepted_inputs(), cohort_ports, _fix_ports(repo))
-    assert refusals["left"] == 0, "the B200 creation was refused once"
+    proof = prove_fix(SIX_CLASSES[0], accepted_inputs(), cohort_ports, _fix_ports(repo))
+    assert refusals["left"] == 0, "the A6000 creation was refused once"
     assert proof.mechanism_outcome == "verified", proof.notes
     assert len(repo.written) == 1
 

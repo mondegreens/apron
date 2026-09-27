@@ -232,6 +232,7 @@ def _fixes(run: CohortRun) -> list[dict[str, Any]]:
                 "classifier_model_id": r.classifier_model_id,
                 "strategy": r.correction_strategy,
                 "change": _plan_change(broken, fixed),
+                "fixed_model": fixed.model_id if fixed else None,
                 "fixed_gpu": fixed.requested_execution.gpu_sku if fixed else None,
                 "mechanism_outcome": r.mechanism_outcome,
                 "request_outcome": r.request_outcome,

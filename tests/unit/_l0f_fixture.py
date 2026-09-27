@@ -43,3 +43,68 @@ class L0FRecording(BaseModel):
         data = dict(data)
         data["model_config_"] = data.pop("model_config")
         return cls.model_validate(data)
+
+
+# ---------------------------------------------------------------------------
+# tests/fixtures/l0f/classN-lineage.json (scripts/record_class6_lineage.py)
+# ---------------------------------------------------------------------------
+
+
+class _Strict(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class BaseProposal(_Strict):
+    base_model_id: str
+    reason: str
+    classifier_model_id: str
+    classifier_input_digest: str
+    classifier_usage: dict[str, int]
+    classifier_cost_usd: float | None
+
+
+class BaseModelEvidence(_Strict):
+    id: str | None
+    source: str
+    proposal: BaseProposal | None = None
+    confirmed: bool | None = None
+
+
+class Considered(_Strict):
+    model_id: str
+    method: str
+    bits: int | None
+    min_capability: int | None
+    dropped: str | None = None
+
+
+class LineageEvidence(_Strict):
+    requested_model_id: str
+    requested_weight_bits: int | None
+    base_model: BaseModelEvidence
+    dropped_by_format: dict[str, int] = {}
+    considered: list[Considered] = []
+    result: str
+
+
+class Candidate(_Strict):
+    model_id: str
+    shape: dict[str, Any]
+    weight_bits: int
+    min_capability: int
+    quant_method: str | None
+    downloads: int
+
+
+class LineageSearch(_Strict):
+    requested_model_id: str
+    base_model_id: str
+    requested_weight_bits: int
+    requested_shape: dict[str, Any]
+    candidates: list[Candidate]
+
+
+class LineageRecording(_Strict):
+    recorded_at: str
+    evidence: LineageEvidence
+    search: LineageSearch | None

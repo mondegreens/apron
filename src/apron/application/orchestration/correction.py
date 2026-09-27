@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Callable, Mapping
 
     from apron.domain.schemas.primitives import HardwareSpec
     from apron.domain.schemas.solutions import DeploymentPlan
@@ -27,16 +27,52 @@ class CatalogEntry:
 
 
 @dataclass(frozen=True)
+class ArtifactCandidate:
+    """A published checkpoint that may replace the requested one.
+
+    ``shape`` holds the architecture fields of its config.json (SHAPE_FIELDS);
+    ``weight_bits`` the stored weight precision; ``min_capability`` what the
+    pinned engine requires for its quantization method (0 when unquantized).
+    """
+
+    model_id: str
+    shape: Mapping[str, Any]
+    weight_bits: int
+    min_capability: int
+    quant_method: str | None = None
+    downloads: int = 0
+
+
+@dataclass(frozen=True)
+class ArtifactSearch:
+    """The requested artifact's lineage and the checkpoints that share it.
+
+    ``base_model_id`` is the model the requested checkpoint was derived from:
+    declared on its card, or proposed by the classifier model and confirmed by
+    an identical ``shape`` (never taken on the model's word alone).
+    """
+
+    requested_model_id: str
+    base_model_id: str
+    requested_weight_bits: int
+    requested_shape: Mapping[str, Any]
+    candidates: tuple[ArtifactCandidate, ...]
+
+
+@dataclass(frozen=True)
 class CorrectionContext:
     """Facts a retarget strategy needs beyond the error and the plan.
 
     ``catalog`` is the provider's GPU list (the composition root builds it
     from the adapter's GPU_SPECS and rates); ``predicted_total_bytes`` is the
-    plan pipeline's calculator prediction for this plan.
+    plan pipeline's calculator prediction for this plan.  ``artifacts`` finds
+    same-lineage checkpoints; it does I/O, so it is called only by the
+    strategy that needs it.
     """
 
     catalog: tuple[CatalogEntry, ...] = field(default=())
     predicted_total_bytes: int | None = None
+    artifacts: Callable[[], ArtifactSearch | None] | None = None
 
 
 logger = logging.getLogger(__name__)
@@ -58,12 +94,27 @@ TOP_LEVEL_FIELDS = frozenset(
     }
 )
 
-# Requested-execution fields: a retarget changes the GPU, not engine flags.
-RESOURCE_FIELDS = frozenset({"gpu_sku"})
+# Requested-execution fields: a retarget changes the GPU, a substitution the
+# checkpoint, not engine flags.
+RESOURCE_FIELDS = frozenset({"gpu_sku", "model_id"})
 
-# Strategies that choose new hardware by its capacity or capability; the
-# old hardware's feasibility check does not apply to them.
-RETARGET_STRATEGIES = frozenset({"retarget_memory", "retarget_capability"})
+# Strategies that choose new hardware or a new checkpoint; the old plan's
+# feasibility check (the old model on the old GPU) does not apply to them.
+RETARGET_STRATEGIES = frozenset({"retarget_memory", "retarget_capability", "substitute_artifact"})
+
+# config.json fields that fix a transformer's architecture: two checkpoints
+# with equal values here are the same network stored differently.
+SHAPE_FIELDS: tuple[str, ...] = (
+    "architectures",
+    "model_type",
+    "hidden_size",
+    "num_hidden_layers",
+    "num_attention_heads",
+    "num_key_value_heads",
+    "intermediate_size",
+    "vocab_size",
+    "head_dim",
+)
 
 
 def compute_correction(
@@ -428,6 +479,77 @@ def _retarget_capability(
     return None if choice is None else {"gpu_sku": choice.hardware.gpu_sku}
 
 
+def _publisher(model_id: str) -> str:
+    return model_id.partition("/")[0]
+
+
+def _runs_on(candidate: ArtifactCandidate, capability: str, rule: dict[str, Any] | None) -> bool:
+    """The pinned engine accepts the candidate's method on this GPU, and its
+    kernels (where the rule records them) were built for this architecture."""
+    if _capability_int(capability) < candidate.min_capability:
+        return False
+    built = (rule or {}).get("kernel_architectures", {}).get(candidate.quant_method or "")
+    return not built or capability in built
+
+
+def _substitute_artifact(
+    extracted: Mapping[str, int | float | str],
+    plan: DeploymentPlan,
+    model_config: dict[str, Any],
+    hardware: HardwareSpec,
+    vr: dict[str, Any] | None,
+    rule: dict[str, Any] | None = None,
+    context: CorrectionContext | None = None,
+    **_kw: Any,
+) -> dict[str, Any] | None:
+    """The checkpoint's format cannot run on this GPU: serve the same network
+    stored in a format that can, on the same GPU.
+
+    A candidate qualifies only if its ``shape`` equals the requested
+    checkpoint's (same architecture, same sizes) and the pinned engine runs
+    its method on this GPU.  Objective, in order:
+
+    1. published by the base model's publisher (provenance: the failure being
+       fixed is a checkpoint the pinned engine could not load);
+    2. weight precision closest to the requested checkpoint's (keeps the
+       memory saving the requester chose it for);
+    3. most downloads (adoption), then model id (a stable order).
+
+    The unquantized base qualifies like any other candidate.  No qualifying
+    candidate, or no evidence of a capability failure: no correction.
+    """
+    if int(extracted.get("min_capability", 0) or 0) <= 0:
+        return None
+    if context is None or context.artifacts is None:
+        return None
+    search = context.artifacts()
+    if search is None:
+        return None
+    requested = {k: search.requested_shape.get(k) for k in SHAPE_FIELDS}
+    if requested.get("architectures") is None:
+        return None
+    base_publisher = _publisher(search.base_model_id)
+    qualifying = [
+        c
+        for c in search.candidates
+        if c.model_id != search.requested_model_id
+        and {k: c.shape.get(k) for k in SHAPE_FIELDS} == requested
+        and _runs_on(c, hardware.compute_capability, rule)
+    ]
+    if not qualifying:
+        return None
+    choice = min(
+        qualifying,
+        key=lambda c: (
+            _publisher(c.model_id) != base_publisher,
+            abs(c.weight_bits - search.requested_weight_bits),
+            -c.downloads,
+            c.model_id,
+        ),
+    )
+    return {"model_id": choice.model_id}
+
+
 _STRATEGIES: dict[str, Any] = {
     "reduce_memory_pressure": _reduce_memory_pressure,
     "clamp_max_model_len": _clamp_max_model_len,
@@ -437,6 +559,7 @@ _STRATEGIES: dict[str, Any] = {
     "fallback_engine_config": _fallback_engine_config,
     "retarget_memory": _retarget_memory,
     "retarget_capability": _retarget_capability,
+    "substitute_artifact": _substitute_artifact,
 }
 
 # Keys each strategy reads from the extraction (§10.3 rule<->strategy alignment).
@@ -447,6 +570,7 @@ STRATEGY_EXTRACTED_KEYS: dict[str, frozenset[str]] = {
     "reduce_tensor_parallel": frozenset({"num_heads"}),
     "retarget_memory": frozenset(),
     "retarget_capability": frozenset({"min_capability"}),
+    "substitute_artifact": frozenset({"min_capability"}),
 }
 # Keys a strategy reads from the resolved config.json (F5) instead.
 STRATEGY_CONFIG_KEYS: dict[str, frozenset[str]] = {

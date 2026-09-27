@@ -6,6 +6,8 @@ import pytest
 
 from apron.application.orchestration.correction import (
     CORRECTION_BOUNDS,
+    ArtifactCandidate,
+    ArtifactSearch,
     CatalogEntry,
     CorrectionContext,
     compute_correction,
@@ -569,3 +571,112 @@ class TestRetargetCapability:
             context=CorrectionContext(catalog=_CATALOG),
         )
         assert result is None
+
+
+# -------------------------------------------------------------------
+# substitute_artifact (§10.1 class 6 fallback)
+# -------------------------------------------------------------------
+
+_QWEN_SHAPE: dict = {
+    "architectures": ["Qwen3ForCausalLM"],
+    "model_type": "qwen3",
+    "hidden_size": 1024,
+    "num_hidden_layers": 28,
+    "num_attention_heads": 16,
+    "num_key_value_heads": 8,
+    "intermediate_size": 3072,
+    "vocab_size": 151936,
+    "head_dim": 128,
+}
+_REQUESTED = "lab/Qwen3-0.6B-FPQuant-MXFP4"
+
+
+def _candidate(model_id: str, bits: int, min_cc: int = 0, **kw: object) -> ArtifactCandidate:
+    method = {16: None, 8: "fp8", 4: "compressed-tensors"}.get(bits)
+    return ArtifactCandidate(
+        model_id=model_id,
+        shape=kw.pop("shape", _QWEN_SHAPE),  # type: ignore[arg-type]
+        weight_bits=bits,
+        min_capability=min_cc,
+        quant_method=kw.pop("quant_method", method),  # type: ignore[arg-type]
+        downloads=kw.pop("downloads", 0),  # type: ignore[arg-type]
+    )
+
+
+def _search(*candidates: ArtifactCandidate) -> ArtifactSearch:
+    return ArtifactSearch(
+        requested_model_id=_REQUESTED,
+        base_model_id="Qwen/Qwen3-0.6B",
+        requested_weight_bits=4,
+        requested_shape=_QWEN_SHAPE,
+        candidates=(_candidate(_REQUESTED, 4, 100, quant_method="fp_quant"), *candidates),
+    )
+
+
+class TestSubstituteArtifact:
+    _H100 = _hw("NVIDIA H100 80GB HBM3", 80, "9.0")
+
+    def _plan(self) -> DeploymentPlan:
+        return DeploymentPlan(
+            dtype="bfloat16",
+            resource_allocation={"model_id": _REQUESTED, "gpu_sku": self._H100.gpu_sku},
+        )
+
+    def _correct(
+        self, search: ArtifactSearch | None, extracted: dict | None = None
+    ) -> DeploymentPlan | None:
+        return compute_correction(
+            "substitute_artifact",
+            {"min_capability": 100} if extracted is None else extracted,
+            self._plan(),
+            {},
+            self._H100,
+            None,
+            rule=_FP_QUANT_RULE,
+            context=CorrectionContext(artifacts=lambda: search),
+        )
+
+    def test_same_publisher_closest_precision_on_the_same_gpu(self) -> None:
+        result = self._correct(
+            _search(
+                _candidate("Qwen/Qwen3-0.6B", 16),
+                _candidate("Qwen/Qwen3-0.6B-FP8", 8, 75, downloads=300_000),
+                _candidate("Qwen/Qwen3-0.6B-GPTQ-Int8", 8, 60, downloads=800),
+                _candidate("other/Qwen3-0.6B-w4a16", 4, 70, downloads=12_000),
+            )
+        )
+        assert result is not None
+        assert result.resource_allocation["model_id"] == "Qwen/Qwen3-0.6B-FP8"
+        assert result.resource_allocation["gpu_sku"] == self._H100.gpu_sku  # GPU unchanged
+        assert result.dtype == "bfloat16" and result.engine_configuration == {}
+
+    def test_other_publishers_qualify_when_the_base_publisher_has_none(self) -> None:
+        result = self._correct(_search(_candidate("other/Qwen3-0.6B-w4a16", 4, 70)))
+        assert result is not None
+        assert result.resource_allocation["model_id"] == "other/Qwen3-0.6B-w4a16"
+
+    def test_the_unquantized_base_is_the_fallback(self) -> None:
+        result = self._correct(_search(_candidate("Qwen/Qwen3-0.6B", 16)))
+        assert result is not None
+        assert result.resource_allocation["model_id"] == "Qwen/Qwen3-0.6B"
+
+    def test_a_different_network_never_qualifies(self) -> None:
+        wider = {**_QWEN_SHAPE, "hidden_size": 2048}
+        assert self._correct(_search(_candidate("Qwen/Qwen3-1.7B", 16, shape=wider))) is None
+
+    def test_a_method_the_gpu_cannot_run_never_qualifies(self) -> None:
+        assert self._correct(_search(_candidate("Qwen/Qwen3-0.6B-NVFP4", 4, 100))) is None
+
+    def test_kernels_not_built_for_the_gpu_never_qualify(self) -> None:
+        """cc passes, but the rule records fp_quant kernels for 10.0 only."""
+        candidate = _candidate("Qwen/Qwen3-0.6B-fpq", 4, 90, quant_method="fp_quant")
+        assert self._correct(_search(candidate)) is None
+
+    def test_the_requested_checkpoint_is_never_its_own_substitute(self) -> None:
+        assert self._correct(_search()) is None
+
+    def test_no_capability_evidence_no_correction(self) -> None:
+        assert self._correct(_search(_candidate("Qwen/Qwen3-0.6B", 16)), extracted={}) is None
+
+    def test_no_lineage_found_no_correction(self) -> None:
+        assert self._correct(None) is None
