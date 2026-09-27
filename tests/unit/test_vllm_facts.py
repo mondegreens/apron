@@ -30,7 +30,7 @@ def _image_pin() -> str:
 
 
 def test_facts_are_for_the_vllm_the_image_runs() -> None:
-    assert ENGINE_VERSION == _image_pin(), (
+    assert _image_pin() == ENGINE_VERSION, (
         f"the image pins vLLM {_image_pin()} but the facts are for {ENGINE_VERSION}: "
         "run scripts/generate_vllm_facts.py on a checkout at the pin"
     )
