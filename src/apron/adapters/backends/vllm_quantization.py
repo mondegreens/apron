@@ -30,6 +30,16 @@ ENGINE_VERSION: str = FACTS["engine_version"]
 # Model classes the pinned vLLM marks IsHybrid (attention plus Mamba/linear
 # attention state), generated from its source with the line of each class.
 HYBRID_ARCHITECTURES: frozenset[str] = frozenset(FACTS["hybrid_architectures"])
+# vLLM's own tokenizer/renderer modes named after a model type (DeepSeek V3.2
+# and V4 ship no chat template; vLLM renders their chat only in that mode, and
+# "auto" never picks it: tokenizers/registry.py:147-163).  Generic modes and
+# the one "auto" already detects are left out.
+MODEL_TOKENIZER_MODES: frozenset[str] = frozenset(FACTS["tokenizer_modes"]["modes"]) - {
+    "auto",
+    "hf",
+    "slow",
+    "mistral",
+}
 
 
 def _method_table(key: str, source: str) -> dict[str, tuple[Any, str]]:

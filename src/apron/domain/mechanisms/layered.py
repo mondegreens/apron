@@ -135,7 +135,9 @@ def layer_kinds(
         state, groups = int(text["ssm_state_size"]), int(text["n_groups"])
         ng = groups if groups % tp == 0 else groups + (tp - groups)
         conv = (
-            (int(text["conv_kernel"]) - 1) * ((heads * hd + 2 * ng * state) // tp) * model_dtype_bytes
+            (int(text["conv_kernel"]) - 1)
+            * ((heads * hd + 2 * ng * state) // tp)
+            * model_dtype_bytes
         )
         temporal = (heads // tp) * hd * state * _ssm_bytes(text, "mamba_ssm_cache_dtype")
         head_dim = int(text.get("head_dim") or text["hidden_size"] // text["num_attention_heads"])

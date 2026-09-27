@@ -35,6 +35,7 @@ class PlanPipelineResult:
     """
 
     __slots__ = (
+        "chat_renderer",
         "chat_template",
         "claim",
         "context",
@@ -57,6 +58,7 @@ class PlanPipelineResult:
         model_spec: ModelSpec | None = None,
         model_config: dict[str, Any] | None = None,
         chat_template: str | None = None,
+        chat_renderer: str | None = None,
         load_problems: tuple[str, ...] | None = None,
     ) -> None:
         self.plan = plan
@@ -70,6 +72,9 @@ class PlanPipelineResult:
         self.model_spec = model_spec
         self.model_config = model_config
         self.chat_template = chat_template
+        # Who turns chat messages into the prompt when the repo has no
+        # template: the engine's own mode (None: the template does).
+        self.chat_renderer = chat_renderer
 
     @property
     def ok(self) -> bool:
@@ -90,6 +95,7 @@ def run_plan_pipeline(
     load_check: Callable[[Iterable[str], dict[str, Any] | None], tuple[str, ...] | None]
     | None = None,
     unmodelled_architectures: frozenset[str] = frozenset(),
+    tokenizer_modes: frozenset[str] = frozenset(),
 ) -> PlanPipelineResult:
     """Run the full plan pipeline: resolve → calculate → build plan.
 
@@ -184,6 +190,21 @@ def run_plan_pipeline(
         id_gen=id_gen,
     )
 
+    # A model type the engine has its own tokenizer mode for (no chat template
+    # in the repo): the plan names that mode, and the engine renders the chat.
+    chat_renderer = None
+    model_type = str(config.get("model_type") or "")
+    if model_type in tokenizer_modes:
+        chat_renderer = f"vllm tokenizer mode {model_type}"
+        deployment_plan = deployment_plan.model_copy(
+            update={
+                "engine_configuration": {
+                    **deployment_plan.engine_configuration,
+                    "tokenizer_mode": model_type,
+                }
+            }
+        )
+
     assert result.locator is not None
     ctx = RenderContext(plan=deployment_plan, locator=result.locator, hardware=hardware)
 
@@ -198,6 +219,7 @@ def run_plan_pipeline(
         chat_template=_download_chat_template(
             resolver, model_id, result.observation.resolved_revision
         ),
+        chat_renderer=chat_renderer,
     )
 
 

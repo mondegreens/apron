@@ -179,5 +179,18 @@
     "count": 78636,
     "file": "vllm_source_names.txt.gz",
     "sha256": "32a5758c1955e049c5c6d7ca2f03f42fcfb37369492eebe30411bccbe6e53956"
+  },
+  "tokenizer_modes": {
+    "modes": [
+      "cohere",
+      "deepseek_v32",
+      "deepseek_v4",
+      "hf",
+      "inkling",
+      "kimi_audio",
+      "kimi_k3",
+      "mistral"
+    ],
+    "source": "tokenizers/registry.py:42"
   }
 }

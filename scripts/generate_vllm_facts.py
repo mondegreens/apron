@@ -276,6 +276,7 @@ def generate(source: Path) -> dict[str, Any]:
         "kv_cache": kv_cache,
         "hybrid_architectures": _hybrid_classes(source),
         "source_names": _names_entry(source_names(source)),
+        "tokenizer_modes": _tokenizer_modes(source),
         "compressed_tensors": {
             "kv_cache_scales": _has_kv_cache_method(tree(ct_path)),
             "config_min_capability": ct_min,
@@ -283,6 +284,26 @@ def generate(source: Path) -> dict[str, Any]:
             "schemes": schemes,
         },
     }
+
+
+TOKENIZERS = ("vllm/tokenizers/registry.py", "_VLLM_TOKENIZERS")
+
+
+def _tokenizer_modes(source: Path) -> dict[str, Any]:
+    """vLLM's own tokenizer modes (a chat renderer for models whose repo has no
+    chat template, e.g. DeepSeek V3.2 and V4): the keys of the registry dict."""
+    path, name = TOKENIZERS
+    for node in ast.parse((source / path).read_text()).body:
+        if isinstance(node, ast.AnnAssign):
+            target, value = node.target, node.value
+        elif isinstance(node, ast.Assign):
+            target, value = node.targets[0], node.value
+        else:
+            continue
+        if isinstance(target, ast.Name) and target.id == name and isinstance(value, ast.Dict):
+            keys = sorted(str(k.value) for k in value.keys if isinstance(k, ast.Constant))
+            return {"modes": keys, "source": f"{path.removeprefix('vllm/')}:{node.lineno}"}
+    raise SystemExit(f"{path}: {name} not found — update the index")
 
 
 def _names_entry(names: list[str]) -> dict[str, Any]:

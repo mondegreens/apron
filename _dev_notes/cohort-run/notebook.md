@@ -595,3 +595,13 @@ H200 memory in GPU_SPECS is not yet confirmed on a pod.
 - Open: Nemotron's checkpoint asks for an FP8 KV cache (hf_quant_config);
   the prediction uses bf16 (conservative) until a boot shows which vLLM
   picks.  Qwen3.5 and Gemma 4 load their vision towers by default.
+- **Chat for the reasoning models (checked templates, no spend):**
+  `enable_thinking` switches reasoning off for GLM-4.7-Flash, Gemma 4,
+  Qwen3.8, Qwen3.6 and Nemotron 3 (already used).  gpt-oss only has
+  `reasoning_effort`; MiniMax-M2.7 always thinks: 8 answer tokens will be
+  spent on reasoning — the task suite's limit is an owner decision.
+  DeepSeek V3.2 and V4 ship no chat template: vLLM renders their chat only in
+  its own tokenizer mode, which "auto" never selects
+  (`tokenizers/registry.py:147-163`).  Plans now name that mode when the
+  model type has one (generated from the registry); such a model is sent the
+  task suite.

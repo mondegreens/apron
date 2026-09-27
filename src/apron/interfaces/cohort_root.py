@@ -33,6 +33,7 @@ from apron.adapters.backends.runpod_storage import (
 from apron.adapters.backends.vllm_engine import VllmEngineAdapter
 from apron.adapters.backends.vllm_quantization import (
     HYBRID_ARCHITECTURES,
+    MODEL_TOKENIZER_MODES,
     default_max_num_batched_tokens,
     default_max_num_seqs,
     load_problems,
@@ -249,6 +250,7 @@ class CohortPlanner:
             max_num_seqs=default_max_num_seqs(hardware_for(gpu).total_memory_bytes, gpu),
             load_check=load_problems,
             unmodelled_architectures=HYBRID_ARCHITECTURES,
+            tokenizer_modes=MODEL_TOKENIZER_MODES,
         )
         if pipeline.model_spec is None or pipeline.claim is None:
             raise ValueError(f"{model_id}: planning failed: {pipeline.error}")
@@ -312,6 +314,7 @@ class CohortPlanner:
             solution_fp=solution_fingerprint(pipeline.model_spec, plan, requested),
             status=status,  # type: ignore[arg-type]
             chat_template=pipeline.chat_template,
+            chat_renderer=pipeline.chat_renderer,
             license_observed=observation.license_observed if observation else None,
             gating_observed=observation.gating_observed if observation else None,
             estimate=estimate,
