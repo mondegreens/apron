@@ -461,7 +461,10 @@ def weights_site(
     )
     chosen: str | None = None
     for dc in (*existing, *storage.storage_datacenters()):
-        if all(storage.stock_in(dc, e.gpu_sku, e.gpu_count) for e in executions):
+        # GPU stock for every execution, and a CPU pod to stage from.
+        if all(storage.stock_in(dc, e.gpu_sku, e.gpu_count) for e in executions) and (
+            storage.cpu_stock(dc)
+        ):
             chosen = dc
             break
     if chosen is None:

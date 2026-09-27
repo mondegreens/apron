@@ -46,12 +46,16 @@ VOLUME_NAME_PREFIX = "apron-weights"
 # Standard tier, docs.runpod.io/storage/network-volumes (2026-09-27).
 VOLUME_USD_PER_GB_MONTH = 0.07
 HOURS_PER_MONTH = 730.0
-# The stager only downloads: a few vCPUs for parallel transfers.
+# The stager only downloads: a few vCPUs for parallel transfers.  Sizes are
+# tried largest first; a datacenter listing a flavor in stock still refused
+# 8 vCPUs and took 4 (AP-JP-1, 2026-09-27).
 STAGER_CPU_FLAVORS = ("cpu3c", "cpu5c", "cpu3g", "cpu5g")
-STAGER_VCPUS = 8
+STAGER_VCPUS = (8, 4, 2)
 STAGER_CONTAINER_GB = 20
+NO_CAPACITY = "no longer any instances available"
 
 _DATACENTERS_QUERY = "query { dataCenters { id storageSupport } }"
+_CPU_STOCK_QUERY = "query { dataCenters { id cpuAvailability { cpuFlavorId stockStatus } } }"
 _DC_STOCK_QUERY = """query Stock {{
   gpuTypes(input: {{id: "{gpu}"}}) {{
     lowestPrice(input: {{
@@ -143,6 +147,17 @@ class RunPodStorage:
         rows = self._gql(_DATACENTERS_QUERY).get("dataCenters") or []
         return sorted(str(r["id"]) for r in rows if r.get("storageSupport"))
 
+    def cpu_stock(self, data_center_id: str) -> list[str]:
+        """CPU flavors with Secure stock in one datacenter, best stocked first."""
+        rows = self._gql(_CPU_STOCK_QUERY).get("dataCenters") or []
+        row = next((r for r in rows if r.get("id") == data_center_id), {})
+        stocked = [
+            (_STOCK_RANK.get(str(c.get("stockStatus")), 0), str(c["cpuFlavorId"]))
+            for c in row.get("cpuAvailability") or []
+            if c.get("stockStatus")
+        ]
+        return [flavor for _, flavor in sorted(stocked, key=lambda x: -x[0])]
+
     def stock_in(self, data_center_id: str, gpu_type: str, gpu_count: int) -> str | None:
         """Secure stock for *gpu_type* x *gpu_count* in one datacenter, on hosts
         that can run the runner image; ``None`` means none."""
@@ -164,7 +179,8 @@ class RunPodStorage:
         stocked: list[tuple[int, str]] = []
         for dc in self.storage_datacenters():
             status = self.stock_in(dc, gpu_type, gpu_count)
-            if status:
+            # The weights are staged from a CPU pod in the same datacenter.
+            if status and self.cpu_stock(dc):
                 stocked.append((_STOCK_RANK.get(status, 0), dc))
         for dc in prefer:
             if any(d == dc for _, d in stocked):
@@ -197,22 +213,39 @@ class RunPodStagerPod(RunPodTarget):
             raise RuntimeError("Cannot provision without RUNPOD_API_KEY")
         if self._pod_id is not None:
             self.teardown()
-        body = {
-            "name": f"{POD_NAME_PREFIX}-stager",
-            "imageName": self._image,
-            "computeType": "CPU",
-            "cpuFlavorIds": list(STAGER_CPU_FLAVORS),
-            "vcpuCount": STAGER_VCPUS,
-            "cloudType": CLOUD_TYPE,
-            "dataCenterIds": [self._data_center_id],
-            "networkVolumeId": self._network_volume_id,
-            "volumeMountPath": VOLUME_MOUNT,
-            "containerDiskInGb": STAGER_CONTAINER_GB,
-            "ports": ["22/tcp"],
-            "env": env or {},
-        }
         storage = RunPodStorage(str(self._api_key))
-        pod = storage._rest("POST", "/pods", body)
+        flavors = storage.cpu_stock(str(self._data_center_id)) or list(STAGER_CPU_FLAVORS)
+        pod: dict[str, Any] | None = None
+        refusals: list[str] = []
+        for flavor in flavors:
+            for vcpus in STAGER_VCPUS:
+                body = {
+                    "name": f"{POD_NAME_PREFIX}-stager",
+                    "imageName": self._image,
+                    "computeType": "CPU",
+                    "cpuFlavorIds": [flavor],
+                    "vcpuCount": vcpus,
+                    "cloudType": CLOUD_TYPE,
+                    "dataCenterIds": [self._data_center_id],
+                    "networkVolumeId": self._network_volume_id,
+                    "volumeMountPath": VOLUME_MOUNT,
+                    "containerDiskInGb": STAGER_CONTAINER_GB,
+                    "ports": ["22/tcp"],
+                    "env": env or {},
+                }
+                try:
+                    pod = storage._rest("POST", "/pods", body)
+                    break
+                except RuntimeError as exc:
+                    if NO_CAPACITY not in str(exc):
+                        raise
+                    refusals.append(f"{flavor}x{vcpus}")
+            if pod is not None:
+                break
+        if pod is None:
+            raise RuntimeError(
+                f"{NO_CAPACITY} for a CPU stager in {self._data_center_id}: {refusals}"
+            )
         self._pod_id = pod["id"]
         logger.info("stager pod %s created in %s", self._pod_id, self._data_center_id)
         self._register_teardown_guard()

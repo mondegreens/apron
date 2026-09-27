@@ -135,6 +135,7 @@ def test_stager_is_a_cpu_pod_on_the_volume() -> None:
     )
     with (
         patch.object(RunPodStorage, "_rest", rest),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c"]),
         patch.object(stager, "_register_teardown_guard"),
         patch.object(stager, "_wait_for_running", side_effect=RuntimeError("stop")),
         pytest.raises(RuntimeError),
@@ -143,6 +144,7 @@ def test_stager_is_a_cpu_pod_on_the_volume() -> None:
     body = bodies[0]["body"]
     assert (bodies[0]["method"], bodies[0]["path"]) == ("POST", "/pods")
     assert body["computeType"] == "CPU"
+    assert body["cpuFlavorIds"] == ["cpu3c"] and body["vcpuCount"] == 8
     assert body["networkVolumeId"] == "vol1"
     assert body["dataCenterIds"] == ["US-NE-1"]
     assert body["volumeMountPath"] == VOLUME_MOUNT
@@ -164,6 +166,7 @@ def test_datacenter_prefers_an_existing_volume_with_stock() -> None:
     with (
         patch.object(storage, "storage_datacenters", return_value=sorted(stock)),
         patch.object(storage, "stock_in", side_effect=lambda dc, g, n: stock[dc]),
+        patch.object(storage, "cpu_stock", return_value=["cpu3c"]),
     ):
         assert storage.choose_datacenter("H100", 1) == "US-NE-1"  # best stocked
         assert storage.choose_datacenter("H100", 1, prefer=("EU-RO-1",)) == "EU-RO-1"
@@ -361,3 +364,52 @@ def test_storage_accrues_once_per_window(tmp_path: Path) -> None:
     state = json.loads((tmp_path / "volumes.json").read_text())
     assert state["vol1"]["data_center_id"] == "US-NE-1"
     assert budget.spent == pytest.approx(storage_cost(100, 10.0))
+
+
+def test_stager_steps_down_until_a_cpu_pod_is_free() -> None:
+    tried: list[tuple[str, int]] = []
+
+    def rest(self: RunPodStorage, method: str, path: str, body: Any = None) -> Any:
+        tried.append((body["cpuFlavorIds"][0], body["vcpuCount"]))
+        if (body["cpuFlavorIds"][0], body["vcpuCount"]) != ("cpu3g", 4):
+            raise RuntimeError("HTTP 500 There are no longer any instances available with ...")
+        return {"id": "stager2"}
+
+    stager = RunPodStagerPod(
+        api_key="k", ssh_key_path="/tmp/k", network_volume_id="vol1", data_center_id="AP-JP-1"
+    )
+    with (
+        patch.object(RunPodStorage, "_rest", rest),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c", "cpu3g"]),
+        patch.object(stager, "_register_teardown_guard"),
+        patch.object(stager, "_wait_for_running", side_effect=RuntimeError("stop")),
+        pytest.raises(RuntimeError, match="stop"),
+    ):
+        stager.provision()
+    assert tried == [("cpu3c", 8), ("cpu3c", 4), ("cpu3c", 2), ("cpu3g", 8), ("cpu3g", 4)]
+    assert stager.pod_id == "stager2"
+
+
+def test_stager_reports_every_refusal_and_other_errors_stop() -> None:
+    def full(self: RunPodStorage, method: str, path: str, body: Any = None) -> Any:
+        raise RuntimeError("There are no longer any instances available")
+
+    stager = RunPodStagerPod(
+        api_key="k", ssh_key_path="/tmp/k", network_volume_id="vol1", data_center_id="AP-JP-1"
+    )
+    with (
+        patch.object(RunPodStorage, "_rest", full),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c"]),
+        pytest.raises(RuntimeError, match=r"cpu3cx8.*cpu3cx2"),
+    ):
+        stager.provision()
+
+    def bad(self: RunPodStorage, method: str, path: str, body: Any = None) -> Any:
+        raise RuntimeError("HTTP 401 unauthorized")
+
+    with (
+        patch.object(RunPodStorage, "_rest", bad),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c", "cpu5c"]),
+        pytest.raises(RuntimeError, match="401"),
+    ):
+        stager.provision()
