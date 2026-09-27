@@ -311,6 +311,54 @@ def install_log_masking() -> None:
             root.addHandler(handler)
 
 
+def stock_waiter(
+    api_key: str | None,
+    *,
+    poll_seconds: int = 120,
+    max_wait_seconds: int = 2 * 3600,
+    log: JsonlLedger | None = None,
+) -> Any:
+    """Wait for Secure stock (free read-only query) before a new pod; False on give-up."""
+    import time
+
+    def await_capacity(requested: RequestedExecutionSpec) -> bool:
+        probe = RunPodTarget(
+            api_key=api_key, gpu_type=requested.gpu_sku, gpu_count=requested.gpu_count
+        )
+        waited = 0
+        while True:
+            try:
+                stock = probe.stock_status()
+            except Exception:  # the stock API failing is not a reason to create blind
+                stock = None
+            if stock:
+                if waited and log is not None:
+                    log.append(
+                        {
+                            "gpu": requested.gpu_sku,
+                            "count": requested.gpu_count,
+                            "stock": stock,
+                            "waited_s": waited,
+                        }
+                    )
+                return True
+            if waited >= max_wait_seconds:
+                if log is not None:
+                    log.append(
+                        {
+                            "gpu": requested.gpu_sku,
+                            "count": requested.gpu_count,
+                            "stock": None,
+                            "gave_up_after_s": waited,
+                        }
+                    )
+                return False
+            time.sleep(poll_seconds)
+            waited += poll_seconds
+
+    return await_capacity
+
+
 def build_ports(
     run_dir: Path = RUN_DIR,
     *,
@@ -365,6 +413,11 @@ def build_ports(
         hourly_rate=rate_for,
         identities=JsonlLedger(run_dir / "solutions.jsonl"),
         pool=TargetPool(factory=target_factory, budget=budget, clock=clock, hourly_rate=rate_for),
+        await_capacity=stock_waiter(
+            api_key,
+            max_wait_seconds=int(os.environ.get("APRON_CAPACITY_WAIT", str(2 * 3600))),
+            log=JsonlLedger(run_dir / "capacity-waits.jsonl"),
+        ),
     )
 
 

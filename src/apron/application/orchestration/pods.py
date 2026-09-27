@@ -78,6 +78,9 @@ class TargetPool:
         self.budget.annotate_hold(label, target.pod_id)
         self._slots[self.key(requested)] = _Slot(target, requested, self._now(), label)
 
+    def has_live(self, requested: RequestedExecutionSpec) -> bool:
+        return self.key(requested) in self._slots
+
     def live(self) -> list[Any]:
         return [slot.target for slot in self._slots.values()]
 

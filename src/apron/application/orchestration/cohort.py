@@ -204,6 +204,8 @@ class CohortPorts:
     provision_timeout: int = 1800
     # One live pod per requested execution for the run (None: a pod per solution).
     pool: TargetPool | None = None
+    # Wait for provider stock before a new pod; False when the wait gave up.
+    await_capacity: Callable[[RequestedExecutionSpec], bool] | None = None
 
 
 @dataclass(frozen=True)
@@ -914,6 +916,15 @@ class CohortResult:
 
 # Circuit breaker: repeated unexpected failures are systematic, not per-candidate.
 MAX_UNEXPECTED_FAILURES_IN_A_ROW = 2
+# A creation refused for capacity is retried after another wait, this many times.
+CAPACITY_ATTEMPTS = 3
+
+
+def _capacity_for(sp: SolutionPlan, ports: CohortPorts) -> bool:
+    """Stock for a new pod (a parked pod for this execution needs none)."""
+    if ports.pool is not None and ports.pool.has_live(sp.requested):
+        return True
+    return ports.await_capacity is None or ports.await_capacity(sp.requested)
 
 
 def _record_switch_closures(ports: CohortPorts) -> list[str]:
@@ -1028,21 +1039,34 @@ def _run_plans(
         if not ports.budget.can_afford(sp.estimate):
             result.skipped[sp.label] = f"estimate ${sp.estimate:.2f} exceeds remaining budget"
             continue
-        try:
-            result.executed[sp.label] = execute_solution(sp, inputs, ports, scope=scope)
-            unexpected_in_a_row = 0
-        except (BudgetExceededError, RunStopError) as exc:
-            result.stopped = f"{type(exc).__name__}: {exc}"
-            break
-        except (HarnessError, PermissionError) as exc:
-            result.skipped[sp.label] = f"{type(exc).__name__}: {exc}"
-            _event(ports, "candidate_failed", sp, error=str(exc))
-        except Exception as exc:  # settled and recorded inside
-            result.skipped[sp.label] = f"{type(exc).__name__}: {exc}"
-            unexpected_in_a_row += 1
-            if unexpected_in_a_row >= MAX_UNEXPECTED_FAILURES_IN_A_ROW:
-                result.stopped = f"{unexpected_in_a_row} unexpected failures in a row: {exc}"
+        for attempt in range(CAPACITY_ATTEMPTS):
+            if not _capacity_for(sp, ports):
+                result.skipped[sp.label] = "no provider capacity within the wait"
+                _event(ports, "no_capacity", sp, attempt=attempt)
                 break
+            try:
+                result.executed[sp.label] = execute_solution(sp, inputs, ports, scope=scope)
+                unexpected_in_a_row = 0
+            except (BudgetExceededError, RunStopError) as exc:
+                result.stopped = f"{type(exc).__name__}: {exc}"
+            except (HarnessError, PermissionError) as exc:
+                result.skipped[sp.label] = f"{type(exc).__name__}: {exc}"
+                _event(ports, "candidate_failed", sp, error=str(exc))
+            except Exception as exc:  # settled and recorded inside
+                if classify_harness_error(str(exc)) == "harness:no_capacity":
+                    # Refused at creation although stock was listed: wait again.
+                    _event(ports, "capacity_refused", sp, attempt=attempt)
+                    result.skipped[sp.label] = "provider refused creation: no capacity"
+                    continue
+                result.skipped[sp.label] = f"{type(exc).__name__}: {exc}"
+                unexpected_in_a_row += 1
+                if unexpected_in_a_row >= MAX_UNEXPECTED_FAILURES_IN_A_ROW:
+                    result.stopped = f"{unexpected_in_a_row} unexpected failures in a row: {exc}"
+            break
+        if sp.label in result.executed:
+            result.skipped.pop(sp.label, None)
+        if result.stopped:
+            break
         switch_leaks = _record_switch_closures(ports)
         if switch_leaks:
             result.stopped = f"pods not terminated: {switch_leaks}"
