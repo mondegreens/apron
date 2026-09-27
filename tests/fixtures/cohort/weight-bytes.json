@@ -83,6 +83,18 @@
     "total_bytes": 16381470720,
     "vocab_size": 151936
   },
+  "Qwen/Qwen3-8B-AWQ": {
+    "f32_bytes": 0,
+    "hidden_size": 4096,
+    "lm_head_bytes": 1244659712,
+    "quantized": true,
+    "revision": "4da05a8edb55c6046cce958586c33b61da07bb79",
+    "ssm": null,
+    "tie_word_embeddings": false,
+    "torch_dtype": "float16",
+    "total_bytes": 6098479104,
+    "vocab_size": 151936
+  },
   "deepseek-ai/DeepSeek-V2-Lite": {
     "f32_bytes": 0,
     "hidden_size": 2048,

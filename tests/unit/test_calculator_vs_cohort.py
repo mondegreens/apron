@@ -151,11 +151,14 @@ def _state_points() -> list[tuple[str, str, int, float]]:
     if not (RUN / "records").is_dir():
         return []
     records = load_cohort_run(RUN).records
+    ssm_models = {m for m, e in json.loads(FIXTURE.read_text()).items() if e.get("ssm")}
     points = set()
     for report in records.reports.values():
         entry = records.solutions.get(report.solution_fingerprint or "")
         if entry is None or not report.max_concurrency or not report.available_kv_cache_memory:
             continue
+        if entry.model_id not in ssm_models:
+            continue  # an attention model: its cache grows per token
         points.add(
             (
                 entry.model_id,
@@ -176,10 +179,7 @@ def test_mamba_state_matches_the_pool_vllm_reports(
     (v1/core/kv_cache_utils.py:1047-1069; no padding for a pure Mamba model)."""
     from apron.domain.mechanisms.calculator import DTYPE_BYTES
 
-    entry = json.loads(FIXTURE.read_text())[model_id]
-    if not entry.get("ssm"):
-        pytest.skip("an attention model: its cache grows per token")
-    ssm = entry["ssm"]
+    ssm = json.loads(FIXTURE.read_text())[model_id]["ssm"]
     predicted = (
         ssm["num_hidden_layers"]
         * ssm["intermediate_size"]

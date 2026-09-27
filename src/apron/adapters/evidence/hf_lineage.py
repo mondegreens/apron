@@ -243,7 +243,12 @@ class HubLineage:
             if bits is None or needs is None:
                 entry["dropped"] = "scheme not recognised"
                 continue
-            if shape_of(full) == shape_of(config) and self.identity_tensor(repo) != base_norm:
+            if shape_of(full) != shape_of(config):
+                # Listed as quantized from the base but another network, e.g. a
+                # speculative-decoding draft model (Qwen3-8B-DFlash, 2026-09-27).
+                entry["dropped"] = "another architecture than the requested checkpoint"
+                continue
+            if self.identity_tensor(repo) != base_norm:
                 entry["dropped"] = "final-norm weights differ from the base: another model"
                 continue
             names = self.tensor_names(repo)

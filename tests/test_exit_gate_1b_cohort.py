@@ -220,6 +220,12 @@ def _proof_problems(run: GateRun, case: Any, digest: str) -> list[str]:
         problems.append(f"request_outcome {r.request_outcome} not recorded")
     elif r.request_outcome != _request_outcome(run, entry, r.proving_record_fingerprints):
         problems.append("request_outcome differs from the stored task and serving records")
+    elif r.request_outcome == "violated":
+        # PLAN §10.2 "Honest outcomes": a class ending `violated` is stored
+        # and reported, "and it does not satisfy gate item 4".
+        problems.append(
+            "request_outcome violated: " + "; ".join(r.violated_constraints or ("recorded",))
+        )
     boot_digest = r.proving_record_fingerprints[0]
     if not any(
         rule.error_family == case.expected_family

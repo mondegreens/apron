@@ -13,6 +13,7 @@ cohort ledger as ``classifier:record-l0f-classN``.  Keys come from the
 environment only.
 
     uv run python scripts/record_l0f_classifier.py
+    APRON_L0F_CLASSES=6 uv run python scripts/record_l0f_classifier.py   # one class
 """
 
 from __future__ import annotations
@@ -58,7 +59,8 @@ def main() -> int:
         print(f"open holds {sorted(budget.holds)}: a run is in progress", file=sys.stderr)
         return 1
     OUT.mkdir(parents=True, exist_ok=True)
-    for case in SIX_CLASSES:
+    only = {int(c) for c in os.environ.get("APRON_L0F_CLASSES", "1,2,3,4,5,6").split(",")}
+    for case in (c for c in SIX_CLASSES if c.failure_class in only):
         digest = fingerprint_hex(case.broken_plan)
         stored = [
             (d, r)

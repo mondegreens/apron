@@ -85,7 +85,7 @@ EXPECTED_CHANGE = {
     3: ("engine_configuration", "max_model_len", "32768"),
     4: ("plan", "dtype", "bfloat16"),
     5: ("plan", "tensor_parallel", 2),
-    6: ("resource_allocation", "model_id", "Qwen/Qwen3-0.6B-FP8"),
+    6: ("resource_allocation", "model_id", "Qwen/Qwen3-8B-AWQ"),
 }
 
 
@@ -416,7 +416,7 @@ def test_a_fix_predicted_not_to_load_is_never_booted(tmp_path: Path) -> None:
     )
     proof = prove_fix(SIX_CLASSES[5], accepted_inputs(), cohort_ports, fix)
     booted_models = [p.resource_allocation.get("model_id") for p in engine.booted]
-    assert "Qwen/Qwen3-0.6B-FP8" not in booted_models  # the fix was not booted
+    assert "Qwen/Qwen3-8B-AWQ" not in booted_models  # the fix was not booted
     assert proof.gate_a and proof.gate_b
     assert proof.mechanism_outcome == "not_evaluated"
     assert any("predicted not to load" in n for n in proof.notes)

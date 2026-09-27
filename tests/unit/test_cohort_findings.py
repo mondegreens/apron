@@ -112,10 +112,10 @@ def test_fix_rows_cover_all_six_classes(synthetic: tuple[Path, CohortRun], findi
     assert by_class[5]["tensor_parallel"] == [3, 2]
     assert by_class[1]["resource_allocation.gpu_sku"][1] == "NVIDIA RTX A6000"
     assert by_class[6]["resource_allocation.model_id"] == [
-        "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
-        "Qwen/Qwen3-0.6B-FP8",
+        "ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4",
+        "Qwen/Qwen3-8B-AWQ",
     ]
-    assert rows[5]["fixed_model"] == "Qwen/Qwen3-0.6B-FP8"
+    assert rows[5]["fixed_model"] == "Qwen/Qwen3-8B-AWQ"
 
 
 def test_prediction_errors_are_reported(findings: dict) -> None:
