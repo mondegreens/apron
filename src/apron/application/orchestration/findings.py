@@ -284,9 +284,13 @@ def _tasks(run: CohortRun) -> list[dict[str, Any]]:
     for digest, a in run.records.attempts.items():
         by_solution[(a.solution_fingerprint, a.evaluation_protocol_fingerprint)].append(digest)
     rows = []
-    for (sfp, protocol_fp), digests in sorted(
-        by_solution.items(), key=lambda kv: (*_entry_key(run, kv[0][0]), kv[0][1])
-    ):
+
+    def order(key: tuple[str, str]) -> tuple[Any, ...]:
+        protocol = run.records.protocols.get(key[1])
+        checks = protocol.deterministic_checks if protocol else ()
+        return (*_entry_key(run, key[0]), len(checks), key[1])  # older, shorter rule first
+
+    for (sfp, protocol_fp), digests in sorted(by_solution.items(), key=lambda kv: order(kv[0])):
         entry = _entry(run, sfp)
         protocol = run.records.protocols.get(protocol_fp)
         attempts = [run.records.attempts[d] for d in digests]

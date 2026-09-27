@@ -178,6 +178,8 @@ def build_task_attempt(
     infrastructure_cost: float | None = None,
     trace_references: tuple[str, ...] = (),
     failures: tuple[str, ...] = (),
+    reason: str = "task_evaluation",
+    provenance: str | None = None,
 ) -> TaskAttemptRecord:
     """One validated TaskAttemptRecord for one scored case — failures included.
 
@@ -214,7 +216,8 @@ def build_task_attempt(
         failures=tuple(errors),
         claim_scope="task_outcome",
         production_mode=False,
-        reason="task_evaluation",
+        reason=reason,
+        raw_observation_provenance=provenance,
         lifecycle="observed",
     )
 

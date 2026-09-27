@@ -119,6 +119,44 @@ class DeterministicScorer:
             "attempts": attempts,
         }
 
+    def rescore(
+        self, protocol: dict[str, Any], recorded: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        """Score outputs already observed under this protocol's checks; no request.
+
+        ``recorded`` items carry ``case_id``, ``output`` and the original
+        attempt's token counts and time, which are kept as observed.  The
+        expected answer comes from this protocol's cases, never from the record.
+        """
+        expected = {c.get("id", ""): c.get("expected", "") for c in protocol.get("cases", [])}
+        checks = tuple(protocol.get("deterministic_checks") or DEFAULT_CHECKS)
+        scored = []
+        for item in recorded:
+            case_id = item["case_id"]
+            output = item.get("output")
+            if case_id not in expected or output is None:
+                scored.append(
+                    {
+                        **item,
+                        "score": 0,
+                        "accepted": False,
+                        "status": "failed",
+                        "error": "no expected answer or no recorded output",
+                    }
+                )
+                continue
+            score = int(normalize(output, checks) == normalize(expected[case_id], checks))
+            scored.append(
+                {
+                    **item,
+                    "expected": expected[case_id],
+                    "score": score,
+                    "accepted": score == 1,
+                    "status": "completed",
+                }
+            )
+        return scored
+
     def _execute_case(
         self,
         case: dict[str, Any],

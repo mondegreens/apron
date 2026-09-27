@@ -332,18 +332,34 @@ def check_fingerprints(run: GateRun) -> list[str]:
     if len(set(identities.values())) != len(identities):
         problems.append("two (model, plan, execution) share a solution fingerprint")
 
+    # A solution may be scored under more than one protocol (a changed scoring
+    # rule re-scores it): every protocol the manifest records must bind to its
+    # solution, and every attempt must name one of them.
+    for fp, protocol in rec.protocols.items():
+        entry = rec.solutions.get(protocol.solution_fingerprint)
+        if entry is None:
+            problems.append(f"protocol {fp[:12]}: names a solution not in the manifest")
+            continue
+        if protocol.decision_request_digest != decision_request_digest(entry.decision_request):
+            problems.append(f"protocol {fp[:12]}: request digest does not reproduce")
+        if protocol.task_suite_fingerprint != fingerprint_hex(entry.task_suite):
+            problems.append(f"protocol {fp[:12]}: task suite does not reproduce")
+        if protocol.application_fingerprint != fingerprint_hex(entry.application):
+            problems.append(f"protocol {fp[:12]}: application does not reproduce")
     for digest, a in rec.attempts.items():
         entry = rec.solutions.get(a.solution_fingerprint)
         if entry is None:
             problems.append(f"attempt {digest[:12]}: solution not in the manifest")
             continue
+        protocol = rec.protocols.get(a.evaluation_protocol_fingerprint)
+        if protocol is None or protocol.solution_fingerprint != a.solution_fingerprint:
+            problems.append(f"attempt {digest[:12]}: evaluation protocol not recorded for it")
         problems += _context_problems(
             entry,
             f"attempt {digest[:12]}",
             decision=a.decision_fingerprint,
             task_suite=a.task_suite_fingerprint,
             application=a.application_fingerprint,
-            evaluation=a.evaluation_protocol_fingerprint,
         )
     for digest, r in rec.reports.items():
         entry = rec.solutions.get(r.solution_fingerprint or "")
@@ -748,6 +764,16 @@ def test_fingerprints_reject_placeholders(run: GateRun) -> None:
     problems = check_fingerprints(_with(run, attempts=doctored))
     assert any("placeholder" in p for p in problems)
     assert any("decision fingerprint does not reproduce" in p for p in problems)
+
+
+def test_an_attempt_must_name_a_recorded_protocol(run: GateRun) -> None:
+    digest, attempt = next(iter(run.records.attempts.items()))
+    doctored = {
+        **run.records.attempts,
+        digest: attempt.model_copy(update={"evaluation_protocol_fingerprint": "1220" + "ab" * 32}),
+    }
+    problems = check_fingerprints(_with(run, attempts=doctored))
+    assert any("evaluation protocol not recorded for it" in p for p in problems)
 
 
 def test_fingerprints_need_the_manifest(run: GateRun) -> None:

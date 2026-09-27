@@ -41,6 +41,12 @@
     "tie_word_embeddings": false,
     "total_bytes": 31412968448
   },
+  "deepseek-ai/DeepSeek-V2-Lite-Chat": {
+    "lm_head_bytes": 419430400,
+    "revision": "85864749cd611b4353ce1decdb286193298f64c7",
+    "tie_word_embeddings": false,
+    "total_bytes": 31412968448
+  },
   "google/gemma-2-2b-it": {
     "lm_head_bytes": 0,
     "revision": "299a8560bedf22ed1c72a8a11e7dce4a7f9f51f8",
