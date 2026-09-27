@@ -342,3 +342,33 @@ unless marked.  Machine events are in `events.jsonl`.
   `backward_hadamard_matrix`; v0.11.1 registered it; `main` (2026-09-27)
   still lacks it.  Draft issue for the owner:
   `_dev_notes/cohort-run/upstream-vllm-fp-quant-issue.md`.
+
+## 2026-09-27 — pass 2 and the Phase 2 items (owner: "do it and the rest")
+
+- **DeepSeek-V2-Lite-Chat (05:12-05:24 UTC, A100 PCIe, $0.33):** healthy,
+  3/3 (" Paris", " 4", " 50").  The base model's 0/3 was a base model on a
+  chat task.  A6000 would be cheaper but its hosts run CUDA 12.8 only.
+- **Re-scoring, no GPU:** the Phase 1b rule (a trailing full stop ignored)
+  applied to all 51 recorded answers of 16 solutions; each re-score is a new
+  attempt, reason task_rescore, linked to its source.  Llama 2/3 → 3/3.
+  Found on the way: resume and the findings indexed attempts by solution
+  only (a new rule would have been skipped or pooled), and the gate checked
+  attempts against a solution's first protocol.  Both fixed.
+- **Load check (item 11):** tensor names from the safetensors headers against
+  each quantized method's registered parameters (create_weights, pinned).
+  Flags the FPQuant checkpoint (196 tensors), passes every FP8/GPTQ/AWQ/
+  compressed-tensors checkpoint that loaded.  Would have saved the $1.39.
+- **Activation (item 9):** measured peak ≠ 10% of weights.  It tracks the
+  output projection (vocab × hidden × dtype / TP) + 2 × profiled tokens ×
+  hidden × dtype (tokens = vLLM's max_num_batched_tokens default: 2048, 8192
+  on ≥70 GiB non-A100).  14 single-GPU points within 0.02 GiB.  Mechanism
+  not traced; the TP 2 point (0.21 measured, 0.61 predicted) does not fit.
+- **Mamba (item 10):** ssm_decode from vLLM's state shapes (conv
+  I×(k−1) + SSM I×state per layer and sequence).  Found on the way: vLLM
+  serves a float32 checkpoint in 16 bits, so weights were predicted 2× high
+  for fp32 checkpoints (Mamba-2.8B: 11.07 GB stored → 5.16 GiB predicted).
+  Not yet checked against a boot.
+- **Pending the owner's go (no GPU without the owner, 2026-09-27):** one
+  RTX 4090 pod for Qwen3-0.6B + Qwen3-0.6B-FP8 (class 6: FP8 or size?) and
+  Mamba-2.8B (validates ssm_decode); est. ~$0.5-0.8 pooled.
+- Draft article PR: mondegreens/apron#43 (stacked on #42).
