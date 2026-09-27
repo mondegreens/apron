@@ -8,6 +8,7 @@
   "compressed_tensors": {
     "config_min_capability": 70,
     "config_min_capability_source": "model_executor/layers/quantization/compressed_tensors/compressed_tensors.py:117",
+    "kv_cache_scales": true,
     "schemes": {
       "w8a8_fp8": {
         "min_capability": 89,
@@ -48,8 +49,19 @@
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "generated_by": "scripts/generate_vllm_facts.py",
+  "kv_cache": {
+    "parameters": [
+      "k_scale",
+      "kv_scale",
+      "prob_scale",
+      "q_scale",
+      "v_scale"
+    ],
+    "source": "model_executor/layers/quantization/kv_cache.py:57 (BaseKVCacheMethod.create_weights), model_executor/layers/quantization/base_config.py:195 (QuantizationConfig.get_cache_scale_mapper)"
+  },
   "methods": {
     "awq": {
+      "kv_cache_scales": false,
       "min_capability": 75,
       "min_capability_source": "model_executor/layers/quantization/auto_awq.py:231",
       "parameters": [
@@ -60,6 +72,7 @@
       "parameters_source": "model_executor/layers/quantization/auto_awq.py:414 (AutoAWQMarlinLinearMethod.create_weights)"
     },
     "fbgemm_fp8": {
+      "kv_cache_scales": false,
       "min_capability": 80,
       "min_capability_source": "model_executor/layers/quantization/fbgemm_fp8.py:67",
       "parameters": [
@@ -69,6 +82,7 @@
       "parameters_source": "model_executor/layers/quantization/fbgemm_fp8.py:99 (FBGEMMFp8LinearMethod.create_weights)"
     },
     "fp8": {
+      "kv_cache_scales": true,
       "min_capability": 75,
       "min_capability_source": "model_executor/layers/quantization/fp8.py:144",
       "parameters": [
@@ -80,6 +94,7 @@
       "parameters_source": "model_executor/layers/quantization/fp8.py:292 (Fp8LinearMethod.create_weights)"
     },
     "fp_quant": {
+      "kv_cache_scales": false,
       "min_capability": 100,
       "min_capability_source": "model_executor/layers/quantization/fp_quant.py:64",
       "parameters": [
@@ -92,6 +107,7 @@
       "parameters_source": "model_executor/layers/quantization/fp_quant.py:106 (FPQuantLinearMethod.create_weights)"
     },
     "gptq": {
+      "kv_cache_scales": false,
       "min_capability": 60,
       "min_capability_source": "model_executor/layers/quantization/auto_gptq.py:188",
       "parameters": [
@@ -103,6 +119,7 @@
       "parameters_source": "model_executor/layers/quantization/auto_gptq.py:326 (AutoGPTQLinearMethod.create_weights)"
     },
     "modelopt": {
+      "kv_cache_scales": true,
       "min_capability": 80,
       "min_capability_source": "model_executor/layers/quantization/modelopt.py:407",
       "parameters": [
@@ -112,7 +129,20 @@
       ],
       "parameters_source": "model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights)"
     },
+    "modelopt_fp4": {
+      "kv_cache_scales": true,
+      "min_capability": 75,
+      "min_capability_source": "model_executor/layers/quantization/modelopt.py:1060",
+      "parameters": [
+        "input_scale",
+        "weight",
+        "weight_scale",
+        "weight_scale_2"
+      ],
+      "parameters_source": "model_executor/layers/quantization/modelopt.py:1142 (ModelOptNvFp4LinearMethod.create_weights)"
+    },
     "mxfp4": {
+      "kv_cache_scales": false,
       "min_capability": 80,
       "min_capability_source": "model_executor/layers/quantization/mxfp4.py:62"
     }

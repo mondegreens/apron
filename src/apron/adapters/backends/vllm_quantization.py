@@ -67,6 +67,33 @@ def _compressed_tensors_scheme(quant: dict[str, Any]) -> str | None:
     return schemes.pop() if len(schemes) == 1 else None
 
 
+def _modelopt_algo(quant: dict[str, Any]) -> str:
+    """``quant_algo`` as modelopt.py:240-257 reads it (either layout, upper-cased)."""
+    nested = quant.get("quantization")
+    if isinstance(nested, dict):
+        return str(nested.get("quant_algo", "")).upper()
+    return str(quant.get("quant_algo", "")).upper()
+
+
+def _method(quant: dict[str, Any]) -> str:
+    """The method name vLLM resolves the checkpoint to.  ModelOpt checkpoints
+    all declare ``modelopt``; the ModelOpt configs' ``override_quantization_method``
+    rename it by ``quant_algo`` (modelopt.py:1063-1070 FP4, 1730-1736 MXFP8,
+    2224-2230 mixed precision); other algorithms stay with the FP8 config
+    (modelopt.py:364).  A name the facts do not list stays unknown."""
+    method = str(quant.get("quant_method", ""))
+    if method != "modelopt":
+        return method
+    algo = _modelopt_algo(quant)
+    if "NVFP4" in algo or "FP4" in algo:
+        return "modelopt_fp4"
+    if "MXFP8" in algo:
+        return "modelopt_mxfp8"
+    if algo == "MIXED_PRECISION":
+        return "modelopt_mixed"
+    return "modelopt"
+
+
 def min_capability(quantization_config: dict[str, Any] | None) -> int | None:
     """Capability (major*10+minor) v0.29.0 needs for this checkpoint's format.
 
@@ -75,7 +102,7 @@ def min_capability(quantization_config: dict[str, Any] | None) -> int | None:
     """
     if not quantization_config:
         return 0
-    method = str(quantization_config.get("quant_method", ""))
+    method = _method(quantization_config)
     if method == "compressed-tensors":
         scheme = _compressed_tensors_scheme(quantization_config)
         return COMPRESSED_TENSORS_SCHEMES[scheme][0] if scheme else None
@@ -91,8 +118,10 @@ def min_capability(quantization_config: dict[str, Any] | None) -> int | None:
 # raises for a tensor it has no parameter for ("There is no module or
 # parameter named ..."; the class 6 B200 boot, 2026-09-27).  Each quantized
 # linear method registers its parameter names in ``create_weights``; plain
-# layers hold ``weight`` and ``bias``.  A stored tensor whose last name part
-# is none of these will not load.  Methods not listed here cannot be checked.
+# layers hold ``weight`` and ``bias``; a config that attaches a KV-cache method
+# to attention layers adds its scales (``kv_cache``).  A stored tensor whose
+# last name part is none of these will not load.  Methods not listed here
+# cannot be checked.
 
 REGISTERED_PARAMETERS: dict[str, tuple[frozenset[str], str]] = {
     method: (frozenset(names), source)
@@ -102,10 +131,33 @@ _CT_PARAMETERS: dict[str, tuple[frozenset[str], str]] = {
     scheme: (frozenset(entry["parameters"]), entry["parameters_source"])
     for scheme, entry in FACTS["compressed_tensors"]["schemes"].items()
 }
+_KV_CACHE_SCALES = frozenset(FACTS["kv_cache"]["parameters"])
+_KV_CACHE_METHODS = frozenset(
+    method for method, entry in FACTS["methods"].items() if entry.get("kv_cache_scales")
+) | frozenset(
+    alias
+    for alias, method in FACTS["aliases"].items()
+    if FACTS["methods"].get(method, {}).get("kv_cache_scales")
+)
 _PLAIN = frozenset({"weight", "bias"})
 # Rotary buffers some checkpoints store; model loaders skip them by name
 # (e.g. models/deepseek_mtp.py:327: ``if "rotary_emb.inv_freq" in name``).
 _SKIPPED = frozenset({"inv_freq", "cos_cached", "sin_cached"})
+
+
+def _nvfp4_w4a4(quant: dict[str, Any]) -> bool:
+    """NVFP4 with quantized activations; modelopt.py:1084-1098 routes a weight-only
+    NVFP4 checkpoint (every group's ``input_activations`` null) to W4A16."""
+    if _modelopt_algo(quant) != "NVFP4":
+        return False
+    groups = quant.get("config_groups")
+    return not (
+        isinstance(groups, dict)
+        and groups
+        and all(
+            isinstance(g, dict) and g.get("input_activations") is None for g in groups.values()
+        )
+    )
 
 
 def load_problems(
@@ -116,17 +168,23 @@ def load_problems(
     unquantized checkpoint, or a method or scheme not listed)."""
     if not quantization_config:
         return None
-    method = str(quantization_config.get("quant_method", ""))
+    method = _method(quantization_config)
     if method == "compressed-tensors":
         scheme = _compressed_tensors_scheme(quantization_config)
         if scheme is None:
             return None
         registered, source = _CT_PARAMETERS[scheme]
+        kv_cache = bool(FACTS["compressed_tensors"].get("kv_cache_scales"))
+    elif method == "modelopt_fp4" and not _nvfp4_w4a4(quantization_config):
+        return None  # W4A16_NVFP4 takes another linear method (modelopt.py:1084-1098)
+    elif method == "modelopt" and _modelopt_algo(quantization_config) != "FP8":
+        return None  # FP8 per-channel / block: other linear methods (modelopt.py:385-397)
     elif method in REGISTERED_PARAMETERS:
         registered, source = REGISTERED_PARAMETERS[method]
+        kv_cache = method in _KV_CACHE_METHODS
     else:
         return None
-    allowed = registered | _PLAIN | _SKIPPED
+    allowed = registered | _PLAIN | _SKIPPED | (_KV_CACHE_SCALES if kv_cache else frozenset())
     unknown = Counter(name.rsplit(".", 1)[-1] for name in tensor_names)
     return tuple(
         f"{suffix} x{count}: no vLLM {ENGINE_VERSION} parameter of that name ({source})"
