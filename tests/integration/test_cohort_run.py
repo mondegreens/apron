@@ -133,11 +133,24 @@ def test_l0a_sigkill_then_orphan_cleanup() -> None:
     orphaned = [p["id"] for p in probe.list_apron_pods()]
     assert pod_id in orphaned
     time.sleep(5)
-    terminated = probe.cleanup_orphaned_pods(max_age_seconds=0)
+    # APRON_L0A_MAX_AGE > 0 proves the start-of-run path (age from lastStartedAt):
+    # after the image pull the pod is always older than a few minutes.
+    max_age = int(os.environ.get("APRON_L0A_MAX_AGE", "0"))
+    age = probe._pod_age(pod_id)
+    assert age >= max_age, f"pod only {age}s old; the age path would not be exercised"
+    terminated = probe.cleanup_orphaned_pods(max_age_seconds=max_age)
     after = [p["id"] for p in probe.list_apron_pods()]
     _write(
-        "l0a-kill-test.json",
-        {"gpu": gpu, "pod": pod_id, "before": before, "terminated": terminated, "after": after},
+        f"l0a-kill-test-age{max_age}.json",
+        {
+            "gpu": gpu,
+            "pod": pod_id,
+            "max_age_seconds": max_age,
+            "pod_age_seconds": age,
+            "before": before,
+            "terminated": terminated,
+            "after": after,
+        },
     )
     assert pod_id in terminated
     assert pod_id not in after

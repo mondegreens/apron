@@ -20,5 +20,16 @@
       "12209c87b885bbbdfdd0f97817b184ea0ce5d6b287c0e2c5317ab981af67a5a1c881"
     ],
     "cost": 0.068333
+  },
+  "5": {
+    "family": "tp_divisibility",
+    "call_site": "config/model.py:1414",
+    "healthy": false,
+    "failed_as_named": true,
+    "harness_failures": [],
+    "failed_boot_digests": [
+      "122003cbc66ff472bb0cb1d9c953851df1267de80f9d2e736ea1c1d21a5038bccd00"
+    ],
+    "cost": 0.519583
   }
 }

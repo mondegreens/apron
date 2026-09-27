@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 0 on 0 GPU types
 - Failure classes fixed and re-verified: 0 of 6
-- Total cost: $2.11 of the $100 cap (failed boots included: $1.63)
+- Total cost: $2.63 of the $100 cap (failed boots included: $2.15)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -39,7 +39,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | Runner image | `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
 | Models measured | — |
 | GPUs measured | — |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-26T23:56:06.901392+00:00 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T00:01:01.014932+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -102,12 +102,13 @@ Failed boots and retries are included.
 | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.3099 | 1 (0.3099) | 1 |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.4928 | 3 (0.4928) | 3 |
 | Qwen/Qwen3-14B | NVIDIA GeForce RTX 4090 x1 | 0.1093 | 1 (0.1093) | 1 |
+| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB x4 | 0.5196 | 1 (0.5196) | 1 |
 | Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 x1 | 0.0273 | 1 (0.0273) | 1 |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 0.0683 | 1 (0.0683) | 1 |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0157 | 1 (0.0157) | 1 |
-| **Records total** |  | **1.6297** |  |  |
+| **Records total** |  | **2.1493** |  |  |
 | Classifier calls (ledger) |  | 0.0000 |  |  |
-| **Ledger spent** |  | **2.1067** |  | cap $100 |
+| **Ledger spent** |  | **2.6263** |  | cap $100 |
 <!-- /findings:cost -->
 
 ## How to reproduce

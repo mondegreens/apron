@@ -1,10 +1,10 @@
 {
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 1.629692,
+    "failed_boot_total": 2.149275,
     "ledger_classifier": 0,
-    "ledger_settled": 2.106692,
-    "ledger_spent": 2.106692,
+    "ledger_settled": 2.626275,
+    "ledger_spent": 2.626275,
     "per_solution": [
       {
         "cost": 0.606296,
@@ -57,6 +57,18 @@
         ]
       },
       {
+        "cost": 0.519583,
+        "failed_boot_cost": 0.519583,
+        "failed_boots": 1,
+        "gpu": "NVIDIA A100-SXM4-80GB",
+        "gpu_count": 4,
+        "label": "class5-broken",
+        "model": "Qwen/Qwen3-8B",
+        "records": [
+          "122003cbc66ff472bb0cb1d9c953851df1267de80f9d2e736ea1c1d21a5038bccd00"
+        ]
+      },
+      {
         "cost": 0.027297,
         "failed_boot_cost": 0.027297,
         "failed_boots": 1,
@@ -93,7 +105,7 @@
         ]
       }
     ],
-    "records_total": 1.629692
+    "records_total": 2.149275
   },
   "fixes": [
     {
@@ -135,7 +147,7 @@
   ],
   "memory": [],
   "prediction_errors": [],
-  "record_count": 17,
+  "record_count": 18,
   "repeat_measurements": [],
   "serving": [],
   "setup": {
@@ -148,7 +160,7 @@
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-26T23:56:06.901392+00:00",
+    "last_event": "2026-09-27T00:01:01.014932+00:00",
     "models_measured": [],
     "providers": [
       "runpod"
