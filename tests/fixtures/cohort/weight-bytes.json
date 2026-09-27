@@ -1,16 +1,31 @@
 {
   "JunHowie/Qwen3-8B-GPTQ-Int4": {
+    "f32_bytes": 0,
     "hidden_size": 4096,
     "lm_head_bytes": 1244659712,
+    "quantized": true,
     "revision": "f08c8ea5f60e1fe34ff4a45edb58e8ca958560c3",
     "tie_word_embeddings": false,
     "torch_dtype": "bfloat16",
     "total_bytes": 6103787520,
     "vocab_size": 151936
   },
-  "Qwen/Qwen3-0.6B-FP8": {
+  "Qwen/Qwen3-0.6B": {
+    "f32_bytes": 0,
     "hidden_size": 1024,
     "lm_head_bytes": 311164928,
+    "quantized": false,
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "tie_word_embeddings": true,
+    "torch_dtype": "bfloat16",
+    "total_bytes": 1503264768,
+    "vocab_size": 151936
+  },
+  "Qwen/Qwen3-0.6B-FP8": {
+    "f32_bytes": 0,
+    "hidden_size": 1024,
+    "lm_head_bytes": 311164928,
+    "quantized": true,
     "revision": "e5be08033360965ceca7b0ffd72d521a51331ce0",
     "tie_word_embeddings": true,
     "torch_dtype": "bfloat16",
@@ -18,8 +33,10 @@
     "vocab_size": 151936
   },
   "Qwen/Qwen3-1.7B": {
+    "f32_bytes": 0,
     "hidden_size": 2048,
     "lm_head_bytes": 622329856,
+    "quantized": false,
     "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
     "tie_word_embeddings": true,
     "torch_dtype": "bfloat16",
@@ -27,8 +44,10 @@
     "vocab_size": 151936
   },
   "Qwen/Qwen3-14B": {
+    "f32_bytes": 0,
     "hidden_size": 5120,
     "lm_head_bytes": 1555824640,
+    "quantized": false,
     "revision": "40c069824f4251a91eefaf281ebe4c544efd3e18",
     "tie_word_embeddings": false,
     "torch_dtype": "bfloat16",
@@ -36,8 +55,10 @@
     "vocab_size": 151936
   },
   "Qwen/Qwen3-32B": {
+    "f32_bytes": 0,
     "hidden_size": 5120,
     "lm_head_bytes": 1555824640,
+    "quantized": false,
     "revision": "9216db5781bf21249d130ec9da846c4624c16137",
     "tie_word_embeddings": false,
     "torch_dtype": "bfloat16",
@@ -45,8 +66,10 @@
     "vocab_size": 151936
   },
   "Qwen/Qwen3-8B": {
+    "f32_bytes": 0,
     "hidden_size": 4096,
     "lm_head_bytes": 1244659712,
+    "quantized": false,
     "revision": "b968826d9c46dd6066d109eabc6255188de91218",
     "tie_word_embeddings": false,
     "torch_dtype": "bfloat16",
@@ -54,8 +77,10 @@
     "vocab_size": 151936
   },
   "deepseek-ai/DeepSeek-V2-Lite": {
+    "f32_bytes": 0,
     "hidden_size": 2048,
     "lm_head_bytes": 419430400,
+    "quantized": false,
     "revision": "604d5664dddd88a0433dbae533b7fe9472482de0",
     "tie_word_embeddings": false,
     "torch_dtype": "bfloat16",
@@ -63,8 +88,10 @@
     "vocab_size": 102400
   },
   "deepseek-ai/DeepSeek-V2-Lite-Chat": {
+    "f32_bytes": 0,
     "hidden_size": 2048,
     "lm_head_bytes": 419430400,
+    "quantized": false,
     "revision": "85864749cd611b4353ce1decdb286193298f64c7",
     "tie_word_embeddings": false,
     "torch_dtype": "bfloat16",
@@ -72,8 +99,10 @@
     "vocab_size": 102400
   },
   "google/gemma-2-2b-it": {
+    "f32_bytes": 0,
     "hidden_size": 2304,
     "lm_head_bytes": 0,
+    "quantized": false,
     "revision": "299a8560bedf22ed1c72a8a11e7dce4a7f9f51f8",
     "tie_word_embeddings": false,
     "torch_dtype": "bfloat16",
@@ -81,8 +110,10 @@
     "vocab_size": 256000
   },
   "meta-llama/Llama-3.1-8B-Instruct": {
+    "f32_bytes": 0,
     "hidden_size": 4096,
     "lm_head_bytes": 1050673152,
+    "quantized": false,
     "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
     "tie_word_embeddings": false,
     "torch_dtype": "bfloat16",
@@ -90,12 +121,25 @@
     "vocab_size": 128256
   },
   "mistralai/Mistral-7B-Instruct-v0.3": {
+    "f32_bytes": 0,
     "hidden_size": 4096,
     "lm_head_bytes": 268435456,
+    "quantized": false,
     "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
     "tie_word_embeddings": false,
     "torch_dtype": "bfloat16",
     "total_bytes": 14496047104,
     "vocab_size": 32768
+  },
+  "state-spaces/mamba-2.8b-hf": {
+    "f32_bytes": 11073382400,
+    "hidden_size": 2560,
+    "lm_head_bytes": 0,
+    "quantized": false,
+    "revision": "96c48e0292b63f5346b6d30061af2551f7101e26",
+    "tie_word_embeddings": false,
+    "torch_dtype": "float32",
+    "total_bytes": 11073382400,
+    "vocab_size": 50280
   }
 }

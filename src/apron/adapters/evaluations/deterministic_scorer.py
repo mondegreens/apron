@@ -200,6 +200,10 @@ class DeterministicScorer:
 
             data = response.json()
             output = data["choices"][0]["message"]["content"]
+            # "length": the answer was cut at max_tokens, so a mismatch is not
+            # evidence of a wrong answer (Qwen3-0.6B: "10 * 5 = 50" recorded as
+            # "10 * 5 = 5" at 8 tokens; L5 review, 2026-09-27).
+            finish_reason = data["choices"][0].get("finish_reason")
             usage = data.get("usage", {})
 
             normalized_output = normalize(output or "", checks)
@@ -215,15 +219,21 @@ class DeterministicScorer:
                 "input_tokens": usage.get("prompt_tokens"),
                 "output_tokens": usage.get("completion_tokens"),
                 "time_seconds": round(elapsed, 3),
+                "finish_reason": finish_reason,
                 "status": "completed",
             }
         except Exception as exc:
             elapsed = time.monotonic() - start
+            error = str(exc)
+            if isinstance(exc, httpx.HTTPStatusError):
+                # The engine says why it refused (Mamba-2.8B: no chat template);
+                # the status line alone does not.
+                error = f"{exc.response.status_code}: {exc.response.text[:500]}"
             return {
                 "case_id": case_id,
                 "score": 0,
                 "accepted": False,
                 "status": "failed",
-                "error": str(exc),
+                "error": error,
                 "time_seconds": round(elapsed, 3),
             }

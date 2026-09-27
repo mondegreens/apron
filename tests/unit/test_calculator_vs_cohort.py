@@ -15,7 +15,7 @@ from typing import Any
 
 import pytest
 
-from apron.application.orchestration.plan_pipeline import _resolve_weight_bytes
+from apron.application.orchestration.plan_pipeline import recorded_loaded_bytes
 from apron.domain.mechanisms.calculator import _per_gpu
 from apron.interfaces.cohort_root import load_cohort_run
 
@@ -27,22 +27,7 @@ RUN = REPO / "_dev_notes" / "cohort-run"
 TOLERANCE = 0.06
 
 
-class _Recorded:
-    def __init__(self, entry: dict[str, Any]) -> None:
-        self._entry = entry
-
-    def _tensor_bytes(self, model_id: str, revision: str) -> dict[str, int]:
-        lm_head = int(self._entry["lm_head_bytes"])
-        rest = {"rest": int(self._entry["total_bytes"]) - lm_head}
-        return {**rest, "lm_head.weight": lm_head} if lm_head else rest
-
-
-class _Observation:
-    resolved_revision = "recorded"
-    publisher_metadata = None
-
-
-def _measured_points() -> list[tuple[str, int, int]]:
+def _measured_points() -> list[tuple[str, str, int, int]]:
     if not (RUN / "records").is_dir():
         return []
     records = load_cohort_run(RUN).records
@@ -57,23 +42,26 @@ def _measured_points() -> list[tuple[str, int, int]]:
         ):
             continue
         points.add(
-            (entry.model_id, entry.deployment_plan.tensor_parallel, report.model_weight_memory)
+            (
+                entry.model_id,
+                entry.deployment_plan.dtype or "bfloat16",
+                entry.deployment_plan.tensor_parallel,
+                report.model_weight_memory,
+            )
         )
     return sorted(points)
 
 
 @pytest.mark.skipif(not (RUN / "records").is_dir(), reason="cohort records not present")
-@pytest.mark.parametrize(("model_id", "tp", "measured"), _measured_points())
-def test_weight_prediction_matches_the_measurement(model_id: str, tp: int, measured: int) -> None:
+@pytest.mark.parametrize(("model_id", "dtype", "tp", "measured"), _measured_points())
+def test_weight_prediction_matches_the_measurement(
+    model_id: str, dtype: str, tp: int, measured: int
+) -> None:
     recorded = json.loads(FIXTURE.read_text())
     assert model_id in recorded, "run scripts/record_weight_bytes.py"
-    entry = recorded[model_id]
-    config = {"tie_word_embeddings": entry["tie_word_embeddings"]}
-    predicted = _per_gpu(
-        _resolve_weight_bytes(_Recorded(entry), model_id, _Observation(), config), tp
-    )
+    predicted = _per_gpu(recorded_loaded_bytes(recorded[model_id], dtype), tp)
     assert abs(predicted - measured) / measured <= TOLERANCE, (
-        f"{model_id} TP {tp}: predicted {predicted / 2**30:.2f} GiB, "
+        f"{model_id} ({dtype}) TP {tp}: predicted {predicted / 2**30:.2f} GiB, "
         f"measured {measured / 2**30:.2f} GiB"
     )
 
@@ -87,7 +75,7 @@ def test_weight_prediction_matches_the_measurement(model_id: str, tp: int, measu
 ACTIVATION_TOLERANCE = (0.20, int(0.08 * 2**30))
 
 
-def _activation_points() -> list[tuple[str, str, int, int]]:
+def _activation_points() -> list[tuple[str, str, int, str, int]]:
     if not (RUN / "records").is_dir():
         return []
     records = load_cohort_run(RUN).records
@@ -106,6 +94,7 @@ def _activation_points() -> list[tuple[str, str, int, int]]:
                 entry.model_id,
                 entry.requested_execution.gpu_sku,
                 entry.deployment_plan.tensor_parallel,
+                entry.deployment_plan.dtype or "bfloat16",
                 report.transient_peak_headroom,
             )
         )
@@ -128,9 +117,9 @@ def _activation_params() -> list[Any]:
 
 
 @pytest.mark.skipif(not (RUN / "records").is_dir(), reason="cohort records not present")
-@pytest.mark.parametrize(("model_id", "gpu", "tp", "measured"), _activation_params())
+@pytest.mark.parametrize(("model_id", "gpu", "tp", "dtype", "measured"), _activation_params())
 def test_activation_estimate_matches_the_profiled_peak(
-    model_id: str, gpu: str, tp: int, measured: int
+    model_id: str, gpu: str, tp: int, dtype: str, measured: int
 ) -> None:
     from apron.adapters.backends.vllm_quantization import default_max_num_batched_tokens
     from apron.domain.mechanisms import CalculatorInput, ComponentMechanism, TextWorkload
@@ -147,7 +136,8 @@ def test_activation_estimate_matches_the_profiled_peak(
         hardware=hardware,
         execution_spec_data={"max_num_batched_tokens": tokens},
     )
-    metadata = {k: entry[k] for k in ("vocab_size", "hidden_size", "torch_dtype")}
+    metadata = {"vocab_size": entry["vocab_size"], "hidden_size": entry["hidden_size"]}
+    metadata["torch_dtype"] = dtype  # the plan's served dtype
     predicted = _activation_estimate(metadata, inputs, tp)
     assert predicted is not None
     relative, absolute = ACTIVATION_TOLERANCE

@@ -741,6 +741,23 @@ def _run_task_suite(
 
     Returns (scored case, retry index) — both attempts of a retried case.
     """
+    if sp.chat_template is None:
+        # The suite is sent as chat messages; a model without a chat template
+        # is refused by the engine (HTTP 400, Mamba-2.8B, 2026-09-27).  Record
+        # why, per case, without sending requests that cannot succeed.
+        return [
+            (
+                {
+                    "case_id": case.get("id", ""),
+                    "score": 0,
+                    "accepted": False,
+                    "status": "failed",
+                    "error": "no chat template: the chat task suite cannot be sent",
+                },
+                0,
+            )
+            for case in ctx.task_suite.cases
+        ]
     evaluator = ports.evaluator
     prepared = evaluator.prepare(
         {

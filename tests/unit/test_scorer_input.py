@@ -59,3 +59,19 @@ def test_what_the_harness_cannot_do_is_refused(field: str, value: int) -> None:
 
 def test_protocol_type_is_the_schema() -> None:
     assert isinstance(_ctx().protocol, EvaluationProtocol)
+
+
+def test_a_cut_answer_is_marked_on_its_record() -> None:
+    from apron.application.orchestration.evidence import build_task_attempt
+
+    ctx = _ctx()
+    scored = {
+        "case_id": "arith-2",
+        "output": "10 * 5 = 5",
+        "score": 0,
+        "accepted": False,
+        "status": "completed",
+        "finish_reason": "length",
+    }
+    record = build_task_attempt(ctx, scored, attempt_id="a1")
+    assert "evaluation:truncated at max_tokens" in record.failures

@@ -190,3 +190,21 @@
 {"amount": 0.0, "at": "2026-09-27T05:24:32.896443+00:00", "label": "pod-idle:n6xd7bcy6rpwrx", "op": "annotate", "pod_id": "n6xd7bcy6rpwrx"}
 {"amount": 0.32895, "at": "2026-09-27T05:24:32.898127+00:00", "estimate": 1.6757, "label": "deepseek-ai/DeepSeek-V2-Lite-Chat@NVIDIA A100 80GB PCIex1", "op": "settle"}
 {"amount": 0.000212, "at": "2026-09-27T05:24:33.376176+00:00", "estimate": 0.265, "label": "pod-idle:n6xd7bcy6rpwrx", "op": "settle"}
+{"amount": 0.4708, "at": "2026-09-27T15:47:51.028923+00:00", "label": "Qwen/Qwen3-0.6B-FP8@NVIDIA GeForce RTX 4090x1", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T15:53:38.612865+00:00", "label": "Qwen/Qwen3-0.6B-FP8@NVIDIA GeForce RTX 4090x1", "op": "annotate", "pod_id": "idy00eidbjrj64"}
+{"amount": 0.123333, "at": "2026-09-27T15:57:33.748013+00:00", "label": "pod-idle:idy00eidbjrj64", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T15:57:33.751112+00:00", "label": "pod-idle:idy00eidbjrj64", "op": "annotate", "pod_id": "idy00eidbjrj64"}
+{"amount": 0.119782, "at": "2026-09-27T15:57:33.752594+00:00", "estimate": 0.4708, "label": "Qwen/Qwen3-0.6B-FP8@NVIDIA GeForce RTX 4090x1", "op": "settle"}
+{"amount": 0.6148, "at": "2026-09-27T15:57:33.862127+00:00", "label": "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1", "op": "hold"}
+{"amount": 2.3e-05, "at": "2026-09-27T15:57:33.862401+00:00", "estimate": 0.123333, "label": "pod-idle:idy00eidbjrj64", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T15:57:33.862517+00:00", "label": "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1", "op": "annotate", "pod_id": "idy00eidbjrj64"}
+{"amount": 0.123333, "at": "2026-09-27T16:00:06.502201+00:00", "label": "pod-idle:idy00eidbjrj64", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T16:00:06.504708+00:00", "label": "pod-idle:idy00eidbjrj64", "op": "annotate", "pod_id": "idy00eidbjrj64"}
+{"amount": 0.031377, "at": "2026-09-27T16:00:06.505271+00:00", "estimate": 0.6148, "label": "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1", "op": "settle"}
+{"amount": 0.4717, "at": "2026-09-27T16:00:06.596420+00:00", "label": "Qwen/Qwen3-0.6B@NVIDIA GeForce RTX 4090x1", "op": "hold"}
+{"amount": 1.9e-05, "at": "2026-09-27T16:00:06.596747+00:00", "estimate": 0.123333, "label": "pod-idle:idy00eidbjrj64", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T16:00:06.596865+00:00", "label": "Qwen/Qwen3-0.6B@NVIDIA GeForce RTX 4090x1", "op": "annotate", "pod_id": "idy00eidbjrj64"}
+{"amount": 0.123333, "at": "2026-09-27T16:01:59.000864+00:00", "label": "pod-idle:idy00eidbjrj64", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T16:01:59.002744+00:00", "label": "pod-idle:idy00eidbjrj64", "op": "annotate", "pod_id": "idy00eidbjrj64"}
+{"amount": 0.023106, "at": "2026-09-27T16:01:59.004349+00:00", "estimate": 0.4717, "label": "Qwen/Qwen3-0.6B@NVIDIA GeForce RTX 4090x1", "op": "settle"}
+{"amount": 0.000114, "at": "2026-09-27T16:01:59.555880+00:00", "estimate": 0.123333, "label": "pod-idle:idy00eidbjrj64", "op": "settle"}

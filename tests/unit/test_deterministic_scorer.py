@@ -363,3 +363,33 @@ def test_unset_top_p_and_stop_are_not_sent(scorer: DeterministicScorer) -> None:
         scorer.execute(prepared, "http://localhost:8000")
     body = mock_post.call_args.kwargs["json"]
     assert "top_p" not in body and "stop" not in body
+
+
+# ---------------------------------------------------------------------------
+# What a failed or cut answer records (L5 review, 2026-09-27)
+# ---------------------------------------------------------------------------
+
+
+def test_finish_reason_is_recorded(scorer: DeterministicScorer) -> None:
+    """Qwen3-0.6B wrote "10 * 5 = 50" in 10 tokens; at max_tokens 8 the record
+    held "10 * 5 = 5" with nothing saying it was cut."""
+    response = _make_fake_response("10 * 5 = 5")
+    response.json.return_value["choices"][0]["finish_reason"] = "length"
+    protocol = {"cases": [{"id": "c", "prompt": "10*5?", "expected": "50", "max_tokens": 8}]}
+    with patch("apron.adapters.evaluations.deterministic_scorer.httpx.post") as mock_post:
+        mock_post.return_value = response
+        (result,) = scorer.execute(protocol, "http://localhost:8000")
+    assert result["finish_reason"] == "length" and result["accepted"] is False
+
+
+def test_an_engine_refusal_keeps_its_reason(scorer: DeterministicScorer) -> None:
+    import httpx
+
+    request = httpx.Request("POST", "http://localhost:8000/v1/chat/completions")
+    refused = httpx.Response(400, request=request, text='{"error": "no chat template"}')
+    protocol = {"cases": [{"id": "c", "prompt": "2+2?", "expected": "4"}]}
+    with patch("apron.adapters.evaluations.deterministic_scorer.httpx.post") as mock_post:
+        mock_post.return_value = refused
+        (result,) = scorer.execute(protocol, "http://localhost:8000")
+    assert result["status"] == "failed"
+    assert result["error"].startswith("400:") and "no chat template" in result["error"]

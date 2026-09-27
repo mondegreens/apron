@@ -491,6 +491,16 @@ def claim_for(model_id: str, hardware: HardwareSpec) -> PlanningClaim:
     )
 
 
+def _chat_template(model_id: str) -> str | None:
+    """Qwen3 templates read enable_thinking; other chat models have plain
+    templates; the Mamba base model has none (its chat requests are refused)."""
+    if model_id.startswith("state-spaces/"):
+        return None
+    if model_id.startswith("Qwen/"):
+        return "{% if enable_thinking %}{% endif %}"
+    return "{{ messages }}"
+
+
 def plan_solution(
     plan: DeploymentPlan,
     label: str,
@@ -528,9 +538,7 @@ def plan_solution(
         claim=claim,
         solution_fp=solution_fingerprint(spec, plan, requested),
         status=status,  # type: ignore[arg-type]
-        chat_template="{% if enable_thinking %}{% endif %}"
-        if model_id.startswith("Qwen/")
-        else None,
+        chat_template=_chat_template(model_id),
         estimate=round(rate * count * 0.5, 4),
         artifact_spec=ArtifactSpec(
             identity=ArtifactIdentity(content_digest=digest_hex(canonicalize(info["config"])))

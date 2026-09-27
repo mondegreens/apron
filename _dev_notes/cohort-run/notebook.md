@@ -342,3 +342,61 @@ unless marked.  Machine events are in `events.jsonl`.
   `backward_hadamard_matrix`; v0.11.1 registered it; `main` (2026-09-27)
   still lacks it.  Draft issue for the owner:
   `_dev_notes/cohort-run/upstream-vllm-fp-quant-issue.md`.
+
+## 2026-09-27 — pass 2 and the Phase 2 items (owner: "do it and the rest")
+
+- **DeepSeek-V2-Lite-Chat (05:12-05:24 UTC, A100 PCIe, $0.33):** healthy,
+  3/3 (" Paris", " 4", " 50").  The base model's 0/3 was a base model on a
+  chat task.  A6000 would be cheaper but its hosts run CUDA 12.8 only.
+- **Re-scoring, no GPU:** the Phase 1b rule (a trailing full stop ignored)
+  applied to all 51 recorded answers of 16 solutions; each re-score is a new
+  attempt, reason task_rescore, linked to its source.  Llama 2/3 → 3/3.
+  Found on the way: resume and the findings indexed attempts by solution
+  only (a new rule would have been skipped or pooled), and the gate checked
+  attempts against a solution's first protocol.  Both fixed.
+- **Load check (item 11):** tensor names from the safetensors headers against
+  each quantized method's registered parameters (create_weights, pinned).
+  Flags the FPQuant checkpoint (196 tensors), passes every FP8/GPTQ/AWQ/
+  compressed-tensors checkpoint that loaded.  Would have saved the $1.39.
+- **Activation (item 9):** measured peak ≠ 10% of weights.  It tracks the
+  output projection (vocab × hidden × dtype / TP) + 2 × profiled tokens ×
+  hidden × dtype (tokens = vLLM's max_num_batched_tokens default: 2048, 8192
+  on ≥70 GiB non-A100).  14 single-GPU points within 0.02 GiB.  Mechanism
+  not traced; the TP 2 point (0.21 measured, 0.61 predicted) does not fit.
+- **Mamba (item 10):** ssm_decode from vLLM's state shapes (conv
+  I×(k−1) + SSM I×state per layer and sequence).  Found on the way: vLLM
+  serves a float32 checkpoint in 16 bits, so weights were predicted 2× high
+  for fp32 checkpoints (Mamba-2.8B: 11.07 GB stored → 5.16 GiB predicted).
+  Not yet checked against a boot.
+- **Pending the owner's go (no GPU without the owner, 2026-09-27):** one
+  RTX 4090 pod for Qwen3-0.6B + Qwen3-0.6B-FP8 (class 6: FP8 or size?) and
+  Mamba-2.8B (validates ssm_decode); est. ~$0.5-0.8 pooled.
+- Draft article PR: mondegreens/apron#43 (stacked on #42).
+
+## 2026-09-27 — pass 3: one RTX 4090 for Qwen3-0.6B, its FP8 copy, Mamba-2.8B
+
+- Owner's go.  Pod `idy00eidbjrj64`, three solutions on one pod, $0.17
+  total (FP8 $0.12, Mamba $0.03, base $0.02; the image pull is on the first).
+- **Qwen3-0.6B-FP8 and Qwen3-0.6B answer identically** on the 4090: "2",
+  "10 * 5 = 5", "Paris" — also identical to the FP8 run on the H100.  FP8 did
+  not cause class 6's misses.
+- **Independent reference, no GPU:** Qwen3-0.6B in transformers on CPU,
+  greedy, the same rendered prompt (chat template checked by rendering it:
+  non-thinking format, `enable_thinking=False` applied).  Same answers at 8
+  tokens.  At 64 tokens: "10 * 5 = 50" (10 tokens — Qwen writes one digit per
+  token) and "2" followed by end-of-turn.  So "10 * 5 = 5" was **our harness
+  cutting a correct answer** at max_tokens 8, recorded as a plain wrong
+  answer; "2 + 2 = 2" is the model's own non-thinking greedy answer.
+- **Mamba-2.8B:** healthy, served the benchmark.  Weights measured 10.31 GiB
+  against 5.16 predicted: our plan named float32 (from the config) while the
+  calculator assumed vLLM's 16-bit default — the planner and the calculator
+  disagreed.  Activation 0.52 GiB measured, 0.52 with the float32 plan.
+  The per-sequence SSM state is not observable in what we record: not
+  validated.  All chat task requests: HTTP 400 — a base model without a chat
+  template; the record kept only "400".
+- Fixed: the planner now names vLLM's served dtype (float32 checkpoints in 16
+  bits); a model without a chat template is not sent the chat suite (reason
+  recorded per case); an engine refusal keeps its reason; a cut answer
+  (finish_reason "length") is marked "truncated at max_tokens".  Not changed:
+  the suite's max_tokens (a task-suite change re-runs every model's tasks —
+  owner's call).
