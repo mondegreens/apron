@@ -27,7 +27,7 @@ record, and every table row names the record it came from.
 <!-- findings:headline -->
 - Models measured: 14 on 6 GPU types
 - Failure classes fixed and re-verified: 6 of 6
-- Total cost: $11.35 of the $100 cap (failed boots included: $5.09)
+- Total cost: $11.36 of the $500 cap (failed boots included: $5.09)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -456,8 +456,10 @@ without a chat template is not sent them, and the record says why.
 | **Records total** |  | **9.9030** |  |  |
 | Diagnosis model calls (Claude Haiku) |  | 0.1934 |  |  |
 | Idle time of reused pods |  | 0.2302 |  |  |
+| CPU pods that staged weights |  | 0.1556 |  |  |
+| Network volume storage for staged weights |  | 0.0007 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  | 0.6502 |  |  |
-| Corrections to RunPod's bill (estimates, clock differences) |  | -0.0998 |  |  |
-| **Ledger spent** |  | **11.3541** |  | cap $100 |
+| Corrections to RunPod's bill (estimates, clock differences) |  | -0.2533 |  |  |
+| **Ledger spent** |  | **11.3569** |  | cap $500 |
 | RunPod billed, same window |  | 9.9041 |  | not billed yet: 2 pod(s) |
 <!-- /findings:cost -->

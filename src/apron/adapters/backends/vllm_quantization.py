@@ -12,8 +12,11 @@ version", never stale knowledge.
 
 from __future__ import annotations
 
+import gzip
+import hashlib
 import json
 from collections import Counter
+from functools import cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -24,6 +27,9 @@ if TYPE_CHECKING:
 # test ties its version to the runner image's pin (docker/requirements.txt).
 FACTS: dict[str, Any] = json.loads(Path(__file__).with_name("vllm_facts.json").read_text())
 ENGINE_VERSION: str = FACTS["engine_version"]
+# Model classes the pinned vLLM marks IsHybrid (attention plus Mamba/linear
+# attention state), generated from its source with the line of each class.
+HYBRID_ARCHITECTURES: frozenset[str] = frozenset(FACTS["hybrid_architectures"])
 
 
 def _method_table(key: str, source: str) -> dict[str, tuple[Any, str]]:
@@ -160,6 +166,16 @@ def _nvfp4_w4a4(quant: dict[str, Any]) -> bool:
     )
 
 
+@cache
+def engine_names() -> frozenset[str]:
+    """Every snake_case name the pinned vLLM source mentions (generated)."""
+    entry = FACTS["source_names"]
+    blob = Path(__file__).with_name(entry["file"]).read_bytes()
+    if hashlib.sha256(blob).hexdigest() != entry["sha256"]:
+        raise RuntimeError(f"{entry['file']} does not match vllm_facts.json — regenerate")
+    return frozenset(gzip.decompress(blob).decode().split())
+
+
 def load_problems(
     tensor_names: Iterable[str], quantization_config: dict[str, Any] | None
 ) -> tuple[str, ...] | None:
@@ -186,11 +202,25 @@ def load_problems(
         return None
     allowed = registered | _PLAIN | _SKIPPED | (_KV_CACHE_SCALES if kv_cache else frozenset())
     unknown = Counter(name.rsplit(".", 1)[-1] for name in tensor_names)
-    return tuple(
-        f"{suffix} x{count}: no vLLM {ENGINE_VERSION} parameter of that name ({source})"
-        for suffix, count in sorted(unknown.items())
-        if suffix not in allowed
-    )
+    names = engine_names()
+    problems = []
+    for suffix, count in sorted(unknown.items()):
+        if suffix in allowed:
+            continue
+        if suffix in _KV_CACHE_SCALES:
+            # A KV-cache scale with no KV-cache method to hold it.
+            problems.append(
+                f"{suffix} x{count}: no vLLM {ENGINE_VERSION} parameter of that name ({source})"
+            )
+        elif suffix not in names:
+            # Not the quantization method's, and no model class of this vLLM
+            # names it either (MoE router biases, sinks and the like are the
+            # model's own parameters and are named).
+            problems.append(
+                f"{suffix} x{count}: named nowhere in vLLM {ENGINE_VERSION}'s source "
+                f"and not registered by the method ({source})"
+            )
+    return tuple(problems)
 
 
 # ---------------------------------------------------------------------------

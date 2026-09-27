@@ -1,0 +1,14 @@
+{
+  "site": {
+    "volume_id": "0irc3xf4dz",
+    "data_center_id": "AP-JP-1",
+    "size_gb": 85
+  },
+  "staging": {
+    "pod_id": null,
+    "cost": 0.0001,
+    "seconds": 1.2,
+    "error": "RuntimeError: RunPod POST /pods: HTTP 500 {\"error\":\"create pod: There are no longer any instances available with the requested specifications. Please refresh and try again.\\nThere are no longer any instances available with the requested specifications. Please refresh and try again.\\nThere are no longer any instances available with the reque",
+    "models": []
+  }
+}

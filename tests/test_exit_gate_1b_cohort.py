@@ -554,8 +554,10 @@ def check_budget(run: GateRun) -> list[str]:
         seen[label] += 1
         if str(entry.get("flag", "")).startswith("replayed"):
             continue  # a replayed hold is a crashed pod: its records were never written
-        if str(entry["label"]).startswith(("classifier:", "pod-idle:")):
-            continue  # classifier calls and pooled pods' idle time: ledger-only cost
+        if str(entry["label"]).startswith(("classifier:", "pod-idle:", "stage:")):
+            # classifier calls, pooled pods' idle time and weight-staging CPU
+            # pods: run-level cost, in the ledger and the findings, no records
+            continue
         fps = holds_by_label.get(label, [])
         if index >= len(fps):
             problems.append(f"settle {label!r} #{index + 1} has no hold event")

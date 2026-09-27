@@ -92,3 +92,23 @@ def test_modelopt_algorithms_without_listed_facts_stay_unknown() -> None:
     assert load_problems(_NVFP4_NAMES, weight_only) is None  # W4A16 linear method
     assert load_problems(_NVFP4_NAMES, {**_NVFP4, "quant_algo": "FP8_PB_WO"}) is None
     assert min_capability({"quant_method": "modelopt", "quant_algo": "MXFP8"}) is None
+
+
+def test_model_level_tensors_the_engine_names_are_not_problems() -> None:
+    # MiniMax-M2.7 / GLM-5.3 / DeepSeek-V3.2 / Kimi K2 (indexes read 2026-09-27):
+    # the MoE router's e_score_correction_bias is the model's own parameter, not
+    # the fp8 method's.  The first GPU-free check called all four unloadable.
+    names = [
+        f"{_LAYER}.weight",
+        f"{_LAYER}.weight_scale_inv",
+        "model.layers.3.mlp.gate.e_score_correction_bias",
+    ]
+    assert load_problems(names, {"quant_method": "fp8"}) == ()
+
+
+def test_a_tensor_no_vllm_file_names_is_still_refused() -> None:
+    problems = load_problems(
+        [f"{_LAYER}.weight", f"{_LAYER}.zz_invented_tensor"], {"quant_method": "fp8"}
+    )
+    assert problems is not None and problems[0].startswith("zz_invented_tensor x1")
+    assert "named nowhere" in problems[0]

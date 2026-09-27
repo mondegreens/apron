@@ -49,6 +49,33 @@
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "generated_by": "scripts/generate_vllm_facts.py",
+  "hybrid_architectures": {
+    "BailingMoeV25ForCausalLM": "model_executor/models/bailing_moe_linear.py:719",
+    "BailingMoeV3ForCausalLM": "model_executor/models/bailing_moe_v3.py:1385",
+    "ColBERTLfm2Model": "model_executor/models/colbert.py:377",
+    "ColQwen3_5Model": "model_executor/models/colqwen3_5.py:114",
+    "FalconH1ForCausalLM": "model_executor/models/falcon_h1.py:496",
+    "GraniteMoeHybridForCausalLM": "model_executor/models/granitemoehybrid.py:587",
+    "InternS2MobiusForCausalLM": "model_executor/models/interns2_mobius.py:411",
+    "InternS2MobiusForConditionalGeneration": "model_executor/models/interns2_mobius.py:471",
+    "InternS2PreviewForConditionalGeneration": "model_executor/models/interns2_preview.py:32",
+    "JambaForCausalLM": "model_executor/models/jamba.py:379",
+    "JambaForSequenceClassification": "model_executor/models/jamba.py:505",
+    "Lfm2ForCausalLM": "model_executor/models/lfm2.py:395",
+    "Lfm2MoeForCausalLM": "model_executor/models/lfm2_moe.py:501",
+    "Lfm2VLForConditionalGeneration": "model_executor/models/lfm2_vl.py:607",
+    "MiniCPMV4_6ForConditionalGeneration": "model_executor/models/minicpmv4_6.py:956",
+    "NemotronHForCausalLM": "model_executor/models/nemotron_h.py:694",
+    "NemotronH_Nano_VL_V2": "model_executor/models/nano_nemotron_vl.py:899",
+    "OlmoHybridForCausalLM": "model_executor/models/olmo_hybrid.py:380",
+    "Qwen3NextForCausalLM": "model_executor/models/qwen3_next.py:798",
+    "Qwen3_5ForCausalLM": "model_executor/models/qwen3_5.py:451",
+    "Qwen3_5ForCausalLMBase": "model_executor/models/qwen3_5.py:292",
+    "Qwen3_5ForConditionalGeneration": "model_executor/models/qwen3_5.py:473",
+    "Qwen3_5MoeForCausalLM": "model_executor/models/qwen3_5.py:455",
+    "Qwen3_5MoeForConditionalGeneration": "model_executor/models/qwen3_5.py:699",
+    "Zamba2ForCausalLM": "model_executor/models/zamba2.py:807"
+  },
   "kv_cache": {
     "parameters": [
       "k_scale",
@@ -147,5 +174,10 @@
       "min_capability_source": "model_executor/layers/quantization/mxfp4.py:62"
     }
   },
-  "source_commit": "98dff2a81d747d1dba01a47f939f48c3526d4206"
+  "source_commit": "98dff2a81d747d1dba01a47f939f48c3526d4206",
+  "source_names": {
+    "count": 52538,
+    "file": "vllm_source_names.txt.gz",
+    "sha256": "5fc5434dd8098951b9ee1243a0e24140a274d05c0706b47258a3f295aae23005"
+  }
 }

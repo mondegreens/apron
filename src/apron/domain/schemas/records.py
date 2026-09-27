@@ -103,6 +103,9 @@ class VerificationReport(BaseModel):
     # Cost method (§7): rate, local phase timing, estimate and provider-reported cost.
     hourly_rate: Annotated[float | None, DISPLAY] = None
     phase_seconds: Annotated[dict[str, float] | None, DISPLAY] = None
+    # Where the pod read the weights from (a download on the pod, or staged
+    # storage).  Changes load time and cost, never the memory measured.
+    weights_source: Annotated[str | None, DISPLAY] = None
     estimated_cost: Annotated[float | None, DISPLAY] = None
     provider_reported_cost: Annotated[float | None, DISPLAY] = None
     # Serving measurement (claim_scope="serving_performance"); measurement only.

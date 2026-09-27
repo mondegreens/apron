@@ -474,3 +474,98 @@ unless marked.  Machine events are in `events.jsonl`.
   (pass 4) and `mp8toichl9aavu` (class 6) yet; ledger pods $11.16 vs billed
   $9.90 — the difference is these two pods.  Re-run the reconciliation once
   they post.
+
+## 2026-09-27 — scope grows: modern models, $500 cap, staged weights
+
+- **Owner decisions:** Phase 1b continues with modern models in four groups
+  (A single GPU: gpt-oss-20b/120b, GLM-4.7-Flash, Gemma-4-31B; B hybrid
+  linear attention: Qwen3.6/3.8, Nemotron-3; C 2-4 GPUs: MiniMax-M2.7,
+  DeepSeek-V4-Flash; D 8 GPUs: GLM-5.3, DeepSeek-V3.2, Kimi K2).  The cap
+  goes from $100 to **$500**, with a stop and report after groups A-C.
+  First: staged weights, checked on one model.
+- **Why staged weights:** the phase plan's GPU dollar protection rule 1
+  ("never download on GPU-billed time") was dropped for 1b (the SDK had no
+  volume call; volumes lock to a datacenter).  Fine for 1-30 GB models;
+  700 GB-1 TB on 8 GPUs at $37-54/h is not.
+- **Found (docs and live read-only API, 2026-09-27):** network volumes are
+  created over REST (`/v1/networkvolumes`); CPU pods accept a network volume;
+  `dataCenters.storageSupport` and `lowestPrice(dataCenterId)` tell where.
+  Volume reads are 200-400 MB/s (10 GB/s peak): loading 700 GB lazily would
+  keep 8 GPUs waiting ~40 min, so vLLM reads staged files ahead
+  (`--safetensors-load-strategy prefetch`, pinned `weight_utils.py:871`) when
+  the checkpoint fits host memory.  CUDA-13 stock in storage datacenters is
+  thin today (H100 x1 in EU-FR-1, EUR-NO-2, US-NE-1; B200 x1 in EU-RO-1,
+  US-CA-2; no x8 anywhere).
+- **Built:** `runpod_storage.py` (volumes, datacenter choice, CPU stager pod),
+  GPU pods attach the volume at the same path, staged weights never evicted,
+  `staging.py` (provider-neutral, paid through the budget), records say
+  where weights came from and split pod time into `weights` and
+  `engine_start`, storage accrued to the ledger, `run_cohort(repeat=True)`.
+
+## 2026-09-27 — first staged runs (one model, owner's go), paused by the owner
+
+- **Try 1 (19:27 UTC):** volume created in AP-JP-1 (the first storage
+  datacenter alphabetically with H100 stock); the CPU stager was refused
+  ("no longer any instances") although the datacenter listed CPU stock.
+  No GPU pod.  A one-minute probe showed the refusal was the 8-vCPU size:
+  4 vCPUs were given ($0.002, terminated).  Fixed: the stager steps down
+  through the datacenter's stocked flavors at 8/4/2 vCPUs, and a weights
+  site needs GPU and CPU stock.  The empty JP volume was deleted ($0.0007
+  of storage accrued).
+- **Try 2:** no storage datacenter had H100 x1 (CUDA 13) together with CPU
+  stock.  Where both existed: EUR-IS-1 (A100-SXM4-80GB), US-CA-2 (H200,
+  B200), EU-RO-1 (RTX PRO 6000).
+- **Try 3 (19:33 UTC):** Qwen3-32B on A100-SXM4-80GB in EUR-IS-1 (cheapest
+  GPU that fits 61 GB with KV room and had a CPU stager beside it; a new
+  point: Qwen3-32B was measured on A100 PCIe, not SXM).  Volume
+  `f6arz2r1s4` (85 GB) created; CPU stager `f4v1gvrczhj9mi` ($0.24/h) still
+  pulling the 9 GB runner image after 5 minutes.
+- **Owner feedback during the run:** RunPod's US regions are fast, Europe
+  much slower, Asia slower still — never pick a region at random.  Now:
+  US, then CA, then EU, Asia last; each staging event records its
+  datacenter so speed can be measured per datacenter.
+- **Owner stepped away (no pods without the owner):** I interrupted the run
+  before any GPU pod.  My SIGINT went to every process in the chain, so
+  Python got it twice: the second one interrupted the stager's cleanup and
+  the atexit guard terminated the pod instead.  Zero pods after.  The hold
+  had no pod id (the stager never finished provisioning), so replay settled
+  it at the $0.15 estimate; withdrawn by a signed correction — the pod's
+  real bill enters at the next reconciliation as unledgered.  Fixed: the
+  stager is torn down before any cost query, and a stager stopped
+  mid-provision is still annotated.
+- **Kept:** volume `f6arz2r1s4` in EUR-IS-1 (85 GB, ~$0.20/day, empty or
+  near empty).  Given the region feedback, the next staged run should go to
+  a US datacenter; this volume can then be deleted (owner's call).
+
+## 2026-09-27 — GPU-free predictions for groups A-D (owner away: no pods)
+
+`scripts/modern_predictions.py` → `modern-predictions.json`: the production
+plan pipeline on each approved model and proposed GPU, no pod, no paid call.
+It found three errors of ours before any money was spent:
+
+- **Multi-GPU seeds were planned whole on one GPU.** `plan_seed` never passed
+  the GPU count as the split, so MiniMax-M2.7 on 2x H200 read 214 GiB "per
+  GPU" → infeasible.  Now TP = count, predicted per GPU, and a per-GPU claim
+  must fit one GPU (it was compared against all of them).
+- **Hybrid models got a confident plain-attention estimate.** Nemotron-H
+  (Mamba2 + attention) was "planned" with KV for all 52 layers.  vLLM marks
+  25 model classes `IsHybrid`; that list is now generated from the pinned
+  source and those architectures are an explicit unknown until the
+  calculator models their state.  Qwen3.5/3.6/3.8 are among them.
+- **The load check called every large MoE unloadable.** MiniMax-M2.7,
+  GLM-5.3, DeepSeek-V3.2, Kimi K2 and GLM-4.7-Flash store the MoE router's
+  `e_score_correction_bias` — the model's own parameter, not the fp8
+  method's.  Rule now: a tensor is refused when no file of the pinned vLLM
+  names it at all (a generated dictionary of the source's names, 52,513
+  names, checked by digest); `backward_hadamard_matrix` (class 6) is in no
+  v0.29.0 file, so that refusal stands.  (vLLM 0.29 keeps some models under
+  `vllm/models/`, e.g. DeepSeek V4: the dictionary covers the whole package.)
+
+Result (per GPU): gpt-oss-20b 12.8 GiB on a 4090; gpt-oss-120b 60.8 on an
+H100; GLM-4.7-Flash 58.2 (MLA) on an H100; MiniMax-M2.7 107 on 2x H200;
+DeepSeek-V4-Flash 38.9 on 4x H200; GLM-5.3 88.0, DeepSeek-V3.2 80.3 on 8x
+H200; Kimi K2 119.8 on 8x B200.  Unknown: Gemma 4 (multimodal config, the
+calculator reads no nested `text_config`), Qwen3.8/3.6 and Nemotron-3
+(hybrid).  To check before trusting: DeepSeek-V4 is planned as plain GQA —
+its attention is new (compressed/sparse) and may need its own mechanism.
+H200 memory in GPU_SPECS is not yet confirmed on a pod.

@@ -85,6 +85,13 @@ GPU_SPECS: dict[str, dict[str, Any]] = {
         "total_memory_bytes": 48_305_799_168,
         "compute_capability": "8.9",
     },
+    "NVIDIA H200": {
+        # Modern-model groups C/D.  141 GB nominal; 143,771 MiB is the figure
+        # nvidia-smi is commonly reported to show - NOT yet checked on a pod:
+        # the first boot's detected hardware replaces it in the records.
+        "total_memory_bytes": 150_754_820_096,
+        "compute_capability": "9.0",
+    },
     "NVIDIA B200": {
         # class 6 retarget target: SM100 (compute capability 10.0)
         "total_memory_bytes": 192_265_846_784,
@@ -105,7 +112,7 @@ _STOCK_QUERY = """query Stock {{
   gpuTypes(input: {{id: "{gpu}"}}) {{
     id
     lowestPrice(input: {{
-      gpuCount: {count}, secureCloud: true, allowedCudaVersions: [{cuda}]
+      gpuCount: {count}, secureCloud: true, allowedCudaVersions: [{cuda}]{dc}
     }}) {{
       stockStatus
     }}
@@ -189,6 +196,8 @@ class RunPodTarget:
         ssh_timeout: int = 30,
         command_timeout: int = 600,
         leak_log: Path | None = None,
+        network_volume_id: str | None = None,
+        data_center_id: str | None = None,
     ) -> None:
         self._api_key = api_key or os.environ.get("RUNPOD_API_KEY")
         self._ssh_key_path = ssh_key_path or os.environ.get(
@@ -205,6 +214,12 @@ class RunPodTarget:
         self._atexit_guard: Callable[[], None] | None = None
         self._ssh_timeout = ssh_timeout
         self._command_timeout = command_timeout
+        # Pre-staged weights (runpod_storage): the volume replaces the pod
+        # volume at the same mount, and pins the pod to its datacenter.
+        if network_volume_id and not data_center_id:
+            raise ValueError("a network volume needs its data_center_id")
+        self._network_volume_id = network_volume_id
+        self._data_center_id = data_center_id
 
         self._pod_id: str | None = None
         self._ssh: Any | None = None
@@ -244,6 +259,18 @@ class RunPodTarget:
     @property
     def pod_id(self) -> str | None:
         return self._pod_id
+
+    @property
+    def weights_persist(self) -> bool:
+        """True when the weights live on a volume that outlives the pod (never evicted)."""
+        return self._network_volume_id is not None
+
+    @property
+    def weights_source(self) -> str:
+        """Where the pod reads model weights from, for the record."""
+        if self._network_volume_id:
+            return f"runpod network volume {self._network_volume_id} in {self._data_center_id}"
+        return "downloaded to the pod volume"
 
     @property
     def proxy_url(self) -> str | None:
@@ -321,6 +348,15 @@ class RunPodTarget:
 
         _runpod.api_key = self._api_key
 
+        placement: dict[str, Any] = (
+            {
+                "network_volume_id": self._network_volume_id,
+                "data_center_id": self._data_center_id,
+                "volume_in_gb": 0,  # the network volume is the pod's volume
+            }
+            if self._network_volume_id
+            else {"volume_in_gb": VOLUME_GB}
+        )
         pod = _runpod.create_pod(
             name=POD_NAME_PREFIX,
             image_name=self._image,
@@ -329,10 +365,10 @@ class RunPodTarget:
             cloud_type=CLOUD_TYPE,
             allowed_cuda_versions=list(RUNNER_HOST_CUDA_VERSIONS),
             ports="22/tcp,8000/http",
-            volume_in_gb=VOLUME_GB,
             volume_mount_path=VOLUME_MOUNT,  # explicit: model weights live here
             container_disk_in_gb=50,
             env=env or {},
+            **placement,
         )
         self._pod_id = pod["id"]
         logger.info("Pod created: %s", self._pod_id)
@@ -531,7 +567,9 @@ class RunPodTarget:
         gpu = gpu_type or self._gpu_type
         count = gpu_count or self._gpu_count
         cuda = ", ".join(f'"{v}"' for v in RUNNER_HOST_CUDA_VERSIONS)
-        query = _STOCK_QUERY.format(gpu=gpu, count=int(count), cuda=cuda)
+        # A pod with a network volume can only start in the volume's datacenter.
+        dc = f', dataCenterId: "{self._data_center_id}"' if self._data_center_id else ""
+        query = _STOCK_QUERY.format(gpu=gpu, count=int(count), cuda=cuda, dc=dc)
         data = self._gql_status(query)
         types = data.get("gpuTypes") or []
         lowest = (types[0].get("lowestPrice") or {}) if types else {}
