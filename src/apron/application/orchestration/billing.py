@@ -68,9 +68,7 @@ def reconcile(
                 "named_by_run": pod in named,
             }
         )
-    unledgered = [
-        r for r in rows if r["billed"] and r["pod"] not in tracked and r["billed"] > 0
-    ]
+    unledgered = [r for r in rows if r["billed"] and r["pod"] not in tracked and r["billed"] > 0]
     mismatched = [
         r
         for r in rows

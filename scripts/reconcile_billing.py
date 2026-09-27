@@ -50,7 +50,9 @@ def main() -> int:
     result = reconcile(ledger, JsonlLedger(RUN_DIR / "events.jsonl").read_all(), rows)
     for row in result["unledgered"]:
         budget.record_spend(float(row["billed"]), f"{RECONCILE_PREFIX}{row['pod']}")
-    result = reconcile(ledger_log.read_all(), JsonlLedger(RUN_DIR / "events.jsonl").read_all(), rows)
+    result = reconcile(
+        ledger_log.read_all(), JsonlLedger(RUN_DIR / "events.jsonl").read_all(), rows
+    )
     OUT.write_text(
         json.dumps({"window": {"start": start, "end": end}, **result}, indent=2, sort_keys=True)
         + "\n"
