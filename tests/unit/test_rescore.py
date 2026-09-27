@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import replace
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from _cohort_fakes import accepted_inputs
 from _synthetic_run import build_synthetic_run
@@ -16,6 +16,9 @@ from apron.domain.ports import UuidIdGenerator
 from apron.domain.schemas.migrations import load_record
 from apron.domain.schemas.records import TaskAttemptRecord
 from apron.interfaces.cohort_root import load_cohort_run
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _stricter_inputs():  # the Phase 1b rule over the synthetic run's inputs
@@ -33,8 +36,12 @@ def test_every_recorded_attempt_gets_one_linked_free_rescore(tmp_path: Path) -> 
     run = load_cohort_run(tmp_path, rules)
     store = LocalRecordStore(tmp_path / "records")
     result = rescore_attempts(
-        run.records, _stricter_inputs(), store, DeterministicScorer().rescore,
-        UuidIdGenerator(), "2026-09-27T05:00:00+00:00",
+        run.records,
+        _stricter_inputs(),
+        store,
+        DeterministicScorer().rescore,
+        UuidIdGenerator(),
+        "2026-09-27T05:00:00+00:00",
     )
     assert len(result.attempts) == len(run.records.attempts)
     for digest in result.attempts:
@@ -55,15 +62,23 @@ def test_rescoring_twice_adds_nothing(tmp_path: Path) -> None:
     rules = build_synthetic_run(tmp_path)
     store = LocalRecordStore(tmp_path / "records")
     first = rescore_attempts(
-        load_cohort_run(tmp_path, rules).records, _stricter_inputs(), store,
-        DeterministicScorer().rescore, UuidIdGenerator(), "t",
+        load_cohort_run(tmp_path, rules).records,
+        _stricter_inputs(),
+        store,
+        DeterministicScorer().rescore,
+        UuidIdGenerator(),
+        "t",
     )
     with (tmp_path / "solutions.jsonl").open("a") as fh:
         for entry in first.manifest:
             fh.write(json.dumps(entry) + "\n")
     second = rescore_attempts(
-        load_cohort_run(tmp_path, rules).records, _stricter_inputs(), store,
-        DeterministicScorer().rescore, UuidIdGenerator(), "t",
+        load_cohort_run(tmp_path, rules).records,
+        _stricter_inputs(),
+        store,
+        DeterministicScorer().rescore,
+        UuidIdGenerator(),
+        "t",
     )
     assert second.attempts == [] and second.manifest == []
     assert set(second.skipped.values()) == {"already scored under this protocol"}
@@ -72,7 +87,10 @@ def test_rescoring_twice_adds_nothing(tmp_path: Path) -> None:
 def test_scorer_rescore_applies_the_protocol_checks() -> None:
     protocol = {
         "cases": [{"id": "fact-1", "expected": "Paris"}, {"id": "arith-1", "expected": "4"}],
-        "deterministic_checks": ["whitespace_normalized_exact_match", "strip_terminal_punctuation"],
+        "deterministic_checks": [
+            "whitespace_normalized_exact_match",
+            "strip_terminal_punctuation",
+        ],
     }
     recorded = [
         {"case_id": "fact-1", "output": "Paris.", "time_seconds": 0.1},

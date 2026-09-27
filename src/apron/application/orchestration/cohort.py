@@ -260,6 +260,8 @@ class SolutionPlan:
     # The seed row's declared coverage (size_class, hardware_class, quantized,
     # features); empty for fix-proof solutions, which have no seed row.
     coverage: Mapping[str, Any] = field(default_factory=dict)
+    # Why the engine would refuse the checkpoint's tensors (GPU-free check).
+    load_problems: tuple[str, ...] = ()
 
     @property
     def deployment_feasible(self) -> bool:
@@ -281,12 +283,17 @@ def predicted_feasible(claim: PlanningClaim, total_memory_bytes: int, gpu_count:
 
 
 def prediction_error_claim(
-    claim: PlanningClaim, status: PlanStatus, solution_fp: str
+    claim: PlanningClaim,
+    status: PlanStatus,
+    solution_fp: str,
+    load_problems: Sequence[str] = (),
 ) -> PlanningClaim:
     """The stored first-class record of a candidate that never executes (INV-32)."""
     config = dict(claim.proposed_configuration)
     config["status"] = status
-    if status == "infeasible":
+    if status == "infeasible" and load_problems:
+        config["reason"] = "the engine would not load the checkpoint: " + "; ".join(load_problems)
+    elif status == "infeasible":
         config["reason"] = "predicted total exceeds the requested GPU memory"
     return PlanningClaim.model_validate(
         {
@@ -1087,7 +1094,9 @@ def _run_plans(
             if recorded.claims:
                 result.prediction_errors[sp.label] = recorded.claims[0]
             else:
-                claim = prediction_error_claim(sp.claim, sp.status, sp.solution_fp)
+                claim = prediction_error_claim(
+                    sp.claim, sp.status, sp.solution_fp, sp.load_problems
+                )
                 result.prediction_errors[sp.label] = store_validated(ports.store, claim)
                 _event(ports, "prediction_error", sp, status=sp.status)
             continue

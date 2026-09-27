@@ -26,6 +26,7 @@ from apron.adapters.backends.rule_loader import load_rules
 from apron.adapters.backends.rule_repository import FileRuleRepository
 from apron.adapters.backends.runpod import CLOUD_TYPE, GPU_SPECS, RunPodTarget
 from apron.adapters.backends.vllm_engine import VllmEngineAdapter
+from apron.adapters.backends.vllm_quantization import load_problems
 from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
 from apron.adapters.evidence.hf_hub import HFHubResolver
 from apron.adapters.evidence.hf_lineage import HubLineage
@@ -226,6 +227,7 @@ class CohortPlanner:
             clock=self.clock,
             id_gen=self.ids,
             tensor_parallel=tensor_parallel,
+            load_check=load_problems,
         )
         if pipeline.model_spec is None or pipeline.claim is None:
             raise ValueError(f"{model_id}: planning failed: {pipeline.error}")
@@ -267,6 +269,8 @@ class CohortPlanner:
         status = "planned"
         if claim.proposed_configuration.get("status") == "unknown":
             status = "unknown"
+        elif check_feasibility and pipeline.load_problems:
+            status = "infeasible"  # the engine would refuse the checkpoint's tensors
         elif check_feasibility and not predicted_feasible(
             claim, hardware_for(alloc["gpu_sku"]).total_memory_bytes, count
         ):
@@ -299,6 +303,7 @@ class CohortPlanner:
             else None,
             coverage=coverage or {},
             notes=measurement_notes(),
+            load_problems=tuple(pipeline.load_problems or ()),
         )
 
 

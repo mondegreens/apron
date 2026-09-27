@@ -26,6 +26,11 @@ class _Hub(HubLineage):
     def identity_tensor(self, model_id: str) -> tuple[float, ...] | None:
         return self.repos[model_id].get("norm")
 
+    def tensor_names(self, model_id: str) -> list[str] | None:
+        return self.repos[model_id].get(
+            "tensors", ["m.layers.0.weight", "m.layers.0.weight_scale"]
+        )
+
     def quantized_from(self, base_model_id: str) -> list[tuple[str, int, dict[str, Any]]]:
         return [(m, 5, self.repos[m]["config"]) for m in self.quantized]
 
@@ -103,3 +108,13 @@ def test_weight_bits_by_format() -> None:
         == 4
     )
     assert weight_bits({"quantization_config": {"quant_method": "hqq"}}) is None
+
+
+def test_a_candidate_the_engine_would_not_load_is_dropped() -> None:
+    repos = _repos()
+    repos["org/Q-FP8"]["tensors"] = ["m.layers.0.weight", "m.layers.0.backward_hadamard_matrix"]
+    search, evidence = _Hub(repos, ["org/Q-FP8"]).search("lab/Q-FPQuant", _propose)
+    assert search is not None
+    assert [c.model_id for c in search.candidates] == ["org/Q"]
+    dropped = {c["model_id"]: c.get("dropped") for c in evidence["considered"]}
+    assert "would not load" in (dropped["org/Q-FP8"] or "")

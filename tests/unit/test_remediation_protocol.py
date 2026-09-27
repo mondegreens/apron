@@ -391,3 +391,33 @@ def test_a_fixed_boot_that_never_reached_the_engine_is_not_evaluated(tmp_path: P
     assert proof.gate_a and proof.gate_b
     assert proof.mechanism_outcome == "not_evaluated"
     assert repo.written == []
+
+
+def test_a_fix_predicted_not_to_load_is_never_booted(tmp_path: Path) -> None:
+    """The load check reads the fixed checkpoint's tensor names before any pod:
+    a failure known from the headers costs nothing (class 6 B200, $1.39)."""
+    from dataclasses import replace
+
+    cohort_ports, engine, _, _ = ports(tmp_path, _scenario)
+
+    def refusing(plan: Any, label: str) -> Any:
+        sp = fix_plan_solution(plan, label)
+        if label.endswith("-fixed"):
+            return replace(sp, load_problems=("backward_hadamard_matrix x196: no parameter",))
+        return sp
+
+    fix = FixProofPorts(
+        plan_solution=refusing,
+        diagnosis_engine=FakeDiagnosisEngine(),
+        rules=RULES,
+        rule_repository=MemoryRuleRepository(RULES),
+        correction_context=correction_context,
+        hardware_for=lambda sku: CATALOG[sku][0],
+    )
+    proof = prove_fix(SIX_CLASSES[5], accepted_inputs(), cohort_ports, fix)
+    booted_models = [p.resource_allocation.get("model_id") for p in engine.booted]
+    assert "Qwen/Qwen3-0.6B-FP8" not in booted_models  # the fix was not booted
+    assert proof.gate_a and proof.gate_b
+    assert proof.mechanism_outcome == "not_evaluated"
+    assert any("predicted not to load" in n for n in proof.notes)
+    assert proof.promoted_rule_digest is None

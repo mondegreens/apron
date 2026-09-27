@@ -100,8 +100,8 @@ def rescore_attempts(
             )
             result.attempts.append(store_validated(store, attempt))
         result.manifest.append(
-            entry.model_copy(
-                update={"evaluation_protocol": ctx.protocol, "at": now}
-            ).model_dump(mode="json")
+            entry.model_copy(update={"evaluation_protocol": ctx.protocol, "at": now}).model_dump(
+                mode="json"
+            )
         )
     return result

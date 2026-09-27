@@ -15,6 +15,8 @@ from apron.domain.mechanisms.model_spec_builder import build_model_spec
 from apron.domain.schemas.solutions import DeploymentPlan, RenderContext
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
+
     from apron.domain.artifacts import ArtifactSourceObservation
     from apron.domain.ports import Clock, IdGenerator
     from apron.domain.protocols import ArtifactSourceResolver, PlanningSource
@@ -37,6 +39,7 @@ class PlanPipelineResult:
         "claim",
         "context",
         "error",
+        "load_problems",
         "model_config",
         "model_spec",
         "observation",
@@ -54,8 +57,12 @@ class PlanPipelineResult:
         model_spec: ModelSpec | None = None,
         model_config: dict[str, Any] | None = None,
         chat_template: str | None = None,
+        load_problems: tuple[str, ...] | None = None,
     ) -> None:
         self.plan = plan
+        # Why the engine would refuse the checkpoint's tensors; () when it
+        # would load them; None when no check applies (GPU-free, pre-boot).
+        self.load_problems = load_problems
         self.context = context
         self.claim = claim
         self.error = error
@@ -78,11 +85,15 @@ def run_plan_pipeline(
     clock: Clock,
     id_gen: IdGenerator,
     tensor_parallel: int = 1,
+    load_check: Callable[[Iterable[str], dict[str, Any] | None], tuple[str, ...] | None]
+    | None = None,
 ) -> PlanPipelineResult:
     """Run the full plan pipeline: resolve → calculate → build plan.
 
     ``tensor_parallel`` > 1 predicts per-GPU memory for a plan that already
     fixes TP (a fix proof); 1 predicts the whole model on one GPU.
+    ``load_check`` (the engine adapter's) reads the checkpoint's tensor names
+    and says whether the engine would load them, before any GPU is paid for.
     """
     chain = ResolutionChain(resolver)
     result = chain.resolve(model_id)
@@ -98,7 +109,18 @@ def run_plan_pipeline(
 
     config = json.loads(config_content)
 
-    total_weight_bytes = _resolve_weight_bytes(resolver, model_id, result.observation, config)
+    read_tensors = getattr(resolver, "_tensor_bytes", None)
+    tensors = (
+        read_tensors(model_id, result.observation.resolved_revision) if read_tensors else None
+    )
+    total_weight_bytes = _resolve_weight_bytes(
+        resolver, model_id, result.observation, config, tensors=tensors
+    )
+    load_problems = (
+        load_check(tensors, config.get("quantization_config"))
+        if load_check is not None and tensors
+        else None
+    )
 
     model_spec = build_model_spec(
         config,
@@ -124,6 +146,7 @@ def run_plan_pipeline(
             observation=result.observation,
             model_spec=model_spec,
             model_config=config,
+            load_problems=load_problems,
         )
 
     deployment_plan = build_plan(
@@ -146,6 +169,7 @@ def run_plan_pipeline(
         observation=result.observation,
         model_spec=model_spec,
         model_config=config,
+        load_problems=load_problems,
         chat_template=_download_chat_template(
             resolver, model_id, result.observation.resolved_revision
         ),
@@ -204,7 +228,12 @@ def _tied_embeddings(config: dict[str, Any]) -> bool:
 
 
 def _resolve_weight_bytes(
-    resolver: Any, model_id: str, observation: Any, config: dict[str, Any] | None = None
+    resolver: Any,
+    model_id: str,
+    observation: Any,
+    config: dict[str, Any] | None = None,
+    *,
+    tensors: dict[str, int] | None = None,
 ) -> int:
     """Bytes the engine loads: every stored tensor at its stored dtype.
 
@@ -218,13 +247,13 @@ def _resolve_weight_bytes(
        FP8 half).  An unknown dtype makes the total unknown (0), never a guess.
     """
     rev = observation.resolved_revision
-    if hasattr(resolver, "_tensor_bytes"):
+    if tensors is None and hasattr(resolver, "_tensor_bytes"):
         tensors = resolver._tensor_bytes(model_id, rev)
-        if tensors:
-            total = sum(tensors.values())
-            if _tied_embeddings(config or {}) and "lm_head.weight" in tensors:
-                total -= tensors["lm_head.weight"]
-            return total
+    if tensors:
+        total = sum(tensors.values())
+        if _tied_embeddings(config or {}) and "lm_head.weight" in tensors:
+            total -= tensors["lm_head.weight"]
+        return total
 
     if hasattr(resolver, "_download_file"):
         index_content = resolver._download_file(model_id, "model.safetensors.index.json", rev)

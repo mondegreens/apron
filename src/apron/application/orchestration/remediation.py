@@ -309,6 +309,15 @@ def prove_fix(
     # 5-6. Fixed boot of the object diagnosis returned, then the request re-run.
     fixed = fix.plan_solution(p_fix, f"class{case.failure_class}-fixed")
     proof.fixed_solution_fp = fixed.solution_fp
+    if fixed.load_problems:
+        # The engine would refuse the fixed checkpoint's tensors: no boot is
+        # paid for a failure known from the headers (class 6 on a B200,
+        # 2026-09-27).  Not evaluated, never "failed": nothing booted.
+        proof.notes.append("predicted not to load: " + "; ".join(fixed.load_problems))
+        proof.remediation_digest = _store_record(
+            ports, inputs, bad, None, diagnosis, proof, proving=(), reason="predicted not to load"
+        )
+        return proof
     evaluation_fp = evaluation_fingerprint(fixed, inputs)
     recorded = recorded_evidence(ports.store, fixed.solution_fp, evaluation_fp)
     scope = recorded.missing(fixed)

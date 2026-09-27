@@ -27,7 +27,11 @@ import struct
 from collections import Counter
 from typing import TYPE_CHECKING, Any
 
-from apron.adapters.backends.vllm_quantization import QUANT_MIN_CAPABILITY, min_capability
+from apron.adapters.backends.vllm_quantization import (
+    QUANT_MIN_CAPABILITY,
+    load_problems,
+    min_capability,
+)
 from apron.application.orchestration.correction import (
     SHAPE_FIELDS,
     ArtifactCandidate,
@@ -146,6 +150,15 @@ class HubLineage:
             byte_range(8 + header_len + begin, 8 + header_len + end - 1), info.dtype
         )
 
+    def tensor_names(self, model_id: str) -> list[str] | None:
+        """Every stored tensor's name, from the safetensors headers."""
+        from huggingface_hub import get_safetensors_metadata
+
+        try:
+            return list(get_safetensors_metadata(model_id).weight_map)
+        except Exception:
+            return None
+
     def quantized_from(self, base_model_id: str) -> list[tuple[str, int, dict[str, Any]]]:
         """(id, downloads, listed config) of models the Hub marks as quantized from the base."""
         models = self._api.list_models(
@@ -232,6 +245,11 @@ class HubLineage:
                 continue
             if shape_of(full) == shape_of(config) and self.identity_tensor(repo) != base_norm:
                 entry["dropped"] = "final-norm weights differ from the base: another model"
+                continue
+            names = self.tensor_names(repo)
+            refused = load_problems(names, full.get("quantization_config")) if names else None
+            if refused:
+                entry["dropped"] = "the engine would not load it: " + "; ".join(refused)
                 continue
             candidates.append(
                 ArtifactCandidate(

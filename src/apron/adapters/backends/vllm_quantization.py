@@ -11,7 +11,11 @@ documentation lists it.
 
 from __future__ import annotations
 
-from typing import Any
+from collections import Counter
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 # method -> (minimum capability, source of the value in vLLM v0.29.0)
 QUANT_MIN_CAPABILITY: dict[str, tuple[int, str]] = {
@@ -70,3 +74,106 @@ def min_capability(quantization_config: dict[str, Any] | None) -> int | None:
         return COMPRESSED_TENSORS_SCHEMES[scheme][0] if scheme else None
     entry = QUANT_MIN_CAPABILITY.get(method)
     return entry[0] if entry else None
+
+
+# ---------------------------------------------------------------------------
+# Will the checkpoint load?  (free: tensor names from the safetensors headers)
+# ---------------------------------------------------------------------------
+#
+# vLLM loads a checkpoint tensor into the parameter of the same name and
+# raises for a tensor it has no parameter for ("There is no module or
+# parameter named ..."; the class 6 B200 boot, 2026-09-27).  Each quantized
+# linear method registers its parameter names in ``create_weights``; plain
+# layers hold ``weight`` and ``bias``.  A stored tensor whose last name part
+# is none of these will not load.  Methods not listed here cannot be checked.
+
+_Q = "model_executor/layers/quantization/"
+REGISTERED_PARAMETERS: dict[str, tuple[frozenset[str], str]] = {
+    "fp_quant": (
+        frozenset(
+            {
+                "qweight",
+                "scales",
+                "weight_global_scale",
+                "act_global_scale",
+                "forward_hadamard_matrix",
+            }
+        ),
+        _Q + "fp_quant.py:106 (FPQuantLinearMethod.create_weights)",
+    ),
+    "fp8": (
+        frozenset({"weight", "weight_scale", "weight_scale_inv", "input_scale"}),
+        _Q + "fp8.py:292 (Fp8LinearMethod.create_weights)",
+    ),
+    "fbgemm_fp8": (
+        frozenset({"weight", "weight_scale"}),
+        _Q + "fbgemm_fp8.py:99 (FBGEMMFp8LinearMethod.create_weights)",
+    ),
+    "gptq": (
+        frozenset({"qweight", "qzeros", "scales", "g_idx"}),
+        _Q + "auto_gptq.py:326 (AutoGPTQLinearMethod.create_weights)",
+    ),
+    "awq": (
+        frozenset({"qweight", "qzeros", "scales"}),
+        _Q + "auto_awq.py:414 (AutoAWQMarlinLinearMethod.create_weights)",
+    ),
+    "modelopt": (
+        frozenset({"weight", "weight_scale", "weight_scale_2", "input_scale"}),
+        _Q + "modelopt.py:455 (ModelOptFp8LinearMethod.create_weights)",
+    ),
+}
+for _alias, _method in (
+    ("gptq_marlin", "gptq"),
+    ("auto_gptq", "gptq"),
+    ("awq_marlin", "awq"),
+    ("auto_awq", "awq"),
+):
+    REGISTERED_PARAMETERS[_alias] = REGISTERED_PARAMETERS[_method]
+
+_CT_PARAMETERS: dict[str, tuple[frozenset[str], str]] = {
+    "wNa16": (
+        frozenset(
+            {"weight_packed", "weight_scale", "weight_zero_point", "weight_shape", "weight_g_idx"}
+        ),
+        _CT + "compressed_tensors_wNa16.py:102 (CompressedTensorsWNA16.create_weights)",
+    ),
+    "w8a8_fp8": (
+        frozenset({"weight", "weight_scale", "input_scale"}),
+        _CT + "compressed_tensors_w8a8_fp8.py:87 (CompressedTensorsW8A8Fp8.create_weights)",
+    ),
+    "w8a8_int8": (
+        frozenset({"weight", "weight_scale", "input_scale", "input_zero_point", "azp_adj"}),
+        _CT + "compressed_tensors_w8a8_int8.py:39 (CompressedTensorsW8A8Int8.create_weights)",
+    ),
+}
+_PLAIN = frozenset({"weight", "bias"})
+# Rotary buffers some checkpoints store; model loaders skip them by name
+# (e.g. models/deepseek_mtp.py:327: ``if "rotary_emb.inv_freq" in name``).
+_SKIPPED = frozenset({"inv_freq", "cos_cached", "sin_cached"})
+
+
+def load_problems(
+    tensor_names: Iterable[str], quantization_config: dict[str, Any] | None
+) -> tuple[str, ...] | None:
+    """Why the pinned engine would refuse a quantized checkpoint's tensors;
+    ``()`` when it loads them all; ``None`` when it cannot be told here (an
+    unquantized checkpoint, or a method or scheme not listed)."""
+    if not quantization_config:
+        return None
+    method = str(quantization_config.get("quant_method", ""))
+    if method == "compressed-tensors":
+        scheme = _compressed_tensors_scheme(quantization_config)
+        if scheme is None:
+            return None
+        registered, source = _CT_PARAMETERS[scheme]
+    elif method in REGISTERED_PARAMETERS:
+        registered, source = REGISTERED_PARAMETERS[method]
+    else:
+        return None
+    allowed = registered | _PLAIN | _SKIPPED
+    unknown = Counter(name.rsplit(".", 1)[-1] for name in tensor_names)
+    return tuple(
+        f"{suffix} x{count}: no vLLM v0.29.0 parameter of that name ({source})"
+        for suffix, count in sorted(unknown.items())
+        if suffix not in allowed
+    )
