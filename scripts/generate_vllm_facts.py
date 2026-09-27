@@ -31,12 +31,13 @@ from pathlib import Path
 from typing import Any
 
 OUT = Path(__file__).resolve().parents[1] / "src/apron/adapters/backends/vllm_facts.json"
-# Every snake_case name the engine's source mentions (identifiers, attributes,
+# Every identifier-like name the engine's source mentions (identifiers, attributes,
 # arguments, words in string constants).  A checkpoint tensor named nowhere in
 # it cannot be loaded by any model class of this vLLM (the class 6 FPQuant
 # tensor, backward_hadamard_matrix, is in no v0.29.0 file).
 NAMES_OUT = OUT.with_name("vllm_source_names.txt.gz")
-_SNAKE = re.compile(r"[a-z][a-z0-9_]*")
+# Any identifier: parameter names are not all lower case (Mamba's A_log, dt_bias).
+_SNAKE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 _WORD = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 _Q = "vllm/model_executor/layers/quantization/"
 _CT = _Q + "compressed_tensors/schemes/"

@@ -1477,11 +1477,11 @@
     {
       "accepted": null,
       "before_gpu": {
-        "mechanism": "encoder_decoder_generation",
-        "status": "unknown",
+        "mechanism": "layered_decode",
+        "status": "planned",
         "tensor_parallel": 1,
-        "total_gib_per_gpu": 0.0,
-        "weight_gib_per_gpu": 0.0
+        "total_gib_per_gpu": 64.65,
+        "weight_gib_per_gpu": 58.46
       },
       "cases": null,
       "cost": null,
@@ -1499,11 +1499,11 @@
     {
       "accepted": null,
       "before_gpu": {
-        "mechanism": "unknown",
-        "status": "unknown",
+        "mechanism": "layered_decode",
+        "status": "planned",
         "tensor_parallel": 1,
-        "total_gib_per_gpu": 0.0,
-        "weight_gib_per_gpu": 0.0
+        "total_gib_per_gpu": 56.82,
+        "weight_gib_per_gpu": 51.75
       },
       "cases": null,
       "cost": null,
@@ -1521,11 +1521,11 @@
     {
       "accepted": null,
       "before_gpu": {
-        "mechanism": "unknown",
-        "status": "unknown",
+        "mechanism": "layered_decode",
+        "status": "planned",
         "tensor_parallel": 1,
-        "total_gib_per_gpu": 0.0,
-        "weight_gib_per_gpu": 0.0
+        "total_gib_per_gpu": 37.67,
+        "weight_gib_per_gpu": 34.88
       },
       "cases": null,
       "cost": null,
@@ -1543,11 +1543,11 @@
     {
       "accepted": null,
       "before_gpu": {
-        "mechanism": "unknown",
-        "status": "unknown",
+        "mechanism": "layered_decode",
+        "status": "planned",
         "tensor_parallel": 1,
-        "total_gib_per_gpu": 0.0,
-        "weight_gib_per_gpu": 0.0
+        "total_gib_per_gpu": 20.38,
+        "weight_gib_per_gpu": 18.0
       },
       "cases": null,
       "cost": null,

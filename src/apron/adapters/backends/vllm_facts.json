@@ -176,8 +176,8 @@
   },
   "source_commit": "98dff2a81d747d1dba01a47f939f48c3526d4206",
   "source_names": {
-    "count": 52538,
+    "count": 78636,
     "file": "vllm_source_names.txt.gz",
-    "sha256": "5fc5434dd8098951b9ee1243a0e24140a274d05c0706b47258a3f295aae23005"
+    "sha256": "32a5758c1955e049c5c6d7ca2f03f42fcfb37369492eebe30411bccbe6e53956"
   }
 }

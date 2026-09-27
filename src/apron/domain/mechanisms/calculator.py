@@ -27,6 +27,9 @@ DTYPE_BYTES: dict[str, int] = {
 }
 
 
+_DTYPE_BYTES = {"float32": 4, "float16": 2, "bfloat16": 2}
+
+
 def _kv_dtype_bytes(metadata: dict[str, Any], inputs: CalculatorInput) -> int:
     """KV cache element size: the engine's ``kv_cache_dtype`` when set, else
     the model dtype (vLLM's "auto")."""
@@ -313,6 +316,72 @@ def calculate_mla_decode(
 # ---------------------------------------------------------------------------
 # Branch: ssm_decode (Mamba-1 — a fixed-size state per sequence, no KV cache)
 # ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Branch: layered_decode (per-layer caches: hybrid state + attention, Gemma 4)
+# ---------------------------------------------------------------------------
+
+
+@register_calculator("layered_decode")
+def calculate_layered_decode(
+    inputs: CalculatorInput,
+) -> dict[str, Any] | None:
+    """Models whose layers hold different caches (``layered.py``): Qwen3.5
+    gated delta net + attention, NemotronH Mamba2 + attention, Gemma 4 sliding +
+    global attention.  One request's reservation is counted the way vLLM
+    v0.29.0 pages it, at the plan's context length."""
+    from apron.domain.mechanisms.layered import (
+        bytes_per_sequence,
+        duplicated_weight_bytes,
+        layer_kinds,
+    )
+
+    metadata = inputs.artifact_metadata
+    weight_bytes = metadata.get("total_weight_bytes", 0)
+    if weight_bytes <= 0:
+        return None
+    tp = _tensor_parallel(inputs)
+    dtype_bytes = _kv_dtype_bytes(metadata, inputs)
+    model_dtype_bytes = _DTYPE_BYTES.get(str(metadata.get("torch_dtype")), 2)
+    kinds = layer_kinds(
+        metadata, tp=tp, kv_dtype_bytes=dtype_bytes, model_dtype_bytes=model_dtype_bytes
+    )
+    if kinds is None:
+        return None
+    isl, osl, max_batch_size = _workload_params(inputs)
+    seq_len = isl + osl
+    batched = int(inputs.execution_spec_data.get("max_num_batched_tokens") or 2048)
+    # Two batches in flight with async scheduling (config/vllm.py:563-580).
+    per_sequence = bytes_per_sequence(kinds, seq_len, in_flight_tokens=2 * batched)
+    if per_sequence is None:
+        return None
+    weight_bytes = _per_gpu(int(weight_bytes), tp) + duplicated_weight_bytes(
+        metadata, tp=tp, dtype_bytes=model_dtype_bytes
+    )
+    activation_estimate = _activation_estimate(metadata, inputs, tp)
+    if activation_estimate is None:
+        return None
+    kv_cache = per_sequence * max_batch_size
+    overhead = _common_overhead(weight_bytes, kv_cache, activation_estimate, inputs)
+    return {
+        "weight_memory_bytes": weight_bytes,
+        "kv_cache_bytes": kv_cache,
+        "kv_per_token_bytes": sum(k.count * k.bytes_per_token for k in kinds if k.kind == "full"),
+        "state_per_sequence_bytes": per_sequence,
+        "activation_estimate_bytes": activation_estimate,
+        **overhead,
+        "num_layers": sum(k.count for k in kinds),
+        "num_attention_heads": int(metadata.get("num_attention_heads") or 0),
+        "num_kv_heads": int(metadata.get("num_key_value_heads") or 0),
+        "dtype_bytes": dtype_bytes,
+        "isl": isl,
+        "osl": osl,
+        "max_batch_size": max_batch_size,
+        "effective_seq_len": seq_len,
+        "tensor_parallel": tp,
+        "mechanism_detail": "+".join(f"{k.kind}x{k.count}" for k in kinds),
+    }
 
 
 @register_calculator("ssm_decode")

@@ -138,7 +138,10 @@ def run_plan_pipeline(
         unmodelled_architectures=unmodelled_architectures,
     )
 
-    calc_metadata = dict(config)
+    # A multimodal checkpoint keeps its language model in ``text_config``;
+    # vLLM sizes caches from it (``hf_text_config``).
+    text = config.get("text_config")
+    calc_metadata = {**config, **text} if isinstance(text, dict) else dict(config)
     calc_metadata["torch_dtype"] = runtime_dtype(config)
     calc_metadata["total_weight_bytes"] = total_weight_bytes
     calc_metadata["components"] = [c.model_dump(mode="json") for c in model_spec.components]
@@ -262,7 +265,8 @@ def loaded_tensor_bytes(
 
 def runtime_dtype(config: dict[str, Any]) -> str:
     """The dtype the engine serves in with dtype=auto (float32 downcast to 16 bits)."""
-    return served_dtype(config.get("torch_dtype"))
+    # Newer configs name it "dtype" (transformers 5); vLLM reads either.
+    return served_dtype(config.get("torch_dtype") or config.get("dtype"))
 
 
 def _tied_embeddings(config: dict[str, Any]) -> bool:

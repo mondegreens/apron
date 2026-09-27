@@ -168,7 +168,7 @@ def _nvfp4_w4a4(quant: dict[str, Any]) -> bool:
 
 @cache
 def engine_names() -> frozenset[str]:
-    """Every snake_case name the pinned vLLM source mentions (generated)."""
+    """Every identifier-like name the pinned vLLM source mentions (generated)."""
     entry = FACTS["source_names"]
     blob = Path(__file__).with_name(entry["file"]).read_bytes()
     if hashlib.sha256(blob).hexdigest() != entry["sha256"]:
