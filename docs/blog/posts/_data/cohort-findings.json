@@ -1703,7 +1703,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -1721,7 +1722,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 1,
@@ -1739,7 +1741,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 1
     },
     {
       "accepted": 1,
@@ -1757,7 +1760,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 1
     },
     {
       "accepted": 1,
@@ -1774,7 +1778,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 1
     },
     {
       "accepted": 1,
@@ -1792,7 +1797,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 1
     },
     {
       "accepted": 3,
@@ -1812,7 +1818,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -1833,7 +1840,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -1850,7 +1858,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -1868,7 +1877,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -1885,7 +1895,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -1903,7 +1914,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -1920,7 +1932,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -1938,7 +1951,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -1955,7 +1969,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -1973,7 +1988,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -1990,7 +2006,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2008,7 +2025,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2025,7 +2043,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2043,7 +2062,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 0,
@@ -2060,7 +2080,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 3
     },
     {
       "accepted": 0,
@@ -2078,7 +2099,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 3
     },
     {
       "accepted": 3,
@@ -2096,7 +2118,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2113,7 +2136,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2131,7 +2155,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2148,7 +2173,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2166,7 +2192,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 2,
@@ -2183,7 +2210,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2201,7 +2229,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2218,7 +2247,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2236,7 +2266,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2253,7 +2284,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2271,7 +2303,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2288,7 +2321,8 @@
       "retries": 0,
       "scoring": [
         "whitespace_normalized_exact_match"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 3,
@@ -2306,7 +2340,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     },
     {
       "accepted": 0,
@@ -2327,7 +2362,8 @@
       "scoring": [
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
-      ]
+      ],
+      "truncated": 0
     }
   ]
 }

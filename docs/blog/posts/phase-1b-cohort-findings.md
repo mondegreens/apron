@@ -109,44 +109,44 @@ measurement.
 ## Task results
 
 <!-- findings:tasks -->
-| Model | GPU | Scoring | Accepted / cases | Attempts (retries) | Passed |
-|---|---|---|---|---|---|
-| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-0.6B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | False |
-| Qwen/Qwen3-0.6B-FP8 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | False |
-| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match | 1 / 3 | 3 (0) | False |
-| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | False |
-| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 6 (0) | True |
-| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 6 (0) | True |
-| Qwen/Qwen3-1.7B | NVIDIA L4 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-1.7B | NVIDIA L4 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-14B | NVIDIA RTX A6000 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-14B | NVIDIA RTX A6000 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-32B | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-32B | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match | 0 / 3 | 3 (0) | False |
-| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match, strip_terminal_punctuation | 0 / 3 | 3 (0) | False |
-| deepseek-ai/DeepSeek-V2-Lite-Chat | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 2 / 3 | 3 (0) | True |
-| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 0 / 3 | 6 (3) | False |
+| Model | GPU | Scoring | Accepted / cases | Attempts (retries) | Cut at the token limit | Passed |
+|---|---|---|---|---|---|---|
+| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-0.6B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | 1 | False |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | 1 | False |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match | 1 / 3 | 3 (0) | 1 | False |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | 1 | False |
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 6 (0) | 0 | True |
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 6 (0) | 0 | True |
+| Qwen/Qwen3-1.7B | NVIDIA L4 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-1.7B | NVIDIA L4 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-14B | NVIDIA RTX A6000 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-14B | NVIDIA RTX A6000 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-32B | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-32B | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match | 0 / 3 | 3 (0) | 3 | False |
+| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match, strip_terminal_punctuation | 0 / 3 | 3 (0) | 3 | False |
+| deepseek-ai/DeepSeek-V2-Lite-Chat | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 2 / 3 | 3 (0) | 0 | True |
+| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 0 / 3 | 6 (3) | 0 | False |
 <!-- /findings:tasks -->
 
 ## Serving against the declared SLO
