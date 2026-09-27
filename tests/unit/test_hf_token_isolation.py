@@ -144,3 +144,33 @@ def test_download_skips_native_duplicates_in_both_paths() -> None:
     for pattern in DOWNLOAD_IGNORE:
         assert pattern in target.commands[0]
         assert pattern in DOWNLOAD.read_text()
+
+
+def test_download_check_flags_short_files_not_linked_ones(tmp_path: Path) -> None:
+    """Mistral lists tokenizer.model at 130 bytes (a git link) but writes 587 KB:
+    only a missing or truncated file is incomplete."""
+    import subprocess
+    import sys
+
+    from apron.adapters.backends.vllm_engine import _DOWNLOAD_PY
+
+    (tmp_path / "linked").write_bytes(b"x" * 500)  # listed 130: larger on disk
+    (tmp_path / "short").write_bytes(b"x" * 10)  # listed 100: truncated
+    siblings = "[S('linked',130),S('short',100),S('gone',5)]"
+    fake = (
+        "import types,sys\n"
+        "S=lambda n,z: types.SimpleNamespace(rfilename=n,size=z)\n"
+        "hub=types.ModuleType('huggingface_hub')\n"
+        "hub.snapshot_download=lambda **k: None\n"
+        "info=lambda *a,**k: types.SimpleNamespace(siblings=" + siblings + ")\n"
+        "hub.HfApi=lambda: types.SimpleNamespace(model_info=info)\n"
+        "sys.modules['huggingface_hub']=hub\n"
+    )
+    run = subprocess.run(
+        [sys.executable, "-c", fake + _DOWNLOAD_PY, "org/model", str(tmp_path)],
+        capture_output=True,
+        text=True,
+    )
+    assert run.returncode == 3
+    assert "short short 10<100" in run.stdout and "missing gone" in run.stdout
+    assert "linked" not in run.stdout

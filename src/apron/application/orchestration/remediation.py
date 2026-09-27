@@ -324,7 +324,15 @@ def prove_fix(
             return proof
         recorded = recorded_evidence(ports.store, fixed.solution_fp)
     boot_digest = recorded.memory_reports[0] if recorded.memory_reports else None
-    proof.mechanism_outcome = "verified" if boot_digest else "failed"
+    if boot_digest:
+        proof.mechanism_outcome = "verified"
+    elif _fixed_boot_failed_on_the_model(ports, fixed.solution_fp):
+        proof.mechanism_outcome = "failed"
+    else:
+        # The fixed plan never reached vLLM (download, capacity, host): no evidence
+        # about the correction either way (L5 class 3: a harness check failed).
+        proof.mechanism_outcome = "not_evaluated"
+        proof.notes.append("fixed boot did not reach the engine: harness failures only")
     proving: tuple[str, ...] = ()
     if boot_digest:
         proof.request_outcome, proof.violated_constraints = _request_outcome(
@@ -374,6 +382,15 @@ def _stored_failure_log(ports: CohortPorts, solution_fp: str) -> str | None:
         if report is not None and "boot:model_failure" in report.failures and report.log_tail:
             return report.log_tail
     return None
+
+
+def _fixed_boot_failed_on_the_model(ports: CohortPorts, solution_fp: str) -> bool:
+    """A stored boot of this solution failed in the engine (not in the harness)."""
+    for digest in recorded_evidence(ports.store, solution_fp).failed_boots:
+        report, _ = load_typed(ports.store, digest, VerificationReport)
+        if report is not None and "boot:model_failure" in report.failures:
+            return True
+    return False
 
 
 def _authorize_classification(inputs: AcceptedInputs) -> None:

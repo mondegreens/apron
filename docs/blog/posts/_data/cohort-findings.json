@@ -1,11 +1,11 @@
 {
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 2.927695,
-    "ledger_classifier": 0.0858,
-    "ledger_pod_idle": 0.003011,
-    "ledger_settled": 4.285061,
-    "ledger_spent": 4.373872,
+    "failed_boot_total": 2.931771,
+    "ledger_classifier": 0.128028,
+    "ledger_pod_idle": 0.008048,
+    "ledger_settled": 4.4641,
+    "ledger_spent": 4.600176,
     "per_solution": [
       {
         "cost": 0.606296,
@@ -152,6 +152,23 @@
         ]
       },
       {
+        "cost": 0.149849,
+        "failed_boot_cost": 0.00018,
+        "failed_boots": 1,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "class2-fixed",
+        "model": "Qwen/Qwen3-8B",
+        "records": [
+          "1220386d8f27a3644985be66a52cf4ea118d298fe11a3f99ec5e694f7bdb68ab5e19",
+          "122046447ffc1d89490228e1a78bf46bfc0f154518d1ee3fc69b76ea755703418513",
+          "12206418a88a7d927c5049c6936ccee3cc729d8ce1e2373fca2c428cb560ff473383",
+          "1220763a9b91627f8634f8a16f911359ad08e5d8782695ddc29c57219d096b0bf31f",
+          "12208dd7f62650340f45172ad09029bcbcc5208a4fee37bd192b9655be088b199134",
+          "1220e8a2173c51d34ea08474d5f6a1d0e7b79f5203e40b720b1f2608c987fc2f1584"
+        ]
+      },
+      {
         "cost": 0.027297,
         "failed_boot_cost": 0.027297,
         "failed_boots": 1,
@@ -161,18 +178,6 @@
         "model": "Qwen/Qwen3-8B",
         "records": [
           "1220736506a57c471f0412bcf80b35a1cabdd9a438f6e3ff2be500091464afad874d"
-        ]
-      },
-      {
-        "cost": 0.00018,
-        "failed_boot_cost": 0.00018,
-        "failed_boots": 1,
-        "gpu": "NVIDIA GeForce RTX 4090",
-        "gpu_count": 1,
-        "label": "class2-fixed",
-        "model": "Qwen/Qwen3-8B",
-        "records": [
-          "1220763a9b91627f8634f8a16f911359ad08e5d8782695ddc29c57219d096b0bf31f"
         ]
       },
       {
@@ -205,6 +210,22 @@
           "12205a99eed24ad06e68bbec2c4dbe9df15aff9015d54bfd330ac4104b19addf409d",
           "12207b314f3982aa828ce37adf4c6fb200cb9fe744a48dda8b483cd7e494d95bfec4",
           "12207c8d129ea3d8b84f6f681aa518de8ff36ddd793832fda2c1bc1c1d2eff988550"
+        ]
+      },
+      {
+        "cost": 0.025296,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "class4-fixed",
+        "model": "google/gemma-2-2b-it",
+        "records": [
+          "1220393369faa4951bab95ef3db6d012aff217b3dca65ab1b7534d2cd608d9ac95ed",
+          "12206b393c533d0ae1e2e4c644df0af93e2bcc91115d04a0693e0f7494013333b586",
+          "1220a2a3bd4fa82fed0d0e0177bf19884a3f37fd12f94bafc85812bf05ee147e11ac",
+          "1220c4d576ed9039deda716406e476c385664811f6064b36ee3fbb67dc433d168d24",
+          "1220e4d272d2856d239be6b47fe65e9fd1a48ccaedc2d9f4b3a9a999d152d4a4dcb5"
         ]
       },
       {
@@ -264,6 +285,19 @@
         ]
       },
       {
+        "cost": 0.004076,
+        "failed_boot_cost": 0.004076,
+        "failed_boots": 2,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "class3-fixed",
+        "model": "mistralai/Mistral-7B-Instruct-v0.3",
+        "records": [
+          "1220c29b418403035748d2d55fcecdee03deaa643650f50268c2baea28f817e08973",
+          "1220c4ab40df7487bbb966eef1140379a46a0868a9ca7b7f330353c03b8dbf3438eb"
+        ]
+      },
+      {
         "cost": 0.035833,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -280,7 +314,7 @@
         ]
       }
     ],
-    "records_total": 3.808059
+    "records_total": 3.9871
   },
   "fixes": [
     {
@@ -310,22 +344,82 @@
       "violated_constraints": []
     },
     {
+      "broken_gpu": "NVIDIA GeForce RTX 4090",
+      "broken_model": "Qwen/Qwen3-8B",
       "call_site": "v1/core/kv_cache_utils.py:879",
+      "change": {
+        "engine_configuration.max_model_len": [
+          "40960",
+          "32640"
+        ]
+      },
       "class": 2,
+      "classifier_model_id": "claude-haiku-4-5-20251001",
+      "diagnosed": "oom_kv_cache",
+      "error_line": "To serve at least one request with the model's max seq len (40960), (5.62 GiB KV cache is needed, which is larger than the available KV cache memory (4.48 GiB). Based on the available memory, the estimated maximum model length is 32640.",
       "family": "oom_kv_cache",
-      "status": "not run"
+      "fixed_gpu": "NVIDIA GeForce RTX 4090",
+      "label": "Fixed",
+      "mechanism_outcome": "verified",
+      "promoted_rule": "122030c2dc6cc5b2fdbf1599394f8dd6e2dbfbfc76078747b2a127f20272432eea5f",
+      "proving_boot": "122046447ffc1d89490228e1a78bf46bfc0f154518d1ee3fc69b76ea755703418513",
+      "remediation": "1220e8f6ea8e7da05829c02d345e2d67ae5c1d479e9adb299581097898e59db7e3b1",
+      "request_outcome": "satisfied",
+      "status": "run",
+      "strategy": "reduce_memory_pressure",
+      "violated_constraints": []
     },
     {
+      "broken_gpu": "NVIDIA GeForce RTX 4090",
+      "broken_model": "mistralai/Mistral-7B-Instruct-v0.3",
       "call_site": "config/model.py:2502",
+      "change": {
+        "engine_configuration.max_model_len": [
+          "999999",
+          "32768"
+        ]
+      },
       "class": 3,
+      "classifier_model_id": "claude-haiku-4-5-20251001",
+      "diagnosed": "max_model_len",
+      "error_line": "User-specified max_model_len (999999) is greater than the derived max_model_len (max_position_embeddings=32768.0 or model_max_length=None in model's config.json)",
       "family": "max_model_len",
-      "status": "not run"
+      "fixed_gpu": "NVIDIA GeForce RTX 4090",
+      "label": "Unverified suggestion",
+      "mechanism_outcome": "failed",
+      "promoted_rule": null,
+      "proving_boot": null,
+      "remediation": "122038c4efeb13a982df42723fc6f044144e3bf1c41cbe96772843b8701ace9be507",
+      "request_outcome": "not_evaluated",
+      "status": "run",
+      "strategy": "clamp_max_model_len",
+      "violated_constraints": []
     },
     {
+      "broken_gpu": "NVIDIA GeForce RTX 4090",
+      "broken_model": "google/gemma-2-2b-it",
       "call_site": "config/model.py:2262",
+      "change": {
+        "dtype": [
+          "float16",
+          "bfloat16"
+        ]
+      },
       "class": 4,
+      "classifier_model_id": "claude-haiku-4-5-20251001",
+      "diagnosed": "dtype_incompatible",
+      "error_line": "The model type 'gemma2' does not support float16. Reason: Numerical instability. Please use bfloat16 or float32 instead.",
       "family": "dtype_incompatible",
-      "status": "not run"
+      "fixed_gpu": "NVIDIA GeForce RTX 4090",
+      "label": "Fixed",
+      "mechanism_outcome": "verified",
+      "promoted_rule": "122031d26e41fe87515f7c0e4d066271f03315eea06e4816ef409a8b6892a316bcfa",
+      "proving_boot": "12206b393c533d0ae1e2e4c644df0af93e2bcc91115d04a0693e0f7494013333b586",
+      "remediation": "122038df2ccafa665fb0326ec3e8b041cfc29be21a89b35f7417857a7f92d60701fb",
+      "request_outcome": "satisfied",
+      "status": "run",
+      "strategy": "fallback_dtype",
+      "violated_constraints": []
     },
     {
       "call_site": "config/model.py:1414",
@@ -417,6 +511,21 @@
       "weight_delta_bytes": -12760596
     },
     {
+      "claim": "122024e608b51563420427eba1dc86f61ec236a9f5117aebe8a066737b5205863d30",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "gpu_count": 1,
+      "kv_consistency_bytes": -937157765,
+      "measured_persistent_bytes": 16685947944,
+      "measured_weight_bytes": 16396037652,
+      "model": "Qwen/Qwen3-8B",
+      "notes": [],
+      "predicted_total_bytes": 19697105152,
+      "predicted_weight_bytes": 16381470720,
+      "record": "122046447ffc1d89490228e1a78bf46bfc0f154518d1ee3fc69b76ea755703418513",
+      "total_delta_bytes": 3011157208,
+      "weight_delta_bytes": -14566932
+    },
+    {
       "claim": "122001a3fa3351e82534d27e6861f214efdd19163876827b8677cf9bb75ba6057031",
       "gpu": "NVIDIA A100 80GB PCIe",
       "gpu_count": 1,
@@ -430,6 +539,21 @@
       "record": "1220697d834da838ea2b058265f8dc1159098f8868d943b13b0f887b05fbb10162b9",
       "total_delta_bytes": 874836547,
       "weight_delta_bytes": -69141831
+    },
+    {
+      "claim": "122017da1ce6eeb2ba09342f020bc0d96446471dcd1c1806a2451c547e1bb87b8ce5",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 239154832,
+      "measured_persistent_bytes": 5755256176,
+      "measured_weight_bytes": 5304284610,
+      "model": "google/gemma-2-2b-it",
+      "notes": [],
+      "predicted_total_bytes": 7324181913,
+      "predicted_weight_bytes": 5228683776,
+      "record": "12206b393c533d0ae1e2e4c644df0af93e2bcc91115d04a0693e0f7494013333b586",
+      "total_delta_bytes": 1568925737,
+      "weight_delta_bytes": -75600834
     },
     {
       "claim": "1220b9b0d4284c090e2b911a085e6bd7b7d459e8c754362856f37b348cc5cd4f527c",
@@ -510,7 +634,7 @@
       "status": "unknown"
     }
   ],
-  "record_count": 85,
+  "record_count": 103,
   "repeat_measurements": [
     {
       "activation_spread_pct": 0.0,
@@ -599,6 +723,20 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "Qwen/Qwen3-8B",
+      "output_token_throughput": 198.26314356830352,
+      "p99_tpot_ms": 19.014509916630953,
+      "p99_ttft_ms": 211.5916694374755,
+      "recomputed_verdict": "pass",
+      "record": "1220386d8f27a3644985be66a52cf4ea118d298fe11a3f99ec5e694f7bdb68ab5e19",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA A100 80GB PCIe",
       "model": "deepseek-ai/DeepSeek-V2-Lite",
       "output_token_throughput": 316.3572444177437,
@@ -606,6 +744,20 @@
       "p99_ttft_ms": 930.2557383896783,
       "recomputed_verdict": "pass",
       "record": "122061f72e5d7004a287bada68fc73c6d61a02140a24be883c82d676d48a02f0a518",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "google/gemma-2-2b-it",
+      "output_token_throughput": 501.66996473873604,
+      "p99_tpot_ms": 7.313420200902844,
+      "p99_ttft_ms": 77.9357244016137,
+      "recomputed_verdict": "pass",
+      "record": "1220c4d576ed9039deda716406e476c385664811f6064b36ee3fbb67dc433d168d24",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
       "verdict": "pass"
@@ -682,11 +834,12 @@
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-27T02:05:07.032056+00:00",
+    "last_event": "2026-09-27T02:23:18.666524+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-1.7B",
       "Qwen/Qwen3-14B",
+      "Qwen/Qwen3-8B",
       "deepseek-ai/DeepSeek-V2-Lite",
       "google/gemma-2-2b-it",
       "meta-llama/Llama-3.1-8B-Instruct",
@@ -769,6 +922,20 @@
       "retries": 0
     },
     {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "Qwen/Qwen3-8B",
+      "passed": true,
+      "records": [
+        "12206418a88a7d927c5049c6936ccee3cc729d8ce1e2373fca2c428cb560ff473383",
+        "12208dd7f62650340f45172ad09029bcbcc5208a4fee37bd192b9655be088b199134",
+        "1220e8a2173c51d34ea08474d5f6a1d0e7b79f5203e40b720b1f2608c987fc2f1584"
+      ],
+      "retries": 0
+    },
+    {
       "accepted": 0,
       "attempts": 3,
       "cases": 3,
@@ -779,6 +946,20 @@
         "12200ac2fd197bfb3739f5b145510feed8256e6b3f90df263688d362e3138ce9097a",
         "122091e1cf984bc6c153ae71bcbb84d5373554407d6fd49d08c6cee0c632fda74f05",
         "12209e38a5f726490e019088aa99a69d9fdd008b78a93b70eee1a6355aeecc9d5c95"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "google/gemma-2-2b-it",
+      "passed": true,
+      "records": [
+        "1220393369faa4951bab95ef3db6d012aff217b3dca65ab1b7534d2cd608d9ac95ed",
+        "1220a2a3bd4fa82fed0d0e0177bf19884a3f37fd12f94bafc85812bf05ee147e11ac",
+        "1220e4d272d2856d239be6b47fe65e9fd1a48ccaedc2d9f4b3a9a999d152d4a4dcb5"
       ],
       "retries": 0
     },

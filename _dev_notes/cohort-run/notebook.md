@@ -240,3 +240,14 @@ unless marked.  Machine events are in `events.jsonl`.
   (I had added it to the cohort loop only).  Fixed: one helper
   (`execute_when_available`) for both; no capacity within the wait records the
   proof as not evaluated, never failed, and promotes nothing.
+- **Class 2 PROVEN (02:20 UTC):** Qwen3-8B, max_model_len 40960 → 32640 (the
+  value vLLM printed), RTX 4090 → fixed boot healthy, tasks + SLO pass →
+  Fixed; rule `oom_kv_cache` promoted.  $0.15.
+- **Class 3: fixed boot never happened.**  My new download check flagged
+  Mistral's `tokenizer.model` (listed 130 bytes, a git link, written as the
+  587 KB target) twice → harness:download_incomplete.  Worse, the proof then
+  recorded the mechanism as "failed" — false: a harness failure is no
+  evidence about the correction.  Fixes: the check flags only missing or
+  truncated files; a fixed boot that never reached the engine is recorded
+  "not_evaluated".  The false class 3 record stays in the evidence; class 3
+  is re-run.

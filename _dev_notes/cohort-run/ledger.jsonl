@@ -108,3 +108,30 @@
 {"amount": 0.3083, "at": "2026-09-27T02:05:05.739880+00:00", "label": "class2-fixed", "op": "hold"}
 {"amount": 0.001762, "at": "2026-09-27T02:05:06.151656+00:00", "estimate": 0.088333, "label": "pod-idle:rpxdrib9e80tkn", "op": "settle"}
 {"amount": 0.00018, "at": "2026-09-27T02:05:07.029455+00:00", "estimate": 0.3083, "label": "class2-fixed", "op": "settle"}
+{"amount": 0.02, "at": "2026-09-27T02:08:13.442334+00:00", "label": "classifier:class2", "op": "hold"}
+{"amount": 0.010861, "at": "2026-09-27T02:08:23.067827+00:00", "estimate": 0.02, "label": "classifier:class2", "op": "settle"}
+{"amount": 0.3083, "at": "2026-09-27T02:08:23.730509+00:00", "label": "class2-fixed", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T02:15:57.716020+00:00", "label": "class2-fixed", "op": "annotate", "pod_id": "uen772hwen7url"}
+{"amount": 0.123333, "at": "2026-09-27T02:20:31.832592+00:00", "label": "pod-idle:uen772hwen7url", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T02:20:31.839709+00:00", "label": "pod-idle:uen772hwen7url", "op": "annotate", "pod_id": "uen772hwen7url"}
+{"amount": 0.149667, "at": "2026-09-27T02:20:31.843032+00:00", "estimate": 0.3083, "label": "class2-fixed", "op": "settle"}
+{"amount": 0.02, "at": "2026-09-27T02:20:32.248168+00:00", "label": "classifier:class3", "op": "hold"}
+{"amount": 0.010424, "at": "2026-09-27T02:20:39.707318+00:00", "estimate": 0.02, "label": "classifier:class3", "op": "settle"}
+{"amount": 0.3083, "at": "2026-09-27T02:20:40.035498+00:00", "label": "class3-fixed", "op": "hold"}
+{"amount": 0.001685, "at": "2026-09-27T02:20:40.036126+00:00", "estimate": 0.123333, "label": "pod-idle:uen772hwen7url", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T02:20:40.036285+00:00", "label": "class3-fixed", "op": "annotate", "pod_id": "uen772hwen7url"}
+{"amount": 0.123333, "at": "2026-09-27T02:20:59.863758+00:00", "label": "pod-idle:uen772hwen7url", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T02:20:59.865834+00:00", "label": "pod-idle:uen772hwen7url", "op": "annotate", "pod_id": "uen772hwen7url"}
+{"amount": 0.004076, "at": "2026-09-27T02:20:59.866676+00:00", "estimate": 0.3083, "label": "class3-fixed", "op": "settle"}
+{"amount": 0.02, "at": "2026-09-27T02:21:00.202991+00:00", "label": "classifier:class4", "op": "hold"}
+{"amount": 0.010714, "at": "2026-09-27T02:21:07.623357+00:00", "estimate": 0.02, "label": "classifier:class4", "op": "settle"}
+{"amount": 0.3083, "at": "2026-09-27T02:21:07.926485+00:00", "label": "class4-fixed", "op": "hold"}
+{"amount": 0.001657, "at": "2026-09-27T02:21:07.927005+00:00", "estimate": 0.123333, "label": "pod-idle:uen772hwen7url", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T02:21:07.927215+00:00", "label": "class4-fixed", "op": "annotate", "pod_id": "uen772hwen7url"}
+{"amount": 0.123333, "at": "2026-09-27T02:23:10.990413+00:00", "label": "pod-idle:uen772hwen7url", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T02:23:10.990822+00:00", "label": "pod-idle:uen772hwen7url", "op": "annotate", "pod_id": "uen772hwen7url"}
+{"amount": 0.025296, "at": "2026-09-27T02:23:10.991274+00:00", "estimate": 0.3083, "label": "class4-fixed", "op": "settle"}
+{"amount": 0.02, "at": "2026-09-27T02:23:11.256932+00:00", "label": "classifier:class5", "op": "hold"}
+{"amount": 0.010229, "at": "2026-09-27T02:23:17.925782+00:00", "estimate": 0.02, "label": "classifier:class5", "op": "settle"}
+{"amount": 2.65, "at": "2026-09-27T02:23:18.665902+00:00", "label": "class5-fixed", "op": "hold"}
+{"amount": 0.001695, "at": "2026-09-27T02:23:19.236173+00:00", "estimate": 0.123333, "label": "pod-idle:uen772hwen7url", "op": "settle"}

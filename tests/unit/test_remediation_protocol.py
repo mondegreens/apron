@@ -367,3 +367,27 @@ def test_a_refused_fixed_boot_waits_and_proceeds(tmp_path: Path) -> None:
     assert refusals["left"] == 0, "the B200 creation was refused once"
     assert proof.mechanism_outcome == "verified", proof.notes
     assert len(repo.written) == 1
+
+
+def test_a_fixed_boot_that_never_reached_the_engine_is_not_evaluated(tmp_path: Path) -> None:
+    """L5 class 3: the download check failed twice, the corrected plan never booted.
+    That is no evidence about the correction: not evaluated, never 'failed'."""
+    cohort_ports, engine, _, _ = ports(tmp_path, _scenario)
+    real = engine.download_weights
+    fixed_model = SIX_CLASSES[2].broken_plan.resource_allocation["model_id"]
+    calls = {"n": 0}
+
+    def download(target: Any, model_id: str) -> dict[str, Any]:
+        calls["n"] += 1
+        if (
+            calls["n"] > 1 and model_id == fixed_model
+        ):  # broken boot OK, fixed boot's download fails
+            return {"ok": False, "seconds": 1.0, "output_tail": "DOWNLOAD_INCOMPLETE: short x 1<2"}
+        return real(target, model_id)
+
+    engine.download_weights = download  # type: ignore[method-assign]
+    repo = MemoryRuleRepository(RULES)
+    proof = prove_fix(SIX_CLASSES[2], accepted_inputs(), cohort_ports, _fix_ports(repo))
+    assert proof.gate_a and proof.gate_b
+    assert proof.mechanism_outcome == "not_evaluated"
+    assert repo.written == []

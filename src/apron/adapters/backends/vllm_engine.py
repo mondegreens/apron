@@ -157,8 +157,10 @@ _DOWNLOAD_PY = (
     "  if any(fnmatch.fnmatch(s.rfilename,g) for g in ign): continue\n"
     "  p=pathlib.Path(sys.argv[2])/s.rfilename\n"
     "  if not p.exists(): bad.append(f'missing {s.rfilename}')\n"
-    "  elif s.size is not None and p.stat().st_size!=s.size:"
-    " bad.append(f'size {s.rfilename} {p.stat().st_size}!={s.size}')\n"
+    # Smaller than listed = truncated.  Larger is legitimate: a git-linked file
+    # (Mistral's tokenizer.model, listed at 130 bytes) is written as its target.
+    "  elif s.size is not None and p.stat().st_size<s.size:"
+    " bad.append(f'short {s.rfilename} {p.stat().st_size}<{s.size}')\n"
     "print('DOWNLOAD_INCOMPLETE: '+'; '.join(bad) if bad else 'DOWNLOAD_VERIFIED')\n"
     "sys.exit(3 if bad else 0)\n"
 )
