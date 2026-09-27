@@ -3,6 +3,7 @@
     "authorized": 100.0,
     "failed_boot_total": 2.149275,
     "ledger_classifier": 0,
+    "ledger_pod_idle": 0,
     "ledger_settled": 2.825273,
     "ledger_spent": 2.825273,
     "per_solution": [

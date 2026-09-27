@@ -163,7 +163,7 @@ def test_l0a_sigkill_then_orphan_cleanup() -> None:
 
 def test_l0a3_measurement_stability() -> None:
     _step("l0a3")
-    from apron.application.orchestration.cohort import execute_solution
+    from apron.application.orchestration.cohort import close_pool
     from apron.application.orchestration.scheduler import CandidateSeed
     from apron.interfaces.cohort_root import CohortPlanner, build_ports, live_rates, load_inputs
 
@@ -180,6 +180,16 @@ def test_l0a3_measurement_stability() -> None:
     )
     inputs = load_inputs()
     reports = []
+    try:
+        _l0a3_runs(planner, seed, inputs, ports, reports)
+    finally:
+        close_pool(ports)
+    _l0a3_compare(reports)
+
+
+def _l0a3_runs(planner, seed, inputs, ports, reports) -> None:  # type: ignore[no-untyped-def]
+    from apron.application.orchestration.cohort import execute_solution
+
     for run in (1, 2):
         sp = planner.plan_seed(seed)
         sp = type(sp)(**{**sp.__dict__, "label": f"l0a3-run{run}"})
@@ -195,6 +205,8 @@ def test_l0a3_measurement_stability() -> None:
         reports.append(ports.store.retrieve(outcome.boot_report_digest or ""))
         _write(f"f7-environ-check-run{run}.json", outcome.token_check)
 
+
+def _l0a3_compare(reports) -> None:  # type: ignore[no-untyped-def]
     a, b = reports
     assert a and b
     weight_equal = a["model_weight_memory"] == b["model_weight_memory"]
@@ -222,8 +234,7 @@ def test_l0a3_measurement_stability() -> None:
 
 def test_l0f_failure_reproduction() -> None:
     _step("l0f")
-    from apron.application.orchestration.cohort import RunScope, execute_solution
-    from apron.application.orchestration.remediation import SIX_CLASSES, failed_as_named
+    from apron.application.orchestration.cohort import close_pool
     from apron.interfaces.cohort_root import CohortPlanner, build_ports, live_rates, load_inputs
 
     rates = live_rates(os.environ["RUNPOD_API_KEY"])
@@ -231,7 +242,21 @@ def test_l0f_failure_reproduction() -> None:
     planner = CohortPlanner(rates=rates)
     inputs = load_inputs()
     only = {int(c) for c in os.environ.get("APRON_L0F_CLASSES", "1,2,3,4,5,6").split(",")}
-    results = {}
+    results: dict[int, dict] = {}
+    try:
+        _l0f_runs(planner, inputs, ports, only, results)
+    finally:
+        close_pool(ports)
+    path = RUN_DIR / "l0f-results.json"
+    merged = json.loads(path.read_text()) if path.exists() else {}
+    merged.update({str(k): v for k, v in results.items()})  # classes run in batches
+    _write("l0f-results.json", merged)
+
+
+def _l0f_runs(planner, inputs, ports, only, results) -> None:  # type: ignore[no-untyped-def]
+    from apron.application.orchestration.cohort import RunScope, execute_solution
+    from apron.application.orchestration.remediation import SIX_CLASSES, failed_as_named
+
     for case in SIX_CLASSES:
         if case.failure_class not in only:
             continue
@@ -254,10 +279,6 @@ def test_l0f_failure_reproduction() -> None:
         }
         (RUN_DIR / "l0f-logs").mkdir(parents=True, exist_ok=True)
         (RUN_DIR / "l0f-logs" / f"class{case.failure_class}.log").write_text(outcome.log_tail)
-    path = RUN_DIR / "l0f-results.json"
-    merged = json.loads(path.read_text()) if path.exists() else {}
-    merged.update({str(k): v for k, v in results.items()})  # classes run in batches
-    _write("l0f-results.json", merged)
     # Reported, not asserted: a broken plan that does not fail as named is
     # replaced (§6.1) — that is a finding for the owner, not a test failure.
 
@@ -325,6 +346,7 @@ def test_cohort_run() -> None:
 
 def test_fix_proofs() -> None:
     _step("fixproof")
+    from apron.application.orchestration.cohort import close_pool
     from apron.application.orchestration.remediation import SIX_CLASSES, prove_fix
     from apron.interfaces.cohort_root import (
         CohortPlanner,
@@ -341,5 +363,8 @@ def test_fix_proofs() -> None:
     fix = build_fix_ports(planner, rates)
     inputs = load_inputs()
     only = {int(c) for c in os.environ.get("APRON_FIX_CLASSES", "1,2,3,4,5,6").split(",")}
-    proofs = [prove_fix(c, inputs, ports, fix) for c in SIX_CLASSES if c.failure_class in only]
+    try:
+        proofs = [prove_fix(c, inputs, ports, fix) for c in SIX_CLASSES if c.failure_class in only]
+    finally:
+        close_pool(ports)
     _write("fix-proofs.json", [p.__dict__ for p in proofs])

@@ -162,3 +162,15 @@ unless marked.  Machine events are in `events.jsonl`.
   total +1.54 GiB (calculator over-predicts Qwen3-1.7B).
 - L0-A age-path proof, attempt 1: RunPod API "Something went wrong" at
   creation, no pod, $0; retried.
+- **L0-A age path PASSED (00:18-00:27 UTC, pod `bdjkw5nbsj625z`, ~$0.11).**
+  Process SIGKILLed; the pod was 521 s old; `cleanup_orphaned_pods(max_age
+  300)` terminated it (age from `lastStartedAt`); account at 0 pods.  L0 done.
+- **Owner feedback: RunPod showed mostly pods being re-created.**  True: a
+  fresh pod per run spent 5-13 min pulling the image for seconds to minutes of
+  work.  Built pod reuse (`TargetPool`): one live pod per requested execution,
+  hygiene between boots, other models' weights evicted, a pod dropped after
+  any harness failure, a parked pod holds budget (`pod-idle:` hold, replayed
+  after a crash).  First synthetic run exposed a parked pod billing while
+  other GPU types ran; fixed: one live pod at a time and the chosen solutions
+  run grouped by execution.  Synthetic cohort + fix proofs: 18 executions on
+  10 pods.  Not yet verified on RunPod.

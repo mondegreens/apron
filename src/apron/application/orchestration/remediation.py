@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, Any, Protocol
 
 from apron.application.orchestration.cohort import (
     RunScope,
+    close_pool,
     execute_solution,
     load_attempts,
     recorded_evidence,
@@ -346,7 +347,10 @@ def prove_all(
     fix: FixProofPorts,
     cases: Sequence[BrokenCase] = SIX_CLASSES,
 ) -> list[FixProof]:
-    return [prove_fix(case, inputs, ports, fix) for case in cases]
+    try:
+        return [prove_fix(case, inputs, ports, fix) for case in cases]
+    finally:
+        close_pool(ports)
 
 
 # ---------------------------------------------------------------------------

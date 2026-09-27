@@ -441,6 +441,14 @@ class VllmEngineAdapter:
         result = target.execute("test -x /usr/local/bin/apron-download && echo yes || echo no")
         return "yes" in str(result.get("stdout", ""))
 
+    def evict_models(self, target: Any, *, keep: str) -> None:
+        """Remove every downloaded model except *keep* (a reused pod's disk)."""
+        keep_q = shlex.quote(keep)
+        target.execute(
+            f"cd {MODELS_DIR} 2>/dev/null && for d in */*; do "
+            f'[ "$d" = {keep_q} ] || rm -rf -- "$d"; done; true'
+        )
+
     def download_weights(self, target: Any, model_id: str, timeout: int = 3600) -> dict[str, Any]:
         """Fetch weights in a separate step — the only one that reads the token."""
         dest = self.model_dir(model_id)

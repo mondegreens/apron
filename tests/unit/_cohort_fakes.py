@@ -24,6 +24,7 @@ from apron.application.orchestration.cohort import (
 )
 from apron.application.orchestration.correction import CatalogEntry, CorrectionContext
 from apron.application.orchestration.evidence import protocol_template, solution_fingerprint
+from apron.application.orchestration.pods import TargetPool
 from apron.domain.artifacts.identity import ArtifactIdentity
 from apron.domain.canonical import canonicalize, digest_hex
 from apron.domain.mechanisms.model_spec_builder import build_model_spec
@@ -286,12 +287,16 @@ class FakeEngine:
         self._scenario = scenario
         self._token_in_environ = token_in_environ
         self.booted: list[DeploymentPlan] = []
+        self.evicted: list[str] = []
 
     def runner_supports_token_isolation(self, target: Any) -> bool:
         return True
 
     def prepare_boot(self, target: Any) -> dict[str, Any]:
         return {"clean": True, "port_8000_busy": False, "gpu_memory_used_mib": [0]}
+
+    def evict_models(self, target: Any, *, keep: str) -> None:
+        self.evicted.append(keep)
 
     def download_weights(self, target: Any, model_id: str) -> dict[str, Any]:
         return {"ok": True, "seconds": 60.0, "output_tail": ""}
@@ -542,6 +547,7 @@ def ports(
     events: Any = None,
     ledger: Any = None,
     identities: Any = None,
+    pool: bool = False,
 ) -> tuple[CohortPorts, FakeEngine, list[FakeTarget], Any]:
     """Fake ports; pass file-backed ``events``/``ledger``/``identities`` for a run dir."""
     engine = FakeEngine(scenario)
@@ -557,6 +563,15 @@ def ports(
     budget = BudgetTracker(
         authorized=authorized, ledger=ledger if ledger is not None else MemoryLog(), clock=clock
     )
+
+    def rate(requested: RequestedExecutionSpec) -> float:
+        return CATALOG[requested.gpu_sku][1] * requested.gpu_count
+
+    target_pool = (
+        TargetPool(factory=target_factory, budget=budget, clock=clock, hourly_rate=rate)
+        if pool
+        else None
+    )
     return (
         CohortPorts(
             target_factory=target_factory,
@@ -568,8 +583,9 @@ def ports(
             ids=CountingIds(),
             events=events,
             provision_env=lambda sp: {"VLLM_LOGGING_LEVEL": "DEBUG"},
-            hourly_rate=lambda requested: CATALOG[requested.gpu_sku][1] * requested.gpu_count,
+            hourly_rate=rate,
             identities=identities or MemoryLog(),
+            pool=target_pool,
         ),
         engine,
         targets,

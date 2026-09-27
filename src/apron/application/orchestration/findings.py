@@ -357,8 +357,16 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
     def is_classifier(e: dict[str, Any]) -> bool:
         return str(e.get("label", "")).startswith("classifier:")
 
+    def is_pod_idle(e: dict[str, Any]) -> bool:
+        return str(e.get("label", "")).startswith("pod-idle:")
+
     settled = sum(
-        float(e["amount"]) for e in run.ledger if e["op"] == "settle" and not is_classifier(e)
+        float(e["amount"])
+        for e in run.ledger
+        if e["op"] == "settle" and not is_classifier(e) and not is_pod_idle(e)
+    )
+    pod_idle = sum(
+        float(e["amount"]) for e in run.ledger if e["op"] == "settle" and is_pod_idle(e)
     )
     classifier = sum(
         float(e["amount"])
@@ -369,7 +377,8 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
         "authorized": authorized,
         "ledger_settled": round(settled, 6),
         "ledger_classifier": round(classifier, 6),
-        "ledger_spent": round(settled + classifier, 6),
+        "ledger_pod_idle": round(pod_idle, 6),
+        "ledger_spent": round(settled + classifier + pod_idle, 6),
         "records_total": round(sum(row["cost"] for row in rows), 6),
         "failed_boot_total": round(sum(row["failed_boot_cost"] for row in rows), 6),
         "per_solution": rows,
@@ -629,6 +638,13 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
             [
                 ["**Records total**", "", f"**{cost['records_total']:.4f}**", "", ""],
                 ["Classifier calls (ledger)", "", f"{cost['ledger_classifier']:.4f}", "", ""],
+                [
+                    "Pooled pods between solutions (ledger)",
+                    "",
+                    f"{cost.get('ledger_pod_idle', 0):.4f}",
+                    "",
+                    "",
+                ],
                 [
                     "**Ledger spent**",
                     "",

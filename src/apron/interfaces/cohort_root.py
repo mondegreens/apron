@@ -41,6 +41,7 @@ from apron.application.orchestration.cohort_records import CohortRun, load_cohor
 from apron.application.orchestration.correction import CatalogEntry, CorrectionContext
 from apron.application.orchestration.evidence import protocol_template, solution_fingerprint
 from apron.application.orchestration.plan_pipeline import run_plan_pipeline
+from apron.application.orchestration.pods import TargetPool
 from apron.application.orchestration.remediation import FixProofPorts
 from apron.application.orchestration.scheduler import CandidateSeed, estimate_cost
 from apron.application.sanitization import SecretMaskingFilter
@@ -363,6 +364,7 @@ def build_ports(
         provision_env=provision_env,
         hourly_rate=rate_for,
         identities=JsonlLedger(run_dir / "solutions.jsonl"),
+        pool=TargetPool(factory=target_factory, budget=budget, clock=clock, hourly_rate=rate_for),
     )
 
 

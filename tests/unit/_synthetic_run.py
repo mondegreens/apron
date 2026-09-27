@@ -115,6 +115,7 @@ def build_synthetic_run(run_dir: Path) -> Path:
         events=JsonlLedger(run_dir / "events.jsonl"),
         ledger=JsonlLedger(run_dir / "ledger.jsonl"),
         identities=JsonlLedger(run_dir / "solutions.jsonl"),
+        pool=True,
     )
     inputs = accepted_inputs()
     seeds = [_candidate(*row) for row in _SEED]

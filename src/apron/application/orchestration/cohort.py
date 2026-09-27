@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
 
     from apron.application.orchestration.budget import BudgetTracker
+    from apron.application.orchestration.pods import TargetPool
     from apron.domain.ports import Clock, IdGenerator
     from apron.domain.protocols import RecordStore
     from apron.domain.schemas.authority import AuthorizationEnvelope, DecisionRequest
@@ -157,6 +158,8 @@ class ExecutionEngine(Protocol):
 
     def download_weights(self, target: Any, model_id: str) -> dict[str, Any]: ...
 
+    def evict_models(self, target: Any, *, keep: str) -> None: ...
+
     def boot(self, plan: DeploymentPlan, target: Any, *, health_timeout: int = 600) -> Any: ...
 
     def verify(
@@ -199,6 +202,8 @@ class CohortPorts:
     # A pod that is not RUNNING by then (no Secure capacity, a stuck image
     # pull) is torn down and recorded as a failed attempt: it may be billing.
     provision_timeout: int = 1800
+    # One live pod per requested execution for the run (None: a pod per solution).
+    pool: TargetPool | None = None
 
 
 @dataclass(frozen=True)
@@ -366,7 +371,11 @@ def execute_solution(
 
     ports.budget.hold(sp.estimate, sp.label)
     _event(ports, "hold", sp, estimate=sp.estimate, rate=rate)
-    target = ports.target_factory(sp.requested)
+    pool = ports.pool
+    if pool is not None:
+        target, reused = pool.acquire(sp.requested)
+    else:
+        target, reused = ports.target_factory(sp.requested), False
     report_fields: dict[str, Any] | None = None
     failed_boots: list[tuple[str, str]] = []  # (log tail, failure tag)
     scored: list[tuple[dict[str, Any], int]] = []
@@ -375,11 +384,14 @@ def execute_solution(
     leaked: PodLeakError | None = None
     try:
         timing.provision_start = _seconds(clock)
-        target.provision(env=ports.provision_env(sp), wait_timeout=ports.provision_timeout)
+        if not reused:
+            target.provision(env=ports.provision_env(sp), wait_timeout=ports.provision_timeout)
         ports.budget.annotate_hold(sp.label, target.pod_id)
-        _event(ports, "provisioned", sp, pod_id=target.pod_id)
-        if not engine.runner_supports_token_isolation(target):
+        _event(ports, "reused" if reused else "provisioned", sp, pod_id=target.pod_id)
+        if not reused and not engine.runner_supports_token_isolation(target):
             raise RunnerImageError("runner image lacks the F7 download step (apron-download)")
+        if reused:
+            engine.evict_models(target, keep=model_id)  # disk: one model's weights at a time
 
         boot = None
         for attempt in range(2):  # a harness failure is retried once
@@ -435,20 +447,17 @@ def execute_solution(
         if isinstance(exc, TokenLeakError):
             report_fields, scored, bench = None, [], None  # nothing from this pod is evidence
     finally:
-        try:
-            outcome.provider_reported_cost = target.pod_reported_cost()
-        except Exception:  # the cost API failing must not skip teardown
+        kept = False
+        if pool is not None and error is None and not _drop_pod(failed_boots):
+            try:
+                pool.keep(sp.requested, target)  # the pod bills on; reconciled when it closes
+                kept = True
+            except Exception:  # cannot afford to park it: tear it down instead
+                kept = False
+        if kept:
             outcome.provider_reported_cost = None
-        try:
-            target.teardown()
-        except PodLeakError as exc:
-            # The pod may still be billing: record it, keep an open-ended hold
-            # for it (replay settles it at RunPod's reported cost), stop the run.
-            failed_boots.append((str(exc), POD_LEAK))
-            leaked = exc
-        except Exception as exc:
-            failed_boots.append((f"teardown: {exc}", "harness:teardown_failed"))
-            error = error or exc
+        else:
+            leaked, error = _teardown(target, outcome, failed_boots, error)
         timing.teardown_end = _seconds(clock)
         if timing.provision_start is None:
             timing.provision_start = timing.teardown_end
@@ -460,7 +469,78 @@ def execute_solution(
         ports.budget.hold_open_ended(rate, f"leak:{leaked.pod_id}", leaked.pod_id)
     outcome.cost = costs.total
     outcome.harness_failures = [tag for _, tag in failed_boots]
+    return _store_outcome(
+        sp,
+        inputs,
+        ports,
+        ctx,
+        target,
+        timing,
+        rate,
+        reason,
+        outcome,
+        costs,
+        report_fields,
+        failed_boots,
+        scored,
+        bench,
+        leaked,
+        error,
+    )
 
+
+# A pod is not reused after these: the next solution gets a fresh one.
+_DROP_TAGS = frozenset({"harness:unclean_gpu", TOKEN_LEAK, RUNNER_IMAGE, POD_LEAK})
+
+
+def _drop_pod(failed_boots: list[tuple[str, str]]) -> bool:
+    return any(tag in _DROP_TAGS or tag.startswith("harness:exception") for _, tag in failed_boots)
+
+
+def _teardown(
+    target: Any,
+    outcome: ExecutionOutcome,
+    failed_boots: list[tuple[str, str]],
+    error: Exception | None,
+) -> tuple[PodLeakError | None, Exception | None]:
+    """Tear the pod down; a pod that cannot be terminated is reported, not raised."""
+    leaked: PodLeakError | None = None
+    try:
+        outcome.provider_reported_cost = target.pod_reported_cost()
+    except Exception:  # the cost API failing must not skip teardown
+        outcome.provider_reported_cost = None
+    try:
+        target.teardown()
+    except PodLeakError as exc:
+        # The pod may still be billing: record it, keep an open-ended hold
+        # for it (replay settles it at RunPod's reported cost), stop the run.
+        failed_boots.append((str(exc), POD_LEAK))
+        leaked = exc
+    except Exception as exc:
+        failed_boots.append((f"teardown: {exc}", "harness:teardown_failed"))
+        error = error or exc
+    return leaked, error
+
+
+def _store_outcome(
+    sp: SolutionPlan,
+    inputs: AcceptedInputs,
+    ports: CohortPorts,
+    ctx: EvidenceContext,
+    target: Any,
+    timing: PhaseTiming,
+    rate: float,
+    reason: str,
+    outcome: ExecutionOutcome,
+    costs: Any,
+    report_fields: dict[str, Any] | None,
+    failed_boots: list[tuple[str, str]],
+    scored: list[tuple[dict[str, Any], int]],
+    bench: dict[str, Any] | None,
+    leaked: PodLeakError | None,
+    error: Exception | None,
+) -> ExecutionOutcome:
+    engine = ports.engine
     base = _report_base(sp, target, timing, rate)
     # Every boot report from this pod — failed harness attempts, retries and
     # the final boot — carries an equal share of the boot-phase cost (§7, exit
@@ -836,6 +916,64 @@ class CohortResult:
 MAX_UNEXPECTED_FAILURES_IN_A_ROW = 2
 
 
+def _record_switch_closures(ports: CohortPorts) -> list[str]:
+    """Record pods the pool closed while switching executions; return leaked pod ids."""
+    if ports.pool is None:
+        return []
+    leaked: list[str] = []
+    for target, requested, error in ports.pool.take_closed():
+        entry: dict[str, Any] = {
+            "at": ports.clock.now().isoformat(),
+            "event": "pod_closed",
+            "pod_id": target.pod_id,
+            "error": f"{type(error).__name__}: {error}" if error else None,
+        }
+        ports.events.append({k: v for k, v in entry.items() if v is not None})
+        if isinstance(error, PodLeakError):
+            ports.budget.hold_open_ended(
+                ports.hourly_rate(requested), f"leak:{error.pod_id}", error.pod_id
+            )
+            leaked.append(error.pod_id)
+    return leaked
+
+
+def group_by_execution(plans: Sequence[SolutionPlan]) -> list[SolutionPlan]:
+    """Keep the chosen solutions, run same-execution ones back to back (pod reuse).
+
+    Selection is the scheduler's; only the order changes, stably, by first
+    appearance of each requested execution.
+    """
+    first: dict[str, int] = {}
+    for i, sp in enumerate(plans):
+        first.setdefault(fingerprint_hex(sp.requested), i)
+    return sorted(plans, key=lambda sp: first[fingerprint_hex(sp.requested)])
+
+
+def close_pool(ports: CohortPorts) -> list[str]:
+    """Tear down every pod the run kept; returns the pods that could not be terminated.
+
+    A pod that cannot be terminated keeps an open-ended hold (replay settles it
+    at the provider-reported cost), as in ``execute_solution``.
+    """
+    if ports.pool is None:
+        return []
+    leaked: list[str] = []
+    leaked.extend(_record_switch_closures(ports))
+    for target, requested, error in ports.pool.close():
+        rate = ports.hourly_rate(requested)
+        entry: dict[str, Any] = {
+            "at": ports.clock.now().isoformat(),
+            "event": "pod_closed",
+            "pod_id": target.pod_id,
+            "error": f"{type(error).__name__}: {error}" if error else None,
+        }
+        ports.events.append({k: v for k, v in entry.items() if v is not None})
+        if isinstance(error, PodLeakError):
+            ports.budget.hold_open_ended(rate, f"leak:{error.pod_id}", error.pod_id)
+            leaked.append(error.pod_id)
+    return leaked
+
+
 def run_cohort(
     plans: Sequence[SolutionPlan],
     inputs: AcceptedInputs,
@@ -849,11 +987,29 @@ def run_cohort(
     partially recorded one re-runs only its missing steps.  Its earlier
     records stay stored.  Budget exhaustion or a >50% overrun stops the run.
     """
-    from apron.application.orchestration.budget import BudgetExceededError
 
     result = CohortResult()
+    try:
+        _run_plans(plans, inputs, ports, result, stop_on_overrun=stop_on_overrun)
+    finally:
+        leaked = close_pool(ports)
+        if leaked and result.stopped is None:
+            result.stopped = f"pods not terminated: {leaked}"
+    return result
+
+
+def _run_plans(
+    plans: Sequence[SolutionPlan],
+    inputs: AcceptedInputs,
+    ports: CohortPorts,
+    result: CohortResult,
+    *,
+    stop_on_overrun: bool,
+) -> None:
+    from apron.application.orchestration.budget import BudgetExceededError
+
     unexpected_in_a_row = 0
-    for sp in plans:
+    for sp in group_by_execution(plans) if ports.pool is not None else plans:
         recorded = recorded_evidence(ports.store, sp.solution_fp)
         record_identity(sp, inputs, ports)
         if sp.status != "planned":
@@ -887,10 +1043,13 @@ def run_cohort(
             if unexpected_in_a_row >= MAX_UNEXPECTED_FAILURES_IN_A_ROW:
                 result.stopped = f"{unexpected_in_a_row} unexpected failures in a row: {exc}"
                 break
+        switch_leaks = _record_switch_closures(ports)
+        if switch_leaks:
+            result.stopped = f"pods not terminated: {switch_leaks}"
+            break
         if stop_on_overrun and ports.budget.overruns:
             result.stopped = f"cost overrun >50% on {ports.budget.overruns}"
             break
-    return result
 
 
 def load_attempts(store: RecordStore, digests: Sequence[str]) -> list[TaskAttemptRecord]:

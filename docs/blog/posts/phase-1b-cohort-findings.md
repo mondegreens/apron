@@ -118,6 +118,7 @@ Failed boots and retries are included.
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0157 | 1 (0.0157) | 1 |
 | **Records total** |  | **2.3483** |  |  |
 | Classifier calls (ledger) |  | 0.0000 |  |  |
+| Pooled pods between solutions (ledger) |  | 0.0000 |  |  |
 | **Ledger spent** |  | **2.8253** |  | cap $100 |
 <!-- /findings:cost -->
 

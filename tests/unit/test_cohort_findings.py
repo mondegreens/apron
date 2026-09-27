@@ -123,9 +123,11 @@ def test_prediction_errors_are_reported(findings: dict) -> None:
 def test_costs_equal_the_ledger(synthetic: tuple[Path, CohortRun], findings: dict) -> None:
     cost = findings["cost"]
     assert cost["records_total"] == pytest.approx(cost["ledger_settled"], abs=1e-3)
+    # spent = per-solution pod time + classifier calls + pooled pods between solutions
     assert cost["ledger_spent"] == pytest.approx(
-        cost["ledger_settled"] + cost["ledger_classifier"]
+        cost["ledger_settled"] + cost["ledger_classifier"] + cost["ledger_pod_idle"]
     )
+    assert cost["ledger_pod_idle"] > 0  # the synthetic run reuses pods
     assert cost["ledger_classifier"] == pytest.approx(6 * 0.02)
     assert cost["failed_boot_total"] > 0  # the six broken boots are paid for and shown
     rec = synthetic[1].records

@@ -518,8 +518,8 @@ def check_budget(run: GateRun) -> list[str]:
     for entry in run.ledger:
         if entry["op"] != "settle" or str(entry.get("flag", "")).startswith("replayed"):
             continue  # a replayed hold is a crashed pod: its records were never written
-        if str(entry["label"]).startswith("classifier:"):
-            continue  # classifier calls have no record fields; their cost is the ledger's
+        if str(entry["label"]).startswith(("classifier:", "pod-idle:")):
+            continue  # classifier calls and pooled pods' idle time: ledger-only cost
         sfp = label_to_solution.get(entry["label"])
         if sfp is None:
             problems.append(f"settle {entry['label']!r} has no hold event")
