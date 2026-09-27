@@ -227,3 +227,14 @@ def test_calculator_claim_carries_what_the_tp_choice_reads():
         id_gen=_FixedIdGen(),
     )
     assert plan.tensor_parallel == 2
+
+
+def test_a_float32_checkpoint_is_planned_in_16_bits():
+    """vLLM's dtype=auto serves float32 checkpoints in 16 bits; the plan used
+    to name float32 and doubled Mamba-2.8B's weights (10.31 GiB measured)."""
+    from apron.application.orchestration.plan_builder import served_dtype
+
+    assert served_dtype("float32") == "bfloat16"
+    assert served_dtype("bfloat16") == "bfloat16"
+    assert served_dtype("float16") == "float16"
+    assert served_dtype(None) == "bfloat16"

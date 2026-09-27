@@ -595,3 +595,22 @@ def test_pod_that_cannot_be_terminated_stops_the_run(tmp_path: Path) -> None:
     )
     assert replayed.holds == {}
     assert replayed.spent == pytest.approx(cohort_ports.budget.spent + 0.9)
+
+
+def test_a_model_without_a_chat_template_is_not_sent_the_chat_suite(tmp_path: Path) -> None:
+    """Mamba-2.8B (base, no chat template) got HTTP 400 on every chat request;
+    the run records why per case and sends none of them."""
+    from dataclasses import replace
+
+    from apron.domain.schemas.migrations import load_record as _load
+
+    cohort_ports, _, *_ = ports(tmp_path, _healthy)
+    sp = replace(solution("Qwen/Qwen3-1.7B", "NVIDIA GeForce RTX 4090"), chat_template=None)
+    outcome = run_cohort([sp], accepted_inputs(), cohort_ports).executed[sp.label]
+    attempts = [
+        _load(TaskAttemptRecord, cohort_ports.store.retrieve(d) or {})
+        for d in outcome.attempt_digests
+    ]
+    assert attempts and all(not a.accepted for a in attempts)
+    assert all(any("no chat template" in f for f in a.failures) for a in attempts)
+    assert all(a.retries == 0 for a in attempts)

@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any
 
-from apron.application.orchestration.plan_builder import build_plan
+from apron.application.orchestration.plan_builder import build_plan, served_dtype
 from apron.application.orchestration.resolution import ResolutionChain
 from apron.domain.mechanisms.model_spec_builder import build_model_spec
 from apron.domain.schemas.solutions import DeploymentPlan, RenderContext
@@ -258,8 +258,7 @@ def loaded_tensor_bytes(
 
 def runtime_dtype(config: dict[str, Any]) -> str:
     """The dtype the engine serves in with dtype=auto (float32 downcast to 16 bits)."""
-    stored = str(config.get("torch_dtype") or "bfloat16")
-    return "bfloat16" if stored == "float32" else stored
+    return served_dtype(config.get("torch_dtype"))
 
 
 def _tied_embeddings(config: dict[str, Any]) -> bool:
@@ -311,3 +310,25 @@ def _resolve_weight_bytes(
                 return 0
             total_weight_bytes += int(val) * width
     return total_weight_bytes
+
+
+def recorded_loaded_bytes(entry: dict[str, Any], plan_dtype: str | None) -> int:
+    """Weights a recorded checkpoint loads at under a plan's dtype, through the
+    planner's own resolution (tests/fixtures/cohort/weight-bytes.json rows)."""
+    total, f32, lm_head = (int(entry[k]) for k in ("total_bytes", "f32_bytes", "lm_head_bytes"))
+    meta = {"lm_head.weight": ("BF16", lm_head)} if lm_head else {}
+    meta |= {"f32": ("F32", f32), "rest": ("BF16", total - lm_head - f32)}
+    config: dict[str, Any] = {"tie_word_embeddings": entry["tie_word_embeddings"]}
+    if entry["quantized"]:
+        config["quantization_config"] = {"quant_method": "recorded"}
+    tensors = (
+        {name: size for name, (_, size) in meta.items()}
+        if plan_dtype == "float32"
+        else loaded_tensor_bytes(meta, config)
+    )
+    return _resolve_weight_bytes(None, "recorded", _RecordedObservation(), config, tensors=tensors)
+
+
+class _RecordedObservation:
+    resolved_revision = "recorded"
+    publisher_metadata = None

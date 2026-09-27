@@ -67,12 +67,20 @@ def build_plan(
     )
 
 
+def served_dtype(stored: str | None) -> str:
+    """The dtype vLLM serves a checkpoint in with dtype=auto: a float32
+    checkpoint in 16 bits (config/model.py:2285-2287).  The plan names it
+    explicitly, so plan and prediction agree: Mamba-2.8B's plan passed float32
+    and loaded 10.31 GiB against a 16-bit prediction of 5.16 (2026-09-27)."""
+    return "bfloat16" if not stored or stored == "float32" else stored
+
+
 def _derive_dtype(model_spec: ModelSpec) -> str:
     dtypes = model_spec.component_bytes_dtype
     if "decoder" in dtypes:
-        return dtypes["decoder"]
+        return served_dtype(dtypes["decoder"])
     if dtypes:
-        return next(iter(dtypes.values()))
+        return served_dtype(next(iter(dtypes.values())))
     return "bfloat16"
 
 

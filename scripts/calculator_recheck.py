@@ -17,28 +17,13 @@ import json
 import sys
 
 from apron.adapters.backends.vllm_quantization import default_max_num_batched_tokens
-from apron.application.orchestration.plan_pipeline import _resolve_weight_bytes
+from apron.application.orchestration.plan_pipeline import recorded_loaded_bytes
 from apron.domain.mechanisms import CalculatorInput, ComponentMechanism, TextWorkload
 from apron.domain.mechanisms.calculator import _activation_estimate, _per_gpu
 from apron.interfaces.cohort_root import REPO, RUN_DIR, hardware_for, load_cohort_run
 
 FIXTURE = REPO / "tests" / "fixtures" / "cohort" / "weight-bytes.json"
 OUT = RUN_DIR / "calculator-recheck.json"
-
-
-class _Recorded:
-    def __init__(self, entry: dict) -> None:
-        self._entry = entry
-
-    def _tensor_bytes(self, model_id: str, revision: str) -> dict[str, int]:
-        lm_head = int(self._entry["lm_head_bytes"])
-        rest = {"rest": int(self._entry["total_bytes"]) - lm_head}
-        return {**rest, "lm_head.weight": lm_head} if lm_head else rest
-
-
-class _Observation:
-    resolved_revision = "recorded"
-    publisher_metadata = None
 
 
 def main() -> int:
@@ -56,10 +41,8 @@ def main() -> int:
             continue
         seen.add(key)
         fixture = recorded[entry.model_id]
-        config = {"tie_word_embeddings": fixture["tie_word_embeddings"]}
-        weights_now = _per_gpu(
-            _resolve_weight_bytes(_Recorded(fixture), entry.model_id, _Observation(), config), tp
-        )
+        dtype = entry.deployment_plan.dtype or "bfloat16"
+        weights_now = _per_gpu(recorded_loaded_bytes(fixture, dtype), tp)
         hardware = hardware_for(gpu)
         tokens = default_max_num_batched_tokens(hardware.total_memory_bytes, gpu)
         inputs = CalculatorInput(
@@ -69,7 +52,11 @@ def main() -> int:
             hardware=hardware,
             execution_spec_data={"max_num_batched_tokens": tokens},
         )
-        metadata = {k: fixture[k] for k in ("vocab_size", "hidden_size", "torch_dtype")}
+        metadata = {
+            "vocab_size": fixture["vocab_size"],
+            "hidden_size": fixture["hidden_size"],
+            "torch_dtype": dtype,  # the plan's served dtype
+        }
         claim = claims.get(entry.solution_fingerprint)
         proposed = claim.proposed_configuration if claim else {}
         rows.append(
@@ -77,6 +64,7 @@ def main() -> int:
                 "model": entry.model_id,
                 "gpu": gpu,
                 "tensor_parallel": tp,
+                "dtype": dtype,
                 "profiled_tokens": tokens,
                 "weights_at_run": proposed.get("weight_memory_bytes"),
                 "weights_now": weights_now,

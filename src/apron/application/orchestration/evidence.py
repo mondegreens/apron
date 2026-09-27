@@ -193,6 +193,9 @@ def build_task_attempt(
     errors = list(failures)
     if scored.get("status") == "failed":
         errors.append(f"evaluation:{scored.get('error', 'unknown error')}")
+    if scored.get("finish_reason") == "length":
+        # Cut at the case's max_tokens: a mismatch says nothing about the answer.
+        errors.append("evaluation:truncated at max_tokens")
     score = scored.get("score")
     return TaskAttemptRecord(
         decision_fingerprint=ctx.decision_fingerprint,

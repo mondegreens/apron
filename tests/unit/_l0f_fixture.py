@@ -119,6 +119,8 @@ class LineageRecording(_Strict):
 class RecordedWeightBytes(_Strict):
     revision: str
     total_bytes: int
+    f32_bytes: int
+    quantized: bool
     lm_head_bytes: int
     tie_word_embeddings: bool
     vocab_size: int

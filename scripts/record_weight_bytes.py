@@ -35,7 +35,8 @@ def main() -> int:
         if model_id in models:
             continue
         revision = entry.model_spec.immutable_revision or "main"
-        tensors = resolver._tensor_bytes(model_id, revision)
+        meta = resolver._tensor_meta(model_id, revision)
+        tensors = None if meta is None else {n: size for n, (_, size) in meta.items()}
         config_raw = resolver._download_file(model_id, "config.json", revision)
         if not tensors or config_raw is None:
             print(f"{model_id}: no safetensors headers or config", file=sys.stderr)
@@ -45,6 +46,8 @@ def main() -> int:
         models[model_id] = {
             "revision": revision,
             "total_bytes": sum(tensors.values()),
+            "f32_bytes": sum(size for dtype, size in (meta or {}).values() if dtype == "F32"),
+            "quantized": bool(config.get("quantization_config")),
             "lm_head_bytes": tensors.get("lm_head.weight", 0),
             "tie_word_embeddings": _tied_embeddings(config),
             "vocab_size": config.get("vocab_size", text.get("vocab_size")),
