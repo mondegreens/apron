@@ -26,6 +26,8 @@ if TYPE_CHECKING:
     from apron.domain.ports import Clock
 
 STAGE_PREFIX = "stage:"
+# Storage of staged weights, accrued per window by the composition root.
+STORAGE_PREFIX = "storage:"
 
 
 @dataclass(frozen=True)

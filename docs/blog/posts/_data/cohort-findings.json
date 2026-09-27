@@ -274,8 +274,10 @@
     "ledger_corrected": -0.253268,
     "ledger_pod_idle": 0.230238,
     "ledger_reconciled": 0.650187,
-    "ledger_settled": 10.535646,
-    "ledger_spent": 11.356161,
+    "ledger_settled": 10.380046,
+    "ledger_spent": 11.356902,
+    "ledger_staging": 0.1556,
+    "ledger_storage": 0.000741,
     "per_solution": [
       {
         "cost": 1.392902,

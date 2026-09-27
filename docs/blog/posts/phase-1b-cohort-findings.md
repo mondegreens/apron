@@ -224,9 +224,11 @@ Failed boots and retries are included.
 | **Records total** |  | **9.9030** |  |  |
 | Diagnosis model calls (Claude Haiku) |  | 0.1934 |  |  |
 | Idle time of reused pods |  | 0.2302 |  |  |
+| CPU pods that staged weights |  | 0.1556 |  |  |
+| Network volume storage for staged weights |  | 0.0007 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  | 0.6502 |  |  |
 | Corrections to RunPod's bill (estimates, clock differences) |  | -0.2533 |  |  |
-| **Ledger spent** |  | **11.3562** |  | cap $500 |
+| **Ledger spent** |  | **11.3569** |  | cap $500 |
 | RunPod billed, same window |  | 9.9041 |  | not billed yet: 2 pod(s) |
 <!-- /findings:cost -->
 

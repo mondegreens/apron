@@ -20,6 +20,7 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Any
 
 from apron.application.orchestration.billing import RECONCILE_PREFIX
+from apron.application.orchestration.staging import STAGE_PREFIX, STORAGE_PREFIX
 from apron.application.orchestration.cohort import classify_harness_error
 from apron.application.orchestration.remediation import SIX_CLASSES, failed_as_named
 from apron.application.orchestration.serving import evaluate_serving_slos
@@ -480,10 +481,22 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
     def is_pod_idle(e: dict[str, Any]) -> bool:
         return str(e.get("label", "")).startswith("pod-idle:")
 
+    def is_staging(e: dict[str, Any]) -> bool:
+        return str(e.get("label", "")).startswith(STAGE_PREFIX)
+
     settled = sum(
         float(e["amount"])
         for e in run.ledger
-        if e["op"] == "settle" and not is_classifier(e) and not is_pod_idle(e)
+        if e["op"] == "settle"
+        and not is_classifier(e)
+        and not is_pod_idle(e)
+        and not is_staging(e)
+    )
+    staging = sum(float(e["amount"]) for e in run.ledger if e["op"] == "settle" and is_staging(e))
+    storage = sum(
+        float(e["amount"])
+        for e in run.ledger
+        if e["op"] == "spend" and str(e.get("label", "")).startswith(STORAGE_PREFIX)
     )
     pod_idle = sum(
         float(e["amount"]) for e in run.ledger if e["op"] == "settle" and is_pod_idle(e)
@@ -507,7 +520,11 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
         "ledger_pod_idle": round(pod_idle, 6),
         "ledger_reconciled": round(reconciled, 6),
         "ledger_corrected": round(corrected, 6),
-        "ledger_spent": round(settled + classifier + pod_idle + reconciled + corrected, 6),
+        "ledger_staging": round(staging, 6),
+        "ledger_storage": round(storage, 6),
+        "ledger_spent": round(
+            settled + classifier + pod_idle + staging + storage + reconciled + corrected, 6
+        ),
         "provider_billed": billing.get("billed_total"),
         "provider_not_yet_billed": list(billing.get("not_yet_billed", [])),
         "provider_mismatched": [
@@ -1010,6 +1027,20 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
                     "Idle time of reused pods",
                     "",
                     f"{cost.get('ledger_pod_idle', 0):.4f}",
+                    "",
+                    "",
+                ],
+                [
+                    "CPU pods that staged weights",
+                    "",
+                    f"{cost.get('ledger_staging', 0):.4f}",
+                    "",
+                    "",
+                ],
+                [
+                    "Network volume storage for staged weights",
+                    "",
+                    f"{cost.get('ledger_storage', 0):.4f}",
                     "",
                     "",
                 ],

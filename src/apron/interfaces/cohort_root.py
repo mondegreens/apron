@@ -62,7 +62,7 @@ from apron.application.orchestration.plan_pipeline import run_plan_pipeline
 from apron.application.orchestration.pods import TargetPool
 from apron.application.orchestration.remediation import FixProofPorts
 from apron.application.orchestration.scheduler import CandidateSeed, estimate_cost
-from apron.application.orchestration.staging import StagingResult, stage_weights
+from apron.application.orchestration.staging import STORAGE_PREFIX, StagingResult, stage_weights
 from apron.application.sanitization import SecretMaskingFilter
 from apron.domain.artifacts.identity import ArtifactIdentity
 from apron.domain.canonical import digest_hex
@@ -536,7 +536,7 @@ def accrue_storage(site: WeightsSite, budget: BudgetTracker, run_dir: Path = RUN
     amount = storage_cost(site.size_gb, hours)
     if amount > 0:
         budget.record_spend(
-            amount, f"storage:{site.volume_id}:{site.size_gb}GB:{round(hours, 3)}h"
+            amount, f"{STORAGE_PREFIX}{site.volume_id}:{site.size_gb}GB:{round(hours, 3)}h"
         )
     entry.update(since=now, size_gb=site.size_gb, data_center_id=site.data_center_id)
     path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n")
