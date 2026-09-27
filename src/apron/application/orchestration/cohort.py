@@ -47,6 +47,7 @@ from apron.application.orchestration.evidence import (
     build_task_attempt,
     chat_template_kwargs,
     load_typed,
+    reasoning_request_fields,
     scorer_input,
     store_validated,
 )
@@ -789,6 +790,7 @@ def _run_task_suite(
                 ctx,
                 model_id=model_id,
                 chat_template_kwargs=chat_template_kwargs(sp.chat_template),
+                request_fields=reasoning_request_fields(sp.chat_template),
             ),
             "endpoint": endpoint,
         }

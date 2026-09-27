@@ -90,6 +90,8 @@ class DeterministicScorer:
         }
         if protocol.get("chat_template_kwargs"):
             prepared["chat_template_kwargs"] = dict(protocol["chat_template_kwargs"])
+        if protocol.get("request_fields"):
+            prepared["request_fields"] = dict(protocol["request_fields"])
         if protocol.get("sampling_top_p") is not None:
             prepared["top_p"] = float(protocol["sampling_top_p"])
         if protocol.get("stopping_rules"):
@@ -183,6 +185,8 @@ class DeterministicScorer:
         }
         if protocol.get("chat_template_kwargs"):
             body["chat_template_kwargs"] = protocol["chat_template_kwargs"]
+        for field, value in (protocol.get("request_fields") or {}).items():
+            body.setdefault(field, value)  # never overrides the protocol's own fields
         if protocol.get("top_p") is not None:
             body["top_p"] = protocol["top_p"]
         if protocol.get("stop"):

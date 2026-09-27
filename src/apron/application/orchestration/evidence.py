@@ -238,11 +238,29 @@ def chat_template_kwargs(chat_template: str | None) -> dict[str, Any] | None:
     return None
 
 
+def reasoning_request_fields(chat_template: str | None) -> dict[str, Any] | None:
+    """Request fields that keep reasoning short where it cannot be switched off.
+
+    gpt-oss always reasons in its analysis channel; its template reads
+    ``reasoning_effort`` and has no ``enable_thinking``.  vLLM takes the
+    effort as the OpenAI request field (not a template kwarg) for it.  A
+    template with ``enable_thinking`` gets that switch instead.
+    """
+    if (
+        chat_template
+        and "enable_thinking" not in chat_template
+        and ("reasoning_effort" in chat_template)
+    ):
+        return {"reasoning_effort": "low"}
+    return None
+
+
 def scorer_input(
     ctx: EvidenceContext,
     *,
     model_id: str,
     chat_template_kwargs: Mapping[str, Any] | None = None,
+    request_fields: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """The evaluation adapter's input for this context's suite and protocol.
 
@@ -272,6 +290,8 @@ def scorer_input(
         data["stopping_rules"] = list(protocol.stopping_rules)
     if chat_template_kwargs:
         data["chat_template_kwargs"] = dict(chat_template_kwargs)
+    if request_fields:
+        data["request_fields"] = dict(request_fields)
     return data
 
 

@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 14 on 6 GPU types
 - Failure classes fixed and re-verified: 6 of 6
-- Total cost: $11.37 of the $500 cap (failed boots included: $5.09)
+- Total cost: $11.41 of the $500 cap (failed boots included: $5.09)
 <!-- /findings:headline -->
 
 <!-- more -->

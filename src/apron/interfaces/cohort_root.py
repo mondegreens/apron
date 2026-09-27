@@ -114,17 +114,24 @@ def cohort_envelope(maximum_spend: float = AUTHORIZED_USD) -> AuthorizationEnvel
     )
 
 
+# The modern models (groups A-D) answer the same three questions with room to
+# reason first: 512 tokens instead of 8 (owner, 2026-09-27).  A different suite
+# is a different evaluation protocol; the first cohort's records keep theirs.
+TASK_SUITE_V2 = REPO / "cohort" / "task-suite-v2.json"
+
+
 def load_inputs(
     fixtures: Path = FIXTURES,
     envelope: AuthorizationEnvelope | None = None,
     protocol: Path = PROTOCOL,
+    task_suite: Path | None = None,
 ) -> AcceptedInputs:
     return AcceptedInputs(
         request=DecisionRequest.model_validate_json(
             (fixtures / "decision-request.json").read_text()
         ),
         task_suite=TaskSuiteSpec.model_validate_json(
-            (fixtures / "task-suite-spec.json").read_text()
+            (task_suite or fixtures / "task-suite-spec.json").read_text()
         ),
         application=ApplicationSpec.model_validate_json(
             (fixtures / "application-spec.json").read_text()

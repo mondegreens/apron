@@ -35,6 +35,15 @@ pytestmark = [
 ]
 
 
+def _inputs():  # type: ignore[no-untyped-def]
+    """The accepted inputs; ``APRON_TASK_SUITE=v2`` for the modern models."""
+    from apron.interfaces.cohort_root import TASK_SUITE_V2, load_inputs
+
+    return load_inputs(
+        task_suite=TASK_SUITE_V2 if os.environ.get("APRON_TASK_SUITE") == "v2" else None
+    )
+
+
 def _step(name: str) -> None:
     if name != STEP:
         pytest.skip(f"APRON_COHORT_STEP={STEP!r}; this is step {name!r}")
@@ -165,7 +174,7 @@ def test_l0a3_measurement_stability() -> None:
     _step("l0a3")
     from apron.application.orchestration.cohort import close_pool
     from apron.application.orchestration.scheduler import CandidateSeed
-    from apron.interfaces.cohort_root import CohortPlanner, build_ports, live_rates, load_inputs
+    from apron.interfaces.cohort_root import CohortPlanner, build_ports, live_rates
 
     rates = live_rates(os.environ["RUNPOD_API_KEY"])
     ports = build_ports(rates=rates)
@@ -178,7 +187,7 @@ def test_l0a3_measurement_stability() -> None:
         mechanism="autoregressive_decode",
         weight_gb=4.06,
     )
-    inputs = load_inputs()
+    inputs = _inputs()
     reports = []
     try:
         _l0a3_runs(planner, seed, inputs, ports, reports)
@@ -235,12 +244,12 @@ def _l0a3_compare(reports) -> None:  # type: ignore[no-untyped-def]
 def test_l0f_failure_reproduction() -> None:
     _step("l0f")
     from apron.application.orchestration.cohort import close_pool
-    from apron.interfaces.cohort_root import CohortPlanner, build_ports, live_rates, load_inputs
+    from apron.interfaces.cohort_root import CohortPlanner, build_ports, live_rates
 
     rates = live_rates(os.environ["RUNPOD_API_KEY"])
     ports = build_ports(rates=rates)
     planner = CohortPlanner(rates=rates)
-    inputs = load_inputs()
+    inputs = _inputs()
     only = {int(c) for c in os.environ.get("APRON_L0F_CLASSES", "1,2,3,4,5,6").split(",")}
     results: dict[int, dict] = {}
     try:
@@ -300,7 +309,6 @@ def test_cohort_run() -> None:
         CohortPlanner,
         build_ports,
         live_rates,
-        load_inputs,
         load_seed,
     )
 
@@ -317,7 +325,7 @@ def test_cohort_run() -> None:
         seeds, Coverage(), measured=[], remaining_budget=ports.budget.remaining, rates=rates
     )
     plans = [planner.plan_seed(r.seed) for r in ranking.ranked]
-    inputs = load_inputs()
+    inputs = _inputs()
     _write(
         f"cohort-ranking{tag}.json",
         {
@@ -357,7 +365,6 @@ def test_fix_proofs() -> None:
         build_fix_ports,
         build_ports,
         live_rates,
-        load_inputs,
     )
 
     assert os.environ.get("ANTHROPIC_API_KEY"), "the classifier needs ANTHROPIC_API_KEY"
@@ -365,7 +372,7 @@ def test_fix_proofs() -> None:
     ports = build_ports(rates=rates)
     planner = CohortPlanner(rates=rates)
     fix = build_fix_ports(planner, rates, ports.budget.record_spend)
-    inputs = load_inputs()
+    inputs = _inputs()
     only = {int(c) for c in os.environ.get("APRON_FIX_CLASSES", "1,2,3,4,5,6").split(",")}
     try:
         proofs = [prove_fix(c, inputs, ports, fix) for c in SIX_CLASSES if c.failure_class in only]
@@ -395,7 +402,6 @@ def test_prestaged_run() -> None:
         accrue_storage,
         build_ports,
         live_rates,
-        load_inputs,
         load_seed,
         stage_site,
         weights_site,
@@ -431,7 +437,7 @@ def test_prestaged_run() -> None:
     # Never fall back to downloading on the GPU pod: that is what this avoids.
     assert staging.ok, staging.error or [m.model_id for m in staging.models if not m.ok]
 
-    inputs = load_inputs()
+    inputs = _inputs()
     try:
         result = run_cohort(plans, inputs, ports, repeat=os.environ.get("APRON_REPEAT") == "1")
     finally:
