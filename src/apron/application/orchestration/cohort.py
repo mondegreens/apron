@@ -925,6 +925,34 @@ MAX_UNEXPECTED_FAILURES_IN_A_ROW = 2
 CAPACITY_ATTEMPTS = 3
 
 
+class NoCapacityError(HarnessError):
+    """The provider never had capacity for this execution within the waits."""
+
+
+def execute_when_available(
+    sp: SolutionPlan,
+    inputs: AcceptedInputs,
+    ports: CohortPorts,
+    **kwargs: Any,
+) -> ExecutionOutcome:
+    """``execute_solution`` after waiting for stock; a refused creation waits again.
+
+    Raises NoCapacityError when stock never came or creation kept being refused.
+    Each refused attempt is stored as a first-class failed attempt (cost ~0).
+    """
+    for attempt in range(CAPACITY_ATTEMPTS):
+        if not _capacity_for(sp, ports):
+            _event(ports, "no_capacity", sp, attempt=attempt)
+            raise NoCapacityError(f"{sp.label}: no provider capacity within the wait")
+        try:
+            return execute_solution(sp, inputs, ports, **kwargs)
+        except Exception as exc:
+            if classify_harness_error(str(exc)) != "harness:no_capacity":
+                raise
+            _event(ports, "capacity_refused", sp, attempt=attempt)
+    raise NoCapacityError(f"{sp.label}: creation refused {CAPACITY_ATTEMPTS} times")
+
+
 def _capacity_for(sp: SolutionPlan, ports: CohortPorts) -> bool:
     """Stock for a new pod (a parked pod for this execution needs none)."""
     if ports.pool is not None and ports.pool.has_live(sp.requested):

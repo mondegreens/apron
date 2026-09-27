@@ -1,0 +1,351 @@
+{
+  "executed": {
+    "JunHowie/Qwen3-8B-GPTQ-Int4@NVIDIA GeForce RTX 4090x1": {
+      "solution_fp": "12200c99f04283b4c90c0f7cd34e22dfe2524904fa5200c5b628c91e6b514e469ba9",
+      "healthy": true,
+      "boot_report_digest": "1220b9e409435a57a94ec162cf8e0d401bf53a8967bbb168a213dbeb6482f7596ca6",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "1220750ac695032ee7818f2ba8e6e06bad0c7f3153e1555f0231474ff6622b53d0b0",
+        "1220c78063be278806620433e9a2430eb978a597e0307d3dc8e62fc935c061e15949",
+        "1220a7877dd7e888e743fd90a99cff2d93777ecbdf332e3e23ccd635525fb63ddd45"
+      ],
+      "serving_digest": "12206a93cab1c283344ad2039ba5a3a9415c64850bc54372523f112e33225a34c82c",
+      "log_tail": "",
+      "harness_failures": [],
+      "cost": 0.118071,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "297": 0,
+          "842": 0
+        },
+        "token_free": true
+      }
+    },
+    "google/gemma-2-2b-it@NVIDIA GeForce RTX 4090x1": {
+      "solution_fp": "12202aec74d006bbc48008d3270723b36c11146647f6e81e509694d63f5e31a3a746",
+      "healthy": true,
+      "boot_report_digest": "12207b314f3982aa828ce37adf4c6fb200cb9fe744a48dda8b483cd7e494d95bfec4",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "122010775bd1c04f22c2713405eafc0e4a8b5e6647afa2f9ee4a214b23e0905a3f3c",
+        "12205a99eed24ad06e68bbec2c4dbe9df15aff9015d54bfd330ac4104b19addf409d",
+        "12207c8d129ea3d8b84f6f681aa518de8ff36ddd793832fda2c1bc1c1d2eff988550"
+      ],
+      "serving_digest": "12203ec9f9ea5b2117b8c85fd07962e4e303cca3524c8d71219340d8a96221198ac1",
+      "log_tail": "",
+      "harness_failures": [],
+      "cost": 0.025271,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "2705": 0,
+          "3224": 0
+        },
+        "token_free": true
+      }
+    },
+    "meta-llama/Llama-3.1-8B-Instruct@NVIDIA GeForce RTX 4090x1": {
+      "solution_fp": "1220d72bc9a2fc08e5fcb21cde53805d905b8df1323bec4f9e5cb3c28712abaf2f1c",
+      "healthy": true,
+      "boot_report_digest": "1220636ca167b3f0c240df5c80fa2aec588bd2bec55f7a763fb5acc33fe1bcfb5cec",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "122084195d84d5675e8cbcf0b9afbca0b5bf292dc6b280ddbc11c1c1e5b2d4891751",
+        "1220b871596474c6147fd47a73849565c4864919debdf7d64c4865163609b583760d",
+        "12208c23032bd47caf2ff2ce057e1a5e98c528a12336204280ce26bafb1a40f60d01"
+      ],
+      "serving_digest": "1220c62d62ae67ec438ebca7e7facc6f53eb71e65853a9e6b29aee797a3e470e5948",
+      "log_tail": "",
+      "harness_failures": [],
+      "cost": 0.03038,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "4578": 0,
+          "5033": 0
+        },
+        "token_free": true
+      }
+    },
+    "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA GeForce RTX 4090x1": {
+      "solution_fp": "12207f57240bae0eebc99347e24818ddc3734b1034f7eb7c5f3bc183f02e3eaacb73",
+      "healthy": true,
+      "boot_report_digest": "122075e500841efea613add26e52f3a827c8b87c32ddca193ffdf8fd23c0867db745",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "1220533c7088dda6eb4272dc3aec8e9c820e7f526a5bb24b8921223bdb51da8c4b63",
+        "1220f4cdf74d42208d6a32e1ca691e2694379191b3b9d51fcf7be445d90eb9689126",
+        "1220a6224c34845b72053479b0ae0c2c8ea77977f58c09c225906774734ac21c8509"
+      ],
+      "serving_digest": "1220dcda4554108a677ca6f2ec1c9f90512c74bbbae40cf7f24f29b0f583c563d383",
+      "log_tail": "",
+      "harness_failures": [],
+      "cost": 0.031312,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "6654": 0,
+          "7099": 0
+        },
+        "token_free": true
+      }
+    },
+    "deepseek-ai/DeepSeek-V2-Lite@NVIDIA A100 80GB PCIex1": {
+      "solution_fp": "1220eff51c223b2920c6ae86f24762634597b53d796d55ce6a35de6780d1b2192399",
+      "healthy": true,
+      "boot_report_digest": "1220697d834da838ea2b058265f8dc1159098f8868d943b13b0f887b05fbb10162b9",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "122091e1cf984bc6c153ae71bcbb84d5373554407d6fd49d08c6cee0c632fda74f05",
+        "12200ac2fd197bfb3739f5b145510feed8256e6b3f90df263688d362e3138ce9097a",
+        "12209e38a5f726490e019088aa99a69d9fdd008b78a93b70eee1a6355aeecc9d5c95"
+      ],
+      "serving_digest": "122061f72e5d7004a287bada68fc73c6d61a02140a24be883c82d676d48a02f0a518",
+      "log_tail": "",
+      "harness_failures": [],
+      "cost": 0.249715,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "1765": 0,
+          "2331": 0
+        },
+        "token_free": true
+      }
+    },
+    "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1": {
+      "solution_fp": "12202f91578c9a0f60b9a64d5908b53ae953cd6ad5a18dbff2982a91578c2b7c86f2",
+      "healthy": false,
+      "boot_report_digest": null,
+      "failed_boot_digests": [
+        "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321"
+      ],
+      "attempt_digests": [],
+      "serving_digest": null,
+      "log_tail": "DEBUG 09-27 01:25:31 [plugins/__init__.py:44] No plugins for group vllm.platform_plugins found.\nDEBUG 09-27 01:25:31 [platforms/__init__.py:36] Checking if TPU platform is available.\nDEBUG 09-27 01:25:31 [platforms/__init__.py:55] TPU platform is not available because: No module named 'libtpu'\nDEBUG 09-27 01:25:31 [platforms/__init__.py:61] Checking if CUDA platform is available.\nDEBUG 09-27 01:25:31 [platforms/__init__.py:84] Confirmed CUDA platform is available.\nDEBUG 09-27 01:25:31 [platforms/__init__.py:112] Checking if ROCm platform is available.\nDEBUG 09-27 01:25:31 [platforms/__init__.py:126] ROCm platform is not available because: No module named 'amdsmi'\nDEBUG 09-27 01:25:31 [platforms/__init__.py:147] Checking if XPU platform is available.\nDEBUG 09-27 01:25:31 [platforms/__init__.py:177] Checking if CPU platform is available.\nDEBUG 09-27 01:25:31 [platforms/__init__.py:61] Checking if CUDA platform is available.\nDEBUG 09-27 01:25:31 [platforms/__init__.py:84] Confirmed CUDA platform is available.\nDEBUG 09-27 01:25:31 [platforms/__init__.py:280] Automatically detected platform cuda.\n/opt/venv/lib/python3.12/site-packages/huggingface_hub/constants.py:302: FutureWarning: The `HF_HUB_ENABLE_HF_TRANSFER` environment variable is deprecated as 'hf_transfer' is not used anymore. Please use `HF_XET_HIGH_PERFORMANCE` instead to enable high performance transfer with Xet. Visit https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfxethighperformance for more details.\n  warnings.warn(\nDEBUG 09-27 01:25:39 [entrypoints/.../utils/api_utils.py:165] Setting VLLM_WORKER_MULTIPROC_METHOD to 'spawn'\nDEBUG 09-27 01:25:39 [plugins/__init__.py:52] Available plugins for group vllm.general_plugins:\nDEBUG 09-27 01:25:39 [plugins/__init__.py:54] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver\nDEBUG 09-27 01:25:39 [plugins/__init__.py:54] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver\nDEBUG 09-27 01:25:39 [plugins/__init__.py:57] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.\n(APIServer pid=5912) INFO 09-27 01:25:40 [entrypoints/.../utils/api_utils.py:347] \n(APIServer pid=5912) INFO 09-27 01:25:40 [entrypoints/.../utils/api_utils.py:347]        \u2588     \u2588     \u2588\u2584   \u2584\u2588\n(APIServer pid=5912) INFO 09-27 01:25:40 [entrypoints/.../utils/api_utils.py:347]  \u2584\u2584 \u2584\u2588 \u2588     \u2588     \u2588 \u2580\u2584\u2580 \u2588  version 0.29.0\n(APIServer pid=5912) INFO 09-27 01:25:40 [entrypoints/.../utils/api_utils.py:347]   \u2588\u2584\u2588\u2580 \u2588     \u2588     \u2588     \u2588  model   /workspace/models/Qwen/Qwen3-32B\n(APIServer pid=5912) INFO 09-27 01:25:40 [entrypoints/.../utils/api_utils.py:347]    \u2580\u2580  \u2580\u2580\u2580\u2580\u2580 \u2580\u2580\u2580\u2580\u2580 \u2580     \u2580\n(APIServer pid=5912) INFO 09-27 01:25:40 [entrypoints/.../utils/api_utils.py:347] \n(APIServer pid=5912) INFO 09-27 01:25:40 [entrypoints/.../utils/api_utils.py:286] non-default args: {'model_tag': '/workspace/models/Qwen/Qwen3-32B', 'model': '/workspace/models/Qwen/Qwen3-32B', 'dtype': 'bfloat16', 'max_model_len': 640, 'served_model_name': ['Qwen/Qwen3-32B'], 'gpu_memory_utilization': 0.9}\n(APIServer pid=5912) DEBUG 09-27 01:25:40 [model_executor/models/registry.py:967] Cached model info file for class vllm.model_executor.models.qwen3.Qwen3ForCausalLM not found\n(APIServer pid=5912) DEBUG 09-27 01:25:40 [model_executor/models/registry.py:1038] Cache model info for class vllm.model_executor.models.qwen3.Qwen3ForCausalLM miss. Loading model instead.\n(APIServer pid=5912) DEBUG 09-27 01:25:50 [model_executor/models/registry.py:1048] Loaded model info for class vllm.model_executor.models.qwen3.Qwen3ForCausalLM\n(APIServer pid=5912) DEBUG 09-27 01:25:50 [logging_utils/log_time.py:29] Registry inspect model class: Elapsed time 10.1960836 secs\n(APIServer pid=5912) INFO 09-27 01:25:50 [config/model.py:684] Resolved architecture: Qwen3ForCausalLM\n(APIServer pid=5912) INFO 09-27 01:25:50 [config/model.py:2021] Using max model len 640\n(APIServer pid=5912) DEBUG 09-27 01:25:50 [config/model.py:2086] Generative models support chunked prefill.\n(APIServer pid=5912) DEBUG 09-27 01:25:50 [config/model.py:2141] Generative models support prefix caching.\n(APIServer pid=5912) DEBUG 09-27 01:25:50 [engine/arg_utils.py:2771] Enabling chunked prefill by default\n(APIServer pid=5912) DEBUG 09-27 01:25:50 [engine/arg_utils.py:2799] Enabling prefix caching by default\n(APIServer pid=5912) DEBUG 09-27 01:25:50 [engine/arg_utils.py:2947] Defaulting max_num_batched_tokens to 2048 for OPENAI_API_SERVER usage context.\n(APIServer pid=5912) DEBUG 09-27 01:25:50 [engine/arg_utils.py:2957] Defaulting max_num_seqs to 256 for OPENAI_API_SERVER usage context.\n(APIServer pid=5912) DEBUG 09-27 01:25:50 [config/kernel.py:351] Setting platform-specific IR op priority defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native']), user-defined: IrOpPriorityConfig(rms_norm=[], fused_add_rms_norm=[])\n(APIServer pid=5912) INFO 09-27 01:25:50 [config/kernel.py:369] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'])\n(APIServer pid=5912) DEBUG 09-27 01:25:50 [plugins/__init__.py:44] No plugins for group vllm.stat_logger_plugins found.\n(APIServer pid=5912) DEBUG 09-27 01:25:50 [tokenizers/registry.py:83] Loading CachedHfTokenizer for tokenizer_mode='hf'\n(APIServer pid=5912) Traceback (most recent call last):\n(APIServer pid=5912)   File \"/opt/venv/bin/vllm\", line 10, in <module>\n(APIServer pid=5912)     sys.exit(main())\n(APIServer pid=5912)              ^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/cli/main.py\", line 97, in main\n(APIServer pid=5912)     args.dispatch_function(args)\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/cli/serve.py\", line 153, in cmd\n(APIServer pid=5912)     uvloop.run(run_server(args))\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/uvloop/__init__.py\", line 96, in run\n(APIServer pid=5912)     return __asyncio.run(\n(APIServer pid=5912)            ^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/usr/lib/python3.12/asyncio/runners.py\", line 195, in run\n(APIServer pid=5912)     return runner.run(main)\n(APIServer pid=5912)            ^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/usr/lib/python3.12/asyncio/runners.py\", line 118, in run\n(APIServer pid=5912)     return self._loop.run_until_complete(task)\n(APIServer pid=5912)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"uvloop/loop.pyx\", line 1518, in uvloop.loop.Loop.run_until_complete\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/uvloop/__init__.py\", line 48, in wrapper\n(APIServer pid=5912)     return await main\n(APIServer pid=5912)            ^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py\", line 176, in run_server\n(APIServer pid=5912)     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py\", line 190, in run_server_worker\n(APIServer pid=5912)     async with build_async_engine_client(\n(APIServer pid=5912)                ^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/usr/lib/python3.12/contextlib.py\", line 210, in __aenter__\n(APIServer pid=5912)     return await anext(self.gen)\n(APIServer pid=5912)            ^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py\", line 58, in build_async_engine_client\n(APIServer pid=5912)     async with build_async_engine_client_from_engine_args(\n(APIServer pid=5912)                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/usr/lib/python3.12/contextlib.py\", line 210, in __aenter__\n(APIServer pid=5912)     return await anext(self.gen)\n(APIServer pid=5912)            ^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py\", line 94, in build_async_engine_client_from_engine_args\n(APIServer pid=5912)     async_llm = AsyncLLM.from_vllm_config(\n(APIServer pid=5912)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py\", line 227, in from_vllm_config\n(APIServer pid=5912)     return cls(\n(APIServer pid=5912)            ^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py\", line 142, in __init__\n(APIServer pid=5912)     self.renderer = renderer = renderer_from_config(self.vllm_config)\n(APIServer pid=5912)                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/renderers/registry.py\", line 85, in renderer_from_config\n(APIServer pid=5912)     tokenizer = cached_tokenizer_from_config(model_config, **kwargs)\n(APIServer pid=5912)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/tokenizers/registry.py\", line 276, in cached_tokenizer_from_config\n(APIServer pid=5912)     return cached_get_tokenizer(\n(APIServer pid=5912)            ^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/tokenizers/registry.py\", line 253, in get_tokenizer\n(APIServer pid=5912)     tokenizer = tokenizer_cls_.from_pretrained(tokenizer_name, *args, **kwargs)\n(APIServer pid=5912)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/tokenizers/hf.py\", line 238, in from_pretrained\n(APIServer pid=5912)     raise e\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/vllm/tokenizers/hf.py\", line 210, in from_pretrained\n(APIServer pid=5912)     tokenizer = AutoTokenizer.from_pretrained(\n(APIServer pid=5912)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/transformers/models/auto/tokenization_auto.py\", line 971, in from_pretrained\n(APIServer pid=5912)     return tokenizer_class.from_pretrained(pretrained_model_name_or_path, *inputs, **kwargs)\n(APIServer pid=5912)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/transformers/tokenization_utils_base.py\", line 1736, in from_pretrained\n(APIServer pid=5912)     return cls._from_pretrained(\n(APIServer pid=5912)            ^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/transformers/tokenization_utils_base.py\", line 1932, in _from_pretrained\n(APIServer pid=5912)     tokenizer = cls(*init_inputs, **init_kwargs)\n(APIServer pid=5912)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=5912)   File \"/opt/venv/lib/python3.12/site-packages/transformers/models/qwen2/tokenization_qwen2.py\", line 62, in __init__\n(APIServer pid=5912)     BPE(\n(APIServer pid=5912) ValueError: `vocab` and `merges` must be both be from memory or both filenames",
+      "harness_failures": [],
+      "cost": 0.092424,
+      "provider_reported_cost": null,
+      "token_check": null
+    },
+    "Qwen/Qwen3-1.7B@NVIDIA L4x1": {
+      "solution_fp": "1220eb2e15f071bcf0ab280cadbf03c7ae02a9b80bfb6397c52e4009ba38eba9067c",
+      "healthy": true,
+      "boot_report_digest": "1220205b397c672ee4ad674fc589d167da7dda4c181ee1603eafcd7c66235184198f",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "1220dad9155b4119fb6b58cebe264353221af8a88c01d6cb890ab1269ba49ad734eb",
+        "1220c6fe521bb6009e712c2956eb12b468bf330b01bbbb6d06d524507b273dfff3b8",
+        "122052ddb3ca62378b8a6da3ffecb34fb468f0e2e1fb4077f6e6b323ea7edfcf4d24"
+      ],
+      "serving_digest": "1220715f23ad9671aebdd9a57e50d3b214b31148738cc267163365f9d9be3b166d46",
+      "log_tail": "",
+      "harness_failures": [],
+      "cost": 0.084976,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "225": 0,
+          "446": 0
+        },
+        "token_free": true
+      }
+    },
+    "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA L4x1": {
+      "solution_fp": "12208d948a51a4e3a222169e1676c87c4a4ccb6dbd34541bbb9f770d880b303b73d4",
+      "healthy": true,
+      "boot_report_digest": "1220ac02237cee071400d8ff6a286d8975f85c8f18558aa041bdeaaac5f6a578a165",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "12200b886612e9838f059ca5f7f0a6aee2635cffca9de380c2404e6ab4039079e0a0",
+        "1220f42f4f523a5a979b719998a96fd13d31b7233f1655e1b759518a699d6957d500",
+        "12206313935a53ff7c3a43322ef5041ecd093915cba793babb263f21c785c370d492"
+      ],
+      "serving_digest": "12203758d37c241f2c591f6e08945ab2f7b11cf5a89bf19c91f08269223f7f3057b3",
+      "log_tail": "",
+      "harness_failures": [],
+      "cost": 0.035834,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "2087": 0,
+          "2367": 0
+        },
+        "token_free": true
+      }
+    },
+    "Qwen/Qwen3-32B@NVIDIA H100 80GB HBM3x1": {
+      "solution_fp": "1220d0ede98d3613c686e40edc611e06de1fbdcee43866297ae8ca9b0db98ffd5dae",
+      "healthy": false,
+      "boot_report_digest": null,
+      "failed_boot_digests": [
+        "122076c27e44225ebf05c45d63ba6ed34a6211f7aabfe2d24e94b6c46e042ff71399"
+      ],
+      "attempt_digests": [],
+      "serving_digest": null,
+      "log_tail": "DEBUG 09-27 01:52:13 [plugins/__init__.py:44] No plugins for group vllm.platform_plugins found.\nDEBUG 09-27 01:52:13 [platforms/__init__.py:36] Checking if TPU platform is available.\nDEBUG 09-27 01:52:13 [platforms/__init__.py:55] TPU platform is not available because: No module named 'libtpu'\nDEBUG 09-27 01:52:13 [platforms/__init__.py:61] Checking if CUDA platform is available.\nDEBUG 09-27 01:52:13 [platforms/__init__.py:84] Confirmed CUDA platform is available.\nDEBUG 09-27 01:52:13 [platforms/__init__.py:112] Checking if ROCm platform is available.\nDEBUG 09-27 01:52:13 [platforms/__init__.py:126] ROCm platform is not available because: No module named 'amdsmi'\nDEBUG 09-27 01:52:13 [platforms/__init__.py:147] Checking if XPU platform is available.\nDEBUG 09-27 01:52:13 [platforms/__init__.py:177] Checking if CPU platform is available.\nDEBUG 09-27 01:52:13 [platforms/__init__.py:61] Checking if CUDA platform is available.\nDEBUG 09-27 01:52:14 [platforms/__init__.py:84] Confirmed CUDA platform is available.\nDEBUG 09-27 01:52:14 [platforms/__init__.py:280] Automatically detected platform cuda.\n/opt/venv/lib/python3.12/site-packages/huggingface_hub/constants.py:302: FutureWarning: The `HF_HUB_ENABLE_HF_TRANSFER` environment variable is deprecated as 'hf_transfer' is not used anymore. Please use `HF_XET_HIGH_PERFORMANCE` instead to enable high performance transfer with Xet. Visit https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfxethighperformance for more details.\n  warnings.warn(\nDEBUG 09-27 01:52:26 [entrypoints/.../utils/api_utils.py:165] Setting VLLM_WORKER_MULTIPROC_METHOD to 'spawn'\nDEBUG 09-27 01:52:26 [plugins/__init__.py:52] Available plugins for group vllm.general_plugins:\nDEBUG 09-27 01:52:26 [plugins/__init__.py:54] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver\nDEBUG 09-27 01:52:26 [plugins/__init__.py:54] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver\nDEBUG 09-27 01:52:26 [plugins/__init__.py:57] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.\n(APIServer pid=1146) INFO 09-27 01:52:26 [entrypoints/.../utils/api_utils.py:347] \n(APIServer pid=1146) INFO 09-27 01:52:26 [entrypoints/.../utils/api_utils.py:347]        \u2588     \u2588     \u2588\u2584   \u2584\u2588\n(APIServer pid=1146) INFO 09-27 01:52:26 [entrypoints/.../utils/api_utils.py:347]  \u2584\u2584 \u2584\u2588 \u2588     \u2588     \u2588 \u2580\u2584\u2580 \u2588  version 0.29.0\n(APIServer pid=1146) INFO 09-27 01:52:26 [entrypoints/.../utils/api_utils.py:347]   \u2588\u2584\u2588\u2580 \u2588     \u2588     \u2588     \u2588  model   /workspace/models/Qwen/Qwen3-32B\n(APIServer pid=1146) INFO 09-27 01:52:26 [entrypoints/.../utils/api_utils.py:347]    \u2580\u2580  \u2580\u2580\u2580\u2580\u2580 \u2580\u2580\u2580\u2580\u2580 \u2580     \u2580\n(APIServer pid=1146) INFO 09-27 01:52:26 [entrypoints/.../utils/api_utils.py:347] \n(APIServer pid=1146) INFO 09-27 01:52:26 [entrypoints/.../utils/api_utils.py:286] non-default args: {'model_tag': '/workspace/models/Qwen/Qwen3-32B', 'model': '/workspace/models/Qwen/Qwen3-32B', 'dtype': 'bfloat16', 'max_model_len': 640, 'served_model_name': ['Qwen/Qwen3-32B'], 'gpu_memory_utilization': 0.9}\n(APIServer pid=1146) DEBUG 09-27 01:52:26 [model_executor/models/registry.py:967] Cached model info file for class vllm.model_executor.models.qwen3.Qwen3ForCausalLM not found\n(APIServer pid=1146) DEBUG 09-27 01:52:26 [model_executor/models/registry.py:1038] Cache model info for class vllm.model_executor.models.qwen3.Qwen3ForCausalLM miss. Loading model instead.\n(APIServer pid=1146) DEBUG 09-27 01:52:33 [model_executor/models/registry.py:1048] Loaded model info for class vllm.model_executor.models.qwen3.Qwen3ForCausalLM\n(APIServer pid=1146) DEBUG 09-27 01:52:34 [logging_utils/log_time.py:29] Registry inspect model class: Elapsed time 7.3594614 secs\n(APIServer pid=1146) INFO 09-27 01:52:34 [config/model.py:684] Resolved architecture: Qwen3ForCausalLM\n(APIServer pid=1146) INFO 09-27 01:52:34 [config/model.py:2021] Using max model len 640\n(APIServer pid=1146) DEBUG 09-27 01:52:34 [config/model.py:2086] Generative models support chunked prefill.\n(APIServer pid=1146) DEBUG 09-27 01:52:34 [config/model.py:2141] Generative models support prefix caching.\n(APIServer pid=1146) DEBUG 09-27 01:52:34 [engine/arg_utils.py:2771] Enabling chunked prefill by default\n(APIServer pid=1146) DEBUG 09-27 01:52:34 [engine/arg_utils.py:2799] Enabling prefix caching by default\n(APIServer pid=1146) DEBUG 09-27 01:52:34 [engine/arg_utils.py:2947] Defaulting max_num_batched_tokens to 8192 for OPENAI_API_SERVER usage context.\n(APIServer pid=1146) DEBUG 09-27 01:52:34 [engine/arg_utils.py:2957] Defaulting max_num_seqs to 1024 for OPENAI_API_SERVER usage context.\n(APIServer pid=1146) INFO 09-27 01:52:34 [config/scheduler.py:277] Chunked prefill is enabled with max_num_batched_tokens=8192.\n(APIServer pid=1146) DEBUG 09-27 01:52:34 [config/kernel.py:351] Setting platform-specific IR op priority defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native']), user-defined: IrOpPriorityConfig(rms_norm=[], fused_add_rms_norm=[])\n(APIServer pid=1146) INFO 09-27 01:52:34 [config/kernel.py:369] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'])\n(APIServer pid=1146) DEBUG 09-27 01:52:34 [plugins/__init__.py:44] No plugins for group vllm.stat_logger_plugins found.\n(APIServer pid=1146) DEBUG 09-27 01:52:34 [tokenizers/registry.py:83] Loading CachedHfTokenizer for tokenizer_mode='hf'\n(APIServer pid=1146) Traceback (most recent call last):\n(APIServer pid=1146)   File \"/opt/venv/bin/vllm\", line 10, in <module>\n(APIServer pid=1146)     sys.exit(main())\n(APIServer pid=1146)              ^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/cli/main.py\", line 97, in main\n(APIServer pid=1146)     args.dispatch_function(args)\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/cli/serve.py\", line 153, in cmd\n(APIServer pid=1146)     uvloop.run(run_server(args))\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/uvloop/__init__.py\", line 96, in run\n(APIServer pid=1146)     return __asyncio.run(\n(APIServer pid=1146)            ^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/usr/lib/python3.12/asyncio/runners.py\", line 195, in run\n(APIServer pid=1146)     return runner.run(main)\n(APIServer pid=1146)            ^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/usr/lib/python3.12/asyncio/runners.py\", line 118, in run\n(APIServer pid=1146)     return self._loop.run_until_complete(task)\n(APIServer pid=1146)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"uvloop/loop.pyx\", line 1518, in uvloop.loop.Loop.run_until_complete\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/uvloop/__init__.py\", line 48, in wrapper\n(APIServer pid=1146)     return await main\n(APIServer pid=1146)            ^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py\", line 176, in run_server\n(APIServer pid=1146)     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py\", line 190, in run_server_worker\n(APIServer pid=1146)     async with build_async_engine_client(\n(APIServer pid=1146)                ^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/usr/lib/python3.12/contextlib.py\", line 210, in __aenter__\n(APIServer pid=1146)     return await anext(self.gen)\n(APIServer pid=1146)            ^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py\", line 58, in build_async_engine_client\n(APIServer pid=1146)     async with build_async_engine_client_from_engine_args(\n(APIServer pid=1146)                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/usr/lib/python3.12/contextlib.py\", line 210, in __aenter__\n(APIServer pid=1146)     return await anext(self.gen)\n(APIServer pid=1146)            ^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py\", line 94, in build_async_engine_client_from_engine_args\n(APIServer pid=1146)     async_llm = AsyncLLM.from_vllm_config(\n(APIServer pid=1146)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py\", line 227, in from_vllm_config\n(APIServer pid=1146)     return cls(\n(APIServer pid=1146)            ^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py\", line 142, in __init__\n(APIServer pid=1146)     self.renderer = renderer = renderer_from_config(self.vllm_config)\n(APIServer pid=1146)                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/renderers/registry.py\", line 85, in renderer_from_config\n(APIServer pid=1146)     tokenizer = cached_tokenizer_from_config(model_config, **kwargs)\n(APIServer pid=1146)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/tokenizers/registry.py\", line 276, in cached_tokenizer_from_config\n(APIServer pid=1146)     return cached_get_tokenizer(\n(APIServer pid=1146)            ^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/tokenizers/registry.py\", line 253, in get_tokenizer\n(APIServer pid=1146)     tokenizer = tokenizer_cls_.from_pretrained(tokenizer_name, *args, **kwargs)\n(APIServer pid=1146)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/tokenizers/hf.py\", line 238, in from_pretrained\n(APIServer pid=1146)     raise e\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/vllm/tokenizers/hf.py\", line 210, in from_pretrained\n(APIServer pid=1146)     tokenizer = AutoTokenizer.from_pretrained(\n(APIServer pid=1146)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/transformers/models/auto/tokenization_auto.py\", line 971, in from_pretrained\n(APIServer pid=1146)     return tokenizer_class.from_pretrained(pretrained_model_name_or_path, *inputs, **kwargs)\n(APIServer pid=1146)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/transformers/tokenization_utils_base.py\", line 1736, in from_pretrained\n(APIServer pid=1146)     return cls._from_pretrained(\n(APIServer pid=1146)            ^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/transformers/tokenization_utils_base.py\", line 1932, in _from_pretrained\n(APIServer pid=1146)     tokenizer = cls(*init_inputs, **init_kwargs)\n(APIServer pid=1146)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n(APIServer pid=1146)   File \"/opt/venv/lib/python3.12/site-packages/transformers/models/qwen2/tokenization_qwen2.py\", line 62, in __init__\n(APIServer pid=1146)     BPE(\n(APIServer pid=1146) ValueError: `vocab` and `merges` must be both be from memory or both filenames",
+      "harness_failures": [],
+      "cost": 0.685816,
+      "provider_reported_cost": null,
+      "token_check": null
+    }
+  },
+  "prediction_errors": {
+    "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1": "1220f74c726d3633edebd22d7fafe9a656a41ec8a6f01cfc7265de06729206206d3c",
+    "Qwen/Qwen3-32B@NVIDIA GeForce RTX 4090x1": "12206215ba48b5b8445dae19fdcca11e4598b15d6be30961a4956c78bc6b04b885e0"
+  },
+  "skipped": {
+    "Qwen/Qwen3-1.7B@NVIDIA GeForce RTX 4090x1": "already measured"
+  },
+  "stopped": null,
+  "budget": {
+    "authorized": 100.0,
+    "spent": 4.244131,
+    "held": 0,
+    "remaining": 95.755869,
+    "open_holds": [],
+    "flags": [
+      "l0a3-run1:replayed:estimate"
+    ],
+    "overruns": []
+  },
+  "decision_report": {
+    "schema_version": 1,
+    "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+    "candidates": [
+      {
+        "solution_fingerprint": "12200c99f04283b4c90c0f7cd34e22dfe2524904fa5200c5b628c91e6b514e469ba9",
+        "qualification_status": "serving_verified",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"12202b13546de74e\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"1220750ac695032ee7818f2ba8e6e06bad0c7f3153e1555f0231474ff6622b53d0b0\", \"1220a7877dd7e888e743fd90a99cff2d93777ecbdf332e3e23ccd635525fb63ddd45\", \"1220c78063be278806620433e9a2430eb978a597e0307d3dc8e62fc935c061e15949\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"12206a93cab1c283344ad2039ba5a3a9415c64850bc54372523f112e33225a34c82c\"], \"detail\": [\"pass\", \"p99_ttft_ms 208.8 within SLO 2000.0\", \"p99_tpot_ms 8.2 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "1220eff51c223b2920c6ae86f24762634597b53d796d55ce6a35de6780d1b2192399",
+        "qualification_status": "identity_resolved",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"12209f23d17803ed\"}, \"task_evaluated\": {\"passed\": false, \"evidence\": [\"12200ac2fd197bfb3739f5b145510feed8256e6b3f90df263688d362e3138ce9097a\", \"122091e1cf984bc6c153ae71bcbb84d5373554407d6fd49d08c6cee0c632fda74f05\", \"12209e38a5f726490e019088aa99a69d9fdd008b78a93b70eee1a6355aeecc9d5c95\"], \"detail\": [\"accepted 0/3\"], \"reason\": \"pass rate 0.00 below quality floor 0.60\"}, \"stopped_at\": \"task_evaluated\"}",
+        "rejection_reason": "pass rate 0.00 below quality floor 0.60",
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "12207cde9382dcf90aa235eaf19658c669036438740e6c32913eb4966f144768f675",
+        "qualification_status": "candidate",
+        "qualification_graph_state": "{\"stopped_at\": \"candidate\", \"reason\": \"legacy candidate \\u2014 no execution fingerprint\"}",
+        "rejection_reason": "Legacy entry \u2014 not deployable",
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "1220eb2e15f071bcf0ab280cadbf03c7ae02a9b80bfb6397c52e4009ba38eba9067c",
+        "qualification_status": "serving_verified",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"12206a6c8cfe4fde\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"122052ddb3ca62378b8a6da3ffecb34fb468f0e2e1fb4077f6e6b323ea7edfcf4d24\", \"1220c6fe521bb6009e712c2956eb12b468bf330b01bbbb6d06d524507b273dfff3b8\", \"1220dad9155b4119fb6b58cebe264353221af8a88c01d6cb890ab1269ba49ad734eb\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"1220715f23ad9671aebdd9a57e50d3b214b31148738cc267163365f9d9be3b166d46\"], \"detail\": [\"pass\", \"p99_ttft_ms 173.2 within SLO 2000.0\", \"p99_tpot_ms 17.1 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "1220d0ede98d3613c686e40edc611e06de1fbdcee43866297ae8ca9b0db98ffd5dae",
+        "qualification_status": "identity_resolved",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220d4c79613da7f\"}, \"stopped_at\": \"identity_resolved\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "12208d948a51a4e3a222169e1676c87c4a4ccb6dbd34541bbb9f770d880b303b73d4",
+        "qualification_status": "serving_verified",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220ef52711a3fb2\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"12200b886612e9838f059ca5f7f0a6aee2635cffca9de380c2404e6ab4039079e0a0\", \"12206313935a53ff7c3a43322ef5041ecd093915cba793babb263f21c785c370d492\", \"1220f42f4f523a5a979b719998a96fd13d31b7233f1655e1b759518a699d6957d500\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"12203758d37c241f2c591f6e08945ab2f7b11cf5a89bf19c91f08269223f7f3057b3\"], \"detail\": [\"pass\", \"p99_ttft_ms 718.1 within SLO 2000.0\", \"p99_tpot_ms 62.6 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "12202aec74d006bbc48008d3270723b36c11146647f6e81e509694d63f5e31a3a746",
+        "qualification_status": "serving_verified",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220d6212a83a8a1\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"122010775bd1c04f22c2713405eafc0e4a8b5e6647afa2f9ee4a214b23e0905a3f3c\", \"12205a99eed24ad06e68bbec2c4dbe9df15aff9015d54bfd330ac4104b19addf409d\", \"12207c8d129ea3d8b84f6f681aa518de8ff36ddd793832fda2c1bc1c1d2eff988550\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"12203ec9f9ea5b2117b8c85fd07962e4e303cca3524c8d71219340d8a96221198ac1\"], \"detail\": [\"pass\", \"p99_ttft_ms 81.4 within SLO 2000.0\", \"p99_tpot_ms 7.6 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "1220d72bc9a2fc08e5fcb21cde53805d905b8df1323bec4f9e5cb3c28712abaf2f1c",
+        "qualification_status": "serving_verified",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"122068f9716c24f8\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"122084195d84d5675e8cbcf0b9afbca0b5bf292dc6b280ddbc11c1c1e5b2d4891751\", \"12208c23032bd47caf2ff2ce057e1a5e98c528a12336204280ce26bafb1a40f60d01\", \"1220b871596474c6147fd47a73849565c4864919debdf7d64c4865163609b583760d\"], \"detail\": [\"accepted 2/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"1220c62d62ae67ec438ebca7e7facc6f53eb71e65853a9e6b29aee797a3e470e5948\"], \"detail\": [\"pass\", \"p99_ttft_ms 221.7 within SLO 2000.0\", \"p99_tpot_ms 18.4 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "12203a64f2e6a546f124475f41a6af07459f710ad7302b0828bcc368567818992aad",
+        "qualification_status": "candidate",
+        "qualification_graph_state": "{\"stopped_at\": \"candidate\", \"reason\": \"legacy candidate \\u2014 no execution fingerprint\"}",
+        "rejection_reason": "Legacy entry \u2014 not deployable",
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "1220f2b13a81d50f2fac1758b034df82ea27f6ec9a68c7ba7079c3df72ccc956a6e6",
+        "qualification_status": "serving_verified",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"12206a6c8cfe4fde\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"12201194f88627ec3f28664da1633d7276714619827ed2956bec26c3fb52e1e8b2a5\", \"12203417638dd813ee4bff84d64273024a3f58b41e2eeca73bbf1af06858795532bf\", \"122068c372c3fa7a65ee0920a0032b6ae05306d9db9249115614c92826b199b47553\", \"1220805d46a1bfc0cf068b7cb3ee1b80853defa0a8eeed341867f5a0b877cf7d01d0\", \"1220d50f1d7cd237f0dcc7326728546cbc0fb44e7f2ed0e564b3960b3d0502c5225f\", \"1220df2ce6e23fc836a75e0623ff0b72ab9e301c43cca97af775c0545e74cf8d4aa4\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"1220d3339409290661dc36d71cf93f39545ad8e9fd7757a0496bfd80b62acacfc7e7\"], \"detail\": [\"pass\", \"p99_ttft_ms 50.7 within SLO 2000.0\", \"p99_tpot_ms 5.4 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "12207f57240bae0eebc99347e24818ddc3734b1034f7eb7c5f3bc183f02e3eaacb73",
+        "qualification_status": "serving_verified",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220ef52711a3fb2\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"1220533c7088dda6eb4272dc3aec8e9c820e7f526a5bb24b8921223bdb51da8c4b63\", \"1220a6224c34845b72053479b0ae0c2c8ea77977f58c09c225906774734ac21c8509\", \"1220f4cdf74d42208d6a32e1ca691e2694379191b3b9d51fcf7be445d90eb9689126\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"1220dcda4554108a677ca6f2ec1c9f90512c74bbbae40cf7f24f29b0f583c563d383\"], \"detail\": [\"pass\", \"p99_ttft_ms 213.0 within SLO 2000.0\", \"p99_tpot_ms 17.5 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "12202f91578c9a0f60b9a64d5908b53ae953cd6ad5a18dbff2982a91578c2b7c86f2",
+        "qualification_status": "identity_resolved",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220d4c79613da7f\"}, \"stopped_at\": \"identity_resolved\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      }
+    ],
+    "outcome_economics": null,
+    "uncertainty": null,
+    "disclosed_comparable_set": [],
+    "exclusions": []
+  }
+}

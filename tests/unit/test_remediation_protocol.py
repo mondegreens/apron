@@ -125,7 +125,11 @@ def test_all_six_classes_fixed_on_the_broken_plan(tmp_path: Path) -> None:
         assert len(record.proving_record_fingerprints) == 1 + 3 + 1  # boot, 3 attempts, serving
 
     assert [r.status for r in repo.written] == ["mechanism_verified"] * 6
-    assert all(r.rule_version == 2 and r.supersedes for r in repo.written)
+    # one version above the rule on record (a real proof may already have promoted it)
+    current = {r["error_family"]: r.get("rule_version", 1) for r in RULES}
+    assert all(
+        r.rule_version == current[r.error_family] + 1 and r.supersedes for r in repo.written
+    )
 
 
 def test_retarget_moves_the_solution_to_another_gpu(tmp_path: Path) -> None:
@@ -313,3 +317,53 @@ def test_classifier_cost_is_settled_at_what_the_tokens_cost(tmp_path: Path) -> N
     assert [e["op"] for e in entries] == ["hold", "settle"]
     assert entries[0]["amount"] == 0.02 and entries[1]["amount"] == 0.0041
     assert "flag" not in entries[1]
+
+
+def test_no_capacity_for_the_fixed_boot_is_recorded_not_promoted(tmp_path: Path) -> None:
+    """L5: class 2's fixed pod was refused.  Class 1's fix moves to another GPU, so
+    it needs a new pod; if capacity never comes the proof records 'not
+    evaluated' — never a failed mechanism — and promotes nothing."""
+    cohort_ports, _, _, _ = ports(tmp_path, _scenario, pool=True)
+    broken_gpu = SIX_CLASSES[0].broken_plan.resource_allocation["gpu_sku"]
+    object.__setattr__(
+        cohort_ports, "await_capacity", lambda requested: requested.gpu_sku == broken_gpu
+    )
+    repo = MemoryRuleRepository(RULES)
+    proof = prove_fix(SIX_CLASSES[0], accepted_inputs(), cohort_ports, _fix_ports(repo))
+    assert proof.gate_a and proof.gate_b
+    assert proof.mechanism_outcome == "not_evaluated"
+    assert repo.written == []
+    assert any("no provider capacity" in n for n in proof.notes)
+    record = load_record(
+        RemediationRecord, cohort_ports.store.retrieve(proof.remediation_digest or "") or {}
+    )
+    assert record.mechanism_outcome == "not_evaluated"
+
+
+def test_a_refused_fixed_boot_waits_and_proceeds(tmp_path: Path) -> None:
+    cohort_ports, _, _, _ = ports(tmp_path, _scenario, pool=True)
+    object.__setattr__(cohort_ports, "await_capacity", lambda requested: True)
+    assert cohort_ports.pool is not None
+    original = cohort_ports.pool.factory
+    refusals = {"left": 1}
+
+    def refusing(requested: Any) -> Any:
+        target = original(requested)
+        if requested.gpu_sku == "NVIDIA B200" and refusals["left"]:
+            refusals["left"] -= 1
+
+            def refuse(env: Any = None, wait_timeout: int = 0) -> Any:
+                raise RuntimeError(
+                    "There are no longer any instances available with the requested "
+                    "specifications. Please refresh and try again."
+                )
+
+            target.provision = refuse  # type: ignore[method-assign]
+        return target
+
+    object.__setattr__(cohort_ports.pool, "factory", refusing)
+    repo = MemoryRuleRepository(RULES)
+    proof = prove_fix(SIX_CLASSES[5], accepted_inputs(), cohort_ports, _fix_ports(repo))
+    assert refusals["left"] == 0, "the B200 creation was refused once"
+    assert proof.mechanism_outcome == "verified", proof.notes
+    assert len(repo.written) == 1

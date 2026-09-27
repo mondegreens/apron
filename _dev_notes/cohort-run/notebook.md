@@ -229,3 +229,14 @@ unless marked.  Machine events are in `events.jsonl`.
   the two rows are re-run after the fix proofs.
 - Fix proofs started 01:52 UTC.  Class 1 retargeted to RTX A6000 (had CUDA
   13.x stock at diagnosis time); download verified (28 GB).
+- **Class 1 PROVEN (02:05 UTC):** broken Qwen3-14B BF16 on RTX 4090 (L0-F
+  log) → real classifier (Haiku 4.5, $0.011) → oom_weight_load →
+  retarget_memory → RTX A6000 → fixed boot healthy, 3/3 tasks, serving SLO
+  pass → mechanism verified + request satisfied = **Fixed**; rule
+  `oom_weight_load` promoted to v2 mechanism_verified citing the boot
+  (previous version in `rules/vllm-v0.29/history/`).  Pod $0.106.
+- The fix proofs then stopped: class 2's fixed pod was refused ("no longer
+  any instances") and `prove_fix` had no capacity waiting — a gap in my prep
+  (I had added it to the cohort loop only).  Fixed: one helper
+  (`execute_when_available`) for both; no capacity within the wait records the
+  proof as not evaluated, never failed, and promotes nothing.

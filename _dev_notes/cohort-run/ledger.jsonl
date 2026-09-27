@@ -42,3 +42,69 @@
 {"amount": 0.010689, "at": "2026-09-27T00:41:55.506600+00:00", "label": "classifier:record-l0f-class4", "op": "spend"}
 {"amount": 0.010234, "at": "2026-09-27T00:41:58.675195+00:00", "label": "classifier:record-l0f-class5", "op": "spend"}
 {"amount": 0.010758, "at": "2026-09-27T00:42:02.755270+00:00", "label": "classifier:record-l0f-class6", "op": "spend"}
+{"amount": 0.6045, "at": "2026-09-27T00:56:28.240186+00:00", "label": "JunHowie/Qwen3-8B-GPTQ-Int4@NVIDIA GeForce RTX 4090x1", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T01:01:50.048695+00:00", "label": "JunHowie/Qwen3-8B-GPTQ-Int4@NVIDIA GeForce RTX 4090x1", "op": "annotate", "pod_id": "17xicayf2q4xfm"}
+{"amount": 0.123333, "at": "2026-09-27T01:06:02.637240+00:00", "label": "pod-idle:17xicayf2q4xfm", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T01:06:02.639869+00:00", "label": "pod-idle:17xicayf2q4xfm", "op": "annotate", "pod_id": "17xicayf2q4xfm"}
+{"amount": 0.118071, "at": "2026-09-27T01:06:02.642532+00:00", "estimate": 0.6045, "label": "JunHowie/Qwen3-8B-GPTQ-Int4@NVIDIA GeForce RTX 4090x1", "op": "settle"}
+{"amount": 0.4794, "at": "2026-09-27T01:06:02.696950+00:00", "label": "google/gemma-2-2b-it@NVIDIA GeForce RTX 4090x1", "op": "hold"}
+{"amount": 1.2e-05, "at": "2026-09-27T01:06:02.697258+00:00", "estimate": 0.123333, "label": "pod-idle:17xicayf2q4xfm", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T01:06:02.697376+00:00", "label": "google/gemma-2-2b-it@NVIDIA GeForce RTX 4090x1", "op": "annotate", "pod_id": "17xicayf2q4xfm"}
+{"amount": 0.123333, "at": "2026-09-27T01:08:05.633067+00:00", "label": "pod-idle:17xicayf2q4xfm", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T01:08:05.634510+00:00", "label": "pod-idle:17xicayf2q4xfm", "op": "annotate", "pod_id": "17xicayf2q4xfm"}
+{"amount": 0.025271, "at": "2026-09-27T01:08:05.635779+00:00", "estimate": 0.4794, "label": "google/gemma-2-2b-it@NVIDIA GeForce RTX 4090x1", "op": "settle"}
+{"amount": 0.625, "at": "2026-09-27T01:08:05.682296+00:00", "label": "meta-llama/Llama-3.1-8B-Instruct@NVIDIA GeForce RTX 4090x1", "op": "hold"}
+{"amount": 1e-05, "at": "2026-09-27T01:08:05.682633+00:00", "estimate": 0.123333, "label": "pod-idle:17xicayf2q4xfm", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T01:08:05.682732+00:00", "label": "meta-llama/Llama-3.1-8B-Instruct@NVIDIA GeForce RTX 4090x1", "op": "annotate", "pod_id": "17xicayf2q4xfm"}
+{"amount": 0.123333, "at": "2026-09-27T01:10:33.475340+00:00", "label": "pod-idle:17xicayf2q4xfm", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T01:10:33.477120+00:00", "label": "pod-idle:17xicayf2q4xfm", "op": "annotate", "pod_id": "17xicayf2q4xfm"}
+{"amount": 0.03038, "at": "2026-09-27T01:10:33.478046+00:00", "estimate": 0.625, "label": "meta-llama/Llama-3.1-8B-Instruct@NVIDIA GeForce RTX 4090x1", "op": "settle"}
+{"amount": 0.6218, "at": "2026-09-27T01:10:33.525243+00:00", "label": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA GeForce RTX 4090x1", "op": "hold"}
+{"amount": 1e-05, "at": "2026-09-27T01:10:33.525501+00:00", "estimate": 0.123333, "label": "pod-idle:17xicayf2q4xfm", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T01:10:33.525582+00:00", "label": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA GeForce RTX 4090x1", "op": "annotate", "pod_id": "17xicayf2q4xfm"}
+{"amount": 0.123333, "at": "2026-09-27T01:13:05.849801+00:00", "label": "pod-idle:17xicayf2q4xfm", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T01:13:05.851488+00:00", "label": "pod-idle:17xicayf2q4xfm", "op": "annotate", "pod_id": "17xicayf2q4xfm"}
+{"amount": 0.031312, "at": "2026-09-27T01:13:05.852913+00:00", "estimate": 0.6218, "label": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA GeForce RTX 4090x1", "op": "settle"}
+{"amount": 1.6757, "at": "2026-09-27T01:13:06.300100+00:00", "label": "deepseek-ai/DeepSeek-V2-Lite@NVIDIA A100 80GB PCIex1", "op": "hold"}
+{"amount": 0.000183, "at": "2026-09-27T01:13:06.741410+00:00", "estimate": 0.123333, "label": "pod-idle:17xicayf2q4xfm", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T01:16:41.589322+00:00", "label": "deepseek-ai/DeepSeek-V2-Lite@NVIDIA A100 80GB PCIex1", "op": "annotate", "pod_id": "tbwmztvyaiaej2"}
+{"amount": 0.265, "at": "2026-09-27T01:22:32.125369+00:00", "label": "pod-idle:tbwmztvyaiaej2", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T01:22:32.130543+00:00", "label": "pod-idle:tbwmztvyaiaej2", "op": "annotate", "pod_id": "tbwmztvyaiaej2"}
+{"amount": 0.249715, "at": "2026-09-27T01:22:32.134837+00:00", "estimate": 1.6757, "label": "deepseek-ai/DeepSeek-V2-Lite@NVIDIA A100 80GB PCIex1", "op": "settle"}
+{"amount": 1.8264, "at": "2026-09-27T01:22:32.193034+00:00", "label": "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1", "op": "hold"}
+{"amount": 2.8e-05, "at": "2026-09-27T01:22:32.193290+00:00", "estimate": 0.265, "label": "pod-idle:tbwmztvyaiaej2", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T01:22:32.193396+00:00", "label": "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1", "op": "annotate", "pod_id": "tbwmztvyaiaej2"}
+{"amount": 0.265, "at": "2026-09-27T01:26:01.452780+00:00", "label": "pod-idle:tbwmztvyaiaej2", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T01:26:01.454646+00:00", "label": "pod-idle:tbwmztvyaiaej2", "op": "annotate", "pod_id": "tbwmztvyaiaej2"}
+{"amount": 0.092424, "at": "2026-09-27T01:26:01.455580+00:00", "estimate": 1.8264, "label": "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1", "op": "settle"}
+{"amount": 0.3159, "at": "2026-09-27T01:26:01.806968+00:00", "label": "Qwen/Qwen3-1.7B@NVIDIA L4x1", "op": "hold"}
+{"amount": 0.000416, "at": "2026-09-27T01:26:02.396392+00:00", "estimate": 0.265, "label": "pod-idle:tbwmztvyaiaej2", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T01:33:02.555130+00:00", "label": "Qwen/Qwen3-1.7B@NVIDIA L4x1", "op": "annotate", "pod_id": "uctmsoz02bawey"}
+{"amount": 0.081667, "at": "2026-09-27T01:36:26.703162+00:00", "label": "pod-idle:uctmsoz02bawey", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T01:36:26.705426+00:00", "label": "pod-idle:uctmsoz02bawey", "op": "annotate", "pod_id": "uctmsoz02bawey"}
+{"amount": 0.084976, "at": "2026-09-27T01:36:26.707256+00:00", "estimate": 0.3159, "label": "Qwen/Qwen3-1.7B@NVIDIA L4x1", "op": "settle"}
+{"amount": 0.4117, "at": "2026-09-27T01:36:26.749965+00:00", "label": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA L4x1", "op": "hold"}
+{"amount": 6e-06, "at": "2026-09-27T01:36:26.750231+00:00", "estimate": 0.081667, "label": "pod-idle:uctmsoz02bawey", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T01:36:26.750637+00:00", "label": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA L4x1", "op": "annotate", "pod_id": "uctmsoz02bawey"}
+{"amount": 0.081667, "at": "2026-09-27T01:40:50.016616+00:00", "label": "pod-idle:uctmsoz02bawey", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T01:40:50.019197+00:00", "label": "pod-idle:uctmsoz02bawey", "op": "annotate", "pod_id": "uctmsoz02bawey"}
+{"amount": 0.035834, "at": "2026-09-27T01:40:50.020944+00:00", "estimate": 0.4117, "label": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA L4x1", "op": "settle"}
+{"amount": 4.0088, "at": "2026-09-27T01:40:50.489066+00:00", "label": "Qwen/Qwen3-32B@NVIDIA H100 80GB HBM3x1", "op": "hold"}
+{"amount": 0.000133, "at": "2026-09-27T01:40:50.994145+00:00", "estimate": 0.081667, "label": "pod-idle:uctmsoz02bawey", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T01:51:34.105417+00:00", "label": "Qwen/Qwen3-32B@NVIDIA H100 80GB HBM3x1", "op": "annotate", "pod_id": "fy7vvlu4f5l5l5"}
+{"amount": 0.581667, "at": "2026-09-27T01:52:38.422270+00:00", "label": "pod-idle:fy7vvlu4f5l5l5", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T01:52:38.425360+00:00", "label": "pod-idle:fy7vvlu4f5l5l5", "op": "annotate", "pod_id": "fy7vvlu4f5l5l5"}
+{"amount": 0.685816, "at": "2026-09-27T01:52:38.426776+00:00", "estimate": 4.0088, "label": "Qwen/Qwen3-32B@NVIDIA H100 80GB HBM3x1", "op": "settle"}
+{"amount": 0.000451, "at": "2026-09-27T01:52:38.890610+00:00", "estimate": 0.581667, "label": "pod-idle:fy7vvlu4f5l5l5", "op": "settle"}
+{"amount": 0.02, "at": "2026-09-27T01:52:45.221976+00:00", "label": "classifier:class1", "op": "hold"}
+{"amount": 0.011299, "at": "2026-09-27T01:52:55.217736+00:00", "estimate": 0.02, "label": "classifier:class1", "op": "settle"}
+{"amount": 0.2208, "at": "2026-09-27T01:52:55.486510+00:00", "label": "class1-fixed", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T01:59:34.100425+00:00", "label": "class1-fixed", "op": "annotate", "pod_id": "rpxdrib9e80tkn"}
+{"amount": 0.088333, "at": "2026-09-27T02:04:54.178050+00:00", "label": "pod-idle:rpxdrib9e80tkn", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T02:04:54.185295+00:00", "label": "pod-idle:rpxdrib9e80tkn", "op": "annotate", "pod_id": "rpxdrib9e80tkn"}
+{"amount": 0.105809, "at": "2026-09-27T02:04:54.187077+00:00", "estimate": 0.2208, "label": "class1-fixed", "op": "settle"}
+{"amount": 0.02, "at": "2026-09-27T02:04:54.553259+00:00", "label": "classifier:class2", "op": "hold"}
+{"amount": 0.010691, "at": "2026-09-27T02:05:05.450566+00:00", "estimate": 0.02, "label": "classifier:class2", "op": "settle"}
+{"amount": 0.3083, "at": "2026-09-27T02:05:05.739880+00:00", "label": "class2-fixed", "op": "hold"}
+{"amount": 0.001762, "at": "2026-09-27T02:05:06.151656+00:00", "estimate": 0.088333, "label": "pod-idle:rpxdrib9e80tkn", "op": "settle"}
+{"amount": 0.00018, "at": "2026-09-27T02:05:07.029455+00:00", "estimate": 0.3083, "label": "class2-fixed", "op": "settle"}

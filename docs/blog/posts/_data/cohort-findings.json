@@ -1,11 +1,11 @@
 {
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 2.927515,
-    "ledger_classifier": 0.075109,
-    "ledger_pod_idle": 0.001249,
-    "ledger_settled": 4.179072,
-    "ledger_spent": 4.25543,
+    "failed_boot_total": 2.927695,
+    "ledger_classifier": 0.0858,
+    "ledger_pod_idle": 0.003011,
+    "ledger_settled": 4.285061,
+    "ledger_spent": 4.373872,
     "per_solution": [
       {
         "cost": 0.606296,
@@ -100,6 +100,22 @@
         ]
       },
       {
+        "cost": 0.105809,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA RTX A6000",
+        "gpu_count": 1,
+        "label": "class1-fixed",
+        "model": "Qwen/Qwen3-14B",
+        "records": [
+          "12201548c6dde18fda68f3d3116a4cdcd479f6e65096f60dea9a119885f865d401f8",
+          "122024b91041129db3bb9efb0d14dfe51a17fd4af023b38d021c0ebb5e80c67e0287",
+          "12203903ded913c699483a8f5a7902faf7cb5059209d1455fdfbe17c5ec95f0895b3",
+          "1220581b5941758755eb3fab1351a12e6b43ca7e0f97a782c5c2a8a59da756912c1e",
+          "1220a6d5efc7eef1c50f14eb585086d079c7fd7b3ed3c5fc300ec30f4e0b321ddcab"
+        ]
+      },
+      {
         "cost": 0.092424,
         "failed_boot_cost": 0.092424,
         "failed_boots": 1,
@@ -145,6 +161,18 @@
         "model": "Qwen/Qwen3-8B",
         "records": [
           "1220736506a57c471f0412bcf80b35a1cabdd9a438f6e3ff2be500091464afad874d"
+        ]
+      },
+      {
+        "cost": 0.00018,
+        "failed_boot_cost": 0.00018,
+        "failed_boots": 1,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "class2-fixed",
+        "model": "Qwen/Qwen3-8B",
+        "records": [
+          "1220763a9b91627f8634f8a16f911359ad08e5d8782695ddc29c57219d096b0bf31f"
         ]
       },
       {
@@ -252,14 +280,34 @@
         ]
       }
     ],
-    "records_total": 3.70207
+    "records_total": 3.808059
   },
   "fixes": [
     {
+      "broken_gpu": "NVIDIA GeForce RTX 4090",
+      "broken_model": "Qwen/Qwen3-14B",
       "call_site": "model_executor/layers/linear.py:192",
+      "change": {
+        "resource_allocation.gpu_sku": [
+          "NVIDIA GeForce RTX 4090",
+          "NVIDIA RTX A6000"
+        ]
+      },
       "class": 1,
+      "classifier_model_id": "claude-haiku-4-5-20251001",
+      "diagnosed": "oom_weight_load",
+      "error_line": "torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 70.00 MiB. GPU 0 has a total capacity of 23.52 GiB of which 57.69 MiB is free. Process 1697959 has 23.45 GiB memory in use",
       "family": "oom_weight_load",
-      "status": "not run"
+      "fixed_gpu": "NVIDIA RTX A6000",
+      "label": "Fixed",
+      "mechanism_outcome": "verified",
+      "promoted_rule": "122086922dd909b8f4043e41915d2e0dbdf8da7f1d1b65d0996cacd11ef85d1cf998",
+      "proving_boot": "12203903ded913c699483a8f5a7902faf7cb5059209d1455fdfbe17c5ec95f0895b3",
+      "remediation": "1220f4b5d596eaa32d5258547db991a2136c5f01b9b39faba9c78211705c6e152de3",
+      "request_outcome": "satisfied",
+      "status": "run",
+      "strategy": "retarget_memory",
+      "violated_constraints": []
     },
     {
       "call_site": "v1/core/kv_cache_utils.py:879",
@@ -352,6 +400,21 @@
       "record": "1220205b397c672ee4ad674fc589d167da7dda4c181ee1603eafcd7c66235184198f",
       "total_delta_bytes": 1682562427,
       "weight_delta_bytes": 606031135
+    },
+    {
+      "claim": "12205dd0da0da9110b355131dd415f3dbedadaf7f6c0c690236106b25d34490bb518",
+      "gpu": "NVIDIA RTX A6000",
+      "gpu_count": 1,
+      "kv_consistency_bytes": -2286690724,
+      "measured_persistent_bytes": 29817810452,
+      "measured_weight_bytes": 29549374996,
+      "model": "Qwen/Qwen3-14B",
+      "notes": [],
+      "predicted_total_bytes": 34209706240,
+      "predicted_weight_bytes": 29536614400,
+      "record": "12203903ded913c699483a8f5a7902faf7cb5059209d1455fdfbe17c5ec95f0895b3",
+      "total_delta_bytes": 4391895788,
+      "weight_delta_bytes": -12760596
     },
     {
       "claim": "122001a3fa3351e82534d27e6861f214efdd19163876827b8677cf9bb75ba6057031",
@@ -447,7 +510,7 @@
       "status": "unknown"
     }
   ],
-  "record_count": 77,
+  "record_count": 85,
   "repeat_measurements": [
     {
       "activation_spread_pct": 0.0,
@@ -515,6 +578,20 @@
       "p99_ttft_ms": 173.1801080331206,
       "recomputed_verdict": "pass",
       "record": "1220715f23ad9671aebdd9a57e50d3b214b31148738cc267163365f9d9be3b166d46",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA RTX A6000",
+      "model": "Qwen/Qwen3-14B",
+      "output_token_throughput": 83.46519729675897,
+      "p99_tpot_ms": 45.207266492153124,
+      "p99_ttft_ms": 585.0732687860727,
+      "recomputed_verdict": "pass",
+      "record": "12201548c6dde18fda68f3d3116a4cdcd479f6e65096f60dea9a119885f865d401f8",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
       "verdict": "pass"
@@ -599,15 +676,17 @@
     "gpus_measured": [
       "NVIDIA A100 80GB PCIe",
       "NVIDIA GeForce RTX 4090",
-      "NVIDIA L4"
+      "NVIDIA L4",
+      "NVIDIA RTX A6000"
     ],
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-27T01:59:34.103309+00:00",
+    "last_event": "2026-09-27T02:05:07.032056+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-1.7B",
+      "Qwen/Qwen3-14B",
       "deepseek-ai/DeepSeek-V2-Lite",
       "google/gemma-2-2b-it",
       "meta-llama/Llama-3.1-8B-Instruct",
@@ -672,6 +751,20 @@
         "122052ddb3ca62378b8a6da3ffecb34fb468f0e2e1fb4077f6e6b323ea7edfcf4d24",
         "1220c6fe521bb6009e712c2956eb12b468bf330b01bbbb6d06d524507b273dfff3b8",
         "1220dad9155b4119fb6b58cebe264353221af8a88c01d6cb890ab1269ba49ad734eb"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA RTX A6000",
+      "model": "Qwen/Qwen3-14B",
+      "passed": true,
+      "records": [
+        "122024b91041129db3bb9efb0d14dfe51a17fd4af023b38d021c0ebb5e80c67e0287",
+        "1220581b5941758755eb3fab1351a12e6b43ca7e0f97a782c5c2a8a59da756912c1e",
+        "1220a6d5efc7eef1c50f14eb585086d079c7fd7b3ed3c5fc300ec30f4e0b321ddcab"
       ],
       "retries": 0
     },

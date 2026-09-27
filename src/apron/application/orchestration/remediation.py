@@ -24,9 +24,10 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol
 
 from apron.application.orchestration.cohort import (
+    NoCapacityError,
     RunScope,
     close_pool,
-    execute_solution,
+    execute_when_available,
     load_attempts,
     recorded_evidence,
 )
@@ -256,7 +257,7 @@ def prove_fix(
     # 1. Broken boot — reuse the stored L0-F boot when it exists.
     log = _stored_failure_log(ports, bad.solution_fp)
     if log is None:
-        outcome = execute_solution(
+        outcome = execute_when_available(
             bad, inputs, ports, scope=RunScope(False, False), reason="fix_proof_broken_boot"
         )
         if outcome.healthy:
@@ -310,7 +311,17 @@ def prove_fix(
     recorded = recorded_evidence(ports.store, fixed.solution_fp)
     scope = recorded.missing(fixed)
     if scope is not None:
-        execute_solution(fixed, inputs, ports, scope=scope, reason="fix_proof_fixed_boot")
+        try:
+            execute_when_available(
+                fixed, inputs, ports, scope=scope, reason="fix_proof_fixed_boot"
+            )
+        except NoCapacityError as exc:
+            # No proof without a boot: recorded as not evaluated, never as failed.
+            proof.notes.append(str(exc))
+            proof.remediation_digest = _store_record(
+                ports, inputs, bad, None, diagnosis, proof, proving=(), reason="no capacity"
+            )
+            return proof
         recorded = recorded_evidence(ports.store, fixed.solution_fp)
     boot_digest = recorded.memory_reports[0] if recorded.memory_reports else None
     proof.mechanism_outcome = "verified" if boot_digest else "failed"
