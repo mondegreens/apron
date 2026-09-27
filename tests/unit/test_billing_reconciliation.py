@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from apron.application.orchestration.billing import RECONCILE_PREFIX, ledger_by_pod, reconcile
 
 _LEDGER = [
@@ -49,3 +51,30 @@ def test_a_pod_not_billed_yet_is_listed_not_counted() -> None:
     result = reconcile(ledger, [], [])
     assert result["not_yet_billed"] == ["podNew"]
     assert result["mismatched"] == []
+
+
+def test_a_correction_closes_a_mismatch_and_replays() -> None:
+    """The ledger settled a crashed pod at its estimate (0.48); the bill says
+    0.24.  A signed correction closes the gap without rewriting the settle."""
+    from apron.application.orchestration.billing import CORRECTION_PREFIX
+    from apron.application.orchestration.budget import BudgetTracker
+
+    ledger = [*_LEDGER, {"op": "correct", "label": f"{CORRECTION_PREFIX}podB", "amount": -0.24}]
+    result = reconcile(ledger, [], _BILL)
+    assert [r["pod"] for r in result["mismatched"]] == []
+
+    class _Ledger:
+        def read_all(self) -> list[dict]:
+            return ledger
+
+        def append(self, entry: dict) -> None:
+            raise AssertionError("replay writes nothing")
+
+    class _Clock:
+        def now(self):  # type: ignore[no-untyped-def]
+            from datetime import UTC, datetime
+
+            return datetime(2026, 9, 27, tzinfo=UTC)
+
+    tracker = BudgetTracker.replay(authorized=100.0, ledger=_Ledger(), clock=_Clock())
+    assert tracker.spent == pytest.approx(0.20 + 0.48 + 0.01 + 0.02 - 0.24)

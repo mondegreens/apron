@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
     from apron.domain.ports import Clock
 
-LedgerOp = Literal["hold", "settle", "release", "spend", "annotate"]
+LedgerOp = Literal["hold", "settle", "release", "spend", "annotate", "correct"]
 
 # Stop rule: any single run whose actual cost exceeds its estimate by 50%.
 OVERRUN_FACTOR = 1.5
@@ -129,6 +129,14 @@ class BudgetTracker:
         self._append("spend", label, amount)
         self._spend(amount, label, None, None)
 
+    def correct(self, amount: float, label: str, *, source: str) -> None:
+        """A signed correction of spend already settled, from the provider's
+        bill (``source`` names it).  Nothing earlier is rewritten: the L0-A3
+        hung attempt was settled at its $0.48 estimate by a crash replay;
+        RunPod billed $0.24 (2026-09-27)."""
+        self._append("correct", label, amount, source=source)
+        self._spend(amount, label, None, None, replaying=True)
+
     def summary(self) -> dict[str, Any]:
         return {
             "authorized": round(self.authorized, 6),
@@ -171,7 +179,7 @@ class BudgetTracker:
                 tracker._spend(amount, label, hold.estimate, entry.get("flag"), replaying=True)
             elif op == "release":
                 tracker.holds.pop(label)
-            elif op == "spend":
+            elif op in ("spend", "correct"):
                 tracker._spend(amount, label, None, None, replaying=True)
         for label, hold in list(tracker.holds.items()):
             reported = pod_cost(hold.pod_id) if (pod_cost and hold.pod_id) else None

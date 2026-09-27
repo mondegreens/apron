@@ -393,6 +393,7 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
         for e in run.ledger
         if e["op"] == "spend" and str(e.get("label", "")).startswith(RECONCILE_PREFIX)
     )
+    corrected = sum(float(e["amount"]) for e in run.ledger if e["op"] == "correct")
     billing = run.billing or {}
     return {
         "authorized": authorized,
@@ -400,7 +401,8 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
         "ledger_classifier": round(classifier, 6),
         "ledger_pod_idle": round(pod_idle, 6),
         "ledger_reconciled": round(reconciled, 6),
-        "ledger_spent": round(settled + classifier + pod_idle + reconciled, 6),
+        "ledger_corrected": round(corrected, 6),
+        "ledger_spent": round(settled + classifier + pod_idle + reconciled + corrected, 6),
         "provider_billed": billing.get("billed_total"),
         "provider_not_yet_billed": list(billing.get("not_yet_billed", [])),
         "provider_mismatched": [
@@ -758,6 +760,13 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
                     "Pods billed but missing from the ledger (reconciled)",
                     "",
                     f"{cost.get('ledger_reconciled', 0):.4f}",
+                    "",
+                    "",
+                ],
+                [
+                    "Corrections to RunPod's bill (estimates, clock differences)",
+                    "",
+                    f"{cost.get('ledger_corrected', 0):+.4f}",
                     "",
                     "",
                 ],
