@@ -304,3 +304,41 @@ unless marked.  Machine events are in `events.jsonl`.
 - **Exit gate over the real records: 9 of 9 items pass** (item 6 waits on
   Part 3, as planned).  Ledger total $9.01 (runs $8.82, classifier $0.16,
   idle pods $0.03), plus ≈$0.37 of unledgered L0-A kill tests.
+
+## 2026-09-27 — review of the run: gaps found and fixed (owner: "we fix them")
+
+- **Correction to my own report:** I said tasks are sent as plain completions
+  without the chat template.  Wrong: `/v1/chat/completions` with the template
+  (`deterministic_scorer.py:148`); the `/v1/completions` lines in pod logs are
+  the serving benchmark.  DeepSeek-V2-Lite's 0/3 (" 4\n\nUser: What is") is
+  a **base** model in a chat task (the seed picked the base, not `-Chat`);
+  Llama's "Paris." failed only on the full stop (protocol normalizes
+  whitespace only).  Qwen3-0.6B-FP8's misses are wrong answers.
+- **Calculator (fixed, aeae42e):** tied `lm_head` counted twice (Qwen3-1.7B
+  +17%); without an index only the first dtype counted (Qwen3-0.6B-FP8
+  -22%: its BF16 embeddings, not its FP8 layers); whole-model bytes against
+  vLLM's per-rank figure (TP 2: +100%); the TP choice never saw the heads
+  (always TP 1).  After: all 14 measured points within 1.5%, FP8 5.4%.
+- **Protocol fields (fixed, 553981d):** `sampling_top_p` and `stopping_rules`
+  were fingerprinted but never sent; `repetitions`/`concurrency` > 1 ran once
+  silently.  Now sent, or refused.  The chat template digest is recorded.
+- **Substitution safety (fixed, e772fbc):** the Hub's "quantized" relation is
+  publisher-declared: `buttercoconut/Qwen3-ko-alpaca-0.6B-Q4` is a fine-tune.
+  Final-norm weights are unquantized in every format: 19 of 20 candidates
+  match the base bit for bit, the fine-tune does not and is dropped.  The
+  requested FPQuant checkpoint matches too, confirming the proposed base.
+  (`GaborMadarasz/…gptq_hungarian_news` matches: its name is the GPTQ
+  calibration set, not a fine-tune — my earlier guess was wrong.)
+- **Spend (fixed, 900c34e):** RunPod's bill for the window shows five pods the
+  ledger never tracked, $0.65: the four L0-A kill tests and
+  `oxlwqogyhgfc2m` (09-26, ~9.5 min at A100-PCIe pricing, 150 GB disk) which
+  no run artifact, transcript or local session names — unattributed, now in
+  the ledger.  The L0-A3 hung attempt was settled at a 2x estimate ($0.48 vs
+  $0.24 billed) because a crash replay could not read a terminated pod's
+  cost; terminated pods are now costed from the billing API.  Before this
+  cohort (09-21..23) the account shows $17.15 of earlier work, not ours.
+- **fp_quant root cause:** vllm-project/vllm#44122 ("[Refactor] Remove dead
+  code fp quant", 2026-06-03, first in v0.23.0) removed
+  `backward_hadamard_matrix`; v0.11.1 registered it; `main` (2026-09-27)
+  still lacks it.  Draft issue for the owner:
+  `_dev_notes/cohort-run/upstream-vllm-fp-quant-issue.md`.
