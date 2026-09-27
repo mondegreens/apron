@@ -416,3 +416,19 @@ unless marked.  Machine events are in `events.jsonl`.
 - Ledger corrected to RunPod's bill: 26 signed `correct` entries, -$0.10
   net (the L0-A3 crash replay settled at a $0.48 estimate, billed $0.24;
   the rest are sub-cent clock differences).  Ledger pods = bill = $9.9041.
+
+## 2026-09-27 — pass 4: Mamba-2.8B in 16 bits (owner: "confirm it with a run")
+
+- Pod on an RTX 4090, $0.10.  The planner now names bfloat16 for the float32
+  checkpoint (vLLM's own default).  Predicted vs measured: weights 5.16 vs
+  5.23 GiB (-1.3%); activation 0.259 vs 0.260; state per sequence 11.875 vs
+  11.881 MiB (+0.05%), measured as available KV memory 14.84 GiB / maximum
+  concurrency 1279 (the report now records vLLM's pool line).  The Mamba-1
+  state model holds; a test keeps it against the record.
+- Tasks: not sent — the base model has no chat template; recorded per case.
+- Also traced this session (read-only agents): the activation peak is
+  TorchInductor's combo-kernel benchmarking on a cold compile (an embedding-
+  sized random tensor); with TP > 1 the embedding is a custom op and the peak
+  is the sampler's logits.  All 16 points within 0.02 GiB.  And the FPQuant
+  failure: vLLM regression #44122; vLLM's own test used our checkpoint but
+  never ran (no test_ prefix); our invocation does not affect loading.

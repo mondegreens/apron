@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 13 on 6 GPU types
 - Failure classes fixed and re-verified: 5 of 6
-- Total cost: $10.07 of the $100 cap (failed boots included: $4.32)
+- Total cost: $10.17 of the $100 cap (failed boots included: $4.32)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -39,7 +39,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | Runner image | `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
 | Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-0.6B, Qwen/Qwen3-0.6B-FP8, Qwen/Qwen3-1.7B, Qwen/Qwen3-14B, Qwen/Qwen3-32B, Qwen/Qwen3-8B, deepseek-ai/DeepSeek-V2-Lite, deepseek-ai/DeepSeek-V2-Lite-Chat, google/gemma-2-2b-it, meta-llama/Llama-3.1-8B-Instruct, mistralai/Mistral-7B-Instruct-v0.3, state-spaces/mamba-2.8b-hf |
 | GPUs measured | NVIDIA A100 80GB PCIe, NVIDIA A100-SXM4-80GB, NVIDIA GeForce RTX 4090, NVIDIA H100 80GB HBM3, NVIDIA L4, NVIDIA RTX A6000 |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T16:01:59.557004+00:00 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T17:47:08.580945+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -69,6 +69,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 13.50 | 13.51 | -0.01 | 16.37 | 13.65 | +2.72 | `1220c4ad8130d1bb` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 13.50 | 13.51 | -0.01 | 16.37 | 13.65 | +2.72 | `122075e500841efe` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 x1 | 13.50 | 13.51 | -0.01 | 16.37 | 13.62 | +2.75 | `1220ac02237cee07` |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 5.16 | 5.23 | -0.07 | 6.67 | 5.64 | +1.03 | `12206810a074c3de` |
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 5.16 | 10.31 | -5.15 | 6.67 | 10.98 | -4.31 | `12200ac02bfdf76a` |
 <!-- /findings:memory -->
 
@@ -146,6 +147,7 @@ measurement.
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | 0 | True |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | 0 | True |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 0 / 3 | 3 (0) | 0 | False |
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 0 / 3 | 6 (3) | 0 | False |
 <!-- /findings:tasks -->
 
@@ -174,6 +176,7 @@ measurement.
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | 202.982 | 17.4189 | 2000 / 100 | 50 / 0 | pass | `12201d81b4264e0a` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | 212.999 | 17.5106 | 2000 / 100 | 50 / 0 | pass | `1220dcda4554108a` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | 718.149 | 62.5568 | 2000 / 100 | 50 / 0 | pass | `12203758d37c241f` |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | 195.209 | 8.79939 | 2000 / 100 | 50 / 0 | pass | `1220092662ec5a95` |
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | 403.514 | 16.2317 | 2000 / 100 | 50 / 0 | pass | `12208be4514014b9` |
 <!-- /findings:serving -->
 
@@ -211,13 +214,14 @@ Failed boots and retries are included.
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0313 | 0 (0.0000) | 8 |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0157 | 1 (0.0157) | 1 |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 x1 | 0.0358 | 0 (0.0000) | 8 |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 0.0987 | 0 (0.0000) | 5 |
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 0.0314 | 0 (0.0000) | 8 |
-| **Records total** |  | **8.8493** |  |  |
+| **Records total** |  | **8.9479** |  |  |
 | Classifier calls (ledger) |  | 0.1651 |  |  |
-| Pooled pods between solutions (ledger) |  | 0.0278 |  |  |
+| Pooled pods between solutions (ledger) |  | 0.0279 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  | 0.6502 |  |  |
 | Corrections to RunPod's bill (estimates, clock differences) |  | -0.0998 |  |  |
-| **Ledger spent** |  | **10.0696** |  | cap $100 |
+| **Ledger spent** |  | **10.1683** |  | cap $100 |
 | RunPod billed, same window |  | 9.9041 |  | not billed yet: 0 pod(s) |
 <!-- /findings:cost -->
 

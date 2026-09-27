@@ -1,0 +1,62 @@
+{
+  "executed": {
+    "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1": {
+      "solution_fp": "122033819fd140f08cfeb70722f268ac95ccc51c3602500054fe6c1a89c04cf132fb",
+      "healthy": true,
+      "boot_report_digest": "12206810a074c3de321e4b0f9b559394be33816d5161d21d68bdd6b58d995db0779b",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "12201769160e39c8b1fea1ba2da67fd909a90f23f29059b2e13f28517bd62a8eee1a",
+        "1220c040c502ab1285aebca3aaad3ce9db9e8202f8e8049cb6e4d6c4cdbd6a7bca1a",
+        "1220702bec40e8376a660f8936e90a73313eab1cd52d143343e24f7a9e390e6cabaf"
+      ],
+      "serving_digest": "1220092662ec5a9549bc0d829a5b85cd655fe1b95b13244722782d4b7b551aff4711",
+      "log_tail": "",
+      "harness_failures": [],
+      "cost": 0.09866,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "275": 0,
+          "508": 0
+        },
+        "token_free": true
+      }
+    }
+  },
+  "prediction_errors": {},
+  "skipped": {},
+  "stopped": null,
+  "budget": {
+    "authorized": 100.0,
+    "spent": 10.168328,
+    "held": 0,
+    "remaining": 89.831672,
+    "open_holds": [],
+    "flags": [
+      "l0a3-run1:replayed:estimate"
+    ],
+    "overruns": []
+  },
+  "decision_report": {
+    "schema_version": 1,
+    "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+    "candidates": [
+      {
+        "solution_fingerprint": "122033819fd140f08cfeb70722f268ac95ccc51c3602500054fe6c1a89c04cf132fb",
+        "qualification_status": "identity_resolved",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220bb39e8396fa2\"}, \"task_evaluated\": {\"passed\": false, \"evidence\": [\"12201769160e39c8b1fea1ba2da67fd909a90f23f29059b2e13f28517bd62a8eee1a\", \"1220702bec40e8376a660f8936e90a73313eab1cd52d143343e24f7a9e390e6cabaf\", \"1220c040c502ab1285aebca3aaad3ce9db9e8202f8e8049cb6e4d6c4cdbd6a7bca1a\"], \"detail\": [\"accepted 0/3\"], \"reason\": \"pass rate 0.00 below quality floor 0.60\"}, \"stopped_at\": \"task_evaluated\"}",
+        "rejection_reason": "pass rate 0.00 below quality floor 0.60",
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      }
+    ],
+    "outcome_economics": null,
+    "uncertainty": null,
+    "disclosed_comparable_set": [],
+    "exclusions": []
+  }
+}

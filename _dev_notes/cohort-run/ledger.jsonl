@@ -234,3 +234,9 @@
 {"amount": 0.00737, "at": "2026-09-27T17:27:39.682226+00:00", "label": "reconcile:correct:uctmsoz02bawey", "op": "correct", "source": "runpod billing API"}
 {"amount": 0.006342, "at": "2026-09-27T17:27:39.682382+00:00", "label": "reconcile:correct:uek7y94mhlfqam", "op": "correct", "source": "runpod billing API"}
 {"amount": 0.007276, "at": "2026-09-27T17:27:39.682530+00:00", "label": "reconcile:correct:uen772hwen7url", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.6148, "at": "2026-09-27T17:39:08.119371+00:00", "label": "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T17:44:33.346485+00:00", "label": "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1", "op": "annotate", "pod_id": "7l0uecp1u30fhb"}
+{"amount": 0.123333, "at": "2026-09-27T17:47:08.085873+00:00", "label": "pod-idle:7l0uecp1u30fhb", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T17:47:08.088049+00:00", "label": "pod-idle:7l0uecp1u30fhb", "op": "annotate", "pod_id": "7l0uecp1u30fhb"}
+{"amount": 0.09866, "at": "2026-09-27T17:47:08.090882+00:00", "estimate": 0.6148, "label": "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1", "op": "settle"}
+{"amount": 0.000101, "at": "2026-09-27T17:47:08.580117+00:00", "estimate": 0.123333, "label": "pod-idle:7l0uecp1u30fhb", "op": "settle"}
