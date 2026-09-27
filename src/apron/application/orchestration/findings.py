@@ -28,7 +28,7 @@ from apron.domain.schemas.records import derive_remediation_result
 from apron.domain.verdicts import task_verdict
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, Sequence
 
     from apron.application.orchestration.cohort_records import CohortRun, SolutionEntry
     from apron.domain.schemas.records import VerificationReport
@@ -208,8 +208,16 @@ def _fixes(run: CohortRun) -> list[dict[str, Any]]:
                 }
             )
             continue
-        # The record that went furthest: verified first, then any.
-        digest, r = sorted(found, key=lambda dr: dr[1].mechanism_outcome != "verified")[0]
+        # The record that went furthest: Fixed first, then verified, then any.
+        # Earlier attempts stay in the records and are counted in the row.
+        digest, r = sorted(
+            found,
+            key=lambda dr: (
+                derive_remediation_result(dr[1].mechanism_outcome, dr[1].request_outcome)
+                != "Fixed",
+                dr[1].mechanism_outcome != "verified",
+            ),
+        )[0]
         broken = plans.get(r.corrects or "")
         fixed = _entry(run, r.corrected_solution_digest)
         boot = r.proving_record_fingerprints[0] if r.proving_record_fingerprints else None
@@ -245,6 +253,7 @@ def _fixes(run: CohortRun) -> list[dict[str, Any]]:
                 "remediation": digest,
                 "proving_boot": boot,
                 "promoted_rule": promoted,
+                "attempts": len(found),
             }
         )
     return rows
@@ -520,6 +529,49 @@ def _table(header: list[str], rows: list[list[str]], empty: str) -> str:
 NO_RECORDS = "No records yet."
 
 
+# Plain names for the reader (the JSON keeps the schema values).
+CLASS_NAMES = {
+    1: "Weights do not fit the GPU",
+    2: "No room for the KV cache",
+    3: "Context length above the model's limit",
+    4: "float16 not supported by the model",
+    5: "Tensor parallelism does not divide the heads",
+    6: "Quantization needs a newer GPU",
+}
+CHANGE_NAMES = {
+    "resource_allocation.gpu_sku": "GPU",
+    "resource_allocation.model_id": "model",
+    "engine_configuration.max_model_len": "max_model_len",
+    "tensor_parallel": "tensor parallel",
+    "dtype": "dtype",
+}
+LABEL_NAMES = {
+    "Fixed": "Fixed",
+    "Alternative with trade-offs": "Runs, misses the request",
+    "Unverified suggestion": "Not proven",
+}
+CHECK_NAMES: dict[str, str] = {
+    "whitespace_normalized_exact_match": "exact match",
+    "strip_terminal_punctuation": "final full stop ignored",
+}
+
+
+def _records(digests: Sequence[str]) -> str:
+    """The first record's digest, and how many more (all are in the JSON)."""
+    ordered = sorted(digests)
+    if not ordered:
+        return "—"
+    more = f" +{len(ordered) - 1}" if len(ordered) > 1 else ""
+    return f"{_d(ordered[0])}{more}"
+
+
+def _passed_part(fix: Mapping[str, Any], part: str) -> str:
+    if fix.get("request_outcome") not in ("satisfied", "violated"):
+        return "—"
+    failed = any(str(v).startswith(f"{part}:") for v in fix.get("violated_constraints", []))
+    return "no" if failed else "yes"
+
+
 def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
     """One Markdown block per findings section, keyed by block name."""
     setup, cost = findings["setup"], findings["cost"]
@@ -597,7 +649,15 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
         NO_RECORDS,
     )
     blocks["repeats"] = _table(
-        ["Model", "GPU", "Boots", "Weights spread %", "KV spread %", "Activation spread %"],
+        [
+            "Model",
+            "GPU",
+            "Boots",
+            "Weights spread %",
+            "KV spread %",
+            "Activation spread %",
+            "Records",
+        ],
         [
             [
                 _v(r["model"]),
@@ -606,6 +666,7 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
                 _v(r["weight_spread_pct"]),
                 _v(r["kv_spread_pct"]),
                 _v(r["activation_spread_pct"]),
+                _records(r.get("records", [])),
             ]
             for r in findings["repeat_measurements"]
         ],
@@ -653,32 +714,35 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
     )
     blocks["fixes"] = _table(
         [
-            "Class",
+            "Failure",
             "Broken plan",
-            "vLLM source",
-            "Diagnosis",
-            "Change",
-            "Restart",
-            "Request",
-            "Label",
+            "vLLM error from",
+            "What Apron changed",
+            "Fixed plan booted",
+            "Tasks passed",
+            "SLO passed",
+            "Result",
             "Record",
         ],
         [
             [
-                f"{f['class']} {f['family']}",
+                f"{f['class']}. {CLASS_NAMES.get(f['class'], f['family'])}",
                 f"{_v(f.get('broken_model'))} on {_v(f.get('broken_gpu'))}",
                 f"`{f['call_site']}`",
-                _v(f.get("diagnosed")),
-                "; ".join(f"{k}: {_v(a)} → {_v(b)}" for k, (a, b) in f.get("change", {}).items())
+                "; ".join(
+                    f"{CHANGE_NAMES.get(k, k)}: {_v(a)} → {_v(b)}"
+                    for k, (a, b) in f.get("change", {}).items()
+                )
                 or "—",
-                _v(f.get("mechanism_outcome")),
-                _v(f.get("request_outcome")),
-                _v(f.get("label")),
+                "yes" if f.get("mechanism_outcome") == "verified" else "no",
+                _passed_part(f, "task"),
+                _passed_part(f, "serving"),
+                LABEL_NAMES.get(str(f.get("label")), _v(f.get("label"))),
                 _d(f.get("remediation")),
             ]
             if f["status"] == "run"
             else [
-                f"{f['class']} {f['family']}",
+                f"{f['class']}. {CLASS_NAMES.get(f['class'], f['family'])}",
                 "—",
                 f"`{f['call_site']}`",
                 "not run",
@@ -727,16 +791,18 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
             "Attempts (retries)",
             "Cut at the token limit",
             "Passed",
+            "Records",
         ],
         [
             [
                 _v(r["model"]),
                 _v(r["gpu"]),
-                ", ".join(r.get("scoring") or []) or "—",
+                ", ".join(CHECK_NAMES.get(c) or c for c in r.get("scoring") or []) or "—",
                 f"{r['accepted']} / {_v(r['cases'])}",
                 f"{r['attempts']} ({r['retries']})",
                 str(r.get("truncated", 0)),
                 _v(r["passed"]),
+                _records(r.get("records", [])),
             ]
             for r in findings["tasks"]
         ],
@@ -765,16 +831,22 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
                 f"{_v(r['gpu'])} x{_v(r['gpu_count'])}",
                 f"{r['cost']:.4f}",
                 f"{r['failed_boots']} ({r['failed_boot_cost']:.4f})",
-                str(len(r["records"])),
+                _records(r["records"]),
             ]
             for r in cost["per_solution"]
         ]
         + (
             [
                 ["**Records total**", "", f"**{cost['records_total']:.4f}**", "", ""],
-                ["Classifier calls (ledger)", "", f"{cost['ledger_classifier']:.4f}", "", ""],
                 [
-                    "Pooled pods between solutions (ledger)",
+                    "Diagnosis model calls (Claude Haiku)",
+                    "",
+                    f"{cost['ledger_classifier']:.4f}",
+                    "",
+                    "",
+                ],
+                [
+                    "Idle time of reused pods",
                     "",
                     f"{cost.get('ledger_pod_idle', 0):.4f}",
                     "",

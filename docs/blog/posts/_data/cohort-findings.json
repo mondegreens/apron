@@ -890,6 +890,7 @@
   ],
   "fixes": [
     {
+      "attempts": 1,
       "broken_gpu": "NVIDIA GeForce RTX 4090",
       "broken_model": "Qwen/Qwen3-14B",
       "call_site": "model_executor/layers/linear.py:192",
@@ -917,6 +918,7 @@
       "violated_constraints": []
     },
     {
+      "attempts": 1,
       "broken_gpu": "NVIDIA GeForce RTX 4090",
       "broken_model": "Qwen/Qwen3-8B",
       "call_site": "v1/core/kv_cache_utils.py:879",
@@ -944,6 +946,7 @@
       "violated_constraints": []
     },
     {
+      "attempts": 2,
       "broken_gpu": "NVIDIA GeForce RTX 4090",
       "broken_model": "mistralai/Mistral-7B-Instruct-v0.3",
       "call_site": "config/model.py:2502",
@@ -971,6 +974,7 @@
       "violated_constraints": []
     },
     {
+      "attempts": 1,
       "broken_gpu": "NVIDIA GeForce RTX 4090",
       "broken_model": "google/gemma-2-2b-it",
       "call_site": "config/model.py:2262",
@@ -998,6 +1002,7 @@
       "violated_constraints": []
     },
     {
+      "attempts": 1,
       "broken_gpu": "NVIDIA A100-SXM4-80GB",
       "broken_model": "Qwen/Qwen3-8B",
       "call_site": "config/model.py:1414",
@@ -1025,13 +1030,14 @@
       "violated_constraints": []
     },
     {
+      "attempts": 3,
       "broken_gpu": "NVIDIA H100 80GB HBM3",
-      "broken_model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
+      "broken_model": "ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4",
       "call_site": "config/vllm.py:791",
       "change": {
         "resource_allocation.model_id": [
-          "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
-          "Qwen/Qwen3-0.6B-FP8"
+          "ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4",
+          "Qwen/Qwen3-8B-AWQ"
         ]
       },
       "class": 6,
@@ -1040,18 +1046,16 @@
       "error_line": "The quantization method fp_quant is not supported for the current GPU. Minimum capability: 100. Current capability: 90.",
       "family": "quant_compute_capability",
       "fixed_gpu": "NVIDIA H100 80GB HBM3",
-      "fixed_model": "Qwen/Qwen3-0.6B-FP8",
-      "label": "Alternative with trade-offs",
+      "fixed_model": "Qwen/Qwen3-8B-AWQ",
+      "label": "Fixed",
       "mechanism_outcome": "verified",
-      "promoted_rule": "122010d0332ad7f8997ee1ef7445b392e5f4564b167edc1cbf02fe089233627a3fab",
-      "proving_boot": "12200078d8e3999ec13fe5d4ac6bfa6d2fdd69b297b01e1763a3ed34dcbee1c96dd0",
-      "remediation": "122006d6b9842e80a0e6fb2a588b474da3e35d6b52870082fd7bd8f5d505ce5fea88",
-      "request_outcome": "violated",
+      "promoted_rule": "12204fba692f3621b7b647c30bd4905ccb52cff0725145f43198ff4ffc61c100c36d",
+      "proving_boot": "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269",
+      "remediation": "12201e071813c8088f751f4827a698a5c2991967758fbf8643539a6f6b4a581a07f2",
+      "request_outcome": "satisfied",
       "status": "run",
       "strategy": "substitute_artifact",
-      "violated_constraints": [
-        "task: pass rate 0.33 below quality floor 0.60"
-      ]
+      "violated_constraints": []
     }
   ],
   "memory": [
