@@ -5,14 +5,14 @@
       "id": "Qwen/Qwen3-8B",
       "proposal": {
         "base_model_id": "Qwen/Qwen3-8B",
-        "classifier_cost_usd": 0.001692,
+        "classifier_cost_usd": 0.001712,
         "classifier_input_digest": "122099cbf274c3d8bf7e45b676c1a9fb4e9645d9108aeecacb32a5e77b55c71c9167",
         "classifier_model_id": "claude-haiku-4-5-20251001",
         "classifier_usage": {
           "input_tokens": 1087,
-          "output_tokens": 121
+          "output_tokens": 125
         },
-        "reason": "The checkpoint uses Qwen3ForCausalLM architecture with matching hidden_size, num_hidden_layers, and vocab_size characteristic of Qwen3-8B; the repo name explicitly references Qwen3-8B before the quantization method suffix."
+        "reason": "The checkpoint uses Qwen3 architecture with model_type \"qwen3\" and standard Qwen3-8B configuration (36 layers, 32 attention heads, 4096 hidden size), quantized using FPQuant with MXFP4 precision."
       },
       "same_final_norm": true,
       "source": "proposed"
@@ -32,9 +32,8 @@
       },
       {
         "bits": 4,
-        "dropped": "the engine would not load it: k_scale x36: no vLLM v0.29.0 parameter of that name (model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights)); v_scale x36: no vLLM v0.29.0 parameter of that name (model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights))",
         "method": "modelopt",
-        "min_capability": 80,
+        "min_capability": 75,
         "model_id": "nvidia/Qwen3-8B-NVFP4"
       },
       {
@@ -45,7 +44,6 @@
       },
       {
         "bits": 8,
-        "dropped": "the engine would not load it: k_scale x36: no vLLM v0.29.0 parameter of that name (model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights)); v_scale x36: no vLLM v0.29.0 parameter of that name (model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights))",
         "method": "modelopt",
         "min_capability": 80,
         "model_id": "nvidia/Qwen3-8B-FP8"
@@ -91,7 +89,7 @@
       {
         "bits": 4,
         "method": "modelopt",
-        "min_capability": 80,
+        "min_capability": 75,
         "model_id": "raoashish10/Qwen3-8B-NVFP4"
       },
       {
@@ -128,7 +126,7 @@
       {
         "bits": 4,
         "method": "modelopt",
-        "min_capability": 80,
+        "min_capability": 75,
         "model_id": "raoashish10/Qwen3-8B-NVFP4-W4A16"
       },
       {
@@ -326,7 +324,7 @@
         "bits": 4,
         "dropped": "final-norm weights differ from the base: another model",
         "method": "modelopt",
-        "min_capability": 80,
+        "min_capability": 75,
         "model_id": "ericlewis/Nemotron-Orchestrator-8B-NVFP4"
       },
       {
@@ -450,9 +448,8 @@
       },
       {
         "bits": 4,
-        "dropped": "the engine would not load it: k_scale x36: no vLLM v0.29.0 parameter of that name (model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights)); v_scale x36: no vLLM v0.29.0 parameter of that name (model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights))",
         "method": "modelopt",
-        "min_capability": 80,
+        "min_capability": 75,
         "model_id": "hungtrieu07/Qwen3-8B-NVFP4"
       },
       {
@@ -497,9 +494,8 @@
       },
       {
         "bits": 4,
-        "dropped": "the engine would not load it: k_scale x36: no vLLM v0.29.0 parameter of that name (model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights)); v_scale x36: no vLLM v0.29.0 parameter of that name (model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights))",
         "method": "modelopt",
-        "min_capability": 80,
+        "min_capability": 75,
         "model_id": "surogate/Qwen3-8B-NVFP4"
       },
       {
@@ -572,9 +568,8 @@
       },
       {
         "bits": 4,
-        "dropped": "the engine would not load it: k_scale x36: no vLLM v0.29.0 parameter of that name (model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights)); v_scale x36: no vLLM v0.29.0 parameter of that name (model_executor/layers/quantization/modelopt.py:455 (ModelOptFp8LinearMethod.create_weights))",
         "method": "modelopt",
-        "min_capability": 80,
+        "min_capability": 75,
         "model_id": "hackerwasii/Qwen3-8B-NVFP4"
       },
       {
@@ -599,7 +594,7 @@
     },
     "requested_model_id": "ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4",
     "requested_weight_bits": 4,
-    "result": "59 candidates"
+    "result": "64 candidates"
   },
   "search": {
     "base_model_id": "Qwen/Qwen3-8B",
@@ -665,6 +660,26 @@
         "weight_bits": 8
       },
       {
+        "downloads": 137399,
+        "min_capability": 75,
+        "model_id": "nvidia/Qwen3-8B-NVFP4",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
         "downloads": 11836,
         "min_capability": 75,
         "model_id": "RedHatAI/Qwen3-8B-quantized.w4a16",
@@ -683,6 +698,26 @@
           "vocab_size": 151936
         },
         "weight_bits": 4
+      },
+      {
+        "downloads": 3880,
+        "min_capability": 80,
+        "model_id": "nvidia/Qwen3-8B-FP8",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
       },
       {
         "downloads": 3862,
@@ -766,7 +801,7 @@
       },
       {
         "downloads": 399,
-        "min_capability": 80,
+        "min_capability": 75,
         "model_id": "raoashish10/Qwen3-8B-NVFP4",
         "quant_method": "modelopt",
         "shape": {
@@ -866,7 +901,7 @@
       },
       {
         "downloads": 152,
-        "min_capability": 80,
+        "min_capability": 75,
         "model_id": "raoashish10/Qwen3-8B-NVFP4-W4A16",
         "quant_method": "modelopt",
         "shape": {
@@ -1547,6 +1582,26 @@
       {
         "downloads": 13,
         "min_capability": 75,
+        "model_id": "hungtrieu07/Qwen3-8B-NVFP4",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 13,
+        "min_capability": 75,
         "model_id": "haofue2i1z3/Qwen3-8B-Legal-AWQ",
         "quant_method": "compressed-tensors",
         "shape": {
@@ -1583,6 +1638,26 @@
           "vocab_size": 151936
         },
         "weight_bits": 8
+      },
+      {
+        "downloads": 12,
+        "min_capability": 75,
+        "model_id": "surogate/Qwen3-8B-NVFP4",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
       },
       {
         "downloads": 12,
@@ -1763,6 +1838,26 @@
           "vocab_size": 151936
         },
         "weight_bits": 8
+      },
+      {
+        "downloads": 7,
+        "min_capability": 75,
+        "model_id": "hackerwasii/Qwen3-8B-NVFP4",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
       },
       {
         "downloads": 6,
