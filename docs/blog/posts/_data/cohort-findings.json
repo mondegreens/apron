@@ -268,7 +268,7 @@
     }
   ],
   "cost": {
-    "authorized": 100.0,
+    "authorized": 500.0,
     "failed_boot_total": 5.086735,
     "ledger_classifier": 0.193358,
     "ledger_corrected": -0.099768,
@@ -1763,7 +1763,7 @@
     }
   ],
   "setup": {
-    "authorized": 100.0,
+    "authorized": 500.0,
     "cloud_types": [
       "SECURE"
     ],

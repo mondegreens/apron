@@ -474,3 +474,30 @@ unless marked.  Machine events are in `events.jsonl`.
   (pass 4) and `mp8toichl9aavu` (class 6) yet; ledger pods $11.16 vs billed
   $9.90 — the difference is these two pods.  Re-run the reconciliation once
   they post.
+
+## 2026-09-27 — scope grows: modern models, $500 cap, staged weights
+
+- **Owner decisions:** Phase 1b continues with modern models in four groups
+  (A single GPU: gpt-oss-20b/120b, GLM-4.7-Flash, Gemma-4-31B; B hybrid
+  linear attention: Qwen3.6/3.8, Nemotron-3; C 2-4 GPUs: MiniMax-M2.7,
+  DeepSeek-V4-Flash; D 8 GPUs: GLM-5.3, DeepSeek-V3.2, Kimi K2).  The cap
+  goes from $100 to **$500**, with a stop and report after groups A-C.
+  First: staged weights, checked on one model.
+- **Why staged weights:** the phase plan's GPU dollar protection rule 1
+  ("never download on GPU-billed time") was dropped for 1b (the SDK had no
+  volume call; volumes lock to a datacenter).  Fine for 1-30 GB models;
+  700 GB-1 TB on 8 GPUs at $37-54/h is not.
+- **Found (docs and live read-only API, 2026-09-27):** network volumes are
+  created over REST (`/v1/networkvolumes`); CPU pods accept a network volume;
+  `dataCenters.storageSupport` and `lowestPrice(dataCenterId)` tell where.
+  Volume reads are 200-400 MB/s (10 GB/s peak): loading 700 GB lazily would
+  keep 8 GPUs waiting ~40 min, so vLLM reads staged files ahead
+  (`--safetensors-load-strategy prefetch`, pinned `weight_utils.py:871`) when
+  the checkpoint fits host memory.  CUDA-13 stock in storage datacenters is
+  thin today (H100 x1 in EU-FR-1, EUR-NO-2, US-NE-1; B200 x1 in EU-RO-1,
+  US-CA-2; no x8 anywhere).
+- **Built:** `runpod_storage.py` (volumes, datacenter choice, CPU stager pod),
+  GPU pods attach the volume at the same path, staged weights never evicted,
+  `staging.py` (provider-neutral, paid through the budget), records say
+  where weights came from and split pod time into `weights` and
+  `engine_start`, storage accrued to the ledger, `run_cohort(repeat=True)`.

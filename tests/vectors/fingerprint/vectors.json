@@ -784,7 +784,8 @@
         "solution_fingerprint": null,
         "subsidy_applied": null,
         "target_kind": "x",
-        "transient_peak_headroom": null
+        "transient_peak_headroom": null,
+        "weights_source": null
       },
       "schema": "apron.domain.schemas.records.VerificationReport"
     },

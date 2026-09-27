@@ -25,6 +25,11 @@ from apron.adapters.backends.local_store import LocalRecordStore
 from apron.adapters.backends.rule_loader import load_rules
 from apron.adapters.backends.rule_repository import FileRuleRepository
 from apron.adapters.backends.runpod import CLOUD_TYPE, GPU_SPECS, RunPodTarget
+from apron.adapters.backends.runpod_storage import (
+    RunPodStagerPod,
+    RunPodStorage,
+    storage_cost,
+)
 from apron.adapters.backends.vllm_engine import VllmEngineAdapter
 from apron.adapters.backends.vllm_quantization import (
     default_max_num_batched_tokens,
@@ -56,6 +61,7 @@ from apron.application.orchestration.plan_pipeline import run_plan_pipeline
 from apron.application.orchestration.pods import TargetPool
 from apron.application.orchestration.remediation import FixProofPorts
 from apron.application.orchestration.scheduler import CandidateSeed, estimate_cost
+from apron.application.orchestration.staging import StagingResult, stage_weights
 from apron.application.sanitization import SecretMaskingFilter
 from apron.domain.artifacts.identity import ArtifactIdentity
 from apron.domain.canonical import digest_hex
@@ -84,7 +90,7 @@ SEED = REPO / "cohort" / "phase-1b-seed.json"
 # trailing full stop ignored ("Paris." answers "just the city name"; L5 review).
 PROTOCOL = REPO / "cohort" / "phase-1b-evaluation-protocol.json"
 RULES_DIR = REPO / "rules"
-AUTHORIZED_USD = 100.0  # D4: the owner's cap
+AUTHORIZED_USD = 500.0  # D4: the owner's cap ($100, raised to $500 on 2026-09-27 for groups A-D)
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +100,7 @@ logger = logging.getLogger(__name__)
 
 
 def cohort_envelope(maximum_spend: float = AUTHORIZED_USD) -> AuthorizationEnvelope:
-    """D3/D4/D5: RunPod Secure only, $100 cap, classifier calls to Anthropic."""
+    """D3/D4/D5: RunPod Secure only, the owner's cap, classifier calls to Anthropic."""
     return AuthorizationEnvelope(
         permitted_action_classes=("gpu_execution", "diagnosis_classification"),
         permitted_providers=("runpod",),
@@ -348,6 +354,7 @@ def install_log_masking() -> None:
 def stock_waiter(
     api_key: str | None,
     *,
+    data_center_id: str | None = None,
     poll_seconds: int = 120,
     max_wait_seconds: int = 2 * 3600,
     log: JsonlLedger | None = None,
@@ -357,7 +364,12 @@ def stock_waiter(
 
     def await_capacity(requested: RequestedExecutionSpec) -> bool:
         probe = RunPodTarget(
-            api_key=api_key, gpu_type=requested.gpu_sku, gpu_count=requested.gpu_count
+            api_key=api_key,
+            gpu_type=requested.gpu_sku,
+            gpu_count=requested.gpu_count,
+            # With staged weights the pod can only start in the volume's datacenter.
+            network_volume_id="probe" if data_center_id else None,
+            data_center_id=data_center_id,
         )
         waited = 0
         while True:
@@ -393,11 +405,128 @@ def stock_waiter(
     return await_capacity
 
 
+# ---------------------------------------------------------------------------
+# Staged weights (phase plan: GPU dollar protection rule 1)
+# ---------------------------------------------------------------------------
+
+# A CPU stager's rate is not in the GPU price list; the hold uses this and the
+# settle uses the pod's reported cost.
+STAGER_RATE_ESTIMATE = 0.30
+# Planning figure for the hold only: the low end of the volume's documented
+# 200-400 MB/s, plus the runner image pull on a fresh host.
+STAGER_BYTES_PER_SECOND = 200e6
+STAGER_PULL_SECONDS = 15 * 60
+VOLUMES_FILE = "volumes.json"
+
+
+@dataclass(frozen=True)
+class WeightsSite:
+    """A network volume the GPU pods of a run attach, in its datacenter."""
+
+    volume_id: str
+    data_center_id: str
+    size_gb: int
+
+
+def staged_bytes(model_id: str) -> int:
+    """Bytes the engine's download step writes for *model_id* (Hub listing)."""
+    import fnmatch
+
+    from huggingface_hub import HfApi
+
+    from apron.adapters.backends.vllm_engine import DOWNLOAD_IGNORE
+
+    info = HfApi().model_info(model_id, files_metadata=True, token=os.environ.get("HF_TOKEN"))
+    return sum(
+        int(s.size or 0)
+        for s in info.siblings or []
+        if not any(fnmatch.fnmatch(s.rfilename, g) for g in DOWNLOAD_IGNORE)
+    )
+
+
+def weights_site(
+    storage: RunPodStorage,
+    executions: list[RequestedExecutionSpec],
+    model_ids: list[str],
+    *,
+    headroom: float = 1.15,
+) -> WeightsSite | None:
+    """Choose a datacenter with stock for every execution and size its volume.
+
+    ``None`` when no storage datacenter has stock for all of them right now.
+    An existing Apron volume's datacenter is preferred (its weights stay).
+    """
+    existing = tuple(
+        str(v.get("dataCenterId")) for v in storage.list_volumes() if v.get("dataCenterId")
+    )
+    chosen: str | None = None
+    for dc in (*existing, *storage.storage_datacenters()):
+        if all(storage.stock_in(dc, e.gpu_sku, e.gpu_count) for e in executions):
+            chosen = dc
+            break
+    if chosen is None:
+        return None
+    need_gb = int(sum(staged_bytes(m) for m in model_ids) * headroom / 1e9) + 10
+    volume = storage.ensure_volume(chosen, need_gb)
+    return WeightsSite(str(volume["id"]), chosen, int(volume.get("size") or need_gb))
+
+
+def stage_site(
+    site: WeightsSite,
+    model_ids: list[str],
+    ports: CohortPorts,
+    run_dir: Path = RUN_DIR,
+) -> StagingResult:
+    """Download *model_ids* onto the site's volume from a CPU pod in its datacenter."""
+    api_key = os.environ.get("RUNPOD_API_KEY")
+    total = sum(staged_bytes(m) for m in model_ids)
+    hours = (total / STAGER_BYTES_PER_SECOND + STAGER_PULL_SECONDS) / 3600
+    stager = RunPodStagerPod(
+        api_key=api_key,
+        image=RUNNER_IMAGE,
+        network_volume_id=site.volume_id,
+        data_center_id=site.data_center_id,
+        leak_log=run_dir / "leaked_pods.json",
+    )
+    events = JsonlLedger(run_dir / "events.jsonl")
+    return stage_weights(
+        model_ids,
+        stager=stager,
+        engine=ports.engine,
+        budget=ports.budget,
+        clock=ports.clock,
+        hourly_rate=STAGER_RATE_ESTIMATE,
+        estimate=round(max(0.05, STAGER_RATE_ESTIMATE * hours * 1.5), 4),
+        env=RunPodTarget.build_env(
+            ssh_public_key=_ssh_public_key(), hf_token=os.environ.get("HF_TOKEN")
+        ),
+        event=lambda e: events.append({"at": ports.clock.now().isoformat(), **e}),
+    )
+
+
+def accrue_storage(site: WeightsSite, budget: BudgetTracker, run_dir: Path = RUN_DIR) -> float:
+    """Spend the volume's storage since it was last accrued (created: now)."""
+    path = run_dir / VOLUMES_FILE
+    state: dict[str, Any] = json.loads(path.read_text()) if path.exists() else {}
+    now = budget.clock.now().timestamp()
+    entry = state.setdefault(site.volume_id, {"since": now, "size_gb": site.size_gb})
+    hours = max(0.0, now - float(entry["since"])) / 3600
+    amount = storage_cost(site.size_gb, hours)
+    if amount > 0:
+        budget.record_spend(
+            amount, f"storage:{site.volume_id}:{site.size_gb}GB:{round(hours, 3)}h"
+        )
+    entry.update(since=now, size_gb=site.size_gb, data_center_id=site.data_center_id)
+    path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n")
+    return amount
+
+
 def build_ports(
     run_dir: Path = RUN_DIR,
     *,
     authorized: float = AUTHORIZED_USD,
     rates: dict[str, float] | None = None,
+    site: WeightsSite | None = None,
 ) -> CohortPorts:
     install_log_masking()
     api_key = os.environ.get("RUNPOD_API_KEY")
@@ -423,6 +552,8 @@ def build_ports(
             gpu_type=requested.gpu_sku,
             gpu_count=requested.gpu_count,
             leak_log=run_dir / "leaked_pods.json",
+            network_volume_id=site.volume_id if site else None,
+            data_center_id=site.data_center_id if site else None,
         )
 
     def provision_env(sp: SolutionPlan) -> dict[str, str]:
@@ -449,6 +580,7 @@ def build_ports(
         pool=TargetPool(factory=target_factory, budget=budget, clock=clock, hourly_rate=rate_for),
         await_capacity=stock_waiter(
             api_key,
+            data_center_id=site.data_center_id if site else None,
             max_wait_seconds=int(os.environ.get("APRON_CAPACITY_WAIT", str(2 * 3600))),
             log=JsonlLedger(run_dir / "capacity-waits.jsonl"),
         ),

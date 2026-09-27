@@ -242,21 +242,35 @@ class PhaseTiming:
     serving_start: float | None = None
     serving_end: float | None = None
     teardown_end: float | None = None
+    # Parts of provision_boot_teardown, kept apart to show where pod time
+    # went: getting the weights onto the pod (a download, or only a check of
+    # staged weights) and starting the engine.  Summed over attempts.
+    weights: float = 0.0
+    engine_start: float = 0.0
 
     def seconds(self) -> dict[str, float]:
-        """Seconds per phase; every second from provision to teardown lands in one."""
+        """Seconds per phase; every second from provision to teardown lands in one.
+
+        ``weights`` and ``engine_start``, when measured, are parts of
+        ``provision_boot_teardown``, not further phases.
+        """
         start, end = self.provision_start, self.teardown_end
         if start is None or end is None:
             raise ValueError("timing needs provision_start and teardown_end")
         task = _span(self.task_eval_start, self.task_eval_end)
         serving = _span(self.serving_start, self.serving_end)
         total = max(0.0, end - start)
-        return {
+        phases = {
             "provision_boot_teardown": max(0.0, total - task - serving),
             "task_evaluation": task,
             "serving": serving,
             "total": total,
         }
+        if self.weights:
+            phases["weights"] = round(self.weights, 1)
+        if self.engine_start:
+            phases["engine_start"] = round(self.engine_start, 1)
+        return phases
 
 
 def _span(a: float | None, b: float | None) -> float:

@@ -429,11 +429,13 @@ def execute_solution(
                 failed_boots.append((str(hygiene), "harness:unclean_gpu"))
                 continue
             download = engine.download_weights(target, model_id)
+            timing.weights += float(download.get("seconds") or 0.0)
             if not download.get("ok"):
                 tag = classify_harness_error(download["output_tail"]) or "harness:download"
                 failed_boots.append((download["output_tail"], tag))
                 continue
             boot = engine.boot(sp.plan, target, health_timeout=ports.boot_timeout)
+            timing.engine_start += boot.seconds
             if boot.healthy:
                 break
             tag = classify_harness_error(boot.log_tail)
@@ -814,6 +816,7 @@ def _report_base(
         "deployment_plan_digest": fingerprint_hex(sp.plan),
         "hourly_rate": rate,
         "phase_seconds": timing.seconds(),
+        "weights_source": getattr(target, "weights_source", None),  # optional capability
         "estimated_cost": sp.estimate,
         "production_mode": False,
         "lifecycle": "observed",
@@ -1090,17 +1093,20 @@ def run_cohort(
     ports: CohortPorts,
     *,
     stop_on_overrun: bool = True,
+    repeat: bool = False,
 ) -> CohortResult:
     """Run every planned solution in order; the loop survives candidate failures.
 
     Resume: a solution whose required records all exist is skipped; a
     partially recorded one re-runs only its missing steps.  Its earlier
-    records stay stored.  Budget exhaustion or a >50% overrun stops the run.
+    records stay stored.  ``repeat`` measures every solution again in full (a
+    repeat boot: new records beside the earlier ones).  Budget exhaustion or
+    a >50% overrun stops the run.
     """
 
     result = CohortResult()
     try:
-        _run_plans(plans, inputs, ports, result, stop_on_overrun=stop_on_overrun)
+        _run_plans(plans, inputs, ports, result, stop_on_overrun=stop_on_overrun, repeat=repeat)
     finally:
         leaked = close_pool(ports)
         if leaked and result.stopped is None:
@@ -1115,6 +1121,7 @@ def _run_plans(
     result: CohortResult,
     *,
     stop_on_overrun: bool,
+    repeat: bool = False,
 ) -> None:
     from apron.application.orchestration.budget import BudgetExceededError
 
@@ -1135,7 +1142,7 @@ def _run_plans(
                 _event(ports, "prediction_error", sp, status=sp.status)
             continue
         store_claim_once(sp, ports, recorded)
-        scope = recorded.missing(sp)
+        scope = RunScope() if repeat else recorded.missing(sp)
         if scope is None:
             result.skipped[sp.label] = "already measured"
             continue

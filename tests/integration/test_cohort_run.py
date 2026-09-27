@@ -376,3 +376,73 @@ def test_fix_proofs() -> None:
     kept = json.loads(path.read_text()) if path.exists() else []
     merged = {p["failure_class"]: p for p in kept} | {p.failure_class: p.__dict__ for p in proofs}
     _write("fix-proofs.json", [merged[k] for k in sorted(merged)])
+
+
+# ---------------------------------------------------------------------------
+# Staged weights (owner go 2026-09-27): a CPU pod downloads onto a network
+# volume, then the GPU pods attach it and only load
+# ---------------------------------------------------------------------------
+
+
+def test_prestaged_run() -> None:
+    """``APRON_COHORT_STEP=prestage APRON_APPROVED=<file> APRON_RUN_TAG=<tag>``;
+    ``APRON_REPEAT=1`` measures already-measured solutions again (a repeat)."""
+    _step("prestage")
+    from apron.adapters.backends.runpod_storage import RunPodStorage
+    from apron.application.orchestration.cohort import qualify_cohort, run_cohort
+    from apron.interfaces.cohort_root import (
+        CohortPlanner,
+        accrue_storage,
+        build_ports,
+        live_rates,
+        load_inputs,
+        load_seed,
+        stage_site,
+        weights_site,
+    )
+
+    rates = live_rates(os.environ["RUNPOD_API_KEY"])
+    planner = CohortPlanner(rates=rates)
+    tag = f"-{os.environ['APRON_RUN_TAG']}" if os.environ.get("APRON_RUN_TAG") else "-prestage"
+    approved = set(json.loads((RUN_DIR / os.environ["APRON_APPROVED"]).read_text()))
+    seeds = [s for s in load_seed() if s.key in approved]
+    assert seeds, "no approved seed matched"
+    plans = [planner.plan_seed(s) for s in seeds]
+    runnable = [p for p in plans if p.status == "planned"]
+    models = sorted({p.model_id for p in runnable})
+    executions = list({p.requested.model_dump_json(): p.requested for p in runnable}.values())
+
+    storage = RunPodStorage(os.environ["RUNPOD_API_KEY"])
+    site = weights_site(storage, executions, models)
+    assert site is not None, f"no storage datacenter has stock for {executions}"
+    ports = build_ports(rates=rates, site=site)
+    staging = stage_site(site, models, ports)
+    record: dict = {
+        "site": site.__dict__,
+        "staging": {
+            "pod_id": staging.pod_id,
+            "cost": staging.cost,
+            "seconds": staging.seconds,
+            "error": staging.error,
+            "models": [m.__dict__ for m in staging.models],
+        },
+    }
+    _write(f"prestage{tag}.json", record)
+    # Never fall back to downloading on the GPU pod: that is what this avoids.
+    assert staging.ok, staging.error or [m.model_id for m in staging.models if not m.ok]
+
+    inputs = load_inputs()
+    try:
+        result = run_cohort(plans, inputs, ports, repeat=os.environ.get("APRON_REPEAT") == "1")
+    finally:
+        record["storage_cost"] = accrue_storage(site, ports.budget)
+    report = qualify_cohort(plans, inputs, ports.store, ports.clock, ports.ids)
+    record["result"] = {
+        "executed": {k: v.__dict__ for k, v in result.executed.items()},
+        "skipped": result.skipped,
+        "stopped": result.stopped,
+        "budget": ports.budget.summary(),
+        "decision_report": report.model_dump(mode="json"),
+    }
+    _write(f"prestage{tag}.json", record)
+    assert result.stopped is None, result.stopped

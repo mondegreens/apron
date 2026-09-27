@@ -485,7 +485,13 @@ class VllmEngineAdapter:
         return "yes" in str(result.get("stdout", ""))
 
     def evict_models(self, target: Any, *, keep: str) -> None:
-        """Remove every downloaded model except *keep* (a reused pod's disk)."""
+        """Remove every downloaded model except *keep* (a reused pod's disk).
+
+        Never on staged weights: a network volume holds the weights of the
+        models still to run, and it outlives the pod.
+        """
+        if getattr(target, "weights_persist", False):
+            return
         keep_q = shlex.quote(keep)
         target.execute(
             f"cd {MODELS_DIR} 2>/dev/null && for d in */*; do "
@@ -510,6 +516,30 @@ class VllmEngineAdapter:
             "output_tail": str(result.get("stdout", ""))[-2000:],
         }
 
+    def load_args(self, target: Any, model_id: str) -> list[str]:
+        """How vLLM should read weights on this target — not part of the plan.
+
+        Staged weights sit on network storage, where vLLM's default lazy
+        memory-map pays the network latency tensor by tensor.  Reading every
+        file ahead into host memory (``--safetensors-load-strategy prefetch``,
+        ``model_loader/weight_utils.py:871``) is what vLLM itself does on a
+        network filesystem it recognises when the checkpoint fits in 90% of
+        free host memory; RunPod's volume may not be recognised, so the same
+        rule is applied here.  A larger checkpoint keeps the default (a
+        prefetch past host memory can run the host out of memory, same file
+        :903).  Memory measurements do not change: this is host-side I/O.
+        """
+        if not getattr(target, "weights_persist", False):
+            return []
+        probe = target.execute(
+            f"du -sb {shlex.quote(self.model_dir(model_id))} | cut -f1; "
+            "awk '/MemAvailable/ {print $2 * 1024}' /proc/meminfo"
+        )
+        numbers = [int(x) for x in str(probe.get("stdout", "")).split() if x.isdigit()]
+        if len(numbers) == 2 and 0 < numbers[0] <= 0.9 * numbers[1]:
+            return ["--safetensors-load-strategy", "prefetch"]
+        return []
+
     def boot(self, plan: DeploymentPlan, target: Any, *, health_timeout: int = 600) -> BootResult:
         """Boot vLLM from the rendered plan with no token in its environment.
 
@@ -518,6 +548,9 @@ class VllmEngineAdapter:
         """
         model_id = plan.resource_allocation.get("model_id", "")
         serve = self._build_serve_command(plan, target, model_path=self.model_dir(model_id))
+        extra = self.load_args(target, model_id)
+        if extra:
+            serve = " ".join([serve, *(shlex.quote(a) for a in extra)])
         command = launch_command(serve)
         start = time.monotonic()
         target.execute(command)
