@@ -35,6 +35,7 @@ class PlanPipelineResult:
     """
 
     __slots__ = (
+        "chat_renderer",
         "chat_template",
         "claim",
         "context",
@@ -57,6 +58,7 @@ class PlanPipelineResult:
         model_spec: ModelSpec | None = None,
         model_config: dict[str, Any] | None = None,
         chat_template: str | None = None,
+        chat_renderer: str | None = None,
         load_problems: tuple[str, ...] | None = None,
     ) -> None:
         self.plan = plan
@@ -70,6 +72,9 @@ class PlanPipelineResult:
         self.model_spec = model_spec
         self.model_config = model_config
         self.chat_template = chat_template
+        # Who turns chat messages into the prompt when the repo has no
+        # template: the engine's own mode (None: the template does).
+        self.chat_renderer = chat_renderer
 
     @property
     def ok(self) -> bool:
@@ -90,6 +95,7 @@ def run_plan_pipeline(
     load_check: Callable[[Iterable[str], dict[str, Any] | None], tuple[str, ...] | None]
     | None = None,
     unmodelled_architectures: frozenset[str] = frozenset(),
+    tokenizer_modes: frozenset[str] = frozenset(),
 ) -> PlanPipelineResult:
     """Run the full plan pipeline: resolve → calculate → build plan.
 
@@ -138,7 +144,10 @@ def run_plan_pipeline(
         unmodelled_architectures=unmodelled_architectures,
     )
 
-    calc_metadata = dict(config)
+    # A multimodal checkpoint keeps its language model in ``text_config``;
+    # vLLM sizes caches from it (``hf_text_config``).
+    text = config.get("text_config")
+    calc_metadata = {**config, **text} if isinstance(text, dict) else dict(config)
     calc_metadata["torch_dtype"] = runtime_dtype(config)
     calc_metadata["total_weight_bytes"] = total_weight_bytes
     calc_metadata["components"] = [c.model_dump(mode="json") for c in model_spec.components]
@@ -181,6 +190,21 @@ def run_plan_pipeline(
         id_gen=id_gen,
     )
 
+    # A model type the engine has its own tokenizer mode for (no chat template
+    # in the repo): the plan names that mode, and the engine renders the chat.
+    chat_renderer = None
+    model_type = str(config.get("model_type") or "")
+    if model_type in tokenizer_modes:
+        chat_renderer = f"vllm tokenizer mode {model_type}"
+        deployment_plan = deployment_plan.model_copy(
+            update={
+                "engine_configuration": {
+                    **deployment_plan.engine_configuration,
+                    "tokenizer_mode": model_type,
+                }
+            }
+        )
+
     assert result.locator is not None
     ctx = RenderContext(plan=deployment_plan, locator=result.locator, hardware=hardware)
 
@@ -195,6 +219,7 @@ def run_plan_pipeline(
         chat_template=_download_chat_template(
             resolver, model_id, result.observation.resolved_revision
         ),
+        chat_renderer=chat_renderer,
     )
 
 
@@ -262,7 +287,8 @@ def loaded_tensor_bytes(
 
 def runtime_dtype(config: dict[str, Any]) -> str:
     """The dtype the engine serves in with dtype=auto (float32 downcast to 16 bits)."""
-    return served_dtype(config.get("torch_dtype"))
+    # Newer configs name it "dtype" (transformers 5); vLLM reads either.
+    return served_dtype(config.get("torch_dtype") or config.get("dtype"))
 
 
 def _tied_embeddings(config: dict[str, Any]) -> bool:

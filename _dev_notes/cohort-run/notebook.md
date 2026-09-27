@@ -569,3 +569,39 @@ calculator reads no nested `text_config`), Qwen3.8/3.6 and Nemotron-3
 (hybrid).  To check before trusting: DeepSeek-V4 is planned as plain GQA —
 its attention is new (compressed/sparse) and may need its own mechanism.
 H200 memory in GPU_SPECS is not yet confirmed on a pod.
+
+## 2026-09-27 — the calculator learns hybrid and mixed-attention models (no spend)
+
+- Two read-only traces of the pinned vLLM (`hybrid-memory-trace.md`,
+  `gemma4-memory-trace.md`) gave how v0.29.0 pages per-layer caches:
+  state layers set the attention block size, pages are unified, layers are
+  grouped, and one request reserves a counted number of blocks per group.
+- New `layered_decode` mechanism (`domain/mechanisms/layered.py`) for the
+  Qwen3.5 family (gated delta net + attention), NemotronH (Mamba2 +
+  attention) and Gemma 4 (sliding + global attention, global K copied into
+  v_proj: +210 MiB).  Its reservation per request equals the traced figures
+  byte for byte for all four models (tests).  Other hybrids (Jamba,
+  Falcon-H1, ...) stay unknown.
+- Found on the way: the source-name dictionary skipped names starting with
+  a capital, so Qwen3.6's `A_log` read as unloadable; newer configs name the
+  dtype `dtype`, not `torch_dtype`; multimodal configs keep the language
+  model in `text_config` (vLLM sizes from it) — all fixed.
+- Now every one of the 12 models has a GPU-free verdict: all "planned".
+  Gemma 4-31B on an H100 64.7 GiB, Qwen3.8-27B 56.8, Qwen3.6-35B-A3B 37.7,
+  Nemotron 3 20.4 (per GPU, at the plan's 640-token context).
+- Worth knowing for the article: at vLLM's default context (262,144 tokens)
+  Gemma 4-31B needs >= 33.3 GiB of KV beside ~58 GiB of weights on an H100 —
+  it would not start there; Apron's plan sets the context to the workload.
+- Open: Nemotron's checkpoint asks for an FP8 KV cache (hf_quant_config);
+  the prediction uses bf16 (conservative) until a boot shows which vLLM
+  picks.  Qwen3.5 and Gemma 4 load their vision towers by default.
+- **Chat for the reasoning models (checked templates, no spend):**
+  `enable_thinking` switches reasoning off for GLM-4.7-Flash, Gemma 4,
+  Qwen3.8, Qwen3.6 and Nemotron 3 (already used).  gpt-oss only has
+  `reasoning_effort`; MiniMax-M2.7 always thinks: 8 answer tokens will be
+  spent on reasoning — the task suite's limit is an owner decision.
+  DeepSeek V3.2 and V4 ship no chat template: vLLM renders their chat only in
+  its own tokenizer mode, which "auto" never selects
+  (`tokenizers/registry.py:147-163`).  Plans now name that mode when the
+  model type has one (generated from the registry); such a model is sent the
+  task suite.

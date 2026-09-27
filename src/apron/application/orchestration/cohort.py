@@ -267,6 +267,7 @@ class SolutionPlan:
     solution_fp: str
     status: PlanStatus
     chat_template: str | None = None
+    chat_renderer: str | None = None  # the engine renders chat (no template in the repo)
     license_observed: str | None = None
     gating_observed: str | None = None
     estimate: float = 0.0
@@ -764,7 +765,7 @@ def _run_task_suite(
 
     Returns (scored case, retry index) — both attempts of a retried case.
     """
-    if sp.chat_template is None:
+    if sp.chat_template is None and sp.chat_renderer is None:
         # The suite is sent as chat messages; a model without a chat template
         # is refused by the engine (HTTP 400, Mamba-2.8B, 2026-09-27).  Record
         # why, per case, without sending requests that cannot succeed.

@@ -145,8 +145,10 @@ VLLM_PROCESS_PATTERN = "bin/[v]llm serve|[V]LLM::"
 #
 # Native duplicates are skipped: Mistral repos ship consolidated.safetensors
 # beside the HF shards (Mistral-7B-Instruct-v0.3: 29 GB instead of 14.5) and
-# Llama repos ship original/*.pth (16 GB).  vLLM loads the HF-format files.
-DOWNLOAD_IGNORE = ("original/*", "consolidated*", "*.pth", "*.pt", "*.gguf")
+# Llama repos ship original/*.pth (16 GB); gpt-oss repos ship the same weights
+# twice more, as original/ and as Apple's metal/ (65 GB each for gpt-oss-120b,
+# Hub listing 2026-09-27).  vLLM loads the HF-format files at the repo root.
+DOWNLOAD_IGNORE = ("original/*", "metal/*", "consolidated*", "*.pth", "*.pt", "*.gguf")
 _DOWNLOAD_PY = (
     "import fnmatch,pathlib,sys\n"
     "from huggingface_hub import HfApi,snapshot_download\n"

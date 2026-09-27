@@ -118,3 +118,27 @@ def test_serving_workload_declares_slo_fields() -> None:
     assert spec.output_sequence_length == 128
     assert spec.p99_ttft_ms == 2000
     assert spec.p99_tpot_ms == 100
+
+
+def test_a_model_type_with_its_own_engine_tokenizer_mode_gets_it_in_the_plan() -> None:
+    """DeepSeek V3.2/V4 ship no chat template; vLLM renders their chat only in
+    its own tokenizer mode, which "auto" never picks (tokenizers/registry.py:147-163).
+    The rule is by model type; the Qwen3-8B fixture stands in for one."""
+    from apron.adapters.backends.vllm_quantization import MODEL_TOKENIZER_MODES
+
+    assert {"deepseek_v32", "deepseek_v4"} <= MODEL_TOKENIZER_MODES
+    assert not {"hf", "auto", "mistral"} & MODEL_TOKENIZER_MODES
+    kwargs = {"clock": _Clock(), "id_gen": _Ids()}
+    args = (
+        FixtureHFHubResolver(HF),
+        CalculatorPlanningSource(clock=_Clock()),
+        "Qwen/Qwen3-8B",
+        _L4,
+    )
+    plain = run_plan_pipeline(*args, **kwargs)
+    moded = run_plan_pipeline(*args, tokenizer_modes=frozenset({"qwen3"}), **kwargs)
+    assert plain.plan is not None and moded.plan is not None
+    assert "tokenizer_mode" not in plain.plan.engine_configuration
+    assert plain.chat_renderer is None
+    assert moded.plan.engine_configuration["tokenizer_mode"] == "qwen3"
+    assert moded.chat_renderer == "vllm tokenizer mode qwen3"

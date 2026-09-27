@@ -112,3 +112,10 @@ def test_a_tensor_no_vllm_file_names_is_still_refused() -> None:
     )
     assert problems is not None and problems[0].startswith("zz_invented_tensor x1")
     assert "named nowhere" in problems[0]
+
+
+def test_state_parameters_with_capitals_are_named_by_the_engine() -> None:
+    # Qwen3.6-35B-A3B-FP8 stores the gated delta net's A_log (and dt_bias):
+    # a lower-case-only dictionary missed it and called the model unloadable.
+    names = [f"{_LAYER}.weight", f"{_LAYER}.weight_scale_inv", "model.layers.0.linear_attn.A_log"]
+    assert load_problems(names, {"quant_method": "fp8"}) == ()

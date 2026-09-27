@@ -31,12 +31,13 @@ from pathlib import Path
 from typing import Any
 
 OUT = Path(__file__).resolve().parents[1] / "src/apron/adapters/backends/vllm_facts.json"
-# Every snake_case name the engine's source mentions (identifiers, attributes,
+# Every identifier-like name the engine's source mentions (identifiers, attributes,
 # arguments, words in string constants).  A checkpoint tensor named nowhere in
 # it cannot be loaded by any model class of this vLLM (the class 6 FPQuant
 # tensor, backward_hadamard_matrix, is in no v0.29.0 file).
 NAMES_OUT = OUT.with_name("vllm_source_names.txt.gz")
-_SNAKE = re.compile(r"[a-z][a-z0-9_]*")
+# Any identifier: parameter names are not all lower case (Mamba's A_log, dt_bias).
+_SNAKE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 _WORD = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 _Q = "vllm/model_executor/layers/quantization/"
 _CT = _Q + "compressed_tensors/schemes/"
@@ -275,6 +276,7 @@ def generate(source: Path) -> dict[str, Any]:
         "kv_cache": kv_cache,
         "hybrid_architectures": _hybrid_classes(source),
         "source_names": _names_entry(source_names(source)),
+        "tokenizer_modes": _tokenizer_modes(source),
         "compressed_tensors": {
             "kv_cache_scales": _has_kv_cache_method(tree(ct_path)),
             "config_min_capability": ct_min,
@@ -282,6 +284,26 @@ def generate(source: Path) -> dict[str, Any]:
             "schemes": schemes,
         },
     }
+
+
+TOKENIZERS = ("vllm/tokenizers/registry.py", "_VLLM_TOKENIZERS")
+
+
+def _tokenizer_modes(source: Path) -> dict[str, Any]:
+    """vLLM's own tokenizer modes (a chat renderer for models whose repo has no
+    chat template, e.g. DeepSeek V3.2 and V4): the keys of the registry dict."""
+    path, name = TOKENIZERS
+    for node in ast.parse((source / path).read_text()).body:
+        if isinstance(node, ast.AnnAssign):
+            target, value = node.target, node.value
+        elif isinstance(node, ast.Assign):
+            target, value = node.targets[0], node.value
+        else:
+            continue
+        if isinstance(target, ast.Name) and target.id == name and isinstance(value, ast.Dict):
+            keys = sorted(str(k.value) for k in value.keys if isinstance(k, ast.Constant))
+            return {"modes": keys, "source": f"{path.removeprefix('vllm/')}:{node.lineno}"}
+    raise SystemExit(f"{path}: {name} not found — update the index")
 
 
 def _names_entry(names: list[str]) -> dict[str, Any]:

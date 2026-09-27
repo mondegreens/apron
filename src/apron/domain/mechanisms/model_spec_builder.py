@@ -59,7 +59,7 @@ def _infer_mechanism(architecture: str, config: dict[str, Any]) -> str:
 
 
 def _infer_dtype_map(config: dict[str, Any]) -> dict[str, str]:
-    torch_dtype = config.get("torch_dtype", "bfloat16")
+    torch_dtype = config.get("torch_dtype") or config.get("dtype") or "bfloat16"
     return {"decoder": torch_dtype}
 
 
@@ -83,11 +83,15 @@ def build_model_spec(
     # An architecture the engine runs with state the calculator does not model
     # (hybrid attention + Mamba/linear attention) is an explicit unknown, never
     # a plain-attention estimate: KV for every layer would be wrong.
-    mechanism = (
-        UNKNOWN_MECHANISM
-        if primary_arch in unmodelled_architectures
-        else _infer_mechanism(primary_arch, config)
-    )
+    from apron.domain.mechanisms.layered import family
+
+    if family(config) is not None:
+        # Per-layer caches the calculator counts as vLLM pages them (layered.py).
+        mechanism = "layered_decode"
+    elif primary_arch in unmodelled_architectures:
+        mechanism = UNKNOWN_MECHANISM
+    else:
+        mechanism = _infer_mechanism(primary_arch, config)
 
     components: list[ComponentMechanism] = [
         ComponentMechanism(mechanism=mechanism, role="decoder"),

@@ -18,7 +18,7 @@ repo, dest = sys.argv[1], sys.argv[2]
 token_file = pathlib.Path("/run/apron/hf_token")
 token = token_file.read_text().strip() if token_file.exists() else None
 # Native duplicates vLLM does not load (see vllm_engine.DOWNLOAD_IGNORE).
-ignore = ["original/*", "consolidated*", "*.pth", "*.pt", "*.gguf"]
+ignore = ["original/*", "metal/*", "consolidated*", "*.pth", "*.pt", "*.gguf"]
 snapshot_download(repo_id=repo, local_dir=dest, token=token or None, ignore_patterns=ignore)
 print(f"apron-download: {repo} -> {dest}")
 PY
