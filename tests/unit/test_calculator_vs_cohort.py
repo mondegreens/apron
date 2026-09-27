@@ -140,3 +140,51 @@ def test_activation_estimate_matches_the_profiled_peak(
         f"{model_id} on {gpu} TP {tp} ({tokens} tokens): predicted "
         f"{predicted / 2**30:.2f} GiB, measured {measured / 2**30:.2f} GiB"
     )
+
+
+# ---------------------------------------------------------------------------
+# Mamba-1 state: the calculator against the pool vLLM reports
+# ---------------------------------------------------------------------------
+
+
+def _state_points() -> list[tuple[str, str, int, float]]:
+    if not (RUN / "records").is_dir():
+        return []
+    records = load_cohort_run(RUN).records
+    points = set()
+    for report in records.reports.values():
+        entry = records.solutions.get(report.solution_fingerprint or "")
+        if entry is None or not report.max_concurrency or not report.available_kv_cache_memory:
+            continue
+        points.add(
+            (
+                entry.model_id,
+                entry.deployment_plan.dtype or "bfloat16",
+                report.available_kv_cache_memory,
+                report.max_concurrency,
+            )
+        )
+    return sorted(points)
+
+
+@pytest.mark.skipif(not (RUN / "records").is_dir(), reason="cohort records not present")
+@pytest.mark.parametrize(("model_id", "dtype", "available", "concurrency"), _state_points())
+def test_mamba_state_matches_the_pool_vllm_reports(
+    model_id: str, dtype: str, available: int, concurrency: float
+) -> None:
+    """available KV memory / max concurrency = the bytes one sequence reserves
+    (v1/core/kv_cache_utils.py:1047-1069; no padding for a pure Mamba model)."""
+    from apron.domain.mechanisms.calculator import DTYPE_BYTES
+
+    entry = json.loads(FIXTURE.read_text())[model_id]
+    if not entry.get("ssm"):
+        pytest.skip("an attention model: its cache grows per token")
+    ssm = entry["ssm"]
+    predicted = (
+        ssm["num_hidden_layers"]
+        * ssm["intermediate_size"]
+        * ((ssm["conv_kernel"] - 1) + ssm["state_size"])
+        * DTYPE_BYTES[dtype]
+    )
+    measured = available / concurrency  # the log rounds GiB to 0.01: about 0.5%
+    assert abs(predicted - measured) / measured <= 0.01, (predicted, measured)

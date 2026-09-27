@@ -126,6 +126,7 @@ class RecordedWeightBytes(_Strict):
     vocab_size: int
     hidden_size: int
     torch_dtype: str
+    ssm: dict[str, int] | None = None
 
 
 def load_weight_bytes(data: dict[str, Any]) -> dict[str, RecordedWeightBytes]:
