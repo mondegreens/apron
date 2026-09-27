@@ -501,3 +501,38 @@ unless marked.  Machine events are in `events.jsonl`.
   `staging.py` (provider-neutral, paid through the budget), records say
   where weights came from and split pod time into `weights` and
   `engine_start`, storage accrued to the ledger, `run_cohort(repeat=True)`.
+
+## 2026-09-27 — first staged runs (one model, owner's go), paused by the owner
+
+- **Try 1 (19:27 UTC):** volume created in AP-JP-1 (the first storage
+  datacenter alphabetically with H100 stock); the CPU stager was refused
+  ("no longer any instances") although the datacenter listed CPU stock.
+  No GPU pod.  A one-minute probe showed the refusal was the 8-vCPU size:
+  4 vCPUs were given ($0.002, terminated).  Fixed: the stager steps down
+  through the datacenter's stocked flavors at 8/4/2 vCPUs, and a weights
+  site needs GPU and CPU stock.  The empty JP volume was deleted ($0.0007
+  of storage accrued).
+- **Try 2:** no storage datacenter had H100 x1 (CUDA 13) together with CPU
+  stock.  Where both existed: EUR-IS-1 (A100-SXM4-80GB), US-CA-2 (H200,
+  B200), EU-RO-1 (RTX PRO 6000).
+- **Try 3 (19:33 UTC):** Qwen3-32B on A100-SXM4-80GB in EUR-IS-1 (cheapest
+  GPU that fits 61 GB with KV room and had a CPU stager beside it; a new
+  point: Qwen3-32B was measured on A100 PCIe, not SXM).  Volume
+  `f6arz2r1s4` (85 GB) created; CPU stager `f4v1gvrczhj9mi` ($0.24/h) still
+  pulling the 9 GB runner image after 5 minutes.
+- **Owner feedback during the run:** RunPod's US regions are fast, Europe
+  much slower, Asia slower still — never pick a region at random.  Now:
+  US, then CA, then EU, Asia last; each staging event records its
+  datacenter so speed can be measured per datacenter.
+- **Owner stepped away (no pods without the owner):** I interrupted the run
+  before any GPU pod.  My SIGINT went to every process in the chain, so
+  Python got it twice: the second one interrupted the stager's cleanup and
+  the atexit guard terminated the pod instead.  Zero pods after.  The hold
+  had no pod id (the stager never finished provisioning), so replay settled
+  it at the $0.15 estimate; withdrawn by a signed correction — the pod's
+  real bill enters at the next reconciliation as unledgered.  Fixed: the
+  stager is torn down before any cost query, and a stager stopped
+  mid-provision is still annotated.
+- **Kept:** volume `f6arz2r1s4` in EUR-IS-1 (85 GB, ~$0.20/day, empty or
+  near empty).  Given the region feedback, the next staged run should go to
+  a US datacenter; this volume can then be deleted (owner's call).

@@ -32,8 +32,10 @@ from apron.application.sanitization import contains_secret
 from apron.interfaces.cohort_root import AUTHORIZED_USD, REPO, RULES_DIR, RUN_DIR, load_cohort_run
 
 DATA = REPO / "docs" / "blog" / "posts" / "_data" / "cohort-findings.json"
+MODERN = REPO / "cohort" / "modern-models.json"
 DOCUMENTS = (
     REPO / "docs" / "blog" / "posts" / "phase-1b-cohort-findings.md",
+    REPO / "docs" / "blog" / "posts" / "modern-models-findings.md",
     REPO / "docs" / "blog" / ".linkedin-draft.md",
 )
 
@@ -43,7 +45,8 @@ def generate(run_dir: Path, rules_dir: Path) -> tuple[str, dict[str, str]]:
     if run.records.invalid or run.rule_errors:
         problems = [*(f"{w}: {why}" for w, why in run.records.invalid), *run.rule_errors]
         raise SystemExit("invalid records — fix them first:\n" + "\n".join(problems))
-    findings = build_findings(run, authorized=AUTHORIZED_USD)
+    modern = json.loads(MODERN.read_text()) if MODERN.exists() else None
+    findings = build_findings(run, authorized=AUTHORIZED_USD, modern=modern)
     data = json.dumps(findings, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
     return data, render_tables(findings)
 

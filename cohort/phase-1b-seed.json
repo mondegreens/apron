@@ -10,6 +10,7 @@
     {"model_id": "mistralai/Mistral-7B-Instruct-v0.3", "gpu_sku": "NVIDIA L4", "size_class": "mid", "hardware_class": "datacenter", "mechanism": "autoregressive_decode", "weight_gb": 14.5, "features": ["gqa", "sliding_window"]},
     {"model_id": "Qwen/Qwen3-32B", "gpu_sku": "NVIDIA A100 80GB PCIe", "size_class": "large", "hardware_class": "datacenter", "mechanism": "autoregressive_decode", "weight_gb": 65.52, "features": ["gqa"]},
     {"model_id": "Qwen/Qwen3-32B", "gpu_sku": "NVIDIA H100 80GB HBM3", "size_class": "large", "hardware_class": "datacenter", "mechanism": "autoregressive_decode", "weight_gb": 65.52, "features": ["gqa"]},
+    {"model_id": "Qwen/Qwen3-32B", "gpu_sku": "NVIDIA A100-SXM4-80GB", "size_class": "large", "hardware_class": "datacenter", "mechanism": "autoregressive_decode", "weight_gb": 65.52, "features": ["gqa"]},
     {"model_id": "Qwen/Qwen3-32B", "gpu_sku": "NVIDIA GeForce RTX 4090", "size_class": "large", "hardware_class": "consumer", "mechanism": "autoregressive_decode", "weight_gb": 65.52, "prediction_error": true, "features": ["gqa"]},
     {"model_id": "deepseek-ai/DeepSeek-V2-Lite", "gpu_sku": "NVIDIA RTX A6000", "size_class": "large", "hardware_class": "professional", "mechanism": "mla_decode", "weight_gb": 31.41, "features": ["mla", "moe"]},
     {"model_id": "deepseek-ai/DeepSeek-V2-Lite", "gpu_sku": "NVIDIA A100 80GB PCIe", "size_class": "large", "hardware_class": "datacenter", "mechanism": "mla_decode", "weight_gb": 31.41, "features": ["mla", "moe"]},

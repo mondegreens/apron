@@ -1,0 +1,23 @@
+{
+  "_provenance": "Owner decision 2026-09-27: Phase 1b adds current open models in four groups, cap $500 with a stop and report after groups A-C. Sizes and architectures read from each repo's config.json and safetensors metadata on 2026-09-27; every architecture is in the pinned vLLM v0.29.0 registry. The GPU is a proposal: the planner checks the fit and the run uses the GPU a storage datacenter has in stock. Downloads are Hugging Face 30-day counts on 2026-09-27.",
+  "groups": {
+    "A": "one GPU; the calculator has a memory model for the architecture",
+    "B": "one GPU; hybrid or linear attention the calculator does not model yet",
+    "C": "2-4 GPUs",
+    "D": "8 GPUs; frontier size"
+  },
+  "models": [
+    {"group": "A", "model_id": "openai/gpt-oss-20b", "params_b": 20.9, "architecture": "GptOssForCausalLM", "format": "mxfp4", "downloads_30d": 6759761, "gpu": "NVIDIA GeForce RTX 4090", "gpu_count": 1},
+    {"group": "A", "model_id": "openai/gpt-oss-120b", "params_b": 116.8, "architecture": "GptOssForCausalLM", "format": "mxfp4", "downloads_30d": 4484728, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
+    {"group": "A", "model_id": "zai-org/GLM-4.7-Flash", "params_b": 31.2, "architecture": "Glm4MoeLiteForCausalLM", "format": "bf16", "downloads_30d": 1854281, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
+    {"group": "A", "model_id": "google/gemma-4-31B-it", "params_b": 31.3, "architecture": "Gemma4ForConditionalGeneration", "format": "bf16", "downloads_30d": 9460570, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
+    {"group": "B", "model_id": "Qwen/Qwen3.8-27B", "params_b": 27.8, "architecture": "Qwen3_5ForConditionalGeneration", "format": "bf16", "downloads_30d": 6727629, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
+    {"group": "B", "model_id": "Qwen/Qwen3.6-35B-A3B-FP8", "params_b": 36.0, "architecture": "Qwen3_5MoeForConditionalGeneration", "format": "fp8", "downloads_30d": 7638786, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
+    {"group": "B", "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4", "params_b": 18.2, "architecture": "NemotronHForCausalLM", "format": "nvfp4", "downloads_30d": 1048456, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
+    {"group": "C", "model_id": "MiniMaxAI/MiniMax-M2.7", "params_b": 228.7, "architecture": "MiniMaxM2ForCausalLM", "format": "fp8", "downloads_30d": 1191260, "gpu": "NVIDIA H200", "gpu_count": 2},
+    {"group": "C", "model_id": "deepseek-ai/DeepSeek-V4-Flash-0731", "params_b": 304.2, "architecture": "DeepseekV4ForCausalLM", "format": "fp8", "downloads_30d": 3959727, "gpu": "NVIDIA H200", "gpu_count": 4},
+    {"group": "D", "model_id": "zai-org/GLM-5.3", "params_b": 753.3, "architecture": "GlmMoeDsaForCausalLM", "format": "fp8", "downloads_30d": 1351716, "gpu": "NVIDIA H200", "gpu_count": 8},
+    {"group": "D", "model_id": "deepseek-ai/DeepSeek-V3.2", "params_b": 685.4, "architecture": "DeepseekV32ForCausalLM", "format": "fp8", "downloads_30d": 2979489, "gpu": "NVIDIA H200", "gpu_count": 8},
+    {"group": "D", "model_id": "moonshotai/Kimi-K2-Instruct-0905", "params_b": 1026.5, "architecture": "DeepseekV3ForCausalLM", "format": "fp8", "downloads_30d": 60539, "gpu": "NVIDIA B200", "gpu_count": 8}
+  ]
+}

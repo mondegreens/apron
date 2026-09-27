@@ -65,6 +65,18 @@ _DC_STOCK_QUERY = """query Stock {{
   }}
 }}"""
 _STOCK_RANK = {"High": 3, "Medium": 2, "Low": 1}
+# Owner's experience (2026-09-27): RunPod's US datacenters run pods faster than
+# the European ones, and the Asian ones slower still.  Staging records the
+# measured transfer speed per datacenter (``staged`` events) to replace this.
+REGION_ORDER = ("US-", "CA-", "EU-", "EUR-", "OC-", "AP-")
+
+
+def region_rank(data_center_id: str) -> int:
+    """Lower is preferred: US first, Asia last, unknown prefixes after all."""
+    return next(
+        (i for i, prefix in enumerate(REGION_ORDER) if data_center_id.startswith(prefix)),
+        len(REGION_ORDER),
+    )
 
 
 def storage_cost(size_gb: int, hours: float) -> float:
@@ -144,8 +156,10 @@ class RunPodStorage:
         return data.get("data") or {}
 
     def storage_datacenters(self) -> list[str]:
+        """Datacenters with network storage, preferred region first."""
         rows = self._gql(_DATACENTERS_QUERY).get("dataCenters") or []
-        return sorted(str(r["id"]) for r in rows if r.get("storageSupport"))
+        ids = [str(r["id"]) for r in rows if r.get("storageSupport")]
+        return sorted(ids, key=lambda dc: (region_rank(dc), dc))
 
     def cpu_stock(self, data_center_id: str) -> list[str]:
         """CPU flavors with Secure stock in one datacenter, best stocked first."""
@@ -185,7 +199,9 @@ class RunPodStorage:
         for dc in prefer:
             if any(d == dc for _, d in stocked):
                 return dc
-        return max(stocked)[1] if stocked else None
+        # Region first (speed), then stock.
+        stocked.sort(key=lambda sd: (region_rank(sd[1]), -sd[0], sd[1]))
+        return stocked[0][1] if stocked else None
 
 
 class RunPodStagerPod(RunPodTarget):
@@ -205,6 +221,10 @@ class RunPodStagerPod(RunPodTarget):
     @property
     def execution_fingerprint(self) -> str:
         raise RuntimeError("a stager pod does not execute models")
+
+    @property
+    def location(self) -> str | None:
+        return self._data_center_id
 
     def provision(
         self, wait_timeout: int = 0, env: dict[str, str] | None = None

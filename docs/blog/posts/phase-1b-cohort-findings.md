@@ -225,7 +225,7 @@ Failed boots and retries are included.
 | Diagnosis model calls (Claude Haiku) |  | 0.1934 |  |  |
 | Idle time of reused pods |  | 0.2302 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  | 0.6502 |  |  |
-| Corrections to RunPod's bill (estimates, clock differences) |  | -0.0998 |  |  |
+| Corrections to RunPod's bill (estimates, clock differences) |  | -0.2533 |  |  |
 | **Ledger spent** |  | **11.3562** |  | cap $500 |
 | RunPod billed, same window |  | 9.9041 |  | not billed yet: 2 pod(s) |
 <!-- /findings:cost -->

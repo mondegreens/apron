@@ -413,3 +413,45 @@ def test_stager_reports_every_refusal_and_other_errors_stop() -> None:
         pytest.raises(RuntimeError, match="401"),
     ):
         stager.provision()
+
+
+def test_us_datacenters_come_first_then_europe_then_asia() -> None:
+    from apron.adapters.backends.runpod_storage import region_rank
+
+    ids = ["AP-JP-1", "EUR-IS-1", "US-NE-1", "EU-RO-1", "CA-MTL-3", "XX-1"]
+    assert sorted(ids, key=region_rank)[:2] == ["US-NE-1", "CA-MTL-3"]
+    assert sorted(ids, key=region_rank)[-2:] == ["AP-JP-1", "XX-1"]
+    storage = RunPodStorage("k")
+    stock = {"AP-JP-1": "High", "EUR-IS-1": "High", "US-NE-1": "Low"}
+    with (
+        patch.object(storage, "storage_datacenters", return_value=sorted(stock)),
+        patch.object(storage, "stock_in", side_effect=lambda dc, g, n: stock[dc]),
+        patch.object(storage, "cpu_stock", return_value=["cpu3c"]),
+    ):
+        # a US datacenter with low stock beats a better-stocked European or Asian one
+        assert storage.choose_datacenter("H100", 1) == "US-NE-1"
+
+
+def test_a_stager_stopped_mid_provision_is_still_named_and_paid() -> None:
+    clock = _Clock()
+    budget = _budget(clock)
+
+    class _Half(_Stager):
+        def provision(self, env: dict[str, str] | None = None) -> dict[str, Any]:
+            self.pod_id = "cpu9"  # created, then the wait for SSH is interrupted
+            raise RuntimeError("interrupted while the image pulled")
+
+    stager = _Half(clock)
+    result = stage_weights(
+        ["Qwen/Qwen3-32B"],
+        stager=stager,
+        engine=_Engine(clock),
+        budget=budget,
+        clock=clock,
+        hourly_rate=0.3,
+        estimate=0.5,
+    )
+    assert stager.torn_down and result.pod_id == "cpu9"
+    annotated = [e for e in budget.ledger.read_all() if e["op"] == "annotate"]
+    assert annotated and annotated[0]["pod_id"] == "cpu9"  # reconcile can find its bill
+    assert not budget.holds

@@ -37,18 +37,28 @@ GIB = 1 << 30
 SHORT = 16  # digest prefix shown in tables; the record store resolves prefixes
 
 
-def build_findings(run: CohortRun, *, authorized: float) -> dict[str, Any]:
+def build_findings(
+    run: CohortRun, *, authorized: float, modern: Mapping[str, Any] | None = None
+) -> dict[str, Any]:
+    """Every number the article shows, with its records.
+
+    *modern* is the owner-approved list of current models (groups A-D,
+    ``cohort/modern-models.json``): each is a row, measured or not yet.
+    """
     rec = run.records
+    memory, tasks, cost = _memory(run), _tasks(run), _cost(run, authorized)
     return {
+        "modern_models": _modern(modern, memory, tasks, cost, run),
+        "weights_time": _weights_time(run),
         "setup": _setup(run, authorized),
-        "memory": _memory(run),
+        "memory": memory,
         "repeat_measurements": _repeats(run),
         "calculator_recheck": list((run.recheck or {}).get("rows", [])),
         "fixes": _fixes(run),
         "serving": _serving(run),
-        "tasks": _tasks(run),
+        "tasks": tasks,
         "prediction_errors": _prediction_errors(run),
-        "cost": _cost(run, authorized),
+        "cost": cost,
         "failed_spend": _failed_spend(run),
         "record_count": len(rec.claims)
         + len(rec.reports)
@@ -126,6 +136,77 @@ def _memory(run: CohortRun) -> list[dict[str, Any]]:
                 "notes": list(r.prediction_notes),
                 "record": digest,
                 "claim": claim_digest,
+            }
+        )
+    return rows
+
+
+def _modern(
+    plan: Mapping[str, Any] | None,
+    memory: list[dict[str, Any]],
+    tasks: list[dict[str, Any]],
+    cost: Mapping[str, Any],
+    run: CohortRun,
+) -> list[dict[str, Any]]:
+    """One row per approved modern model: not run yet, failed, or measured."""
+    rows = []
+    failed = defaultdict(list)
+    for digest, r in run.records.reports.items():
+        entry = _entry(run, r.solution_fingerprint)
+        if entry is not None and r.boot_outcome == "failed":
+            failed[entry.model_id].append(digest)
+    for m in (plan or {}).get("models", []):
+        model = m["model_id"]
+        booted = [r for r in memory if r["model"] == model]
+        scored = [t for t in tasks if t["model"] == model]
+        latest_rule = max(scored, key=lambda t: len(t.get("scoring") or []), default=None)
+        spent = sum(c["cost"] for c in cost.get("per_solution", []) if c.get("model") == model)
+        status = "booted" if booted else ("failed" if failed.get(model) else "not run yet")
+        best = booted[-1] if booted else None
+        rows.append(
+            {
+                "group": m["group"],
+                "model": model,
+                "params_b": m.get("params_b"),
+                "downloads_30d": m.get("downloads_30d"),
+                "gpu": best["gpu"] if best else m.get("gpu"),
+                "gpu_count": best["gpu_count"] if best else m.get("gpu_count"),
+                "status": status,
+                "predicted_weight_bytes": best["predicted_weight_bytes"] if best else None,
+                "measured_weight_bytes": best["measured_weight_bytes"] if best else None,
+                "accepted": latest_rule["accepted"] if latest_rule else None,
+                "cases": latest_rule["cases"] if latest_rule else None,
+                "cost": round(spent, 4) if spent else None,
+                "records": sorted(([best["record"]] if best else []) + failed.get(model, [])),
+            }
+        )
+    return rows
+
+
+def _weights_time(run: CohortRun) -> list[dict[str, Any]]:
+    """Pod time per boot of every model that was ever booted from staged weights,
+    beside its boots that downloaded on the pod."""
+    staged_models = set()
+    for r in run.records.reports.values():
+        entry = _entry(run, r.solution_fingerprint)
+        if entry is not None and r.weights_source and "network volume" in r.weights_source:
+            staged_models.add(entry.model_id)
+    rows = []
+    for digest, r in sorted(run.records.reports.items(), key=lambda kv: _row_key(run, kv[1])):
+        entry = _entry(run, r.solution_fingerprint)
+        if entry is None or entry.model_id not in staged_models or r.claim_scope != "memory":
+            continue
+        phases = r.phase_seconds or {}
+        rows.append(
+            {
+                "model": entry.model_id,
+                "gpu": entry.requested_execution.gpu_sku,
+                "weights_source": r.weights_source or "downloaded to the pod volume",
+                "weights_seconds": phases.get("weights"),
+                "engine_start_seconds": phases.get("engine_start"),
+                "pod_seconds": phases.get("total"),
+                "hourly_rate": r.hourly_rate,
+                "record": digest,
             }
         )
     return rows
@@ -586,6 +667,14 @@ def _passed_part(fix: Mapping[str, Any], part: str) -> str:
     return "no" if failed else "yes"
 
 
+def _staged_label(source: str) -> str:
+    if "network volume" in source:
+        return "staged on a network volume" + (
+            f" ({source.rsplit(' in ', 1)[-1]})" if " in " in source else ""
+        )
+    return "downloaded on the GPU pod"
+
+
 def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
     """One Markdown block per findings section, keyed by block name."""
     setup, cost = findings["setup"], findings["cost"]
@@ -698,6 +787,64 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
             for g in findings.get("failed_spend", [])
         ],
         "No boot failed.",
+    )
+    blocks["modern_models"] = _table(
+        [
+            "Group",
+            "Model",
+            "Size (B params)",
+            "Downloads / 30 days",
+            "GPU",
+            "Status",
+            "Weights GiB: predicted / measured",
+            "Questions answered",
+            "Cost $",
+            "Records",
+        ],
+        [
+            [
+                r["group"],
+                _v(r["model"]),
+                _v(r["params_b"]),
+                f"{r['downloads_30d']:,}" if r.get("downloads_30d") else "—",
+                f"{_v(r['gpu'])} x{_v(r['gpu_count'])}",
+                r["status"],
+                f"{_gib(r['predicted_weight_bytes'])} / {_gib(r['measured_weight_bytes'])}"
+                if r["status"] == "booted"
+                else "—",
+                f"{r['accepted']} / {r['cases']}" if r.get("cases") else "—",
+                f"{r['cost']:.4f}" if r.get("cost") else "—",
+                _records(r["records"]),
+            ]
+            for r in findings.get("modern_models", [])
+        ],
+        "No modern models approved yet.",
+    )
+    blocks["weights_time"] = _table(
+        [
+            "Model",
+            "GPU",
+            "Weights",
+            "Weights s",
+            "Engine start s",
+            "Pod s",
+            "GPU $/h",
+            "Record",
+        ],
+        [
+            [
+                _v(r["model"]),
+                _v(r["gpu"]),
+                _staged_label(r["weights_source"]),
+                _v(r["weights_seconds"]),
+                _v(r["engine_start_seconds"]),
+                _v(round(r["pod_seconds"]) if r.get("pod_seconds") else None),
+                _v(r["hourly_rate"]),
+                _d(r["record"]),
+            ]
+            for r in findings.get("weights_time", [])
+        ],
+        "No boot from staged weights yet.",
     )
     blocks["recheck"] = _table(
         [

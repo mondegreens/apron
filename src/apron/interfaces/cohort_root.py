@@ -456,11 +456,19 @@ def weights_site(
     ``None`` when no storage datacenter has stock for all of them right now.
     An existing Apron volume's datacenter is preferred (its weights stay).
     """
+    from apron.adapters.backends.runpod_storage import region_rank
+
     existing = tuple(
         str(v.get("dataCenterId")) for v in storage.list_volumes() if v.get("dataCenterId")
     )
+    # Preferred region first (US before Europe before Asia): an existing
+    # volume's weights are kept only when it is in the best region with stock.
+    candidates = sorted(
+        dict.fromkeys((*existing, *storage.storage_datacenters())),
+        key=lambda dc: (region_rank(dc), dc not in existing),
+    )
     chosen: str | None = None
-    for dc in (*existing, *storage.storage_datacenters()):
+    for dc in candidates:
         # GPU stock for every execution, and a CPU pod to stage from.
         if all(storage.stock_in(dc, e.gpu_sku, e.gpu_count) for e in executions) and (
             storage.cpu_stock(dc)

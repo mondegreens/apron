@@ -222,3 +222,45 @@ def test_an_answer_cut_at_the_token_limit_is_counted() -> None:
     short = SimpleNamespace(case_id="arith-2", output_tokens=2, failures=())
     assert _truncated(cut, limits) and _truncated(tagged, limits)
     assert not _truncated(short, limits)
+
+
+# ---------------------------------------------------------------------------
+# Modern models (groups A-D): every approved model is a row, run or not
+# ---------------------------------------------------------------------------
+
+
+def test_modern_models_list_every_approved_model(synthetic: tuple[Path, CohortRun]) -> None:
+    plan = {
+        "models": [
+            {
+                "group": "A",
+                "model_id": "Qwen/Qwen3-32B",
+                "params_b": 32.8,
+                "gpu": "x",
+                "gpu_count": 1,
+            },
+            {
+                "group": "D",
+                "model_id": "zai-org/GLM-5.3",
+                "params_b": 753.3,
+                "gpu": "NVIDIA H200",
+                "gpu_count": 8,
+            },
+        ]
+    }
+    found = build_findings(synthetic[1], authorized=100.0, modern=plan)
+    rows = {r["model"]: r for r in found["modern_models"]}
+    measured = rows["Qwen/Qwen3-32B"]
+    assert measured["status"] == "booted"
+    assert measured["gpu"] == "NVIDIA H100 80GB HBM3"  # what ran, not the proposal
+    assert measured["measured_weight_bytes"] and measured["records"]
+    waiting = rows["zai-org/GLM-5.3"]
+    assert waiting["status"] == "not run yet" and waiting["records"] == []
+    assert waiting["gpu"] == "NVIDIA H200" and waiting["gpu_count"] == 8
+    table = render_tables(found)["modern_models"]
+    assert "not run yet" in table and "GLM-5.3" in table
+
+
+def test_weights_time_is_empty_without_staged_boots(findings: dict) -> None:
+    assert findings["weights_time"] == []
+    assert "No boot from staged weights yet" in render_tables(findings)["weights_time"]

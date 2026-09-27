@@ -90,16 +90,26 @@ def stage_weights(
                         "ok": staged.ok,
                         "seconds": staged.seconds,
                         "pod_id": stager.pod_id,
+                        # Where it ran: the speed per datacenter is measured here.
+                        "location": getattr(stager, "location", None),
                     }
                 )
     except Exception as exc:  # reported in the result; the pod is still torn down
         result.error = f"{type(exc).__name__}: {exc}"
     finally:
+        # Tear the pod down first: an interrupt during a cost query must not
+        # leave it billing (the atexit guard is the last resort, not the path).
+        pod_id = stager.pod_id or result.pod_id
         reported = None
         try:
-            reported = stager.pod_reported_cost()
+            reported = stager.pod_reported_cost() if pod_id else None
+        except Exception:
+            reported = None
         finally:
             stager.teardown()
+        if pod_id and result.pod_id is None:  # stopped before provision returned
+            result.pod_id = pod_id
+            budget.annotate_hold(label, pod_id)
         result.seconds = round(clock.now().timestamp() - start, 1)
         result.cost = (
             float(reported)
