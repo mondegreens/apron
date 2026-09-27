@@ -475,6 +475,9 @@ def load_cohort_run(
         billing=json.loads((run_dir / "billing-reconciliation.json").read_text())
         if (run_dir / "billing-reconciliation.json").exists()
         else None,
+        recheck=json.loads((run_dir / "calculator-recheck.json").read_text())
+        if (run_dir / "calculator-recheck.json").exists()
+        else None,
     )
 
 

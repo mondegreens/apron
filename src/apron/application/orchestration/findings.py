@@ -42,6 +42,7 @@ def build_findings(run: CohortRun, *, authorized: float) -> dict[str, Any]:
         "setup": _setup(run, authorized),
         "memory": _memory(run),
         "repeat_measurements": _repeats(run),
+        "calculator_recheck": list((run.recheck or {}).get("rows", [])),
         "fixes": _fixes(run),
         "serving": _serving(run),
         "tasks": _tasks(run),
@@ -549,6 +550,33 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
             for r in findings["repeat_measurements"]
         ],
         "No solution was measured twice yet.",
+    )
+    blocks["recheck"] = _table(
+        [
+            "Model",
+            "GPU",
+            "TP",
+            "Weights GiB: at run / now / measured",
+            "Activation GiB: at run / now / measured",
+            "Record",
+        ],
+        [
+            [
+                _v(r["model"]),
+                _v(r["gpu"]),
+                str(r["tensor_parallel"]),
+                " / ".join(
+                    _gib(r[k]) for k in ("weights_at_run", "weights_now", "weights_measured")
+                ),
+                " / ".join(
+                    _gib(r[k])
+                    for k in ("activation_at_run", "activation_now", "activation_measured")
+                ),
+                _d(r["record"]),
+            ]
+            for r in findings.get("calculator_recheck", [])
+        ],
+        "Run scripts/calculator_recheck.py.",
     )
     blocks["fixes"] = _table(
         [

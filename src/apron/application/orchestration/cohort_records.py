@@ -253,3 +253,5 @@ class CohortRun:
     events: list[dict[str, Any]]
     # The provider's bill for the run window (scripts/reconcile_billing.py), if read.
     billing: dict[str, Any] | None = None
+    # Run-time vs current calculator vs measurement (scripts/calculator_recheck.py).
+    recheck: dict[str, Any] | None = None
