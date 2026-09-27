@@ -59,12 +59,21 @@ no GPU.
 | D | moonshotai/Kimi-K2-Instruct-0905 | 1026.5 | 60,539 | NVIDIA B200 x8 | fits: 122.07 GiB per GPU | not run yet | — | — | — | — |
 <!-- /findings:modern_models -->
 
-**"Unknown" is an answer, not a gap in the table.** Qwen 3.6 and 3.8,
-Nemotron 3 and Gemma 4 mix ordinary attention with state that works
-differently (Mamba or linear attention), or keep the text model inside a
-multimodal config. vLLM lists 25 such hybrid model classes. Apron says
-"unknown" for them rather than guess. Its first answer for Nemotron 3 was a
-confident number, and that number would have been wrong.
+**Some of these models are not built like the ones before.** Qwen 3.6 and
+3.8, and Nemotron 3, mix ordinary attention with layers that keep a
+fixed-size state (linear attention, or Mamba). Gemma 4 mixes short-window
+and full attention with different head sizes. It also keeps its text model
+inside a multimodal config. vLLM reserves memory for such layers in its own
+way. Apron first said "unknown" for them rather than guess; its very first
+answer for Nemotron 3 had been a confident, wrong number. We traced how
+vLLM counts these layers in its source, and Apron now reproduces that
+count exact to the byte for all four. The table shows the result as
+"fits". A boot still has to confirm it.
+
+One consequence is worth knowing before you rent a GPU. At vLLM's default
+context length (262,144 tokens), Gemma 4-31B needs at least 33 GiB of
+cache next to its ~58 GiB of weights, so on an 80 GB H100 it will not
+start. Apron plans the context your workload needs instead.
 
 **The GPU-free pass found three mistakes of ours** before any money was
 spent. Each is fixed, and each is in the run notebook:
