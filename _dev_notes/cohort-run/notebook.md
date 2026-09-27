@@ -400,3 +400,19 @@ unless marked.  Machine events are in `events.jsonl`.
   (finish_reason "length") is marked "truncated at max_tokens".  Not changed:
   the suite's max_tokens (a task-suite change re-runs every model's tasks —
   owner's call).
+
+## 2026-09-27 — attribution of pod `oxlwqogyhgfc2m`, and a correction
+
+- RunPod's hourly billing (grouped by GPU type) puts it at 2026-09-26
+  22:00-23:00 UTC, NVIDIA A100 80GB PCIe, 568 s, $0.2569.  No cohort event
+  names an A100 in that hour.  At that time I ran the local hook with the
+  API keys loaded; the key-gated integration tests ran live and I stopped
+  them (fixed in ec0e0d8, 22:16 UTC: the hook now strips the keys).  One of
+  them, `tests/integration/test_fixture_run.py` (Phase 1a: "spends real money
+  (~$0.50)"), rents the cheapest available GPU that fits; with no 4090 stock
+  on CUDA 13 it would take an A100 PCIe.  **Correction:** I reported that
+  incident as "0 pods".  It was one pod, $0.26 — already in the ledger as
+  `reconcile:unledgered:oxlwqogyhgfc2m`.
+- Ledger corrected to RunPod's bill: 26 signed `correct` entries, -$0.10
+  net (the L0-A3 crash replay settled at a $0.48 estimate, billed $0.24;
+  the rest are sub-cent clock differences).  Ledger pods = bill = $9.9041.
