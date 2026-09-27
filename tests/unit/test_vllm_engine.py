@@ -430,8 +430,13 @@ def test_launch_detaches_so_the_ssh_command_returns(tmp_path: Path) -> None:
 
     env_file = tmp_path / "env.sh"
     env_file.write_text("export APRON_TEST=1\n")
+    console = tmp_path / "console.out"
     command = launch_command(
-        "sleep 5", env_file=str(env_file), log=str(tmp_path / "v.log"), bin_dir=""
+        "sh -c 'echo loaded; sleep 5'",
+        env_file=str(env_file),
+        log=str(tmp_path / "v.log"),
+        bin_dir="",
+        console=str(console),
     ).replace("cd /workspace", f"cd {tmp_path}")
     start = time.monotonic()
     proc = subprocess.Popen(
@@ -442,3 +447,7 @@ def test_launch_detaches_so_the_ssh_command_returns(tmp_path: Path) -> None:
     )
     proc.communicate(timeout=10)
     assert time.monotonic() - start < 2, "the launch held the channel open"
+    time.sleep(1.5)
+    assert "loaded" in (tmp_path / "v.log").read_text()
+    assert "loaded" in console.read_text(), "the log is mirrored to the console"
+    subprocess.run(["pkill", "-f", f"tail -n [+]1 -F {tmp_path}"], check=False)

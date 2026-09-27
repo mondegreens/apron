@@ -52,7 +52,8 @@ def test_boot_serves_local_path_with_tokens_unset() -> None:
     # then the tokens are removed: L0-A3's first boot died on a missing ninja.
     assert launch.startswith("( . /etc/apron_environment && ")
     assert launch.index("/etc/apron_environment") < launch.index("env -u HF_TOKEN")
-    assert launch.endswith("2>&1 < /dev/null &")
+    assert "2>&1 < /dev/null & " in launch  # vLLM fully detached
+    assert launch.endswith("> /proc/1/fd/1 ) 2>/dev/null < /dev/null &")  # console mirror
 
 
 def test_download_reads_token_file_and_never_carries_the_value() -> None:

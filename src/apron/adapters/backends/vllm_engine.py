@@ -88,12 +88,18 @@ def collapse_repeats(log: str) -> str:
     return "\n".join(out)
 
 
+# The container's main process output: what the provider console shows.
+CONTAINER_CONSOLE = "/proc/1/fd/1"
+MIRROR_PATTERN = "tail -n [+]1 -F"
+
+
 def launch_command(
     serve: str,
     *,
     env_file: str | None = None,
     log: str | None = None,
     bin_dir: str = "/opt/venv/bin/",
+    console: str = CONTAINER_CONSOLE,
 ) -> str:
     """The detached ``vllm serve`` launch sent over SSH.
 
@@ -104,13 +110,18 @@ def launch_command(
     - The whole group's stdin/stdout/stderr are redirected and vLLM is exec'd:
       otherwise a background subshell keeps the SSH channel's output open and
       the command never returns while vLLM runs (L0-A3 hung on exactly that).
+    - A detached ``tail -F`` mirrors the log to the container's own output, so
+      the provider console shows the model loading and the requests.  It is a
+      separate process: if the console cannot be written, only the mirror
+      fails, never vLLM.
     """
     env_file = env_file or CONTAINER_ENV
     log = log or VLLM_LOG
     return (
         f"( . {env_file} && cd /workspace && "
         f"exec env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 "
-        f"{bin_dir}{serve} ) > {log} 2>&1 < /dev/null &"
+        f"{bin_dir}{serve} ) > {log} 2>&1 < /dev/null & "
+        f"( exec tail -n +1 -F {log} > {console} ) 2>/dev/null < /dev/null &"
     )
 
 
@@ -412,6 +423,7 @@ class VllmEngineAdapter:
         free, GPU memory used below 1 GiB (the Part 1 dtype evidence was a
         port collision from a previous vLLM)."""
         target.execute(f"pkill -9 -f '{VLLM_PROCESS_PATTERN}' || true")
+        target.execute(f"pkill -f '{MIRROR_PATTERN}' || true")  # the previous boot's mirror
         deadline = time.monotonic() + timeout
         last: dict[str, Any] = {}
         while time.monotonic() < deadline:
