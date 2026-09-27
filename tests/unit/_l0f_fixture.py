@@ -68,6 +68,7 @@ class BaseModelEvidence(_Strict):
     source: str
     proposal: BaseProposal | None = None
     confirmed: bool | None = None
+    same_final_norm: bool | None = None
 
 
 class Considered(_Strict):

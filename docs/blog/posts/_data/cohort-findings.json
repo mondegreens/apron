@@ -2,10 +2,10 @@
   "cost": {
     "authorized": 100.0,
     "failed_boot_total": 4.324673,
-    "ledger_classifier": 0.163396,
+    "ledger_classifier": 0.165115,
     "ledger_pod_idle": 0.027383,
     "ledger_settled": 8.823067,
-    "ledger_spent": 9.013846,
+    "ledger_spent": 9.015565,
     "per_solution": [
       {
         "cost": 1.392902,

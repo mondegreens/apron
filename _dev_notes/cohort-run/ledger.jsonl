@@ -178,3 +178,4 @@
 {"amount": 0.0, "at": "2026-09-27T04:12:35.435958+00:00", "label": "pod-idle:uek7y94mhlfqam", "op": "annotate", "pod_id": "uek7y94mhlfqam"}
 {"amount": 0.717091, "at": "2026-09-27T04:12:35.437544+00:00", "estimate": 1.4542, "label": "class6-fixed", "op": "settle"}
 {"amount": 0.000495, "at": "2026-09-27T04:12:35.947239+00:00", "estimate": 0.581667, "label": "pod-idle:uek7y94mhlfqam", "op": "settle"}
+{"amount": 0.001719, "at": "2026-09-27T04:30:51.061223+00:00", "label": "classifier:base-model:ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4", "op": "spend"}

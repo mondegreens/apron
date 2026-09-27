@@ -5,15 +5,16 @@
       "id": "Qwen/Qwen3-0.6B",
       "proposal": {
         "base_model_id": "Qwen/Qwen3-0.6B",
-        "classifier_cost_usd": 0.001729,
+        "classifier_cost_usd": 0.001719,
         "classifier_input_digest": "122078da85221290a631db77435bbe3f92ad5b57cc4ca96cace34deae15d6232ebe6",
         "classifier_model_id": "claude-haiku-4-5-20251001",
         "classifier_usage": {
           "input_tokens": 1099,
-          "output_tokens": 126
+          "output_tokens": 124
         },
-        "reason": "The checkpoint is a quantized version of Qwen3-0.6B, as indicated by the model type \"qwen3\", architecture dimensions matching a 0.6B model, and the repo name explicitly containing \"Qwen3-0.6B\" with quantization suffix."
+        "reason": "The checkpoint is identified as Qwen3-0.6B with FPQuant quantization applied, and the config shows model_type \"qwen3\" with architecture Qwen3ForCausalLM matching Qwen3's 0.6B variant specifications."
       },
+      "same_final_norm": true,
       "source": "proposed"
     },
     "considered": [
@@ -155,6 +156,7 @@
       },
       {
         "bits": 4,
+        "dropped": "final-norm weights differ from the base: another model",
         "method": "gptq",
         "min_capability": 60,
         "model_id": "buttercoconut/Qwen3-ko-alpaca-0.6B-Q4"
@@ -174,9 +176,9 @@
     },
     "requested_model_id": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
     "requested_weight_bits": 4,
-    "result": "20 candidates"
+    "result": "19 candidates"
   },
-  "recorded_at": "2026-09-27T03:53:54.503590+00:00",
+  "recorded_at": "2026-09-27T04:31:23.512626+00:00",
   "search": {
     "base_model_id": "Qwen/Qwen3-0.6B",
     "candidates": [
@@ -559,26 +561,6 @@
           "vocab_size": 151936
         },
         "weight_bits": 8
-      },
-      {
-        "downloads": 4,
-        "min_capability": 60,
-        "model_id": "buttercoconut/Qwen3-ko-alpaca-0.6B-Q4",
-        "quant_method": "gptq",
-        "shape": {
-          "architectures": [
-            "Qwen3ForCausalLM"
-          ],
-          "head_dim": 128,
-          "hidden_size": 1024,
-          "intermediate_size": 3072,
-          "model_type": "qwen3",
-          "num_attention_heads": 16,
-          "num_hidden_layers": 28,
-          "num_key_value_heads": 8,
-          "vocab_size": 151936
-        },
-        "weight_bits": 4
       }
     ],
     "requested_model_id": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",

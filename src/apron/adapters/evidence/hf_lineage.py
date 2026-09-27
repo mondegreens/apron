@@ -8,14 +8,22 @@ compare architectures; the pinned engine's format table says what each needs.
 
 The base model comes from the checkpoint's card when it declares one.  When
 it does not, a proposer (the classifier model) names one, and the proposal is
-used only if the Hub confirms it: it exists, is unquantized, and has the same
-architecture as the checkpoint.  ``evidence`` records every step, including
-each dropped candidate and why.
+used only if the Hub confirms it: it exists, is unquantized, has the same
+architecture as the checkpoint, and stores the same final-norm weights.
+
+The Hub's "quantized" relation is declared by each publisher and is sometimes
+wrong (``buttercoconut/Qwen3-ko-alpaca-0.6B-Q4`` is a fine-tune).  Quantizers
+leave norm layers unquantized, so a true quantized copy stores the base
+model's final norm bit for bit; a candidate whose final norm differs is a
+different model and is dropped (2 KB range read per repo).  Limit: a LoRA
+fine-tune merged into the linear layers leaves the norm untouched and passes.
+``evidence`` records every step, including each dropped candidate and why.
 """
 
 from __future__ import annotations
 
 import json
+import struct
 from collections import Counter
 from typing import TYPE_CHECKING, Any
 
@@ -31,6 +39,20 @@ if TYPE_CHECKING:
 
 # Formats the pinned engine can load: only these are worth reading in full.
 _LOADABLE = frozenset(QUANT_MIN_CAPABILITY) | {"compressed-tensors"}
+# Unquantized in every quantized format; identical across copies of one model.
+_IDENTITY_TENSORS = ("model.norm.weight", "model.language_model.norm.weight")
+
+
+def decode_floats(raw: bytes, dtype: str) -> tuple[float, ...] | None:
+    """A float tensor's values; None for a dtype that is not a plain float."""
+    if dtype == "BF16":
+        halves = struct.unpack(f"<{len(raw) // 2}H", raw)
+        return tuple(struct.unpack("<f", struct.pack("<I", h << 16))[0] for h in halves)
+    if dtype == "F16":
+        return struct.unpack(f"<{len(raw) // 2}e", raw)
+    if dtype == "F32":
+        return struct.unpack(f"<{len(raw) // 4}f", raw)
+    return None
 
 
 def weight_bits(config: dict[str, Any]) -> int | None:
@@ -96,6 +118,34 @@ class HubLineage:
         card = info.card_data.to_dict() if info.card_data else {}
         return card, int(info.downloads or 0)
 
+    def identity_tensor(self, model_id: str) -> tuple[float, ...] | None:
+        """The final-norm weights, read by byte range (no weights downloaded)."""
+        from huggingface_hub import get_safetensors_metadata, hf_hub_url
+        from huggingface_hub.utils import build_hf_headers, get_session
+
+        try:
+            meta = get_safetensors_metadata(model_id)
+        except Exception:
+            return None
+        name = next((n for n in _IDENTITY_TENSORS if n in meta.weight_map), None)
+        if name is None:
+            return None
+        filename = meta.weight_map[name]
+        info = meta.files_metadata[filename].tensors[name]
+        url = hf_hub_url(model_id, filename)
+        session, headers = get_session(), build_hf_headers()
+
+        def byte_range(start: int, end: int) -> bytes:
+            response = session.get(url, headers={**headers, "Range": f"bytes={start}-{end}"})
+            response.raise_for_status()
+            return response.content
+
+        (header_len,) = struct.unpack("<Q", byte_range(0, 7))
+        begin, end = info.data_offsets
+        return decode_floats(
+            byte_range(8 + header_len + begin, 8 + header_len + end - 1), info.dtype
+        )
+
     def quantized_from(self, base_model_id: str) -> list[tuple[str, int, dict[str, Any]]]:
         """(id, downloads, listed config) of models the Hub marks as quantized from the base."""
         models = self._api.list_models(
@@ -136,12 +186,19 @@ class HubLineage:
         except Exception as exc:  # the Hub has no such model: the proposal is rejected
             evidence["result"] = f"base model not on the Hub: {type(exc).__name__}"
             return None, evidence
-        confirmed = shape_of(base_config) == shape_of(config) and not base_config.get(
-            "quantization_config"
+        base_norm = self.identity_tensor(base)
+        same_weights = base_norm is not None and self.identity_tensor(model_id) == base_norm
+        confirmed = (
+            shape_of(base_config) == shape_of(config)
+            and not base_config.get("quantization_config")
+            and same_weights
         )
         base_evidence["confirmed"] = confirmed
+        base_evidence["same_final_norm"] = same_weights
         if not confirmed:
-            evidence["result"] = "base model has another architecture or is itself quantized"
+            evidence["result"] = (
+                "base model has another architecture, is itself quantized, or stores other weights"
+            )
             return None, evidence
 
         candidates = [
@@ -172,6 +229,9 @@ class HubLineage:
             considered.append(entry)
             if bits is None or needs is None:
                 entry["dropped"] = "scheme not recognised"
+                continue
+            if shape_of(full) == shape_of(config) and self.identity_tensor(repo) != base_norm:
+                entry["dropped"] = "final-norm weights differ from the base: another model"
                 continue
             candidates.append(
                 ArtifactCandidate(
