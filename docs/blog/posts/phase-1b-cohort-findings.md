@@ -14,9 +14,9 @@ drafted from _dev_notes/cohort-run/notebook.md after the run, then the owner
 rewrites it. This post stays `draft: true` until the owner publishes it. -->
 
 <!-- findings:headline -->
-- Models measured: 9 on 6 GPU types
+- Models measured: 10 on 6 GPU types
 - Failure classes fixed and re-verified: 5 of 6
-- Total cost: $8.28 of the $100 cap (failed boots included: $4.32)
+- Total cost: $9.01 of the $100 cap (failed boots included: $4.32)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -37,9 +37,9 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 |---|---|
 | Provider / cloud | runpod / SECURE |
 | Runner image | `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
-| Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-1.7B, Qwen/Qwen3-14B, Qwen/Qwen3-32B, Qwen/Qwen3-8B, deepseek-ai/DeepSeek-V2-Lite, google/gemma-2-2b-it, meta-llama/Llama-3.1-8B-Instruct, mistralai/Mistral-7B-Instruct-v0.3 |
+| Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-0.6B-FP8, Qwen/Qwen3-1.7B, Qwen/Qwen3-14B, Qwen/Qwen3-32B, Qwen/Qwen3-8B, deepseek-ai/DeepSeek-V2-Lite, google/gemma-2-2b-it, meta-llama/Llama-3.1-8B-Instruct, mistralai/Mistral-7B-Instruct-v0.3 |
 | GPUs measured | NVIDIA A100 80GB PCIe, NVIDIA A100-SXM4-80GB, NVIDIA GeForce RTX 4090, NVIDIA H100 80GB HBM3, NVIDIA L4, NVIDIA RTX A6000 |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T03:24:13.987424+00:00 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T04:12:35.947622+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -50,6 +50,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | Model | GPU | Weights pred. GiB | Weights meas. GiB | Δ weights | Total pred. GiB | Persistent meas. GiB | Δ total | Record |
 |---|---|---|---|---|---|---|---|---|
 | JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 x1 | 5.68 | 5.68 | +0.00 | 7.82 | 5.97 | +1.85 | `1220b9e409435a57` |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 x1 | 0.58 | 0.74 | -0.16 | 2.12 | 1.91 | +0.21 | `12200078d8e3999e` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 3.78 | 3.22 | +0.56 | 5.65 | 4.11 | +1.54 | `1220066392da9480` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 3.78 | 3.22 | +0.56 | 5.65 | 4.11 | +1.54 | `122056e563edf84b` |
 | Qwen/Qwen3-1.7B | NVIDIA L4 x1 | 3.78 | 3.22 | +0.56 | 5.65 | 4.08 | +1.57 | `1220205b397c672e` |
@@ -98,7 +99,7 @@ measurement.
 | 3 max_model_len | mistralai/Mistral-7B-Instruct-v0.3 on NVIDIA GeForce RTX 4090 | `config/model.py:2502` | max_model_len | engine_configuration.max_model_len: 999999 → 32768 | verified | satisfied | Fixed | `12207f1e236c341a` |
 | 4 dtype_incompatible | google/gemma-2-2b-it on NVIDIA GeForce RTX 4090 | `config/model.py:2262` | dtype_incompatible | dtype: float16 → bfloat16 | verified | satisfied | Fixed | `122038df2ccafa66` |
 | 5 tp_divisibility | Qwen/Qwen3-8B on NVIDIA A100-SXM4-80GB | `config/model.py:1414` | tp_divisibility | tensor_parallel: 3 → 2 | verified | satisfied | Fixed | `12208faa3f0af819` |
-| 6 quant_compute_capability | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 on NVIDIA H100 80GB HBM3 | `config/vllm.py:791` | quant_compute_capability | resource_allocation.gpu_sku: NVIDIA H100 80GB HBM3 → NVIDIA B200 | failed | not_evaluated | Unverified suggestion | `122026637da7197e` |
+| 6 quant_compute_capability | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 on NVIDIA H100 80GB HBM3 | `config/vllm.py:791` | quant_compute_capability | resource_allocation.model_id: ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 → Qwen/Qwen3-0.6B-FP8 | verified | violated | Alternative with trade-offs | `122006d6b9842e80` |
 <!-- /findings:fixes -->
 
 ## Task results
@@ -107,6 +108,7 @@ measurement.
 | Model | GPU | Accepted / cases | Attempts (retries) | Passed |
 |---|---|---|---|---|
 | JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | 3 / 3 | 3 (0) | True |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | 1 / 3 | 3 (0) | False |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 3 / 3 | 6 (0) | True |
 | Qwen/Qwen3-1.7B | NVIDIA L4 | 3 / 3 | 3 (0) | True |
 | Qwen/Qwen3-14B | NVIDIA RTX A6000 | 3 / 3 | 3 (0) | True |
@@ -129,6 +131,7 @@ measurement.
 | Model | GPU | p99 TTFT ms | p99 TPOT ms | SLO TTFT / TPOT ms | Completed / failed | Verdict | Record |
 |---|---|---|---|---|---|---|---|
 | JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | 208.824 | 8.15893 | 2000 / 100 | 50 / 0 | pass | `12206a93cab1c283` |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | 68.694 | 1.76838 | 2000 / 100 | 50 / 0 | pass | `1220dfabcbad7ac0` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 52.7041 | 5.49613 | 2000 / 100 | 50 / 0 | pass | `1220073713910e21` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 50.7468 | 5.44501 | 2000 / 100 | 50 / 0 | pass | `1220d33394092906` |
 | Qwen/Qwen3-1.7B | NVIDIA L4 | 173.18 | 17.0558 | 2000 / 100 | 50 / 0 | pass | `1220715f23ad9671` |
@@ -157,6 +160,7 @@ Failed boots and retries are included.
 | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.6063 | 1 (0.6063) | 1 |
 | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.3099 | 1 (0.3099) | 1 |
 | JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 x1 | 0.1181 | 0 (0.0000) | 5 |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 x1 | 0.7171 | 0 (0.0000) | 5 |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.6918 | 3 (0.4928) | 13 |
 | Qwen/Qwen3-1.7B | NVIDIA L4 x1 | 0.0850 | 0 (0.0000) | 5 |
 | Qwen/Qwen3-14B | NVIDIA GeForce RTX 4090 x1 | 0.1093 | 1 (0.1093) | 1 |
@@ -176,10 +180,10 @@ Failed boots and retries are included.
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0313 | 0 (0.0000) | 5 |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0157 | 1 (0.0157) | 1 |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 x1 | 0.0358 | 0 (0.0000) | 5 |
-| **Records total** |  | **7.6290** |  |  |
-| Classifier calls (ledger) |  | 0.1509 |  |  |
-| Pooled pods between solutions (ledger) |  | 0.0269 |  |  |
-| **Ledger spent** |  | **8.2838** |  | cap $100 |
+| **Records total** |  | **8.3461** |  |  |
+| Classifier calls (ledger) |  | 0.1634 |  |  |
+| Pooled pods between solutions (ledger) |  | 0.0274 |  |  |
+| **Ledger spent** |  | **9.0138** |  | cap $100 |
 <!-- /findings:cost -->
 
 ## How to reproduce

@@ -290,3 +290,17 @@ unless marked.  Machine events are in `events.jsonl`.
   the publisher preference keeps those out here, the architecture check
   cannot.  Label per §10.2: Fixed if the request is satisfied (the request
   does not pin the artifact); the record shows the model change.
+- **Class 6 re-run with substitute_artifact (04:00-04:12 UTC):** real
+  classifier on the stored H100 log → quant_compute_capability → live lineage
+  search → `Qwen/Qwen3-0.6B-FP8` on the same H100.  Weights loaded (2.1 GB, as
+  predicted), healthy, served the benchmark.  Tasks 1/3: "2 + 2" → `2`,
+  "10 * 5" → `10 * 5 = 5`, capital of France → `Paris`; below the 0.60 floor.
+  Checked the raw outputs: real answers, no thinking text, no parse fault.
+  Mechanism verified + request violated = **Alternative with trade-offs**;
+  rule `quant_compute_capability` promoted to v3 mechanism_verified.  $0.72.
+  Not isolated: whether FP8 or the 0.6B size (or raw completions without the
+  chat template, used for every model) causes the misses; the requested
+  checkpoint never ran, so there is no like-for-like baseline.
+- **Exit gate over the real records: 9 of 9 items pass** (item 6 waits on
+  Part 3, as planned).  Ledger total $9.01 (runs $8.82, classifier $0.16,
+  idle pods $0.03), plus ≈$0.37 of unledgered L0-A kill tests.

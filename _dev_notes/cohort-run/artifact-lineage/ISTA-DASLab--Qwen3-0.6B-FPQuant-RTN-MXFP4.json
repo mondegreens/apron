@@ -5,14 +5,14 @@
       "id": "Qwen/Qwen3-0.6B",
       "proposal": {
         "base_model_id": "Qwen/Qwen3-0.6B",
-        "classifier_cost_usd": 0.001729,
+        "classifier_cost_usd": 0.001699,
         "classifier_input_digest": "122078da85221290a631db77435bbe3f92ad5b57cc4ca96cace34deae15d6232ebe6",
         "classifier_model_id": "claude-haiku-4-5-20251001",
         "classifier_usage": {
           "input_tokens": 1099,
-          "output_tokens": 126
+          "output_tokens": 120
         },
-        "reason": "The checkpoint is a quantized version of Qwen3-0.6B, as indicated by the model type \"qwen3\", architecture dimensions matching a 0.6B model, and the repo name explicitly containing \"Qwen3-0.6B\" with quantization suffix."
+        "reason": "The checkpoint is a quantized version of Qwen3-0.6B, identified by the model_type \"qwen3\" and the 0.6B parameter count matching the architecture configuration (hidden_size=1024, 28 layers)."
       },
       "source": "proposed"
     },

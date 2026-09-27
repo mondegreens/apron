@@ -3,8 +3,8 @@
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "quant_compute_capability",
-  "rule_version": 3,
-  "supersedes": "122003c795f5b433f9d89edd29f972460a973271cbef52761698c5d631d838564fe4",
+  "rule_version": 2,
+  "supersedes": "12207f9542a44260e538518a0d239a4cdba2a8d35dd7db356dfb4e104a7a7ee65e4c",
   "correction_strategy": "substitute_artifact",
   "correction_spec": {},
   "extraction_schema": {
@@ -35,8 +35,8 @@
   "kernel_architectures_source": "cmake/external_projects/qutlass.cmake:56-85 (QuTLASS compiled for SM100; SM100 selected when SM120 is also requested, :72-79); fp_quant.py:64 min capability 100",
   "exception_class": null,
   "engine_callsite_module": null,
-  "status": "mechanism_verified",
-  "promoting_verification_fingerprint": "12200078d8e3999ec13fe5d4ac6bfa6d2fdd69b297b01e1763a3ed34dcbee1c96dd0",
+  "status": "hypothesis",
+  "promoting_verification_fingerprint": null,
   "examples": [
     "The quantization method fp_quant is not supported for the current GPU. Minimum capability: 100. Current capability: 90."
   ],
