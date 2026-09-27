@@ -53,6 +53,14 @@ def main() -> int:
             "vocab_size": config.get("vocab_size", text.get("vocab_size")),
             "hidden_size": config.get("hidden_size", text.get("hidden_size")),
             "torch_dtype": config.get("torch_dtype", text.get("torch_dtype", "bfloat16")),
+            # Mamba-1 state shape fields (None for attention models).
+            "ssm": {
+                k: config[k]
+                for k in ("num_hidden_layers", "intermediate_size", "state_size", "conv_kernel")
+            }
+            if all(config.get(k) for k in ("intermediate_size", "state_size", "conv_kernel"))
+            and not config.get("num_attention_heads")
+            else None,
         }
         print(model_id, models[model_id])
     OUT.parent.mkdir(parents=True, exist_ok=True)

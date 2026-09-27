@@ -99,6 +99,12 @@ _HARNESS_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
         re.compile(r"DOWNLOAD_INCOMPLETE"),
     ),
     (
+        # Tokenizer files absent on the pod: the Qwen3-32B download was cut by a
+        # full container disk and the tokenizer never loaded (L5, 2026-09-27).
+        "harness:tokenizer_files_missing",
+        re.compile(r"`vocab` and `merges` must be both be from memory or both filenames"),
+    ),
+    (
         # The provider had no instance to give (Secure capacity is volatile).
         "harness:no_capacity",
         re.compile(r"no longer any instances available", re.IGNORECASE),
@@ -114,11 +120,20 @@ _HARNESS_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 )
 
 
+# vLLM's startup heartbeat: a log that ends on it was still starting, not failing.
+_STILL_STARTING = re.compile(r"Waiting for \d+ local, \d+ remote core engine proc\(s\) to start")
+
+
 def classify_harness_error(log: str) -> str | None:
     """``harness:<kind>`` for an environment failure, ``None`` for a model failure."""
     for kind, pattern in _HARNESS_PATTERNS:
         if pattern.search(log):
             return kind
+    lines = [line for line in log.splitlines() if line.strip()]
+    if lines and _STILL_STARTING.search(lines[-1]):
+        # The engine had not failed; our wait ended first (L0-A3: a cold
+        # FlashInfer JIT outlasted the 900 s boot deadline, since 1800 s).
+        return "harness:boot_deadline"
     return None
 
 
@@ -817,6 +832,8 @@ _MEMORY_KEYS = (
     "cuda_graph_applied",
     "cuda_graph_actual",
     "available_kv_cache_memory",
+    "kv_cache_tokens",
+    "max_concurrency",
     "safety_buffer",
     "profiling_shape",
 )

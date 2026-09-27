@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping, Sequence
 
 RECONCILE_PREFIX = "reconcile:unledgered:"
+CORRECTION_PREFIX = "reconcile:correct:"
 # Differences below this are rounding and billing granularity, not gaps.
 TOLERANCE_USD = 0.01
 
@@ -35,11 +36,13 @@ def ledger_by_pod(ledger: Sequence[Mapping[str, Any]]) -> dict[str, float]:
         op, label = entry["op"], str(entry["label"])
         if op == "annotate" and entry.get("pod_id"):
             pod_of[label] = str(entry["pod_id"])
-        elif op in ("settle", "spend"):
+        elif op in ("settle", "spend", "correct"):
             if label.startswith(IDLE_PREFIX):
                 settled[label[len(IDLE_PREFIX) :]] += float(entry["amount"])
             elif label.startswith(RECONCILE_PREFIX):
                 settled[label[len(RECONCILE_PREFIX) :]] += float(entry["amount"])
+            elif label.startswith(CORRECTION_PREFIX):
+                settled[label[len(CORRECTION_PREFIX) :]] += float(entry["amount"])
             elif label in pod_of:
                 settled[pod_of.pop(label)] += float(entry["amount"])
     return {pod: round(usd, 6) for pod, usd in settled.items()}
@@ -77,11 +80,19 @@ def reconcile(
         and abs(r["difference"]) > TOLERANCE_USD
     ]
     not_yet_billed = [r["pod"] for r in rows if r["billed"] is None]
+    # Every tracked pod whose ledger amount is not what it was billed (to the
+    # hundredth of a cent): what a correction to the bill must cover.
+    differing = [
+        r
+        for r in rows
+        if r["difference"] is not None and r["pod"] in tracked and abs(r["difference"]) >= 1e-4
+    ]
     return {
         "billed_total": round(sum(billed.values()), 6),
         "ledger_pod_total": round(sum(tracked.values()), 6),
         "unledgered": unledgered,
         "mismatched": mismatched,
+        "differing": differing,
         "not_yet_billed": not_yet_billed,
         "pods": rows,
     }

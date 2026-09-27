@@ -118,3 +118,18 @@ def test_a_candidate_the_engine_would_not_load_is_dropped() -> None:
     assert [c.model_id for c in search.candidates] == ["org/Q"]
     dropped = {c["model_id"]: c.get("dropped") for c in evidence["considered"]}
     assert "would not load" in (dropped["org/Q-FP8"] or "")
+
+
+def test_a_listed_model_with_another_architecture_is_dropped() -> None:
+    repos = _repos()
+    repos["x/Q-draft-FP8"] = {
+        "config": {"architectures": ["DFlashDraftModel"], "quantization_config": _FP8},
+        "norm": None,
+    }
+    search, evidence = _Hub(repos, ["org/Q-FP8", "x/Q-draft-FP8"]).search(
+        "lab/Q-FPQuant", _propose
+    )
+    assert search is not None
+    assert "x/Q-draft-FP8" not in [c.model_id for c in search.candidates]
+    dropped = {c["model_id"]: c.get("dropped") for c in evidence["considered"]}
+    assert "another architecture" in (dropped["x/Q-draft-FP8"] or "")

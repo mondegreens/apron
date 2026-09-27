@@ -82,6 +82,9 @@ class VerificationReport(BaseModel):
     cuda_graph_applied: Annotated[int | None, DISPLAY] = None
     cuda_graph_actual: Annotated[int | None, DISPLAY] = None
     available_kv_cache_memory: Annotated[int | None, DISPLAY] = None
+    # The pool vLLM reports (tokens) and how many max-length requests it holds.
+    kv_cache_tokens: Annotated[int | None, DISPLAY] = None
+    max_concurrency: Annotated[float | None, DISPLAY] = None
     safety_buffer: Annotated[int | None, DISPLAY] = None
     profiling_shape: Annotated[dict[str, int] | None, DISPLAY] = None
     market_equivalent_price: Annotated[float | None, DISPLAY] = None

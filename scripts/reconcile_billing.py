@@ -5,6 +5,9 @@ compares it with the ledger pod by pod, and:
 
 - appends a ``spend`` for every pod RunPod billed that the ledger never
   tracked (label ``reconcile:unledgered:<pod>``; idempotent);
+- appends a signed ``correct`` for every pod whose ledger amount differs from
+  the bill by a hundredth of a cent or more (label ``reconcile:correct:<pod>``;
+  a later run corrects only what is still off);
 - writes ``_dev_notes/cohort-run/billing-reconciliation.json``: every pod's
   ledger and billed amounts, the mismatches, and the pods not billed yet.
 
@@ -22,7 +25,11 @@ from datetime import UTC, datetime
 
 from apron.adapters.backends.ledger_file import JsonlLedger
 from apron.adapters.backends.runpod import RunPodTarget
-from apron.application.orchestration.billing import RECONCILE_PREFIX, reconcile
+from apron.application.orchestration.billing import (
+    CORRECTION_PREFIX,
+    RECONCILE_PREFIX,
+    reconcile,
+)
 from apron.application.orchestration.budget import BudgetTracker
 from apron.domain.ports import WallClock
 from apron.interfaces.cohort_root import AUTHORIZED_USD, RUN_DIR
@@ -50,6 +57,13 @@ def main() -> int:
     result = reconcile(ledger, JsonlLedger(RUN_DIR / "events.jsonl").read_all(), rows)
     for row in result["unledgered"]:
         budget.record_spend(float(row["billed"]), f"{RECONCILE_PREFIX}{row['pod']}")
+    for row in result["differing"]:
+        # The bill is what the pod cost: correct the ledger by the difference.
+        budget.correct(
+            round(float(row["billed"]) - float(row["ledger"]), 6),
+            f"{CORRECTION_PREFIX}{row['pod']}",
+            source="runpod billing API",
+        )
     result = reconcile(
         ledger_log.read_all(), JsonlLedger(RUN_DIR / "events.jsonl").read_all(), rows
     )

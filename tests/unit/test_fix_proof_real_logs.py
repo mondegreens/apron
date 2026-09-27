@@ -131,12 +131,13 @@ def test_class5_reduces_tensor_parallel_to_a_divisor_that_fits() -> None:
     assert 32 % tp == 0 and tp <= int(case.broken_plan.resource_allocation["gpu_count"])
 
 
-def test_class6_substitutes_the_official_fp8_checkpoint_on_the_same_gpu() -> None:
-    """v1 moved to a B200, where the checkpoint's format did not load (boot
-    report 1220e2bb…); v2 serves the same network in a format the H100 runs."""
+def test_class6_substitutes_the_publishers_4bit_checkpoint_on_the_same_gpu() -> None:
+    """The broken plan asks for a 4-bit fp_quant Qwen3-8B on an H100; the fix
+    serves the same network as the base publisher's 4-bit AWQ copy, on the
+    same H100 (booted 2026-09-27: 3/3, Fixed)."""
     case, result, _ = _diagnose(6)
     allocation = result.corrected_plan.resource_allocation
-    assert allocation["model_id"] == "Qwen/Qwen3-0.6B-FP8"
+    assert allocation["model_id"] == "Qwen/Qwen3-8B-AWQ"
     assert allocation["gpu_sku"] == case.broken_plan.resource_allocation["gpu_sku"]
     assert result.correction_strategy == "substitute_artifact"
 

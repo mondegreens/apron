@@ -36,17 +36,26 @@ def _kv_dtype_bytes(metadata: dict[str, Any], inputs: CalculatorInput) -> int:
     return DTYPE_BYTES.get(metadata.get("torch_dtype", "bfloat16"), 2)
 
 
-def _activation_estimate(metadata: dict[str, Any], inputs: CalculatorInput, tp: int) -> int | None:
-    """Peak activation vLLM measures in its startup profiling run.
+# vLLM pads the vocabulary to a multiple of 64 (vocab_parallel_embedding.py:33).
+VOCAB_PADDING = 64
 
-    Empirical, from the 15 cohort boots (L5, 2026-09-27): the peak tracks the
-    output projection's size (vocab x hidden x dtype, per tensor-parallel
-    rank) plus two hidden-state buffers per profiled token (the engine's
-    ``max_num_batched_tokens``).  It does not track the model's weights: the
-    old estimate (10% of weights) was 4x high for Qwen3-32B and 4x low for
-    Qwen3-0.6B.  12 of 13 single-GPU points are within ~10%.  Why the output
-    projection's size appears in the peak is not traced to a vLLM line; the
-    one TP 2 point (Qwen3-8B, measured 0.21 GiB against 0.61) does not fit.
+
+def _activation_estimate(metadata: dict[str, Any], inputs: CalculatorInput, tp: int) -> int | None:
+    """Peak activation vLLM measures in its startup profiling run (cold compile).
+
+    Traced in the pinned source (L5 review, 2026-09-27): the first forward of
+    the profile run compiles the model, and vLLM turns on TorchInductor's
+    combo-kernel benchmarking (config/compilation.py:983-993).  With one GPU the
+    embedding lookup is a Triton kernel, and the benchmark allocates a random
+    tensor the size of the embedding (padded vocab x hidden x dtype) plus the
+    kernel's two [tokens, hidden] outputs, tokens = max_num_batched_tokens.
+    With tensor parallelism the embedding is vLLM's own CUDA op
+    (vocab_parallel_embedding.py:331-335, 503), not benchmarked; the peak is
+    then the sampler's logits: the local shard, the all-gathered logits and
+    their contiguous copy (logits_processor.py:130; base_device_communicator
+    .py:239-251) for min(tokens, max_num_seqs) rows, plus the hidden states.
+    On a warm compile cache this transient does not occur; the cohort's boots
+    were cold.  All 15 single- and multi-GPU points within 0.02 GiB.
     ``None`` when the config lacks the vocabulary or hidden size.
     """
     vocab = metadata.get("vocab_size")
@@ -55,8 +64,12 @@ def _activation_estimate(metadata: dict[str, Any], inputs: CalculatorInput, tp: 
         return None
     dtype_bytes = DTYPE_BYTES.get(metadata.get("torch_dtype", "bfloat16"), 2)
     tokens = int(inputs.execution_spec_data.get("max_num_batched_tokens", 2048))
-    output_projection = -(-int(vocab) * int(hidden) * dtype_bytes // tp)
-    return output_projection + 2 * tokens * int(hidden) * dtype_bytes
+    padded = -(-int(vocab) // VOCAB_PADDING) * VOCAB_PADDING
+    if tp == 1:
+        return padded * int(hidden) * dtype_bytes + 2 * tokens * int(hidden) * dtype_bytes
+    rows = min(tokens, int(inputs.execution_spec_data.get("max_num_seqs", 256)))
+    logits = rows * padded * dtype_bytes
+    return 2 * logits + -(-logits // tp) + tokens * int(hidden) * dtype_bytes
 
 
 def _tensor_parallel(inputs: CalculatorInput) -> int:

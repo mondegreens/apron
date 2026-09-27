@@ -210,6 +210,24 @@ def test_harness_error_is_stored_retried_once_and_not_diagnosed(tmp_path: Path) 
             "DOWNLOAD_INCOMPLETE: missing vocab.json; size merges.txt 0!=1671853",
             "harness:download_incomplete",
         ),
+        (
+            # Qwen3-32B, L5: the tokenizer files never reached the pod.
+            "(APIServer pid=1146) ValueError: `vocab` and `merges` must be both be from "
+            "memory or both filenames",
+            "harness:tokenizer_files_missing",
+        ),
+        (
+            # L0-A3: the log ends on the startup heartbeat — our deadline ended first.
+            "(EngineCore pid=338) INFO compiling FlashInfer kernels\n"
+            "(APIServer pid=338) DEBUG 09-26 22:56:16 [v1/engine/utils.py:1295] Waiting for "
+            "1 local, 0 remote core engine proc(s) to start.\n",
+            "harness:boot_deadline",
+        ),
+        (
+            # The heartbeat earlier in a log that then fails is not a deadline.
+            "Waiting for 1 local, 0 remote core engine proc(s) to start.\n" + KV_LOG,
+            None,
+        ),
         (KV_LOG, None),
     ],
 )

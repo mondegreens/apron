@@ -157,6 +157,31 @@ MODELS: dict[str, dict[str, Any]] = {
             "torch_dtype": "bfloat16",
         },
     },
+    "ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4": {
+        "weights": 5_900_000_000,
+        "config": {
+            "architectures": ["Qwen3ForCausalLM"],
+            "model_type": "qwen3",
+            "num_attention_heads": 32,
+            "num_key_value_heads": 8,
+            "max_position_embeddings": 40960,
+            "quantization_config": {"quant_method": "fp_quant"},
+            "torch_dtype": "bfloat16",
+        },
+    },
+    # Its substitute: the base publisher's 4-bit AWQ copy (cc 75).
+    "Qwen/Qwen3-8B-AWQ": {
+        "weights": 6_000_000_000,
+        "config": {
+            "architectures": ["Qwen3ForCausalLM"],
+            "model_type": "qwen3",
+            "num_attention_heads": 32,
+            "num_key_value_heads": 8,
+            "max_position_embeddings": 40960,
+            "quantization_config": {"quant_method": "awq", "bits": 4},
+            "torch_dtype": "bfloat16",
+        },
+    },
     # The class 6 substitute (substitute_artifact): same network, fp8 (cc 75).
     "Qwen/Qwen3-0.6B-FP8": {
         "weights": 750_000_000,
@@ -630,6 +655,17 @@ def _shape(model_id: str) -> dict[str, Any]:
 
 # The Hub lineage search, as HubLineage would return it for the class 6 checkpoint.
 LINEAGE: dict[str, ArtifactSearch] = {
+    "ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4": ArtifactSearch(
+        requested_model_id="ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4",
+        base_model_id="Qwen/Qwen3-8B",
+        requested_weight_bits=4,
+        requested_shape=_shape("ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4"),
+        candidates=(
+            ArtifactCandidate(
+                "Qwen/Qwen3-8B-AWQ", _shape("Qwen/Qwen3-8B-AWQ"), 4, 75, "awq", 90_000
+            ),
+        ),
+    ),
     "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4": ArtifactSearch(
         requested_model_id="ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
         base_model_id="Qwen/Qwen3-0.6B",
@@ -640,7 +676,7 @@ LINEAGE: dict[str, ArtifactSearch] = {
                 "Qwen/Qwen3-0.6B-FP8", _shape("Qwen/Qwen3-0.6B-FP8"), 8, 75, "fp8", 300_000
             ),
         ),
-    )
+    ),
 }
 
 

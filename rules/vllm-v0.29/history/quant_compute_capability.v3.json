@@ -1,0 +1,46 @@
+{
+  "schema_version": 4,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "quant_compute_capability",
+  "rule_version": 3,
+  "supersedes": "122003c795f5b433f9d89edd29f972460a973271cbef52761698c5d631d838564fe4",
+  "correction_strategy": "substitute_artifact",
+  "correction_spec": {},
+  "extraction_schema": {
+    "min_capability": {
+      "type": "int",
+      "enum": [],
+      "source": "config/vllm.py:794 ('Minimum capability: {quant_config.get_min_capability()}', raised at :791)"
+    },
+    "current_capability": {
+      "type": "int",
+      "enum": [],
+      "source": "config/vllm.py:795 ('Current capability: {capability}')"
+    }
+  },
+  "source_sites": [
+    {
+      "file": "config/vllm.py",
+      "line": 791
+    }
+  ],
+  "float16_blocklist": [],
+  "float16_blocklist_source": null,
+  "kernel_architectures": {
+    "fp_quant": [
+      "10.0"
+    ]
+  },
+  "kernel_architectures_source": "cmake/external_projects/qutlass.cmake:56-85 (QuTLASS compiled for SM100; SM100 selected when SM120 is also requested, :72-79); fp_quant.py:64 min capability 100",
+  "exception_class": null,
+  "engine_callsite_module": null,
+  "status": "mechanism_verified",
+  "promoting_verification_fingerprint": "12200078d8e3999ec13fe5d4ac6bfa6d2fdd69b297b01e1763a3ed34dcbee1c96dd0",
+  "examples": [
+    "The quantization method fp_quant is not supported for the current GPU. Minimum capability: 100. Current capability: 90."
+  ],
+  "count": 1,
+  "curation": "Hand-curated for the Phase 1b §10 fix proof; the source scanner must not overwrite this file. v2 replaces retarget_capability with substitute_artifact (PLAN §10.1 fallback). Evidence: v1's fix moved ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 to a B200; the capability check passed, then weight loading failed ('no module or parameter named ...backward_hadamard_matrix', boot report 1220e2bb9d9e3077ec36a3b1996d3fa982eb9268665a8054c69a161934461b3fd41d, 2026-09-27). v0.29.0 fp_quant.py:198-209 registers forward_hadamard_matrix only, and all 32 FPQuant checkpoints on the Hub store backward_hadamard_matrix (safetensors headers, 2026-09-27), so no GPU makes them load. substitute_artifact serves the same network in a format the pinned engine runs on the requested GPU. kernel_architectures still excludes fp_quant candidates on GPUs its kernels were not built for.",
+  "replaces": []
+}

@@ -16,7 +16,10 @@ from __future__ import annotations
 import json
 import sys
 
-from apron.adapters.backends.vllm_quantization import default_max_num_batched_tokens
+from apron.adapters.backends.vllm_quantization import (
+    default_max_num_batched_tokens,
+    default_max_num_seqs,
+)
 from apron.application.orchestration.plan_pipeline import recorded_loaded_bytes
 from apron.domain.mechanisms import CalculatorInput, ComponentMechanism, TextWorkload
 from apron.domain.mechanisms.calculator import _activation_estimate, _per_gpu
@@ -50,7 +53,10 @@ def main() -> int:
             workload=TextWorkload(kind="text", input_length=512, output_length=128),
             artifact_metadata={},
             hardware=hardware,
-            execution_spec_data={"max_num_batched_tokens": tokens},
+            execution_spec_data={
+                "max_num_batched_tokens": tokens,
+                "max_num_seqs": default_max_num_seqs(hardware.total_memory_bytes, gpu),
+            },
         )
         metadata = {
             "vocab_size": fixture["vocab_size"],

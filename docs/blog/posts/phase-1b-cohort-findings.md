@@ -20,9 +20,9 @@ itself and boots it again. This post is the first cohort of real runs:
 eleven models, six GPU types, one provider.
 
 <!-- findings:headline -->
-- Models measured: 13 on 6 GPU types
-- Failure classes fixed and re-verified: 5 of 6
-- Total cost: $10.17 of the $100 cap (failed boots included: $4.32)
+- Models measured: 14 on 6 GPU types
+- Failure classes fixed and re-verified: 6 of 6
+- Total cost: $11.35 of the $100 cap (failed boots included: $5.09)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -50,9 +50,9 @@ eleven models, six GPU types, one provider.
 |---|---|
 | Provider / cloud | runpod / SECURE |
 | Runner image | `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
-| Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-0.6B, Qwen/Qwen3-0.6B-FP8, Qwen/Qwen3-1.7B, Qwen/Qwen3-14B, Qwen/Qwen3-32B, Qwen/Qwen3-8B, deepseek-ai/DeepSeek-V2-Lite, deepseek-ai/DeepSeek-V2-Lite-Chat, google/gemma-2-2b-it, meta-llama/Llama-3.1-8B-Instruct, mistralai/Mistral-7B-Instruct-v0.3, state-spaces/mamba-2.8b-hf |
+| Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-0.6B, Qwen/Qwen3-0.6B-FP8, Qwen/Qwen3-1.7B, Qwen/Qwen3-14B, Qwen/Qwen3-32B, Qwen/Qwen3-8B, Qwen/Qwen3-8B-AWQ, deepseek-ai/DeepSeek-V2-Lite, deepseek-ai/DeepSeek-V2-Lite-Chat, google/gemma-2-2b-it, meta-llama/Llama-3.1-8B-Instruct, mistralai/Mistral-7B-Instruct-v0.3, state-spaces/mamba-2.8b-hf |
 | GPUs measured | NVIDIA A100 80GB PCIe, NVIDIA A100-SXM4-80GB, NVIDIA GeForce RTX 4090, NVIDIA H100 80GB HBM3, NVIDIA L4, NVIDIA RTX A6000 |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T16:01:59.557004+00:00 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T18:16:26.943581+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -90,6 +90,7 @@ run planned it:
 | Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 x1 | 61.02 | 61.03 | -0.01 | 68.96 | 63.35 | +5.61 | `1220eef514a1a275` |
 | Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB x4 | 15.26 | 7.64 | +7.62 | 18.34 | 7.85 | +10.49 | `12209ac3de7807d5` |
 | Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 x1 | 15.26 | 15.27 | -0.01 | 18.34 | 15.54 | +2.80 | `122046447ffc1d89` |
+| Qwen/Qwen3-8B-AWQ | NVIDIA H100 80GB HBM3 x1 | 5.68 | 5.82 | -0.14 | 8.53 | 6.77 | +1.76 | `1220df650fa3167d` |
 | deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe x1 | 29.26 | 29.32 | -0.06 | 30.81 | 30.00 | +0.81 | `1220697d834da838` |
 | deepseek-ai/DeepSeek-V2-Lite-Chat | NVIDIA A100 80GB PCIe x1 | 29.26 | 29.32 | -0.06 | 30.81 | 30.01 | +0.80 | `1220c078c3a7d11e` |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 4.87 | 4.94 | -0.07 | 6.82 | 5.36 | +1.46 | `12206b393c533d0a` |
@@ -98,15 +99,16 @@ run planned it:
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 13.50 | 13.51 | -0.01 | 16.37 | 13.65 | +2.72 | `1220c4ad8130d1bb` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 13.50 | 13.51 | -0.01 | 16.37 | 13.65 | +2.72 | `122075e500841efe` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 x1 | 13.50 | 13.51 | -0.01 | 16.37 | 13.62 | +2.75 | `1220ac02237cee07` |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 5.16 | 5.23 | -0.07 | 6.67 | 5.64 | +1.03 | `12206810a074c3de` |
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 5.16 | 10.31 | -5.15 | 6.67 | 10.98 | -4.31 | `12200ac02bfdf76a` |
 <!-- /findings:memory -->
 
 Repeat boots of one solution bound the measurement noise:
 
 <!-- findings:repeats -->
-| Model | GPU | Boots | Weights spread % | KV spread % | Activation spread % |
-|---|---|---|---|---|---|
-| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 2 | 0 | 0 | 0 |
+| Model | GPU | Boots | Weights spread % | KV spread % | Activation spread % | Records |
+|---|---|---|---|---|---|---|
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 2 | 0 | 0 | 0 | `1220066392da9480` +1 |
 <!-- /findings:repeats -->
 
 Those run-time predictions were wrong in four ways, all found by comparing
@@ -161,14 +163,14 @@ changed the plan itself, booted it again and re-ran the task suite and the
 serving measurement.
 
 <!-- findings:fixes -->
-| Class | Broken plan | vLLM source | Diagnosis | Change | Restart | Request | Label | Record |
+| Failure | Broken plan | vLLM error from | What Apron changed | Fixed plan booted | Tasks passed | SLO passed | Result | Record |
 |---|---|---|---|---|---|---|---|---|
-| 1 oom_weight_load | Qwen/Qwen3-14B on NVIDIA GeForce RTX 4090 | `model_executor/layers/linear.py:192` | oom_weight_load | resource_allocation.gpu_sku: NVIDIA GeForce RTX 4090 → NVIDIA RTX A6000 | verified | satisfied | Fixed | `1220f4b5d596eaa3` |
-| 2 oom_kv_cache | Qwen/Qwen3-8B on NVIDIA GeForce RTX 4090 | `v1/core/kv_cache_utils.py:879` | oom_kv_cache | engine_configuration.max_model_len: 40960 → 32640 | verified | satisfied | Fixed | `1220e8f6ea8e7da0` |
-| 3 max_model_len | mistralai/Mistral-7B-Instruct-v0.3 on NVIDIA GeForce RTX 4090 | `config/model.py:2502` | max_model_len | engine_configuration.max_model_len: 999999 → 32768 | verified | satisfied | Fixed | `12207f1e236c341a` |
-| 4 dtype_incompatible | google/gemma-2-2b-it on NVIDIA GeForce RTX 4090 | `config/model.py:2262` | dtype_incompatible | dtype: float16 → bfloat16 | verified | satisfied | Fixed | `122038df2ccafa66` |
-| 5 tp_divisibility | Qwen/Qwen3-8B on NVIDIA A100-SXM4-80GB | `config/model.py:1414` | tp_divisibility | tensor_parallel: 3 → 2 | verified | satisfied | Fixed | `12208faa3f0af819` |
-| 6 quant_compute_capability | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 on NVIDIA H100 80GB HBM3 | `config/vllm.py:791` | quant_compute_capability | resource_allocation.model_id: ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 → Qwen/Qwen3-0.6B-FP8 | verified | violated | Alternative with trade-offs | `122006d6b9842e80` |
+| 1. Weights do not fit the GPU | Qwen/Qwen3-14B on NVIDIA GeForce RTX 4090 | `model_executor/layers/linear.py:192` | GPU: NVIDIA GeForce RTX 4090 → NVIDIA RTX A6000 | yes | yes | yes | Fixed | `1220f4b5d596eaa3` |
+| 2. No room for the KV cache | Qwen/Qwen3-8B on NVIDIA GeForce RTX 4090 | `v1/core/kv_cache_utils.py:879` | max_model_len: 40960 → 32640 | yes | yes | yes | Fixed | `1220e8f6ea8e7da0` |
+| 3. Context length above the model's limit | mistralai/Mistral-7B-Instruct-v0.3 on NVIDIA GeForce RTX 4090 | `config/model.py:2502` | max_model_len: 999999 → 32768 | yes | yes | yes | Fixed | `12207f1e236c341a` |
+| 4. float16 not supported by the model | google/gemma-2-2b-it on NVIDIA GeForce RTX 4090 | `config/model.py:2262` | dtype: float16 → bfloat16 | yes | yes | yes | Fixed | `122038df2ccafa66` |
+| 5. Tensor parallelism does not divide the heads | Qwen/Qwen3-8B on NVIDIA A100-SXM4-80GB | `config/model.py:1414` | tensor parallel: 3 → 2 | yes | yes | yes | Fixed | `12208faa3f0af819` |
+| 6. Quantization needs a newer GPU | ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4 on NVIDIA H100 80GB HBM3 | `config/vllm.py:791` | model: ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4 → Qwen/Qwen3-8B-AWQ | yes | yes | yes | Fixed | `12201e071813c808` |
 <!-- /findings:fixes -->
 
 Class 6 took two attempts.
@@ -194,44 +196,46 @@ Class 6 took two attempts.
 ## Task results
 
 <!-- findings:tasks -->
-| Model | GPU | Scoring | Accepted / cases | Attempts (retries) | Passed |
-|---|---|---|---|---|---|
-| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-0.6B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | False |
-| Qwen/Qwen3-0.6B-FP8 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | False |
-| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match | 1 / 3 | 3 (0) | False |
-| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | False |
-| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 6 (0) | True |
-| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 6 (0) | True |
-| Qwen/Qwen3-1.7B | NVIDIA L4 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-1.7B | NVIDIA L4 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-14B | NVIDIA RTX A6000 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-14B | NVIDIA RTX A6000 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-32B | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-32B | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match | 0 / 3 | 3 (0) | False |
-| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match, strip_terminal_punctuation | 0 / 3 | 3 (0) | False |
-| deepseek-ai/DeepSeek-V2-Lite-Chat | NVIDIA A100 80GB PCIe | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 2 / 3 | 3 (0) | True |
-| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
-| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 0 / 3 | 6 (3) | False |
+| Model | GPU | Scoring | Accepted / cases | Attempts (retries) | Cut at the token limit | Passed | Records |
+|---|---|---|---|---|---|---|---|
+| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | exact match | 3 / 3 | 3 (0) | 0 | True | `1220750ac695032e` +2 |
+| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `122018669b0bb312` +2 |
+| Qwen/Qwen3-0.6B | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 1 / 3 | 3 (0) | 1 | False | `12200b951d26eb94` +2 |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 1 / 3 | 3 (0) | 1 | False | `12203c9ef2665634` +2 |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | exact match | 1 / 3 | 3 (0) | 1 | False | `122011a190eca425` +2 |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | exact match, final full stop ignored | 1 / 3 | 3 (0) | 1 | False | `122051f417605488` +2 |
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | exact match | 3 / 3 | 6 (0) | 0 | True | `12201194f88627ec` +5 |
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 3 / 3 | 6 (0) | 0 | True | `12203c209639fd97` +5 |
+| Qwen/Qwen3-1.7B | NVIDIA L4 | exact match | 3 / 3 | 3 (0) | 0 | True | `122052ddb3ca6237` +2 |
+| Qwen/Qwen3-1.7B | NVIDIA L4 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `12206e7f486d7229` +2 |
+| Qwen/Qwen3-14B | NVIDIA RTX A6000 | exact match | 3 / 3 | 3 (0) | 0 | True | `122024b91041129d` +2 |
+| Qwen/Qwen3-14B | NVIDIA RTX A6000 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `1220872ab145fda6` +2 |
+| Qwen/Qwen3-32B | NVIDIA A100 80GB PCIe | exact match | 3 / 3 | 3 (0) | 0 | True | `12204b987acc6061` +2 |
+| Qwen/Qwen3-32B | NVIDIA A100 80GB PCIe | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `12202d20ff104d81` +2 |
+| Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 | exact match | 3 / 3 | 3 (0) | 0 | True | `12200e1c9bcb2f03` +2 |
+| Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `122034355d8bd254` +2 |
+| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB | exact match | 3 / 3 | 3 (0) | 0 | True | `12204b0b6a60d45a` +2 |
+| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `12205150496f5ad0` +2 |
+| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 | exact match | 3 / 3 | 3 (0) | 0 | True | `12206418a88a7d92` +2 |
+| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `122054a949c8a23e` +2 |
+| Qwen/Qwen3-8B-AWQ | NVIDIA H100 80GB HBM3 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `1220057f4eb955c3` +2 |
+| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe | exact match | 0 / 3 | 3 (0) | 3 | False | `12200ac2fd197bfb` +2 |
+| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe | exact match, final full stop ignored | 0 / 3 | 3 (0) | 3 | False | `12201ea5c57fb7eb` +2 |
+| deepseek-ai/DeepSeek-V2-Lite-Chat | NVIDIA A100 80GB PCIe | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `1220010e0d05fce8` +2 |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | exact match | 3 / 3 | 3 (0) | 0 | True | `1220393369faa495` +2 |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `122087059bf08825` +2 |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | exact match | 3 / 3 | 3 (0) | 0 | True | `122010775bd1c04f` +2 |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `1220044754a6eab0` +2 |
+| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 | exact match | 2 / 3 | 3 (0) | 0 | True | `122084195d84d567` +2 |
+| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `12203eb26d453a28` +2 |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | exact match | 3 / 3 | 3 (0) | 0 | True | `12201d4d83eb617d` +2 |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `1220142903598f2e` +2 |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | exact match | 3 / 3 | 3 (0) | 0 | True | `1220533c7088dda6` +2 |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `12201d7657881dda` +2 |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | exact match | 3 / 3 | 3 (0) | 0 | True | `12200b886612e983` +2 |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `12200500f99862dc` +2 |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 0 / 3 | 3 (0) | 0 | False | `12201769160e39c8` +2 |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | exact match, final full stop ignored | 0 / 3 | 6 (3) | 0 | False | `12200b7ac1f69499` +5 |
 <!-- /findings:tasks -->
 
 DeepSeek-V2-Lite's 0/3 is the base model on a chat task: it answered, then
@@ -254,6 +258,7 @@ kept generating ("4\n\nUser: What is ..."). Its chat model answers 3/3.
 | Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 | 223.412 | 26.4442 | 2000 / 100 | 50 / 0 | pass | `1220b4918863630e` |
 | Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB | 91.8916 | 7.9584 | 2000 / 100 | 50 / 0 | pass | `12208e0b44a2622c` |
 | Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 | 211.592 | 19.0145 | 2000 / 100 | 50 / 0 | pass | `1220386d8f27a364` |
+| Qwen/Qwen3-8B-AWQ | NVIDIA H100 80GB HBM3 | 86.0755 | 5.09254 | 2000 / 100 | 50 / 0 | pass | `1220d1e7d8782767` |
 | deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe | 930.256 | 11.5969 | 2000 / 100 | 50 / 0 | pass | `122061f72e5d7004` |
 | deepseek-ai/DeepSeek-V2-Lite-Chat | NVIDIA A100 80GB PCIe | 924.87 | 11.7757 | 2000 / 100 | 50 / 0 | pass | `1220cda28d70f6b5` |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 | 77.9357 | 7.31342 | 2000 / 100 | 50 / 0 | pass | `1220c4d576ed9039` |
@@ -262,6 +267,7 @@ kept generating ("4\n\nUser: What is ..."). Its chat model answers 3/3.
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | 202.982 | 17.4189 | 2000 / 100 | 50 / 0 | pass | `12201d81b4264e0a` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | 212.999 | 17.5106 | 2000 / 100 | 50 / 0 | pass | `1220dcda4554108a` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | 718.149 | 62.5568 | 2000 / 100 | 50 / 0 | pass | `12203758d37c241f` |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | 195.209 | 8.79939 | 2000 / 100 | 50 / 0 | pass | `1220092662ec5a95` |
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | 403.514 | 16.2317 | 2000 / 100 | 50 / 0 | pass | `12208be4514014b9` |
 <!-- /findings:serving -->
 
@@ -272,40 +278,44 @@ Failed boots and retries are included.
 <!-- findings:cost -->
 | Solution | GPU | Cost $ | Failed boots ($) | Records |
 |---|---|---|---|---|
-| ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA B200 x1 | 1.3929 | 1 (1.3929) | 1 |
-| ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.6063 | 1 (0.6063) | 1 |
-| ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.3099 | 1 (0.3099) | 1 |
-| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 x1 | 0.1181 | 0 (0.0000) | 8 |
-| Qwen/Qwen3-0.6B | NVIDIA GeForce RTX 4090 x1 | 0.0231 | 0 (0.0000) | 5 |
-| Qwen/Qwen3-0.6B-FP8 | NVIDIA GeForce RTX 4090 x1 | 0.1198 | 0 (0.0000) | 5 |
-| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 x1 | 0.7171 | 0 (0.0000) | 8 |
-| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.6918 | 3 (0.4928) | 19 |
-| Qwen/Qwen3-1.7B | NVIDIA L4 x1 | 0.0850 | 0 (0.0000) | 8 |
-| Qwen/Qwen3-14B | NVIDIA GeForce RTX 4090 x1 | 0.1093 | 1 (0.1093) | 1 |
-| Qwen/Qwen3-14B | NVIDIA RTX A6000 x1 | 0.1058 | 0 (0.0000) | 8 |
-| Qwen/Qwen3-32B | NVIDIA A100 80GB PCIe x1 | 0.3922 | 1 (0.0924) | 9 |
-| Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 x1 | 1.6489 | 1 (0.6858) | 9 |
-| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB x4 | 0.5196 | 1 (0.5196) | 1 |
-| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB x4 | 0.8480 | 0 (0.0000) | 8 |
-| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 x1 | 0.1498 | 1 (0.0002) | 9 |
-| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 x1 | 0.0273 | 1 (0.0273) | 1 |
-| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe x1 | 0.2497 | 0 (0.0000) | 8 |
-| deepseek-ai/DeepSeek-V2-Lite-Chat | NVIDIA A100 80GB PCIe x1 | 0.3289 | 0 (0.0000) | 5 |
-| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 0.0253 | 0 (0.0000) | 8 |
-| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 0.0253 | 0 (0.0000) | 8 |
-| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 0.0683 | 1 (0.0683) | 1 |
-| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 x1 | 0.0304 | 0 (0.0000) | 8 |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.1422 | 2 (0.0041) | 10 |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0313 | 0 (0.0000) | 8 |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0157 | 1 (0.0157) | 1 |
-| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 x1 | 0.0358 | 0 (0.0000) | 8 |
-| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 0.0314 | 0 (0.0000) | 8 |
-| **Records total** |  | **8.8493** |  |  |
-| Classifier calls (ledger) |  | 0.1651 |  |  |
-| Pooled pods between solutions (ledger) |  | 0.0278 |  |  |
+| ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA B200 x1 | 1.3929 | 1 (1.3929) | `1220e2bb9d9e3077` |
+| ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.6063 | 1 (0.6063) | `12202f6bb9980912` |
+| ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.3099 | 1 (0.3099) | `12206934f05d6002` |
+| ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.7621 | 1 (0.7621) | `1220e27e21b0a24a` |
+| JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 x1 | 0.1181 | 0 (0.0000) | `122018669b0bb312` +7 |
+| Qwen/Qwen3-0.6B | NVIDIA GeForce RTX 4090 x1 | 0.0231 | 0 (0.0000) | `12200b951d26eb94` +4 |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA GeForce RTX 4090 x1 | 0.1198 | 0 (0.0000) | `12203c9ef2665634` +4 |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 x1 | 0.7171 | 0 (0.0000) | `12200078d8e3999e` +7 |
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.6918 | 3 (0.4928) | `1220066392da9480` +18 |
+| Qwen/Qwen3-1.7B | NVIDIA L4 x1 | 0.0850 | 0 (0.0000) | `1220205b397c672e` +7 |
+| Qwen/Qwen3-14B | NVIDIA GeForce RTX 4090 x1 | 0.1093 | 1 (0.1093) | `1220233b18004d3c` |
+| Qwen/Qwen3-14B | NVIDIA RTX A6000 x1 | 0.1058 | 0 (0.0000) | `12201548c6dde18f` +7 |
+| Qwen/Qwen3-32B | NVIDIA A100 80GB PCIe x1 | 0.3922 | 1 (0.0924) | `12202d20ff104d81` +8 |
+| Qwen/Qwen3-32B | NVIDIA H100 80GB HBM3 x1 | 1.6489 | 1 (0.6858) | `12200e1c9bcb2f03` +8 |
+| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB x4 | 0.5196 | 1 (0.5196) | `122003cbc66ff472` |
+| Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB x4 | 0.8480 | 0 (0.0000) | `12204b0b6a60d45a` +7 |
+| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 x1 | 0.1498 | 1 (0.0002) | `1220386d8f27a364` +8 |
+| Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 x1 | 0.0273 | 1 (0.0273) | `1220736506a57c47` |
+| Qwen/Qwen3-8B-AWQ | NVIDIA H100 80GB HBM3 x1 | 0.1930 | 0 (0.0000) | `1220057f4eb955c3` +4 |
+| deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe x1 | 0.2497 | 0 (0.0000) | `12200ac2fd197bfb` +7 |
+| deepseek-ai/DeepSeek-V2-Lite-Chat | NVIDIA A100 80GB PCIe x1 | 0.3289 | 0 (0.0000) | `1220010e0d05fce8` +4 |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 0.0253 | 0 (0.0000) | `1220044754a6eab0` +7 |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 0.0253 | 0 (0.0000) | `1220393369faa495` +7 |
+| google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 0.0683 | 1 (0.0683) | `12209c87b885bbbd` |
+| meta-llama/Llama-3.1-8B-Instruct | NVIDIA GeForce RTX 4090 x1 | 0.0304 | 0 (0.0000) | `12203eb26d453a28` +7 |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.1422 | 2 (0.0041) | `1220142903598f2e` +9 |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0313 | 0 (0.0000) | `12201d7657881dda` +7 |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0157 | 1 (0.0157) | `122082b8cebddc87` |
+| mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 x1 | 0.0358 | 0 (0.0000) | `12200500f99862dc` +7 |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 0.0987 | 0 (0.0000) | `1220092662ec5a95` +4 |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 0.0314 | 0 (0.0000) | `12200ac02bfdf76a` +7 |
+| **Records total** |  | **9.9030** |  |  |
+| Diagnosis model calls (Claude Haiku) |  | 0.1916 |  |  |
+| Idle time of reused pods |  | 0.2302 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  | 0.6502 |  |  |
-| **Ledger spent** |  | **10.1693** |  | cap $100 |
-| RunPod billed, same window |  | 9.7224 |  | not billed yet: 1 pod(s) |
+| Corrections to RunPod's bill (estimates, clock differences) |  | -0.0998 |  |  |
+| **Ledger spent** |  | **11.3523** |  | cap $100 |
+| RunPod billed, same window |  | 9.9041 |  | not billed yet: 2 pod(s) |
 <!-- /findings:cost -->
 
 The B200 boot ($1.39) failed in a way the checkpoint's own file headers

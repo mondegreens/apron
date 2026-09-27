@@ -3,8 +3,8 @@
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "quant_compute_capability",
-  "rule_version": 3,
-  "supersedes": "122003c795f5b433f9d89edd29f972460a973271cbef52761698c5d631d838564fe4",
+  "rule_version": 4,
+  "supersedes": "122010d0332ad7f8997ee1ef7445b392e5f4564b167edc1cbf02fe089233627a3fab",
   "correction_strategy": "substitute_artifact",
   "correction_spec": {},
   "extraction_schema": {
@@ -36,7 +36,7 @@
   "exception_class": null,
   "engine_callsite_module": null,
   "status": "mechanism_verified",
-  "promoting_verification_fingerprint": "12200078d8e3999ec13fe5d4ac6bfa6d2fdd69b297b01e1763a3ed34dcbee1c96dd0",
+  "promoting_verification_fingerprint": "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269",
   "examples": [
     "The quantization method fp_quant is not supported for the current GPU. Minimum capability: 100. Current capability: 90."
   ],

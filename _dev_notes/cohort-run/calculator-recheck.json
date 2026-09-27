@@ -31,7 +31,7 @@
     {
       "activation_at_run": 278405120,
       "activation_measured": 558345748,
-      "activation_now": 556810240,
+      "activation_now": 557056000,
       "dtype": "float32",
       "gpu": "NVIDIA GeForce RTX 4090",
       "model": "state-spaces/mamba-2.8b-hf",
@@ -157,7 +157,7 @@
     {
       "activation_at_run": 1638147072,
       "activation_measured": 225485783,
-      "activation_now": 655884288,
+      "activation_now": 211255296,
       "dtype": "bfloat16",
       "gpu": "NVIDIA A100-SXM4-80GB",
       "model": "Qwen/Qwen3-8B",
@@ -223,6 +223,20 @@
       "weights_at_run": 1192099840,
       "weights_measured": 1202590842,
       "weights_now": 1192099840
+    },
+    {
+      "activation_at_run": 1378877440,
+      "activation_measured": 1385126952,
+      "activation_now": 1378877440,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3-8B-AWQ",
+      "profiled_tokens": 8192,
+      "record": "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269",
+      "tensor_parallel": 1,
+      "weights_at_run": 6098479104,
+      "weights_measured": 6249177415,
+      "weights_now": 6098479104
     },
     {
       "activation_at_run": 319553536,

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -13,7 +14,9 @@ from apron.adapters.backends.source_scanner import (
     scan_source,
 )
 
-VLLM_SOURCE = Path(__file__).parents[2] / ".sources" / "vllm" / "vllm"
+VLLM_SOURCE = Path(
+    os.environ.get("APRON_VLLM_SOURCE", Path(__file__).parents[2] / ".sources" / "vllm" / "vllm")
+)
 
 
 @pytest.fixture()
