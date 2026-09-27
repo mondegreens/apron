@@ -33,6 +33,13 @@ _RE_VLLM_VERSION = re.compile(r"vLLM\s+v?(\d+\.\d+\.\d+)")
 
 # vLLM startup log patterns (from vllm/v1/worker/gpu_worker.py)
 _RE_AVAILABLE_KV = re.compile(r"Available KV cache memory:\s*([\d.]+)\s*GiB")
+# v1/core/kv_cache_utils.py:2031-2036: the pool in tokens and how many
+# max-length requests it holds at once.  With the available memory this gives
+# the bytes one sequence reserves (a Mamba state, 2026-09-27).
+_RE_KV_CAPACITY = re.compile(
+    r"GPU KV cache size:\s*([\d,]+)\s*tokens,\s*"
+    r"Maximum concurrency for\s*([\d,]+)\s*tokens per request:\s*([\d.]+)x"
+)
 # vllm/config/scheduler.py:277 — the profile run's token count (gpu_model_runner.py:6574)
 _RE_MAX_BATCHED_TOKENS = re.compile(r"max_num_batched_tokens=(\d+)")
 _RE_CUDA_GRAPH = re.compile(
@@ -366,6 +373,11 @@ class VllmEngineAdapter:
             parsed["peak_activation_gib"] = float(m.group(6))
             parsed["cudagraph_gib"] = float(m.group(7))
 
+        m = _RE_KV_CAPACITY.search(log_text)
+        if m:
+            parsed["kv_cache_tokens"] = int(m.group(1).replace(",", ""))
+            parsed["max_concurrency"] = float(m.group(3))
+
         m = _RE_AVAILABLE_KV.search(log_text)
         if m:
             parsed["available_kv_cache_gib"] = float(m.group(1))
@@ -688,6 +700,8 @@ class VllmEngineAdapter:
             "cuda_graph_applied": cuda_graph_actual > 0,
             "cuda_graph_actual": cuda_graph_actual,
             "available_kv_cache_memory": available_kv_cache,
+            "kv_cache_tokens": parsed_logs.get("kv_cache_tokens"),
+            "max_concurrency": parsed_logs.get("max_concurrency"),
             "safety_buffer": safety_buffer,
             "profiling_shape": profiling_shape(parsed_logs, plan),
             "execution_fingerprint": target.execution_fingerprint,

@@ -832,6 +832,8 @@ _MEMORY_KEYS = (
     "cuda_graph_applied",
     "cuda_graph_actual",
     "available_kv_cache_memory",
+    "kv_cache_tokens",
+    "max_concurrency",
     "safety_buffer",
     "profiling_shape",
 )

@@ -451,3 +451,18 @@ def test_launch_detaches_so_the_ssh_command_returns(tmp_path: Path) -> None:
     assert "loaded" in (tmp_path / "v.log").read_text()
     assert "loaded" in console.read_text(), "the log is mirrored to the console"
     subprocess.run(["pkill", "-f", f"tail -n [+]1 -F {tmp_path}"], check=False)
+
+
+def test_kv_cache_capacity_is_parsed() -> None:
+    """v1/core/kv_cache_utils.py:2031-2036; with the available memory it gives
+    the bytes one sequence reserves (the Mamba state check, 2026-09-27)."""
+    from apron.adapters.backends.vllm_engine import _RE_KV_CAPACITY
+
+    line = (
+        "INFO [kv_cache_utils.py:2036] GPU KV cache size: 1,583,104 tokens, "
+        "Maximum concurrency for 2,048 tokens per request: 773.00x"
+    )
+    m = _RE_KV_CAPACITY.search(line)
+    assert m is not None
+    assert int(m.group(1).replace(",", "")) == 1_583_104
+    assert float(m.group(3)) == 773.0
