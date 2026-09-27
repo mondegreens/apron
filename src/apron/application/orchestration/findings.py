@@ -20,7 +20,8 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Any
 
 from apron.application.orchestration.billing import RECONCILE_PREFIX
-from apron.application.orchestration.remediation import SIX_CLASSES
+from apron.application.orchestration.cohort import classify_harness_error
+from apron.application.orchestration.remediation import SIX_CLASSES, failed_as_named
 from apron.application.orchestration.serving import evaluate_serving_slos
 from apron.domain.fingerprints import fingerprint_hex
 from apron.domain.schemas.records import derive_remediation_result
@@ -48,6 +49,7 @@ def build_findings(run: CohortRun, *, authorized: float) -> dict[str, Any]:
         "tasks": _tasks(run),
         "prediction_errors": _prediction_errors(run),
         "cost": _cost(run, authorized),
+        "failed_spend": _failed_spend(run),
         "record_count": len(rec.claims)
         + len(rec.reports)
         + len(rec.attempts)
@@ -410,6 +412,47 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
     }
 
 
+def _failed_spend(run: CohortRun) -> list[dict[str, Any]]:
+    """Every failed boot, grouped by why it failed.
+
+    A broken plan boots on purpose (the six class proofs); one can fail at an
+    earlier check than its class names.  A fix can fail.  Everything else is
+    the harness or the model.  Harness causes come from the recorded tag or,
+    for boots recorded before a pattern existed, from the stored log with
+    today's patterns (marked "from the log").
+    """
+    rec = run.records
+    cases = {fingerprint_hex(c.broken_plan): c for c in SIX_CLASSES}
+    fixes = {r.corrected_plan_digest for r in rec.remediations.values()}
+    groups: dict[str, dict[str, Any]] = {}
+    for digest, r in sorted(rec.reports.items()):
+        if r.boot_outcome != "failed":
+            continue
+        log = r.log_tail or ""
+        recorded = sorted({f for f in r.failures if f.startswith("harness:")})
+        case = cases.get(r.deployment_plan_digest or "")
+        if case is not None and failed_as_named(case, log):
+            cause = "a broken plan, failing as its class names (on purpose)"
+        elif case is not None or r.reason == "fix_proof_broken_boot":
+            # Booted as a broken plan, but not the class's current one or not
+            # at its named check: an earlier draft, replaced (class 6's first
+            # attempt stopped at the deprecation check).
+            cause = "a broken plan that failed at an earlier check (replaced)"
+        elif recorded:
+            cause = f"the harness: {', '.join(recorded)}"
+        elif (kind := classify_harness_error(log)) is not None:
+            cause = f"the harness: {kind} (from the log)"
+        elif r.deployment_plan_digest in fixes:
+            cause = "a fix that did not work"
+        else:
+            cause = "the model"
+        group = groups.setdefault(cause, {"cause": cause, "boots": 0, "cost": 0.0, "records": []})
+        group["boots"] += 1
+        group["cost"] = round(group["cost"] + (r.market_equivalent_price or 0.0), 6)
+        group["records"].append(digest)
+    return sorted(groups.values(), key=lambda g: -g["cost"])
+
+
 def _cost_row(run: CohortRun, sfp: str | None) -> dict[str, Any]:
     entry = _entry(run, sfp)
     return {
@@ -550,6 +593,19 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
             for r in findings["repeat_measurements"]
         ],
         "No solution was measured twice yet.",
+    )
+    blocks["failed_spend"] = _table(
+        ["Why the boot failed", "Boots", "Cost $", "Records"],
+        [
+            [
+                g["cause"],
+                str(g["boots"]),
+                f"{g['cost']:.4f}",
+                ", ".join(_d(d) for d in g["records"]),
+            ]
+            for g in findings.get("failed_spend", [])
+        ],
+        "No boot failed.",
     )
     blocks["recheck"] = _table(
         [

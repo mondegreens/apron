@@ -198,3 +198,12 @@ def test_committed_findings_equal_the_records() -> None:
         assert in_doc, path
         for name, body in in_doc.items():
             assert body == blocks[name], f"{path.name}: block {name} differs from the records"
+
+
+def test_failed_spend_accounts_for_every_failed_boot(findings: dict) -> None:
+    """Every failed boot's cost lands in exactly one cause, and the six broken
+    plans are shown as failing on purpose, not as waste."""
+    groups = findings["failed_spend"]
+    assert sum(g["cost"] for g in groups) == pytest.approx(findings["cost"]["failed_boot_total"])
+    assert sum(len(g["records"]) for g in groups) == sum(g["boots"] for g in groups)
+    assert any(g["cause"].startswith("a broken plan, failing as its class names") for g in groups)
