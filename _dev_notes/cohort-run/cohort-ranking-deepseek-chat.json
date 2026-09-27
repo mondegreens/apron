@@ -1,0 +1,95 @@
+{
+  "inputs": {
+    "candidates": [
+      {
+        "model_id": "deepseek-ai/DeepSeek-V2-Lite-Chat",
+        "gpu_sku": "NVIDIA A100 80GB PCIe",
+        "size_class": "large",
+        "hardware_class": "datacenter",
+        "mechanism": "mla_decode",
+        "weight_gb": 31.41,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "mla",
+          "moe"
+        ]
+      }
+    ],
+    "existing": {
+      "sizes": [],
+      "hardware": [],
+      "mechanisms": [],
+      "features": [],
+      "quantized": false,
+      "prediction_error": false,
+      "models": [],
+      "gpus": []
+    },
+    "measured": [],
+    "remaining_budget": 90.334248,
+    "rates": {
+      "NVIDIA RTX A5000": 0.27,
+      "NVIDIA L4": 0.49,
+      "NVIDIA GeForce RTX 3090": 0.5,
+      "NVIDIA RTX A6000": 0.53,
+      "NVIDIA GeForce RTX 4090": 0.74,
+      "NVIDIA L40": 0.82,
+      "NVIDIA A100 80GB PCIe": 1.59,
+      "NVIDIA A100-SXM4-80GB": 1.59,
+      "NVIDIA H100 80GB HBM3": 3.49,
+      "NVIDIA B200": 6.79
+    }
+  },
+  "ranked": [
+    {
+      "key": "deepseek-ai/DeepSeek-V2-Lite-Chat@NVIDIA A100 80GB PCIex1",
+      "cost": 1.6757,
+      "obligations": [
+        "size:large",
+        "hardware:datacenter",
+        "mechanism:mla_decode",
+        "new_model",
+        "new_gpu"
+      ]
+    }
+  ],
+  "skipped": [],
+  "authorization": {
+    "schema_version": 1,
+    "permitted_action_classes": [
+      "gpu_execution",
+      "diagnosis_classification"
+    ],
+    "permitted_providers": [
+      "runpod"
+    ],
+    "permitted_accounts": [],
+    "credential_scopes": [
+      "runpod:pods",
+      "anthropic:messages",
+      "huggingface:read"
+    ],
+    "task_data_destinations": [
+      "api.anthropic.com"
+    ],
+    "hard_target_constraints": {
+      "cloud_type": "SECURE"
+    },
+    "maximum_spend": 100.0,
+    "baseline_allocation_digest": null,
+    "contributed_pool_digest": null,
+    "runtime_rules": {},
+    "lifecycle_rules": {},
+    "teardown_rules": {
+      "orphan_max_age_seconds": "3600",
+      "atexit": "terminate"
+    },
+    "security_rules": {},
+    "data_rules": {},
+    "publication_scope": null,
+    "adaptation_rules": {}
+  }
+}

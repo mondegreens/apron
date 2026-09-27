@@ -1,0 +1,62 @@
+{
+  "executed": {
+    "deepseek-ai/DeepSeek-V2-Lite-Chat@NVIDIA A100 80GB PCIex1": {
+      "solution_fp": "122092680b193723eebd180cac5873d14e819de235e03b77af29c3d76e268d1df3a9",
+      "healthy": true,
+      "boot_report_digest": "1220c078c3a7d11e65be0f1d182e4a5ee4bb2541d40445ea8477e0d5e47c5325dae4",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "1220010e0d05fce8ecf8ab6e09173243eb1e1ace796997e4140118b3e812d55f614e",
+        "1220efe15209d5809ad7c80efe05089ef9e894289326eb8ab981882eb2931d9146c0",
+        "1220a13f9a306cc5de46693eb4140b05bc6cf792cd6bce5e4e40b7fd581a5311152f"
+      ],
+      "serving_digest": "1220cda28d70f6b5f81c66927bfdcc078679dc12661d23853d05979a48c52debdd77",
+      "log_tail": "",
+      "harness_failures": [],
+      "cost": 0.32895,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "486": 0,
+          "861": 0
+        },
+        "token_free": true
+      }
+    }
+  },
+  "prediction_errors": {},
+  "skipped": {},
+  "stopped": null,
+  "budget": {
+    "authorized": 100.0,
+    "spent": 9.994914,
+    "held": 0,
+    "remaining": 90.005086,
+    "open_holds": [],
+    "flags": [
+      "l0a3-run1:replayed:estimate"
+    ],
+    "overruns": []
+  },
+  "decision_report": {
+    "schema_version": 1,
+    "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+    "candidates": [
+      {
+        "solution_fingerprint": "122092680b193723eebd180cac5873d14e819de235e03b77af29c3d76e268d1df3a9",
+        "qualification_status": "serving_verified",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220a331acb18a14\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"1220010e0d05fce8ecf8ab6e09173243eb1e1ace796997e4140118b3e812d55f614e\", \"1220a13f9a306cc5de46693eb4140b05bc6cf792cd6bce5e4e40b7fd581a5311152f\", \"1220efe15209d5809ad7c80efe05089ef9e894289326eb8ab981882eb2931d9146c0\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"1220cda28d70f6b5f81c66927bfdcc078679dc12661d23853d05979a48c52debdd77\"], \"detail\": [\"pass\", \"p99_ttft_ms 924.9 within SLO 2000.0\", \"p99_tpot_ms 11.8 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      }
+    ],
+    "outcome_economics": null,
+    "uncertainty": null,
+    "disclosed_comparable_set": [],
+    "exclusions": []
+  }
+}

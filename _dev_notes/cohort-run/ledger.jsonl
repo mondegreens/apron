@@ -184,3 +184,9 @@
 {"amount": 0.06602, "at": "2026-09-27T04:36:52.905396+00:00", "label": "reconcile:unledgered:ljf4phxhq229f1", "op": "spend"}
 {"amount": 0.256863, "at": "2026-09-27T04:36:52.905589+00:00", "label": "reconcile:unledgered:oxlwqogyhgfc2m", "op": "spend"}
 {"amount": 0.117501, "at": "2026-09-27T04:36:52.905771+00:00", "label": "reconcile:unledgered:pcx46p9oe2n3cz", "op": "spend"}
+{"amount": 1.6757, "at": "2026-09-27T05:12:08.104957+00:00", "label": "deepseek-ai/DeepSeek-V2-Lite-Chat@NVIDIA A100 80GB PCIex1", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T05:18:52.014656+00:00", "label": "deepseek-ai/DeepSeek-V2-Lite-Chat@NVIDIA A100 80GB PCIex1", "op": "annotate", "pod_id": "n6xd7bcy6rpwrx"}
+{"amount": 0.265, "at": "2026-09-27T05:24:32.894065+00:00", "label": "pod-idle:n6xd7bcy6rpwrx", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T05:24:32.896443+00:00", "label": "pod-idle:n6xd7bcy6rpwrx", "op": "annotate", "pod_id": "n6xd7bcy6rpwrx"}
+{"amount": 0.32895, "at": "2026-09-27T05:24:32.898127+00:00", "estimate": 1.6757, "label": "deepseek-ai/DeepSeek-V2-Lite-Chat@NVIDIA A100 80GB PCIex1", "op": "settle"}
+{"amount": 0.000212, "at": "2026-09-27T05:24:33.376176+00:00", "estimate": 0.265, "label": "pod-idle:n6xd7bcy6rpwrx", "op": "settle"}

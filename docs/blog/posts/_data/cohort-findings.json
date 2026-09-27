@@ -3,10 +3,10 @@
     "authorized": 100.0,
     "failed_boot_total": 4.324673,
     "ledger_classifier": 0.165115,
-    "ledger_pod_idle": 0.027383,
+    "ledger_pod_idle": 0.027595,
     "ledger_reconciled": 0.650187,
-    "ledger_settled": 8.823067,
-    "ledger_spent": 9.665752,
+    "ledger_settled": 9.152017,
+    "ledger_spent": 9.994914,
     "per_solution": [
       {
         "cost": 1.392902,
@@ -53,11 +53,14 @@
         "label": "JunHowie/Qwen3-8B-GPTQ-Int4@NVIDIA GeForce RTX 4090x1",
         "model": "JunHowie/Qwen3-8B-GPTQ-Int4",
         "records": [
+          "122018669b0bb312a3d13f38b7b5541917e71162ae989226b1d68dbfc0c140151478",
+          "12202ba1862b57d281ccded626d60c67f831a7bc96c7831e199a0f9a75ad3410fd3f",
           "12206a93cab1c283344ad2039ba5a3a9415c64850bc54372523f112e33225a34c82c",
           "1220750ac695032ee7818f2ba8e6e06bad0c7f3153e1555f0231474ff6622b53d0b0",
           "1220a7877dd7e888e743fd90a99cff2d93777ecbdf332e3e23ccd635525fb63ddd45",
           "1220b9e409435a57a94ec162cf8e0d401bf53a8967bbb168a213dbeb6482f7596ca6",
-          "1220c78063be278806620433e9a2430eb978a597e0307d3dc8e62fc935c061e15949"
+          "1220c78063be278806620433e9a2430eb978a597e0307d3dc8e62fc935c061e15949",
+          "1220c820cfbd67b7b000b8f64cc08045b19029896d326e424ea24d8c521c0e7fff77"
         ]
       },
       {
@@ -72,6 +75,9 @@
           "12200078d8e3999ec13fe5d4ac6bfa6d2fdd69b297b01e1763a3ed34dcbee1c96dd0",
           "122011a190eca425456476e755d019196a6e0bfa02ad6f9ba5d3c6365df95f6da9f5",
           "12201ad35d22493d4527295361b04604a84000c91afafd3ca717fbbbf565fd93825a",
+          "122051f417605488cf9e0fa6373cc80257ecf2b06a91c3f03f145460c33b829bb393",
+          "1220bd1150135b6d7ea7850aab9ce368be8f0e2c5c212b75ce3cbcbe0536fca54ef9",
+          "1220ccdc860fbb33e65fd3b3bd39a1c85549ef5be878ad8b4cc4f848a397d98dcec1",
           "1220d68023d988ed26d2da0f12b44c0f0668814246c872041db4af6f541484017149",
           "1220dfabcbad7ac066c195aa7e4ae19c449205ea856d5f3038fe1678c861739c8eba"
         ]
@@ -91,12 +97,18 @@
           "122016a2683145411b02d0b4db83379a2ef5c446c8727b73edd254490dbcd9fb0003",
           "12203417638dd813ee4bff84d64273024a3f58b41e2eeca73bbf1af06858795532bf",
           "1220348ef02b049d4a023353f2614899f8df69eb5f5c12b9005401d3cdc9e6c56200",
+          "12203c209639fd97819f0af88d0eaa1e4dc3a9ecd6cda2cc6a6170fee9ff253a01ff",
+          "1220446e6ae26da2fba4d4f4d2d2c4bfd1e574a4ea4997891665ca19985684c52633",
           "122056e563edf84b102233abdb30ce90733de29eaa8ba8e23b06bbf302188c3ca8e6",
+          "12205becbda646ab0c9d7b5145fa5dcbc6e0ddc7618c842073400f70b082efb9d262",
           "122068c372c3fa7a65ee0920a0032b6ae05306d9db9249115614c92826b199b47553",
           "1220805d46a1bfc0cf068b7cb3ee1b80853defa0a8eeed341867f5a0b877cf7d01d0",
+          "1220ad1ca2d5b5859a355981e9acc833e733a04583a7c8326dee786db9a98fc64686",
+          "1220c46de8fbebe1bf7dd46e19f5961747e49a3ae3a2c3ec67447d138c7f98e30c8a",
           "1220c680fcc992ddaed4a2fe12932d260df60e27ac18a4aaa1aa6aa86176dad01242",
           "1220d3339409290661dc36d71cf93f39545ad8e9fd7757a0496bfd80b62acacfc7e7",
           "1220d50f1d7cd237f0dcc7326728546cbc0fb44e7f2ed0e564b3960b3d0502c5225f",
+          "1220d5ab1a05171b74ab54c30edb7d2264e62fa7244b7a6a6288d82f1d0a12c54b3d",
           "1220df2ce6e23fc836a75e0623ff0b72ab9e301c43cca97af775c0545e74cf8d4aa4"
         ]
       },
@@ -111,7 +123,10 @@
         "records": [
           "1220205b397c672ee4ad674fc589d167da7dda4c181ee1603eafcd7c66235184198f",
           "122052ddb3ca62378b8a6da3ffecb34fb468f0e2e1fb4077f6e6b323ea7edfcf4d24",
+          "12206e7f486d722945d30e1ff359de152154c14c669e62221fa88dd9b28098226c9e",
           "1220715f23ad9671aebdd9a57e50d3b214b31148738cc267163365f9d9be3b166d46",
+          "12208fec12077b14527e4387145c220b9810335f4ac4075c4b72b08f68ce72cf9d9e",
+          "1220b6c72d0711a14d46ad8c6f6fcd9e4113fa34870da93effe6b2c0d3faaaeb32be",
           "1220c6fe521bb6009e712c2956eb12b468bf330b01bbbb6d06d524507b273dfff3b8",
           "1220dad9155b4119fb6b58cebe264353221af8a88c01d6cb890ab1269ba49ad734eb"
         ]
@@ -141,7 +156,10 @@
           "122024b91041129db3bb9efb0d14dfe51a17fd4af023b38d021c0ebb5e80c67e0287",
           "12203903ded913c699483a8f5a7902faf7cb5059209d1455fdfbe17c5ec95f0895b3",
           "1220581b5941758755eb3fab1351a12e6b43ca7e0f97a782c5c2a8a59da756912c1e",
-          "1220a6d5efc7eef1c50f14eb585086d079c7fd7b3ed3c5fc300ec30f4e0b321ddcab"
+          "1220872ab145fda6e16da28017f6980003d0947fde746a55975dc1b9af7c7e9f01e9",
+          "12209e6ada5f704d16f56d47009ef82d61665502aa4e74bdc530d321750c37af4113",
+          "1220a6d5efc7eef1c50f14eb585086d079c7fd7b3ed3c5fc300ec30f4e0b321ddcab",
+          "1220b1e8f62c3c8ac3c49b51b6fdccba3857f645069b04111bfc478d27adf2a11a9e"
         ]
       },
       {
@@ -153,11 +171,14 @@
         "label": "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1",
         "model": "Qwen/Qwen3-32B",
         "records": [
+          "12202d20ff104d816482633444ae312d3ff526f89d08da42bb1042535b8d1861e80c",
           "122031e0061b860a1c6248f2f842f9c2c37bd6c4355e99ccf426f768addd8e207518",
           "1220374d2a3c7d3a33d8fe3102211051c5dc5185751d49fbd620a90eb1d34897a479",
           "12204b987acc6061352ec60e95dd8ac0ba60541e6df312fd9df29a605826368f7097",
+          "12205c57d8f03197ff5fa2f0dd68ee24bf1b653744bdcba9c19ae920b482959ccc4a",
           "1220af8eeb74909ff10d6aaf75cd997eeff629ea101a03594e2362668982ba470a5d",
           "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321",
+          "1220f1131bc8654cc757b0fa4f2c8ba6ff8b8577fec1181d394cbe7acd612a363b90",
           "1220feb7179d87e1a4a32c0fc2d620681501189ce5bfd4741d91e5ac5b2d8815ce6f"
         ]
       },
@@ -172,10 +193,13 @@
         "records": [
           "12200e1c9bcb2f03ace90f778169bcb65a59fb09057157787ee289714fe6baef0e51",
           "12202aec7f802585999a697d2cfa6fa10feafb407883f1af46548a8aff895d745a0e",
+          "122034355d8bd254e7771292c080e7cd1e286845c49c0c4f5ae2246a0208e25d4e18",
           "122076c27e44225ebf05c45d63ba6ed34a6211f7aabfe2d24e94b6c46e042ff71399",
           "12208ed8e15b1aa9bb219b41e8579aee84188cb050cd874a30bc310432311e5368f4",
+          "12209e8cec8c7ab2440062c0c7aeec00f48b3739d1df76134f82f34ed091762c6543",
           "1220b4918863630e2f43ecc3cf55d19816369f57531ec0d8adcb433cae00cbc83c24",
-          "1220eef514a1a275cd13bd98c041db9bda93e42c9df0b5126d4f6ede6c0811582fca"
+          "1220eef514a1a275cd13bd98c041db9bda93e42c9df0b5126d4f6ede6c0811582fca",
+          "1220fb605b7701961be4094f4bafcf421549d3d2899e99ee41667b086b74b7a34b38"
         ]
       },
       {
@@ -200,8 +224,11 @@
         "model": "Qwen/Qwen3-8B",
         "records": [
           "12204b0b6a60d45a87848e0f9d53a6900f57344f09d682202001450ba736bc4a632c",
+          "12205150496f5ad05a58990c16e4a86a1c3645294b3a905fe4ef982acfe9df2c1efe",
+          "12208b3fd4889b2313235e2ad4106546eb056956cde364f5b10fbff906c04e862bf5",
           "12208e0b44a2622cdde84df6c1924b4068ffa97b5f5c2fe48f8c4b14f738a4960744",
           "12208e62684da57990e16a8ae38a628367cd44f3ed8bc065d673b3ab220810ece591",
+          "12208f850372f5f6d4c386f56003b38ebc1a8cebd05963d9bf7ad89e43a12fa8f6cb",
           "12209ac3de7807d51809acd76e127d26d804a5ec59e024150da7d0c9536599571ea5",
           "1220f1afa7d19d18820b69802a295db5dcabb783b192a14add004f93115478352bc4"
         ]
@@ -217,9 +244,12 @@
         "records": [
           "1220386d8f27a3644985be66a52cf4ea118d298fe11a3f99ec5e694f7bdb68ab5e19",
           "122046447ffc1d89490228e1a78bf46bfc0f154518d1ee3fc69b76ea755703418513",
+          "122054a949c8a23e079d73840f5b90d1506357ed23d413546979adefd9ca01d5acf7",
           "12206418a88a7d927c5049c6936ccee3cc729d8ce1e2373fca2c428cb560ff473383",
           "1220763a9b91627f8634f8a16f911359ad08e5d8782695ddc29c57219d096b0bf31f",
           "12208dd7f62650340f45172ad09029bcbcc5208a4fee37bd192b9655be088b199134",
+          "1220b2b957d0c51dcc2fd27866f7603c13dd1f3b3693ab73fd7565c647f522c5878b",
+          "1220e7b5dd47f7e19991401373a6c39f3493a5cd1839aafa1ccb4f3d03ba366abded",
           "1220e8a2173c51d34ea08474d5f6a1d0e7b79f5203e40b720b1f2608c987fc2f1584"
         ]
       },
@@ -245,10 +275,29 @@
         "model": "deepseek-ai/DeepSeek-V2-Lite",
         "records": [
           "12200ac2fd197bfb3739f5b145510feed8256e6b3f90df263688d362e3138ce9097a",
+          "12201ea5c57fb7eb446b52cf439bd0d1feaa72337c235c961d863a91be86014d75f0",
           "122061f72e5d7004a287bada68fc73c6d61a02140a24be883c82d676d48a02f0a518",
           "1220697d834da838ea2b058265f8dc1159098f8868d943b13b0f887b05fbb10162b9",
+          "122076d6d81dbe1e05ad8f11a742b52fc7333168d4fa3f42b1d6b1dc167c19c3a1a4",
           "122091e1cf984bc6c153ae71bcbb84d5373554407d6fd49d08c6cee0c632fda74f05",
-          "12209e38a5f726490e019088aa99a69d9fdd008b78a93b70eee1a6355aeecc9d5c95"
+          "12209e38a5f726490e019088aa99a69d9fdd008b78a93b70eee1a6355aeecc9d5c95",
+          "1220f138d03196999a62cc2d28ca642bd2342ffa34cb8d18878b7e7d3ec6f311cb38"
+        ]
+      },
+      {
+        "cost": 0.328948,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA A100 80GB PCIe",
+        "gpu_count": 1,
+        "label": "deepseek-ai/DeepSeek-V2-Lite-Chat@NVIDIA A100 80GB PCIex1",
+        "model": "deepseek-ai/DeepSeek-V2-Lite-Chat",
+        "records": [
+          "1220010e0d05fce8ecf8ab6e09173243eb1e1ace796997e4140118b3e812d55f614e",
+          "1220a13f9a306cc5de46693eb4140b05bc6cf792cd6bce5e4e40b7fd581a5311152f",
+          "1220c078c3a7d11e65be0f1d182e4a5ee4bb2541d40445ea8477e0d5e47c5325dae4",
+          "1220cda28d70f6b5f81c66927bfdcc078679dc12661d23853d05979a48c52debdd77",
+          "1220efe15209d5809ad7c80efe05089ef9e894289326eb8ab981882eb2931d9146c0"
         ]
       },
       {
@@ -260,11 +309,14 @@
         "label": "google/gemma-2-2b-it@NVIDIA GeForce RTX 4090x1",
         "model": "google/gemma-2-2b-it",
         "records": [
+          "1220044754a6eab083cd3a633fd55fbeca23abb78eb006a66fe68118ce21f1f85d4b",
           "122010775bd1c04f22c2713405eafc0e4a8b5e6647afa2f9ee4a214b23e0905a3f3c",
           "12203ec9f9ea5b2117b8c85fd07962e4e303cca3524c8d71219340d8a96221198ac1",
           "12205a99eed24ad06e68bbec2c4dbe9df15aff9015d54bfd330ac4104b19addf409d",
           "12207b314f3982aa828ce37adf4c6fb200cb9fe744a48dda8b483cd7e494d95bfec4",
-          "12207c8d129ea3d8b84f6f681aa518de8ff36ddd793832fda2c1bc1c1d2eff988550"
+          "12207c8d129ea3d8b84f6f681aa518de8ff36ddd793832fda2c1bc1c1d2eff988550",
+          "1220842b830a3d56f32e36d4d42e93d1cf6cb6c5573281b06b4bd46b85e83e099bda",
+          "1220f632d009e2822edc74336a3823c95018d460072adc642a812d48111bd7e68f62"
         ]
       },
       {
@@ -278,8 +330,11 @@
         "records": [
           "1220393369faa4951bab95ef3db6d012aff217b3dca65ab1b7534d2cd608d9ac95ed",
           "12206b393c533d0ae1e2e4c644df0af93e2bcc91115d04a0693e0f7494013333b586",
+          "122087059bf088251ced232bc1eede74f3bad6a04ddba278187c83a2578ad0d5b85c",
+          "12209177ed2710257b4ca4477aadaafb1dbec5dadf658569b3d5faba61b94f1cee27",
           "1220a2a3bd4fa82fed0d0e0177bf19884a3f37fd12f94bafc85812bf05ee147e11ac",
           "1220c4d576ed9039deda716406e476c385664811f6064b36ee3fbb67dc433d168d24",
+          "1220d5f817756715525f4148bbf7d53b56dd3a2f73e47c49e494bb31295f3a56d283",
           "1220e4d272d2856d239be6b47fe65e9fd1a48ccaedc2d9f4b3a9a999d152d4a4dcb5"
         ]
       },
@@ -304,11 +359,14 @@
         "label": "meta-llama/Llama-3.1-8B-Instruct@NVIDIA GeForce RTX 4090x1",
         "model": "meta-llama/Llama-3.1-8B-Instruct",
         "records": [
+          "12203eb26d453a280cad801d9dca9ea0cfcb8322945188df31f3517f7ad775519fa6",
           "1220636ca167b3f0c240df5c80fa2aec588bd2bec55f7a763fb5acc33fe1bcfb5cec",
+          "12207d816078edb4ff45879a7de1e85cbe18fa44aebabd7406e8475c76d9664eab47",
           "122084195d84d5675e8cbcf0b9afbca0b5bf292dc6b280ddbc11c1c1e5b2d4891751",
           "12208c23032bd47caf2ff2ce057e1a5e98c528a12336204280ce26bafb1a40f60d01",
           "1220b871596474c6147fd47a73849565c4864919debdf7d64c4865163609b583760d",
-          "1220c62d62ae67ec438ebca7e7facc6f53eb71e65853a9e6b29aee797a3e470e5948"
+          "1220c62d62ae67ec438ebca7e7facc6f53eb71e65853a9e6b29aee797a3e470e5948",
+          "1220f4995e57ae2c4bc182084b0f54feaa9e8d99307987f54422a56bee1155a2c806"
         ]
       },
       {
@@ -320,13 +378,16 @@
         "label": "class3-fixed",
         "model": "mistralai/Mistral-7B-Instruct-v0.3",
         "records": [
+          "1220142903598f2e8a505848cac3411524028f315adb9bc372d16fe0fe53bce7d2e5",
           "12201d4d83eb617dea2cbddab96a17b4d713307a431fa3bcc3905d8d3b186aa1967e",
           "12201d81b4264e0ae66e0331be18190df340b4a57952d24ce893302f1ebd5e8493c0",
+          "122034dfa2e9c03677808f89b0ebed13b13be5f6747776a04f301ecd5c6b29925dda",
           "1220bffbae5f2817e9418b1a8ad049348340235fd050c8e9a6df5dd48c0841ed5a06",
           "1220c29b418403035748d2d55fcecdee03deaa643650f50268c2baea28f817e08973",
           "1220c4ab40df7487bbb966eef1140379a46a0868a9ca7b7f330353c03b8dbf3438eb",
           "1220c4ad8130d1bb5d01e086aa11b4155e57e820ff67e02fed5be6c2b1111bc090bb",
-          "1220e2ff97b499fe579c4c72b9b6d8ddd2b5b2f58f40762cebccef770f5c419cd4af"
+          "1220e2ff97b499fe579c4c72b9b6d8ddd2b5b2f58f40762cebccef770f5c419cd4af",
+          "1220f6faeded20231f76a1d34060c3af7f47d0e5f754f7d0fb302d7c102ee404e8a2"
         ]
       },
       {
@@ -338,8 +399,11 @@
         "label": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA GeForce RTX 4090x1",
         "model": "mistralai/Mistral-7B-Instruct-v0.3",
         "records": [
+          "12201d7657881dda5ce067c186a2bcee89a68fcfe41cc159dd3445f477813377f0e2",
           "1220533c7088dda6eb4272dc3aec8e9c820e7f526a5bb24b8921223bdb51da8c4b63",
+          "12205bb62283c6e9fc64f7fda42c7386bd3162c34479ddd9a2b2cb157dd8db93ad53",
           "122075e500841efea613add26e52f3a827c8b87c32ddca193ffdf8fd23c0867db745",
+          "122091f6f5a9e45cad0db1dd91456df93505820ac021bead078855e9af14312ac084",
           "1220a6224c34845b72053479b0ae0c2c8ea77977f58c09c225906774734ac21c8509",
           "1220dcda4554108a677ca6f2ec1c9f90512c74bbbae40cf7f24f29b0f583c563d383",
           "1220f4cdf74d42208d6a32e1ca691e2694379191b3b9d51fcf7be445d90eb9689126"
@@ -366,7 +430,10 @@
         "label": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA L4x1",
         "model": "mistralai/Mistral-7B-Instruct-v0.3",
         "records": [
+          "12200500f99862dc571327b408ef350213b450ad50c8e49bbc0696fbac1939610f40",
+          "122007e5661a0fb4156bf8ebfaaf8f032b0a1524d6d623a80351e6ae2622c70c50d9",
           "12200b886612e9838f059ca5f7f0a6aee2635cffca9de380c2404e6ab4039079e0a0",
+          "12202eb1f574cca49e5c7804b02b7561f6466229e3580f5781a9eb73245bcb7a1404",
           "12203758d37c241f2c591f6e08945ab2f7b11cf5a89bf19c91f08269223f7f3057b3",
           "12206313935a53ff7c3a43322ef5041ecd093915cba793babb263f21c785c370d492",
           "1220ac02237cee071400d8ff6a286d8975f85c8f18558aa041bdeaaac5f6a578a165",
@@ -390,7 +457,7 @@
     "provider_not_yet_billed": [
       "uek7y94mhlfqam"
     ],
-    "records_total": 8.346069
+    "records_total": 8.675017
   },
   "fixes": [
     {
@@ -725,6 +792,21 @@
       "weight_delta_bytes": -69141831
     },
     {
+      "claim": "1220242247c0352c61111ffc10cdf4b9ba9dc6856d95aeb63f33b831837a1258ea16",
+      "gpu": "NVIDIA A100 80GB PCIe",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 869089521,
+      "measured_persistent_bytes": 32222992138,
+      "measured_weight_bytes": 31482110279,
+      "model": "deepseek-ai/DeepSeek-V2-Lite-Chat",
+      "notes": [],
+      "predicted_total_bytes": 33087091267,
+      "predicted_weight_bytes": 31412968448,
+      "record": "1220c078c3a7d11e65be0f1d182e4a5ee4bb2541d40445ea8477e0d5e47c5325dae4",
+      "total_delta_bytes": 864099129,
+      "weight_delta_bytes": -69141831
+    },
+    {
       "claim": "122017da1ce6eeb2ba09342f020bc0d96446471dcd1c1806a2451c547e1bb87b8ce5",
       "gpu": "NVIDIA GeForce RTX 4090",
       "gpu_count": 1,
@@ -833,7 +915,7 @@
       "status": "unknown"
     }
   ],
-  "record_count": 135,
+  "record_count": 192,
   "repeat_measurements": [
     {
       "activation_spread_pct": 0.0,
@@ -1006,6 +1088,20 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA A100 80GB PCIe",
+      "model": "deepseek-ai/DeepSeek-V2-Lite-Chat",
+      "output_token_throughput": 307.2267260920308,
+      "p99_tpot_ms": 11.77569793302595,
+      "p99_ttft_ms": 924.8701306246221,
+      "recomputed_verdict": "pass",
+      "record": "1220cda28d70f6b5f81c66927bfdcc078679dc12661d23853d05979a48c52debdd77",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA GeForce RTX 4090",
       "model": "google/gemma-2-2b-it",
       "output_token_throughput": 501.66996473873604,
@@ -1105,7 +1201,7 @@
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-27T04:12:35.947622+00:00",
+    "last_event": "2026-09-27T05:24:48.737395+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B-FP8",
@@ -1114,6 +1210,7 @@
       "Qwen/Qwen3-32B",
       "Qwen/Qwen3-8B",
       "deepseek-ai/DeepSeek-V2-Lite",
+      "deepseek-ai/DeepSeek-V2-Lite-Chat",
       "google/gemma-2-2b-it",
       "meta-llama/Llama-3.1-8B-Instruct",
       "mistralai/Mistral-7B-Instruct-v0.3"
@@ -1147,7 +1244,28 @@
         "1220a7877dd7e888e743fd90a99cff2d93777ecbdf332e3e23ccd635525fb63ddd45",
         "1220c78063be278806620433e9a2430eb978a597e0307d3dc8e62fc935c061e15949"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "JunHowie/Qwen3-8B-GPTQ-Int4",
+      "passed": true,
+      "records": [
+        "122018669b0bb312a3d13f38b7b5541917e71162ae989226b1d68dbfc0c140151478",
+        "12202ba1862b57d281ccded626d60c67f831a7bc96c7831e199a0f9a75ad3410fd3f",
+        "1220c820cfbd67b7b000b8f64cc08045b19029896d326e424ea24d8c521c0e7fff77"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 1,
@@ -1161,7 +1279,28 @@
         "12201ad35d22493d4527295361b04604a84000c91afafd3ca717fbbbf565fd93825a",
         "1220d68023d988ed26d2da0f12b44c0f0668814246c872041db4af6f541484017149"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 1,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3-0.6B-FP8",
+      "passed": false,
+      "records": [
+        "122051f417605488cf9e0fa6373cc80257ecf2b06a91c3f03f145460c33b829bb393",
+        "1220bd1150135b6d7ea7850aab9ce368be8f0e2c5c212b75ce3cbcbe0536fca54ef9",
+        "1220ccdc860fbb33e65fd3b3bd39a1c85549ef5be878ad8b4cc4f848a397d98dcec1"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1178,7 +1317,31 @@
         "1220d50f1d7cd237f0dcc7326728546cbc0fb44e7f2ed0e564b3960b3d0502c5225f",
         "1220df2ce6e23fc836a75e0623ff0b72ab9e301c43cca97af775c0545e74cf8d4aa4"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 6,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "Qwen/Qwen3-1.7B",
+      "passed": true,
+      "records": [
+        "12203c209639fd97819f0af88d0eaa1e4dc3a9ecd6cda2cc6a6170fee9ff253a01ff",
+        "1220446e6ae26da2fba4d4f4d2d2c4bfd1e574a4ea4997891665ca19985684c52633",
+        "12205becbda646ab0c9d7b5145fa5dcbc6e0ddc7618c842073400f70b082efb9d262",
+        "1220ad1ca2d5b5859a355981e9acc833e733a04583a7c8326dee786db9a98fc64686",
+        "1220c46de8fbebe1bf7dd46e19f5961747e49a3ae3a2c3ec67447d138c7f98e30c8a",
+        "1220d5ab1a05171b74ab54c30edb7d2264e62fa7244b7a6a6288d82f1d0a12c54b3d"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1192,7 +1355,28 @@
         "1220c6fe521bb6009e712c2956eb12b468bf330b01bbbb6d06d524507b273dfff3b8",
         "1220dad9155b4119fb6b58cebe264353221af8a88c01d6cb890ab1269ba49ad734eb"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA L4",
+      "model": "Qwen/Qwen3-1.7B",
+      "passed": true,
+      "records": [
+        "12206e7f486d722945d30e1ff359de152154c14c669e62221fa88dd9b28098226c9e",
+        "12208fec12077b14527e4387145c220b9810335f4ac4075c4b72b08f68ce72cf9d9e",
+        "1220b6c72d0711a14d46ad8c6f6fcd9e4113fa34870da93effe6b2c0d3faaaeb32be"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1206,7 +1390,28 @@
         "1220581b5941758755eb3fab1351a12e6b43ca7e0f97a782c5c2a8a59da756912c1e",
         "1220a6d5efc7eef1c50f14eb585086d079c7fd7b3ed3c5fc300ec30f4e0b321ddcab"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA RTX A6000",
+      "model": "Qwen/Qwen3-14B",
+      "passed": true,
+      "records": [
+        "1220872ab145fda6e16da28017f6980003d0947fde746a55975dc1b9af7c7e9f01e9",
+        "12209e6ada5f704d16f56d47009ef82d61665502aa4e74bdc530d321750c37af4113",
+        "1220b1e8f62c3c8ac3c49b51b6fdccba3857f645069b04111bfc478d27adf2a11a9e"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1220,7 +1425,28 @@
         "1220af8eeb74909ff10d6aaf75cd997eeff629ea101a03594e2362668982ba470a5d",
         "1220feb7179d87e1a4a32c0fc2d620681501189ce5bfd4741d91e5ac5b2d8815ce6f"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA A100 80GB PCIe",
+      "model": "Qwen/Qwen3-32B",
+      "passed": true,
+      "records": [
+        "12202d20ff104d816482633444ae312d3ff526f89d08da42bb1042535b8d1861e80c",
+        "12205c57d8f03197ff5fa2f0dd68ee24bf1b653744bdcba9c19ae920b482959ccc4a",
+        "1220f1131bc8654cc757b0fa4f2c8ba6ff8b8577fec1181d394cbe7acd612a363b90"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1234,7 +1460,28 @@
         "12202aec7f802585999a697d2cfa6fa10feafb407883f1af46548a8aff895d745a0e",
         "12208ed8e15b1aa9bb219b41e8579aee84188cb050cd874a30bc310432311e5368f4"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3-32B",
+      "passed": true,
+      "records": [
+        "122034355d8bd254e7771292c080e7cd1e286845c49c0c4f5ae2246a0208e25d4e18",
+        "12209e8cec8c7ab2440062c0c7aeec00f48b3739d1df76134f82f34ed091762c6543",
+        "1220fb605b7701961be4094f4bafcf421549d3d2899e99ee41667b086b74b7a34b38"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1248,7 +1495,28 @@
         "12208e62684da57990e16a8ae38a628367cd44f3ed8bc065d673b3ab220810ece591",
         "1220f1afa7d19d18820b69802a295db5dcabb783b192a14add004f93115478352bc4"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA A100-SXM4-80GB",
+      "model": "Qwen/Qwen3-8B",
+      "passed": true,
+      "records": [
+        "12205150496f5ad05a58990c16e4a86a1c3645294b3a905fe4ef982acfe9df2c1efe",
+        "12208b3fd4889b2313235e2ad4106546eb056956cde364f5b10fbff906c04e862bf5",
+        "12208f850372f5f6d4c386f56003b38ebc1a8cebd05963d9bf7ad89e43a12fa8f6cb"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1262,7 +1530,28 @@
         "12208dd7f62650340f45172ad09029bcbcc5208a4fee37bd192b9655be088b199134",
         "1220e8a2173c51d34ea08474d5f6a1d0e7b79f5203e40b720b1f2608c987fc2f1584"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "Qwen/Qwen3-8B",
+      "passed": true,
+      "records": [
+        "122054a949c8a23e079d73840f5b90d1506357ed23d413546979adefd9ca01d5acf7",
+        "1220b2b957d0c51dcc2fd27866f7603c13dd1f3b3693ab73fd7565c647f522c5878b",
+        "1220e7b5dd47f7e19991401373a6c39f3493a5cd1839aafa1ccb4f3d03ba366abded"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 0,
@@ -1276,7 +1565,46 @@
         "122091e1cf984bc6c153ae71bcbb84d5373554407d6fd49d08c6cee0c632fda74f05",
         "12209e38a5f726490e019088aa99a69d9fdd008b78a93b70eee1a6355aeecc9d5c95"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 0,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA A100 80GB PCIe",
+      "model": "deepseek-ai/DeepSeek-V2-Lite",
+      "passed": false,
+      "records": [
+        "12201ea5c57fb7eb446b52cf439bd0d1feaa72337c235c961d863a91be86014d75f0",
+        "122076d6d81dbe1e05ad8f11a742b52fc7333168d4fa3f42b1d6b1dc167c19c3a1a4",
+        "1220f138d03196999a62cc2d28ca642bd2342ffa34cb8d18878b7e7d3ec6f311cb38"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA A100 80GB PCIe",
+      "model": "deepseek-ai/DeepSeek-V2-Lite-Chat",
+      "passed": true,
+      "records": [
+        "1220010e0d05fce8ecf8ab6e09173243eb1e1ace796997e4140118b3e812d55f614e",
+        "1220a13f9a306cc5de46693eb4140b05bc6cf792cd6bce5e4e40b7fd581a5311152f",
+        "1220efe15209d5809ad7c80efe05089ef9e894289326eb8ab981882eb2931d9146c0"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1290,7 +1618,28 @@
         "1220a2a3bd4fa82fed0d0e0177bf19884a3f37fd12f94bafc85812bf05ee147e11ac",
         "1220e4d272d2856d239be6b47fe65e9fd1a48ccaedc2d9f4b3a9a999d152d4a4dcb5"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "google/gemma-2-2b-it",
+      "passed": true,
+      "records": [
+        "122087059bf088251ced232bc1eede74f3bad6a04ddba278187c83a2578ad0d5b85c",
+        "12209177ed2710257b4ca4477aadaafb1dbec5dadf658569b3d5faba61b94f1cee27",
+        "1220d5f817756715525f4148bbf7d53b56dd3a2f73e47c49e494bb31295f3a56d283"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1304,7 +1653,28 @@
         "12205a99eed24ad06e68bbec2c4dbe9df15aff9015d54bfd330ac4104b19addf409d",
         "12207c8d129ea3d8b84f6f681aa518de8ff36ddd793832fda2c1bc1c1d2eff988550"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "google/gemma-2-2b-it",
+      "passed": true,
+      "records": [
+        "1220044754a6eab083cd3a633fd55fbeca23abb78eb006a66fe68118ce21f1f85d4b",
+        "1220842b830a3d56f32e36d4d42e93d1cf6cb6c5573281b06b4bd46b85e83e099bda",
+        "1220f632d009e2822edc74336a3823c95018d460072adc642a812d48111bd7e68f62"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 2,
@@ -1318,7 +1688,28 @@
         "12208c23032bd47caf2ff2ce057e1a5e98c528a12336204280ce26bafb1a40f60d01",
         "1220b871596474c6147fd47a73849565c4864919debdf7d64c4865163609b583760d"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "meta-llama/Llama-3.1-8B-Instruct",
+      "passed": true,
+      "records": [
+        "12203eb26d453a280cad801d9dca9ea0cfcb8322945188df31f3517f7ad775519fa6",
+        "12207d816078edb4ff45879a7de1e85cbe18fa44aebabd7406e8475c76d9664eab47",
+        "1220f4995e57ae2c4bc182084b0f54feaa9e8d99307987f54422a56bee1155a2c806"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1332,7 +1723,28 @@
         "1220bffbae5f2817e9418b1a8ad049348340235fd050c8e9a6df5dd48c0841ed5a06",
         "1220e2ff97b499fe579c4c72b9b6d8ddd2b5b2f58f40762cebccef770f5c419cd4af"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "passed": true,
+      "records": [
+        "1220142903598f2e8a505848cac3411524028f315adb9bc372d16fe0fe53bce7d2e5",
+        "122034dfa2e9c03677808f89b0ebed13b13be5f6747776a04f301ecd5c6b29925dda",
+        "1220f6faeded20231f76a1d34060c3af7f47d0e5f754f7d0fb302d7c102ee404e8a2"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1346,7 +1758,28 @@
         "1220a6224c34845b72053479b0ae0c2c8ea77977f58c09c225906774734ac21c8509",
         "1220f4cdf74d42208d6a32e1ca691e2694379191b3b9d51fcf7be445d90eb9689126"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "passed": true,
+      "records": [
+        "12201d7657881dda5ce067c186a2bcee89a68fcfe41cc159dd3445f477813377f0e2",
+        "12205bb62283c6e9fc64f7fda42c7386bd3162c34479ddd9a2b2cb157dd8db93ad53",
+        "122091f6f5a9e45cad0db1dd91456df93505820ac021bead078855e9af14312ac084"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     },
     {
       "accepted": 3,
@@ -1360,7 +1793,28 @@
         "12206313935a53ff7c3a43322ef5041ecd093915cba793babb263f21c785c370d492",
         "1220f42f4f523a5a979b719998a96fd13d31b7233f1655e1b759518a699d6957d500"
       ],
-      "retries": 0
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match"
+      ]
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA L4",
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "passed": true,
+      "records": [
+        "12200500f99862dc571327b408ef350213b450ad50c8e49bbc0696fbac1939610f40",
+        "122007e5661a0fb4156bf8ebfaaf8f032b0a1524d6d623a80351e6ae2622c70c50d9",
+        "12202eb1f574cca49e5c7804b02b7561f6466229e3580f5781a9eb73245bcb7a1404"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ]
     }
   ]
 }
