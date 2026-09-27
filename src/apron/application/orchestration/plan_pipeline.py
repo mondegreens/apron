@@ -89,6 +89,7 @@ def run_plan_pipeline(
     max_num_seqs: int | None = None,
     load_check: Callable[[Iterable[str], dict[str, Any] | None], tuple[str, ...] | None]
     | None = None,
+    unmodelled_architectures: frozenset[str] = frozenset(),
 ) -> PlanPipelineResult:
     """Run the full plan pipeline: resolve → calculate → build plan.
 
@@ -134,6 +135,7 @@ def run_plan_pipeline(
         repository=model_id,
         revision=result.observation.resolved_revision,
         license_id=result.observation.license_observed,
+        unmodelled_architectures=unmodelled_architectures,
     )
 
     calc_metadata = dict(config)

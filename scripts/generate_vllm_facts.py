@@ -21,13 +21,23 @@ A test checks the file's version against the runner image's vLLM pin
 from __future__ import annotations
 
 import ast
+import gzip
+import hashlib
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
 OUT = Path(__file__).resolve().parents[1] / "src/apron/adapters/backends/vllm_facts.json"
+# Every snake_case name the engine's source mentions (identifiers, attributes,
+# arguments, words in string constants).  A checkpoint tensor named nowhere in
+# it cannot be loaded by any model class of this vLLM (the class 6 FPQuant
+# tensor, backward_hadamard_matrix, is in no v0.29.0 file).
+NAMES_OUT = OUT.with_name("vllm_source_names.txt.gz")
+_SNAKE = re.compile(r"[a-z][a-z0-9_]*")
+_WORD = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 _Q = "vllm/model_executor/layers/quantization/"
 _CT = _Q + "compressed_tensors/schemes/"
 
@@ -52,6 +62,12 @@ ALIASES = {
 }
 # compressed-tensors: the config checks 70, then each scheme its own minimum.
 CT_CONFIG = (_Q + "compressed_tensors/compressed_tensors.py", "CompressedTensorsConfig")
+# Model classes that declare ``IsHybrid`` (attention plus Mamba/linear
+# attention state; model_executor/models/interfaces.py).  Apron's calculator
+# has no memory model for them yet, so they must come out "unknown".
+MODELS_DIR = "vllm/model_executor/models"
+HYBRID_MARKER = "IsHybrid"
+
 # The attention layer's KV-cache scales and the base config's name mapping.
 KV_CACHE = (_Q + "kv_cache.py", "BaseKVCacheMethod")
 CACHE_SCALE_MAPPER = (_Q + "base_config.py", "QuantizationConfig", "get_cache_scale_mapper")
@@ -135,6 +151,61 @@ def _has_kv_cache_method(tree: ast.Module) -> bool:
     )
 
 
+def _base_names(cls: ast.ClassDef) -> set[str]:
+    names = set()
+    for base in cls.bases:
+        if isinstance(base, ast.Name):
+            names.add(base.id)
+        elif isinstance(base, ast.Attribute):
+            names.add(base.attr)
+    return names
+
+
+def _hybrid_classes(source: Path) -> dict[str, str]:
+    """Class name -> ``file:line`` for every model class that is ``IsHybrid``,
+    directly or through a base class in the models directory."""
+    classes: dict[str, tuple[set[str], str]] = {}
+    for path in sorted((source / MODELS_DIR).glob("*.py")):
+        rel = f"{MODELS_DIR.removeprefix('vllm/')}/{path.name}"
+        for node in ast.parse(path.read_text()).body:
+            if isinstance(node, ast.ClassDef):
+                classes[node.name] = (_base_names(node), f"{rel}:{node.lineno}")
+    hybrid = {n: where for n, (bases, where) in classes.items() if HYBRID_MARKER in bases}
+    grew = True
+    while grew:
+        grew = False
+        for name, (bases, where) in classes.items():
+            if name not in hybrid and name != HYBRID_MARKER and bases & set(hybrid):
+                hybrid[name] = where
+                grew = True
+    hybrid.pop(HYBRID_MARKER, None)
+    if not hybrid:
+        raise SystemExit(f"{MODELS_DIR}: no {HYBRID_MARKER} model classes found — update")
+    return dict(sorted(hybrid.items()))
+
+
+def source_names(source: Path) -> list[str]:
+    names: set[str] = set()
+    for path in sorted((source / "vllm").rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node, ast.Attribute):
+                names.add(node.attr)
+            elif isinstance(node, ast.Name):
+                names.add(node.id)
+            elif isinstance(node, ast.arg):
+                names.add(node.arg)
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                names.add(node.name)
+            elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+                names.update(_WORD.findall(node.value))
+    return sorted(n for n in names if _SNAKE.fullmatch(n))
+
+
+def names_blob(names: list[str]) -> bytes:
+    """Deterministic gzip (no timestamp) of one name per line."""
+    return gzip.compress(("\n".join(names) + "\n").encode(), mtime=0)
+
+
 def generate(source: Path) -> dict[str, Any]:
     trees: dict[str, ast.Module] = {}
 
@@ -202,6 +273,8 @@ def generate(source: Path) -> dict[str, Any]:
         "methods": methods,
         "aliases": ALIASES,
         "kv_cache": kv_cache,
+        "hybrid_architectures": _hybrid_classes(source),
+        "source_names": _names_entry(source_names(source)),
         "compressed_tensors": {
             "kv_cache_scales": _has_kv_cache_method(tree(ct_path)),
             "config_min_capability": ct_min,
@@ -211,11 +284,21 @@ def generate(source: Path) -> dict[str, Any]:
     }
 
 
+def _names_entry(names: list[str]) -> dict[str, Any]:
+    return {
+        "file": NAMES_OUT.name,
+        "count": len(names),
+        "sha256": hashlib.sha256(names_blob(names)).hexdigest(),
+    }
+
+
 def main() -> int:
     if len(sys.argv) != 2:
         print(__doc__, file=sys.stderr)
         return 1
-    facts = generate(Path(sys.argv[1]))
+    source = Path(sys.argv[1])
+    facts = generate(source)
+    NAMES_OUT.write_bytes(names_blob(source_names(source)))
     OUT.write_text(json.dumps(facts, indent=2, sort_keys=True) + "\n")
     print(f"{facts['engine_version']} ({facts['source_commit'][:10]}) -> {OUT}")
     return 0

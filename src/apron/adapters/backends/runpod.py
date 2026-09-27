@@ -85,6 +85,13 @@ GPU_SPECS: dict[str, dict[str, Any]] = {
         "total_memory_bytes": 48_305_799_168,
         "compute_capability": "8.9",
     },
+    "NVIDIA H200": {
+        # Modern-model groups C/D.  141 GB nominal; 143,771 MiB is the figure
+        # nvidia-smi is commonly reported to show - NOT yet checked on a pod:
+        # the first boot's detected hardware replaces it in the records.
+        "total_memory_bytes": 150_754_820_096,
+        "compute_capability": "9.0",
+    },
     "NVIDIA B200": {
         # class 6 retarget target: SM100 (compute capability 10.0)
         "total_memory_bytes": 192_265_846_784,

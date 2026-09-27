@@ -290,11 +290,17 @@ class SolutionPlan:
 
 
 def predicted_feasible(claim: PlanningClaim, total_memory_bytes: int, gpu_count: int) -> bool:
-    """The calculator's predicted total fits the requested GPUs at 0.90 utilization."""
-    total = claim.proposed_configuration.get("total_required_bytes")
+    """The calculator's predicted total fits the requested GPUs at 0.90 utilization.
+
+    A claim for a split model (tensor parallel > 1) is already per GPU, so it
+    must fit one GPU; an unsplit claim is the whole model against all of them.
+    """
+    config = claim.proposed_configuration
+    total = config.get("total_required_bytes")
     if not total:
         return True
-    return int(total) <= int(total_memory_bytes * 0.90) * gpu_count
+    per_gpu = int(config.get("tensor_parallel") or 1) > 1
+    return int(total) <= int(total_memory_bytes * 0.90) * (1 if per_gpu else gpu_count)
 
 
 def prediction_error_claim(

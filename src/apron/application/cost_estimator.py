@@ -23,6 +23,7 @@ PROVIDER_RATES: dict[str, dict[str, float]] = {
         "NVIDIA A100-SXM4-80GB": 1.59,
         "NVIDIA H100 80GB HBM3": 3.49,
         "NVIDIA B200": 6.79,
+        "NVIDIA H200": 4.59,  # runpod.get_gpu securePrice, 2026-09-27
     },
 }
 RATES_RETRIEVED = "2026-09-26"

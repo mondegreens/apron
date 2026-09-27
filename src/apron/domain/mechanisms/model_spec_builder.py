@@ -71,6 +71,7 @@ def build_model_spec(
     license_id: str | None = None,
     total_weight_bytes: int | None = None,
     files: tuple[str, ...] = (),
+    unmodelled_architectures: frozenset[str] = frozenset(),
 ) -> ModelSpec:
     """Construct a ModelSpec from config.json fields.
 
@@ -79,7 +80,14 @@ def build_model_spec(
     """
     architectures = config.get("architectures", [])
     primary_arch = architectures[0] if architectures else "UnknownArchitecture"
-    mechanism = _infer_mechanism(primary_arch, config)
+    # An architecture the engine runs with state the calculator does not model
+    # (hybrid attention + Mamba/linear attention) is an explicit unknown, never
+    # a plain-attention estimate: KV for every layer would be wrong.
+    mechanism = (
+        UNKNOWN_MECHANISM
+        if primary_arch in unmodelled_architectures
+        else _infer_mechanism(primary_arch, config)
+    )
 
     components: list[ComponentMechanism] = [
         ComponentMechanism(mechanism=mechanism, role="decoder"),

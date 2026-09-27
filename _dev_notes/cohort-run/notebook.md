@@ -536,3 +536,36 @@ unless marked.  Machine events are in `events.jsonl`.
 - **Kept:** volume `f6arz2r1s4` in EUR-IS-1 (85 GB, ~$0.20/day, empty or
   near empty).  Given the region feedback, the next staged run should go to
   a US datacenter; this volume can then be deleted (owner's call).
+
+## 2026-09-27 — GPU-free predictions for groups A-D (owner away: no pods)
+
+`scripts/modern_predictions.py` → `modern-predictions.json`: the production
+plan pipeline on each approved model and proposed GPU, no pod, no paid call.
+It found three errors of ours before any money was spent:
+
+- **Multi-GPU seeds were planned whole on one GPU.** `plan_seed` never passed
+  the GPU count as the split, so MiniMax-M2.7 on 2x H200 read 214 GiB "per
+  GPU" → infeasible.  Now TP = count, predicted per GPU, and a per-GPU claim
+  must fit one GPU (it was compared against all of them).
+- **Hybrid models got a confident plain-attention estimate.** Nemotron-H
+  (Mamba2 + attention) was "planned" with KV for all 52 layers.  vLLM marks
+  25 model classes `IsHybrid`; that list is now generated from the pinned
+  source and those architectures are an explicit unknown until the
+  calculator models their state.  Qwen3.5/3.6/3.8 are among them.
+- **The load check called every large MoE unloadable.** MiniMax-M2.7,
+  GLM-5.3, DeepSeek-V3.2, Kimi K2 and GLM-4.7-Flash store the MoE router's
+  `e_score_correction_bias` — the model's own parameter, not the fp8
+  method's.  Rule now: a tensor is refused when no file of the pinned vLLM
+  names it at all (a generated dictionary of the source's names, 52,513
+  names, checked by digest); `backward_hadamard_matrix` (class 6) is in no
+  v0.29.0 file, so that refusal stands.  (vLLM 0.29 keeps some models under
+  `vllm/models/`, e.g. DeepSeek V4: the dictionary covers the whole package.)
+
+Result (per GPU): gpt-oss-20b 12.8 GiB on a 4090; gpt-oss-120b 60.8 on an
+H100; GLM-4.7-Flash 58.2 (MLA) on an H100; MiniMax-M2.7 107 on 2x H200;
+DeepSeek-V4-Flash 38.9 on 4x H200; GLM-5.3 88.0, DeepSeek-V3.2 80.3 on 8x
+H200; Kimi K2 119.8 on 8x B200.  Unknown: Gemma 4 (multimodal config, the
+calculator reads no nested `text_config`), Qwen3.8/3.6 and Nemotron-3
+(hybrid).  To check before trusting: DeepSeek-V4 is planned as plain GQA —
+its attention is new (compressed/sparse) and may need its own mechanism.
+H200 memory in GPU_SPECS is not yet confirmed on a pod.

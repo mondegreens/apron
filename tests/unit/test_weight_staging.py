@@ -455,3 +455,21 @@ def test_a_stager_stopped_mid_provision_is_still_named_and_paid() -> None:
     annotated = [e for e in budget.ledger.read_all() if e["op"] == "annotate"]
     assert annotated and annotated[0]["pod_id"] == "cpu9"  # reconcile can find its bill
     assert not budget.holds
+
+
+def test_hybrid_architectures_are_an_explicit_unknown() -> None:
+    from apron.adapters.backends.vllm_quantization import HYBRID_ARCHITECTURES
+    from apron.domain.mechanisms.model_spec_builder import UNKNOWN_MECHANISM, build_model_spec
+
+    # generated from the pinned source's IsHybrid classes
+    assert {"NemotronHForCausalLM", "Qwen3_5MoeForConditionalGeneration"} <= HYBRID_ARCHITECTURES
+    config = {
+        "architectures": ["NemotronHForCausalLM"],
+        "num_hidden_layers": 52,
+        "num_attention_heads": 32,
+        "hidden_size": 2688,
+    }
+    plain = build_model_spec(config)
+    assert plain.components[0].mechanism == "autoregressive_decode"  # the old, wrong reading
+    hybrid = build_model_spec(config, unmodelled_architectures=HYBRID_ARCHITECTURES)
+    assert hybrid.components[0].mechanism == UNKNOWN_MECHANISM

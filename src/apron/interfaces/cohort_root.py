@@ -32,6 +32,7 @@ from apron.adapters.backends.runpod_storage import (
 )
 from apron.adapters.backends.vllm_engine import VllmEngineAdapter
 from apron.adapters.backends.vllm_quantization import (
+    HYBRID_ARCHITECTURES,
     default_max_num_batched_tokens,
     default_max_num_seqs,
     load_problems,
@@ -193,7 +194,12 @@ class CohortPlanner:
     resolver: Any = field(default_factory=HFHubResolver)
 
     def plan_seed(self, seed: CandidateSeed) -> SolutionPlan:
-        plan, pipeline = self._pipeline_plan(seed.model_id, seed.gpu_sku, seed.gpu_count)
+        # Several GPUs for one model: split it across them (TP = count), and
+        # predict per GPU.  Unsplit, a 2-GPU MiniMax-M2.7 read as 214 GiB on
+        # one H200 and was called infeasible (GPU-free check, 2026-09-27).
+        plan, pipeline = self._pipeline_plan(
+            seed.model_id, seed.gpu_sku, seed.gpu_count, tensor_parallel=seed.gpu_count
+        )
         return self._solution(
             plan,
             pipeline,
@@ -242,14 +248,19 @@ class CohortPlanner:
             ),
             max_num_seqs=default_max_num_seqs(hardware_for(gpu).total_memory_bytes, gpu),
             load_check=load_problems,
+            unmodelled_architectures=HYBRID_ARCHITECTURES,
         )
         if pipeline.model_spec is None or pipeline.claim is None:
             raise ValueError(f"{model_id}: planning failed: {pipeline.error}")
         base = pipeline.plan or DeploymentPlan()
         plan = base.model_copy(
             update={
-                # one requested GPU means TP 1; the calculator's TP choice assumes more GPUs
-                "tensor_parallel": base.tensor_parallel if count > 1 else 1,
+                # One requested GPU means TP 1.  A plan split on purpose keeps
+                # the split it was predicted for; otherwise the calculator's
+                # TP choice applies when several GPUs are rented.
+                "tensor_parallel": tensor_parallel
+                if tensor_parallel > 1
+                else (base.tensor_parallel if count > 1 else 1),
                 "resource_allocation": {
                     **base.resource_allocation,
                     "model_id": model_id,
