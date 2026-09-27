@@ -36,7 +36,12 @@ def main() -> int:
             weight_gb=0.0,
             gpu_count=int(m["gpu_count"]),
         )
-        row = {"group": m["group"], "model": m["model_id"], "gpu": m["gpu"], "gpu_count": seed.gpu_count}
+        row = {
+            "group": m["group"],
+            "model": m["model_id"],
+            "gpu": m["gpu"],
+            "gpu_count": seed.gpu_count,
+        }
         try:
             sp = planner.plan_seed(seed)
         except Exception as exc:  # reported per model, never hidden
@@ -58,7 +63,8 @@ def main() -> int:
         rows.append(row)
         print(
             f"{m['group']} {m['model_id']:<48} {sp.status:<11} {row['mechanism']!s:<22} "
-            f"TP{row['tensor_parallel']} w/GPU {row['weight_gib_per_gpu']} GiB total {row['total_gib_per_gpu']} GiB"
+            f"TP{row['tensor_parallel']} w/GPU {row['weight_gib_per_gpu']} GiB "
+            f"total {row['total_gib_per_gpu']} GiB"
         )
     OUT.write_text(json.dumps({"rows": rows}, indent=2, sort_keys=True) + "\n")
     print(f"{len(rows)} models -> {OUT}")
