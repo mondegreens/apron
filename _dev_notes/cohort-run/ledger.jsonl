@@ -240,3 +240,21 @@
 {"amount": 0.0, "at": "2026-09-27T17:47:08.088049+00:00", "label": "pod-idle:7l0uecp1u30fhb", "op": "annotate", "pod_id": "7l0uecp1u30fhb"}
 {"amount": 0.09866, "at": "2026-09-27T17:47:08.090882+00:00", "estimate": 0.6148, "label": "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1", "op": "settle"}
 {"amount": 0.000101, "at": "2026-09-27T17:47:08.580117+00:00", "estimate": 0.123333, "label": "pod-idle:7l0uecp1u30fhb", "op": "settle"}
+{"amount": 1.4542, "at": "2026-09-27T17:56:32.971576+00:00", "label": "class6-broken", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T18:08:20.807012+00:00", "label": "class6-broken", "op": "annotate", "pod_id": "mp8toichl9aavu"}
+{"amount": 0.581667, "at": "2026-09-27T18:09:39.045835+00:00", "label": "pod-idle:mp8toichl9aavu", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T18:09:39.050476+00:00", "label": "pod-idle:mp8toichl9aavu", "op": "annotate", "pod_id": "mp8toichl9aavu"}
+{"amount": 0.762062, "at": "2026-09-27T18:09:39.053586+00:00", "estimate": 1.4542, "label": "class6-broken", "op": "settle"}
+{"amount": 0.02, "at": "2026-09-27T18:09:39.064094+00:00", "label": "classifier:class6", "op": "hold"}
+{"amount": 0.001667, "at": "2026-09-27T18:09:49.102912+00:00", "label": "classifier:base-model:ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4", "op": "spend"}
+{"amount": 0.01076, "at": "2026-09-27T18:13:05.104821+00:00", "estimate": 0.02, "label": "classifier:class6", "op": "settle"}
+{"amount": 1.4542, "at": "2026-09-27T18:13:07.179294+00:00", "label": "class6-fixed", "op": "hold"}
+{"amount": 0.201769, "at": "2026-09-27T18:13:07.179737+00:00", "estimate": 0.581667, "label": "pod-idle:mp8toichl9aavu", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T18:13:07.179829+00:00", "label": "class6-fixed", "op": "annotate", "pod_id": "mp8toichl9aavu"}
+{"amount": 0.581667, "at": "2026-09-27T18:16:26.302259+00:00", "label": "pod-idle:mp8toichl9aavu", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T18:16:26.304803+00:00", "label": "pod-idle:mp8toichl9aavu", "op": "annotate", "pod_id": "mp8toichl9aavu"}
+{"amount": 0.193042, "at": "2026-09-27T18:16:26.306061+00:00", "estimate": 1.4542, "label": "class6-fixed", "op": "settle"}
+{"amount": 0.000617, "at": "2026-09-27T18:16:26.942045+00:00", "estimate": 0.581667, "label": "pod-idle:mp8toichl9aavu", "op": "settle"}
+{"amount": 0.01076, "at": "2026-09-27T18:17:04.589351+00:00", "label": "classifier:record-l0f-class6", "op": "spend"}
+{"amount": 0.001652, "at": "2026-09-27T18:17:07.440229+00:00", "label": "classifier:base-model:ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4", "op": "spend"}
+{"amount": 0.001692, "at": "2026-09-27T18:21:22.119466+00:00", "label": "classifier:base-model:ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4", "op": "spend"}

@@ -225,6 +225,20 @@
       "weights_now": 1192099840
     },
     {
+      "activation_at_run": 1378877440,
+      "activation_measured": 1385126952,
+      "activation_now": 1378877440,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3-8B-AWQ",
+      "profiled_tokens": 8192,
+      "record": "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269",
+      "tensor_parallel": 1,
+      "weights_at_run": 6098479104,
+      "weights_measured": 6249177415,
+      "weights_now": 6098479104
+    },
+    {
       "activation_at_run": 319553536,
       "activation_measured": 322122547,
       "activation_now": 319553536,
@@ -255,13 +269,13 @@
   ],
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 4.324673,
-    "ledger_classifier": 0.165115,
+    "failed_boot_total": 5.086735,
+    "ledger_classifier": 0.191646,
     "ledger_corrected": -0.099768,
-    "ledger_pod_idle": 0.027852,
+    "ledger_pod_idle": 0.230238,
     "ledger_reconciled": 0.650187,
-    "ledger_settled": 9.424942,
-    "ledger_spent": 10.168328,
+    "ledger_settled": 10.380046,
+    "ledger_spent": 11.352349,
     "per_solution": [
       {
         "cost": 1.392902,
@@ -297,6 +311,18 @@
         "model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
         "records": [
           "12206934f05d600271723a5ac029b87c9b0ad51380cc5a1f7f47beb8cf7b333f8392"
+        ]
+      },
+      {
+        "cost": 0.762062,
+        "failed_boot_cost": 0.762062,
+        "failed_boots": 1,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "class6-broken",
+        "model": "ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4",
+        "records": [
+          "1220e27e21b0a24a5a66f510257931c98cdb3579c1fa9857e8205238875d6652a415"
         ]
       },
       {
@@ -553,6 +579,22 @@
         ]
       },
       {
+        "cost": 0.19304,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "class6-fixed",
+        "model": "Qwen/Qwen3-8B-AWQ",
+        "records": [
+          "1220057f4eb955c328fbbc574f4a2274a3c394eb9df9191794a17737fde2a8a2db55",
+          "12204c8a90c33970ebc53a73f8d36cce8912c3468e84072a9f56723c1b4749d78f39",
+          "1220b46348fea4110a4cabe521364177394ba6f6f63df98cc9ba4e53ec9cb49c99b6",
+          "1220d1e7d878276754f6f114d9c62da1a8178e991dea0130c6f4d138d8d7610ab24d",
+          "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269"
+        ]
+      },
+      {
         "cost": 0.249715,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -765,10 +807,26 @@
     ],
     "provider_billed": 9.904105,
     "provider_mismatched": [],
-    "provider_not_yet_billed": [],
-    "records_total": 8.947943
+    "provider_not_yet_billed": [
+      "7l0uecp1u30fhb",
+      "mp8toichl9aavu"
+    ],
+    "records_total": 9.903045
   },
   "failed_spend": [
+    {
+      "boots": 6,
+      "cause": "a broken plan, failing as its class names (on purpose)",
+      "cost": 1.502309,
+      "records": [
+        "122003cbc66ff472bb0cb1d9c953851df1267de80f9d2e736ea1c1d21a5038bccd00",
+        "1220233b18004d3c4d2a902d85f4579746fedf5a357d5e9f60e7c7228f49127f3aa3",
+        "1220736506a57c471f0412bcf80b35a1cabdd9a438f6e3ff2be500091464afad874d",
+        "122082b8cebddc87b2ccaca644d351f8eef4f52c4526bbae1df2b3603c549a32b710",
+        "12209c87b885bbbdfdd0f97817b184ea0ce5d6b287c0e2c5317ab981af67a5a1c881",
+        "1220e27e21b0a24a5a66f510257931c98cdb3579c1fa9857e8205238875d6652a415"
+      ]
+    },
     {
       "boots": 1,
       "cause": "a fix that did not work",
@@ -778,16 +836,12 @@
       ]
     },
     {
-      "boots": 6,
-      "cause": "a broken plan, failing as its class names (on purpose)",
-      "cost": 1.050156,
+      "boots": 2,
+      "cause": "a broken plan that failed at an earlier check (replaced)",
+      "cost": 0.916205,
       "records": [
-        "122003cbc66ff472bb0cb1d9c953851df1267de80f9d2e736ea1c1d21a5038bccd00",
-        "1220233b18004d3c4d2a902d85f4579746fedf5a357d5e9f60e7c7228f49127f3aa3",
-        "12206934f05d600271723a5ac029b87c9b0ad51380cc5a1f7f47beb8cf7b333f8392",
-        "1220736506a57c471f0412bcf80b35a1cabdd9a438f6e3ff2be500091464afad874d",
-        "122082b8cebddc87b2ccaca644d351f8eef4f52c4526bbae1df2b3603c549a32b710",
-        "12209c87b885bbbdfdd0f97817b184ea0ce5d6b287c0e2c5317ab981af67a5a1c881"
+        "12202f6bb99809123f803dde4504f383ea73441de5a21ea108c9ea39271cbd4c5eb0",
+        "12206934f05d600271723a5ac029b87c9b0ad51380cc5a1f7f47beb8cf7b333f8392"
       ]
     },
     {
@@ -797,14 +851,6 @@
       "records": [
         "122076c27e44225ebf05c45d63ba6ed34a6211f7aabfe2d24e94b6c46e042ff71399",
         "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321"
-      ]
-    },
-    {
-      "boots": 1,
-      "cause": "a broken plan that failed at an earlier check (replaced)",
-      "cost": 0.606296,
-      "records": [
-        "12202f6bb99809123f803dde4504f383ea73441de5a21ea108c9ea39271cbd4c5eb0"
       ]
     },
     {
@@ -1190,6 +1236,21 @@
       "weight_delta_bytes": -14566932
     },
     {
+      "claim": "1220286350ef2a5c738a4ae22b3cb31b23eb5eecd9d7cd5c3617dcf5d6e9e1ba2584",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "kv_consistency_bytes": -37098096,
+      "measured_persistent_bytes": 7269232148,
+      "measured_weight_bytes": 6249177415,
+      "model": "Qwen/Qwen3-8B-AWQ",
+      "notes": [],
+      "predicted_total_bytes": 9154843904,
+      "predicted_weight_bytes": 6098479104,
+      "record": "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269",
+      "total_delta_bytes": 1885611756,
+      "weight_delta_bytes": -150698311
+    },
+    {
       "claim": "122001a3fa3351e82534d27e6861f214efdd19163876827b8677cf9bb75ba6057031",
       "gpu": "NVIDIA A100 80GB PCIe",
       "gpu_count": 1,
@@ -1358,7 +1419,7 @@
       "status": "unknown"
     }
   ],
-  "record_count": 219,
+  "record_count": 228,
   "repeat_measurements": [
     {
       "activation_spread_pct": 0.0,
@@ -1545,6 +1606,20 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3-8B-AWQ",
+      "output_token_throughput": 712.2850613553362,
+      "p99_tpot_ms": 5.092542325623157,
+      "p99_ttft_ms": 86.07545791193841,
+      "recomputed_verdict": "pass",
+      "record": "1220d1e7d878276754f6f114d9c62da1a8178e991dea0130c6f4d138d8d7610ab24d",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA A100 80GB PCIe",
       "model": "deepseek-ai/DeepSeek-V2-Lite",
       "output_token_throughput": 316.3572444177437,
@@ -1700,7 +1775,7 @@
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-27T17:47:08.580945+00:00",
+    "last_event": "2026-09-27T18:16:26.943581+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B",
@@ -1709,6 +1784,7 @@
       "Qwen/Qwen3-14B",
       "Qwen/Qwen3-32B",
       "Qwen/Qwen3-8B",
+      "Qwen/Qwen3-8B-AWQ",
       "deepseek-ai/DeepSeek-V2-Lite",
       "deepseek-ai/DeepSeek-V2-Lite-Chat",
       "google/gemma-2-2b-it",
@@ -2102,6 +2178,25 @@
         "122054a949c8a23e079d73840f5b90d1506357ed23d413546979adefd9ca01d5acf7",
         "1220b2b957d0c51dcc2fd27866f7603c13dd1f3b3693ab73fd7565c647f522c5878b",
         "1220e7b5dd47f7e19991401373a6c39f3493a5cd1839aafa1ccb4f3d03ba366abded"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "truncated": 0
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3-8B-AWQ",
+      "passed": true,
+      "records": [
+        "1220057f4eb955c328fbbc574f4a2274a3c394eb9df9191794a17737fde2a8a2db55",
+        "12204c8a90c33970ebc53a73f8d36cce8912c3468e84072a9f56723c1b4749d78f39",
+        "1220b46348fea4110a4cabe521364177394ba6f6f63df98cc9ba4e53ec9cb49c99b6"
       ],
       "retries": 0,
       "scoring": [
