@@ -511,20 +511,29 @@ def check_budget(run: GateRun) -> list[str]:
     if tracker.spent > run.authorized + 1e-9:
         problems.append(f"spent ${tracker.spent:.2f} > authorized ${run.authorized:.2f}")
 
-    label_to_solution = {
-        e["label"]: e["solution_fingerprint"] for e in run.events if e.get("event") == "hold"
-    }
+    # One label can be held again for another solution (class 6 re-run with a
+    # replacement plan): pair the n-th settle of a label with its n-th hold event.
+    holds_by_label: dict[str, list[str]] = defaultdict(list)
+    for e in run.events:
+        if e.get("event") == "hold":
+            holds_by_label[e["label"]].append(e["solution_fingerprint"])
+    seen: dict[str, int] = defaultdict(int)
     settled: dict[str, float] = defaultdict(float)
     for entry in run.ledger:
-        if entry["op"] != "settle" or str(entry.get("flag", "")).startswith("replayed"):
+        if entry["op"] != "settle":
+            continue
+        label = str(entry["label"])
+        index = seen[label]
+        seen[label] += 1
+        if str(entry.get("flag", "")).startswith("replayed"):
             continue  # a replayed hold is a crashed pod: its records were never written
         if str(entry["label"]).startswith(("classifier:", "pod-idle:")):
             continue  # classifier calls and pooled pods' idle time: ledger-only cost
-        sfp = label_to_solution.get(entry["label"])
-        if sfp is None:
-            problems.append(f"settle {entry['label']!r} has no hold event")
+        fps = holds_by_label.get(label, [])
+        if index >= len(fps):
+            problems.append(f"settle {label!r} #{index + 1} has no hold event")
             continue
-        settled[sfp] += float(entry["amount"])
+        settled[fps[index]] += float(entry["amount"])
 
     stored: dict[str, float] = defaultdict(float)
     counts: dict[str, int] = defaultdict(int)
