@@ -18,9 +18,31 @@ DTYPE_BYTES: dict[str, int] = {
     "float32": 4,
     "float16": 2,
     "bfloat16": 2,
+    "fp8": 1,
+    "fp8_e4m3": 1,
+    "fp8_e5m2": 1,
     "int8": 1,
     "int4": 1,
 }
+
+
+def _kv_dtype_bytes(metadata: dict[str, Any], inputs: CalculatorInput) -> int:
+    """KV cache element size: the engine's ``kv_cache_dtype`` when set, else
+    the model dtype (vLLM's "auto")."""
+    kv_dtype = str(inputs.execution_spec_data.get("kv_cache_dtype", "auto"))
+    if kv_dtype != "auto":
+        return DTYPE_BYTES[kv_dtype]
+    return DTYPE_BYTES.get(metadata.get("torch_dtype", "bfloat16"), 2)
+
+
+def _tensor_parallel(inputs: CalculatorInput) -> int:
+    return max(1, int(inputs.execution_spec_data.get("tensor_parallel", 1) or 1))
+
+
+def _per_gpu(total: int, tp: int) -> int:
+    """A tensor-parallel shard of *total* bytes (vLLM splits the linear and
+    embedding weights across ranks; the replicated norms are negligible)."""
+    return -(-total // tp)
 
 
 def _extract_gqa_params(metadata: dict[str, Any]) -> dict[str, int] | None:
@@ -133,17 +155,21 @@ def calculate_autoregressive_decode(
     if gqa is None:
         return None
 
-    torch_dtype = metadata.get("torch_dtype", "bfloat16")
-    dtype_bytes = DTYPE_BYTES.get(torch_dtype, 2)
+    dtype_bytes = _kv_dtype_bytes(metadata, inputs)
+    tp = _tensor_parallel(inputs)
 
     weight_bytes = metadata.get("total_weight_bytes", 0)
     if weight_bytes <= 0:
         return None
+    # Per GPU: each tensor-parallel rank holds 1/tp of the weights and of the
+    # KV heads (a KV head is replicated when there are fewer heads than ranks).
+    weight_bytes = _per_gpu(int(weight_bytes), tp)
+    kv_heads_per_gpu = max(1, -(-gqa["num_kv_heads"] // tp))
 
     isl, osl, max_batch_size = _workload_params(inputs)
     seq_len = isl + osl
 
-    kv_per_token = 2 * gqa["num_layers"] * gqa["num_kv_heads"] * gqa["head_dim"] * dtype_bytes
+    kv_per_token = 2 * gqa["num_layers"] * kv_heads_per_gpu * gqa["head_dim"] * dtype_bytes
     kv_cache, effective_seq = _apply_sliding_window(
         kv_per_token, seq_len, max_batch_size, metadata
     )
@@ -167,6 +193,7 @@ def calculate_autoregressive_decode(
         "osl": osl,
         "max_batch_size": max_batch_size,
         "effective_seq_len": effective_seq,
+        "tensor_parallel": tp,
         "mechanism_detail": "gqa",
     }
 
@@ -206,12 +233,15 @@ def calculate_mla_decode(
     if mla is None:
         return None
 
-    torch_dtype = metadata.get("torch_dtype", "bfloat16")
-    dtype_bytes = DTYPE_BYTES.get(torch_dtype, 2)
+    dtype_bytes = _kv_dtype_bytes(metadata, inputs)
+    tp = _tensor_parallel(inputs)
 
     weight_bytes = metadata.get("total_weight_bytes", 0)
     if weight_bytes <= 0:
         return None
+    # Per GPU: weights shard across tensor-parallel ranks; the MLA latent
+    # cache is shared by all heads, so every rank keeps all of it.
+    weight_bytes = _per_gpu(int(weight_bytes), tp)
 
     isl, osl, max_batch_size = _workload_params(inputs)
     seq_len = isl + osl
@@ -243,5 +273,6 @@ def calculate_mla_decode(
         "osl": osl,
         "max_batch_size": max_batch_size,
         "effective_seq_len": effective_seq,
+        "tensor_parallel": tp,
         "mechanism_detail": "mla",
     }

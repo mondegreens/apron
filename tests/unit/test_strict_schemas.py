@@ -187,15 +187,19 @@ def _pinned_third_party() -> dict[Path, dict[str, Any]]:
 def _recorded_runs() -> list[Path]:
     """Recorded responses from real runs (L0-F classifier, class 6 lineage search),
     each with its own strict schema."""
-    return sorted((FIXTURES / "l0f").glob("class*.json"))
+    return sorted(
+        [*(FIXTURES / "l0f").glob("class*.json"), FIXTURES / "cohort" / "weight-bytes.json"]
+    )
 
 
 @pytest.mark.parametrize("path", _recorded_runs(), ids=lambda p: str(p.relative_to(FIXTURES)))
 def test_recorded_run_validates_strictly(path: Path) -> None:
-    from unit._l0f_fixture import L0FRecording, LineageRecording
+    from unit._l0f_fixture import L0FRecording, LineageRecording, load_weight_bytes
 
     data = json.loads(path.read_text())
-    if path.name.endswith("-lineage.json"):
+    if path.name == "weight-bytes.json":
+        load_weight_bytes(data)
+    elif path.name.endswith("-lineage.json"):
         LineageRecording.model_validate(data)
     else:
         L0FRecording.load(data)

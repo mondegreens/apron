@@ -3,7 +3,7 @@
   "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
   "task_suite_fingerprint": "1220e96408006e07d5195e411433887559500bfa58a8f533d2db5bab709a73cee159",
   "application_fingerprint": "1220a7546eb86d288d80a784fba7ddebd59a553d0b679e81b0c443a918ba0269fc1e",
-  "solution_fingerprint": "122003400c87084c9f05c3663fa59b70ca7593530a91e6b46b2ac8bbd6edb9c481fd",
+  "solution_fingerprint": "1220411329f814127471e398a90ceece8698ae2bdb4eacac3d2c6ff71f91a217f697",
   "harness": "deterministic_exact_match",
   "harness_version": "0.1",
   "dataset_snapshot": null,

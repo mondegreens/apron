@@ -77,8 +77,13 @@ def run_plan_pipeline(
     *,
     clock: Clock,
     id_gen: IdGenerator,
+    tensor_parallel: int = 1,
 ) -> PlanPipelineResult:
-    """Run the full plan pipeline: resolve → calculate → build plan."""
+    """Run the full plan pipeline: resolve → calculate → build plan.
+
+    ``tensor_parallel`` > 1 predicts per-GPU memory for a plan that already
+    fixes TP (a fix proof); 1 predicts the whole model on one GPU.
+    """
     chain = ResolutionChain(resolver)
     result = chain.resolve(model_id)
 
@@ -93,7 +98,7 @@ def run_plan_pipeline(
 
     config = json.loads(config_content)
 
-    total_weight_bytes = _resolve_weight_bytes(resolver, model_id, result.observation)
+    total_weight_bytes = _resolve_weight_bytes(resolver, model_id, result.observation, config)
 
     model_spec = build_model_spec(
         config,
@@ -107,7 +112,9 @@ def run_plan_pipeline(
     calc_metadata["components"] = [c.model_dump(mode="json") for c in model_spec.components]
 
     claim = planning_source.predict(
-        calc_metadata, hardware, {"isl": 512, "osl": 128, "max_batch_size": 4}
+        calc_metadata,
+        hardware,
+        {"isl": 512, "osl": 128, "max_batch_size": 4, "tensor_parallel": tensor_parallel},
     )
 
     if claim.proposed_configuration.get("status") == "unknown":
@@ -170,23 +177,67 @@ def _download_chat_template(resolver: Any, model_id: str, revision: str) -> str 
     return template if isinstance(template, str) else None
 
 
-def _resolve_weight_bytes(resolver: Any, model_id: str, observation: Any) -> int:
+# Stored bytes per element, by safetensors dtype name.
+SAFETENSORS_DTYPE_BYTES: dict[str, int] = {
+    "F64": 8,
+    "I64": 8,
+    "U64": 8,
+    "F32": 4,
+    "I32": 4,
+    "U32": 4,
+    "BF16": 2,
+    "F16": 2,
+    "I16": 2,
+    "U16": 2,
+    "F8_E4M3": 1,
+    "F8_E5M2": 1,
+    "I8": 1,
+    "U8": 1,
+    "BOOL": 1,
+}
+
+
+def _tied_embeddings(config: dict[str, Any]) -> bool:
+    text = config.get("text_config")
+    nested = text if isinstance(text, dict) else {}
+    return bool(config.get("tie_word_embeddings", nested.get("tie_word_embeddings", False)))
+
+
+def _resolve_weight_bytes(
+    resolver: Any, model_id: str, observation: Any, config: dict[str, Any] | None = None
+) -> int:
+    """Bytes the engine loads: every stored tensor at its stored dtype.
+
+    1. The safetensors headers (exact per-tensor bytes).  With tied word
+       embeddings the engine shares one matrix, so a stored ``lm_head.weight``
+       is not loaded twice (Qwen3-1.7B: predicted 3.78 GiB, measured 3.22 —
+       the 0.58 GiB lm_head; L5, 2026-09-27).
+    2. The index's ``total_size``.
+    3. The Hub's per-dtype parameter counts, every dtype summed at its width
+       (the old path counted only the first dtype: Qwen3-0.6B-FP8 lost its
+       FP8 half).  An unknown dtype makes the total unknown (0), never a guess.
+    """
     rev = observation.resolved_revision
-    total_weight_bytes = 0
+    if hasattr(resolver, "_tensor_bytes"):
+        tensors = resolver._tensor_bytes(model_id, rev)
+        if tensors:
+            total = sum(tensors.values())
+            if _tied_embeddings(config or {}) and "lm_head.weight" in tensors:
+                total -= tensors["lm_head.weight"]
+            return total
 
     if hasattr(resolver, "_download_file"):
         index_content = resolver._download_file(model_id, "model.safetensors.index.json", rev)
         if index_content is not None:
-            index_data = json.loads(index_content)
-            total_weight_bytes = index_data.get("metadata", {}).get("total_size", 0)
+            total_size = json.loads(index_content).get("metadata", {}).get("total_size", 0)
+            if total_size:
+                return int(total_size)
 
-    if total_weight_bytes == 0:
-        safetensors_params = observation.publisher_metadata or {}
-        for key, val in safetensors_params.items():
-            if key.startswith("parameters_"):
-                dtype_suffix = key.split("_", 1)[1]
-                bytes_per_param = {"BF16": 2, "F16": 2, "F32": 4, "I8": 1}.get(dtype_suffix, 2)
-                total_weight_bytes = int(val) * bytes_per_param
-                break
-
+    total_weight_bytes = 0
+    for key, val in (observation.publisher_metadata or {}).items():
+        if key.startswith("parameters_"):
+            width = SAFETENSORS_DTYPE_BYTES.get(key.split("_", 1)[1])
+            if width is None:
+                return 0
+            total_weight_bytes += int(val) * width
     return total_weight_bytes

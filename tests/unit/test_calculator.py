@@ -436,3 +436,73 @@ def test_build_model_spec_qwen3_stays_gqa():
     config = _load_qwen3_config()
     spec = build_model_spec(config, repository="Qwen/Qwen3-8B")
     assert spec.components[0].mechanism == "autoregressive_decode"
+
+
+# ---------------------------------------------------------------------------
+# Tensor parallelism and KV cache dtype (L5, 2026-09-27)
+# ---------------------------------------------------------------------------
+
+
+def _with(inputs: CalculatorInput, **execution: object) -> CalculatorInput:
+    return inputs.model_copy(
+        update={"execution_spec_data": {**inputs.execution_spec_data, **execution}}
+    )
+
+
+def test_tensor_parallel_predicts_per_gpu_weights_and_kv():
+    """vLLM reports memory per rank: Qwen3-8B at TP 2 measured 7.64 GiB of
+    weights per GPU, half the 15.27 GiB checkpoint (L5 class 5 proof)."""
+    one = calculate_autoregressive_decode(_qwen3_input())
+    two = calculate_autoregressive_decode(_with(_qwen3_input(), tensor_parallel=2))
+    assert one is not None and two is not None
+    assert two["tensor_parallel"] == 2
+    assert two["weight_memory_bytes"] == -(-one["weight_memory_bytes"] // 2)
+    assert two["kv_per_token_bytes"] == one["kv_per_token_bytes"] // 2  # 8 KV heads → 4
+
+
+def test_kv_heads_are_replicated_when_fewer_than_ranks():
+    one = calculate_autoregressive_decode(_qwen3_input())
+    sixteen = calculate_autoregressive_decode(_with(_qwen3_input(), tensor_parallel=16))
+    assert one is not None and sixteen is not None
+    assert sixteen["kv_per_token_bytes"] == one["kv_per_token_bytes"] // 8  # one head per rank
+
+
+def test_mla_latent_cache_is_not_split_by_tensor_parallel():
+    config = {
+        "num_hidden_layers": 27,
+        "num_attention_heads": 16,
+        "num_key_value_heads": 16,
+        "kv_lora_rank": 512,
+        "qk_rope_head_dim": 64,
+        "torch_dtype": "bfloat16",
+        "total_weight_bytes": 31_412_968_448,
+    }
+
+    def mla(tp: int) -> dict:
+        result = calculate_mla_decode(
+            CalculatorInput(
+                mechanism=ComponentMechanism(mechanism="mla_decode", role="decoder"),
+                workload=TextWorkload(kind="text", input_length=512, output_length=128),
+                artifact_metadata=config,
+                hardware=RTX_4090,
+                execution_spec_data={"max_batch_size": 4, "tensor_parallel": tp},
+            )
+        )
+        assert result is not None
+        return result
+
+    assert mla(2)["weight_memory_bytes"] == 31_412_968_448 // 2
+    assert mla(2)["kv_per_token_bytes"] == mla(1)["kv_per_token_bytes"]
+
+
+def test_fp8_kv_cache_halves_bf16_kv():
+    bf16 = calculate_autoregressive_decode(_qwen3_input())
+    fp8 = calculate_autoregressive_decode(_with(_qwen3_input(), kv_cache_dtype="fp8"))
+    assert bf16 is not None and fp8 is not None
+    assert fp8["kv_per_token_bytes"] * 2 == bf16["kv_per_token_bytes"]
+    assert DTYPE_BYTES["fp8"] == 1
+
+
+def test_unknown_kv_cache_dtype_is_refused_not_guessed():
+    with pytest.raises(KeyError):
+        calculate_autoregressive_decode(_with(_qwen3_input(), kv_cache_dtype="int3"))

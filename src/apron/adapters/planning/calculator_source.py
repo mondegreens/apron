@@ -110,6 +110,14 @@ class CalculatorPlanningSource:
                 "cuda_graph_estimate_bytes": result["cuda_graph_estimate_bytes"],
                 "available_kv_cache_bytes": result["available_kv_cache_bytes"],
                 "total_required_bytes": result["total_required_bytes"],
+                # Per-GPU when tensor_parallel > 1; the plan builder reads the
+                # heads and per-token KV to choose TP and the batch size.
+                "tensor_parallel": result["tensor_parallel"],
+                "num_attention_heads": result["num_attention_heads"],
+                "num_kv_heads": result["num_kv_heads"],
+                "kv_per_token_bytes": result["kv_per_token_bytes"],
+                "isl": result["isl"],
+                "osl": result["osl"],
             },
             claim_scope="memory",
             producer_epistemic_tier="MECHANISM",

@@ -201,7 +201,10 @@ class CohortPlanner:
         and a predicted-infeasible broken plan is booted on purpose."""
         alloc = plan.resource_allocation
         _, pipeline = self._pipeline_plan(
-            alloc["model_id"], alloc["gpu_sku"], int(alloc.get("gpu_count", "1"))
+            alloc["model_id"],
+            alloc["gpu_sku"],
+            int(alloc.get("gpu_count", "1")),
+            tensor_parallel=plan.tensor_parallel,
         )
         gpu = alloc["gpu_sku"]
         count = int(alloc.get("gpu_count", "1"))
@@ -211,7 +214,9 @@ class CohortPlanner:
 
     # ------------------------------------------------------------------
 
-    def _pipeline_plan(self, model_id: str, gpu: str, count: int) -> tuple[DeploymentPlan, Any]:
+    def _pipeline_plan(
+        self, model_id: str, gpu: str, count: int, *, tensor_parallel: int = 1
+    ) -> tuple[DeploymentPlan, Any]:
         pipeline = run_plan_pipeline(
             self.resolver,
             CalculatorPlanningSource(clock=self.clock),
@@ -219,6 +224,7 @@ class CohortPlanner:
             hardware_for(gpu),
             clock=self.clock,
             id_gen=self.ids,
+            tensor_parallel=tensor_parallel,
         )
         if pipeline.model_spec is None or pipeline.claim is None:
             raise ValueError(f"{model_id}: planning failed: {pipeline.error}")

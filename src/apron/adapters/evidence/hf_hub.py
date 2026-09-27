@@ -134,6 +134,21 @@ class HFHubResolver:
         except Exception:
             return None
 
+    def _tensor_bytes(self, model_id: str, revision: str) -> dict[str, int] | None:
+        """Stored bytes per tensor, from the safetensors headers (range reads,
+        no weights downloaded).  ``None`` when the repo has no safetensors."""
+        from huggingface_hub import get_safetensors_metadata
+
+        try:
+            meta = get_safetensors_metadata(model_id, revision=revision)
+        except Exception:
+            return None
+        return {
+            name: int(info.data_offsets[1] - info.data_offsets[0])
+            for file in meta.files_metadata.values()
+            for name, info in file.tensors.items()
+        }
+
 
 class FixtureHFHubResolver(HFHubResolver):
     """HF Hub resolver backed by local fixture files. No network calls."""
@@ -154,3 +169,7 @@ class FixtureHFHubResolver(HFHubResolver):
         if path.exists():
             return path.read_bytes()
         return None
+
+    def _tensor_bytes(self, model_id: str, revision: str) -> dict[str, int] | None:
+        path = self._fixture_dir / "tensor_bytes.json"
+        return json.loads(path.read_bytes()) if path.exists() else None

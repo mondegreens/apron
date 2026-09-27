@@ -108,3 +108,19 @@ class LineageRecording(_Strict):
     recorded_at: str
     evidence: LineageEvidence
     search: LineageSearch | None
+
+
+# ---------------------------------------------------------------------------
+# tests/fixtures/cohort/weight-bytes.json (scripts/record_weight_bytes.py)
+# ---------------------------------------------------------------------------
+
+
+class RecordedWeightBytes(_Strict):
+    revision: str
+    total_bytes: int
+    lm_head_bytes: int
+    tie_word_embeddings: bool
+
+
+def load_weight_bytes(data: dict[str, Any]) -> dict[str, RecordedWeightBytes]:
+    return {model: RecordedWeightBytes.model_validate(v) for model, v in data.items()}
