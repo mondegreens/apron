@@ -764,6 +764,80 @@
     ],
     "records_total": 8.849283
   },
+  "failed_spend": [
+    {
+      "boots": 1,
+      "cause": "a fix that did not work",
+      "cost": 1.392902,
+      "records": [
+        "1220e2bb9d9e3077ec36a3b1996d3fa982eb9268665a8054c69a161934461b3fd41d"
+      ]
+    },
+    {
+      "boots": 6,
+      "cause": "a broken plan, failing as its class names (on purpose)",
+      "cost": 1.050156,
+      "records": [
+        "122003cbc66ff472bb0cb1d9c953851df1267de80f9d2e736ea1c1d21a5038bccd00",
+        "1220233b18004d3c4d2a902d85f4579746fedf5a357d5e9f60e7c7228f49127f3aa3",
+        "12206934f05d600271723a5ac029b87c9b0ad51380cc5a1f7f47beb8cf7b333f8392",
+        "1220736506a57c471f0412bcf80b35a1cabdd9a438f6e3ff2be500091464afad874d",
+        "122082b8cebddc87b2ccaca644d351f8eef4f52c4526bbae1df2b3603c549a32b710",
+        "12209c87b885bbbdfdd0f97817b184ea0ce5d6b287c0e2c5317ab981af67a5a1c881"
+      ]
+    },
+    {
+      "boots": 2,
+      "cause": "the harness: harness:tokenizer_files_missing (from the log)",
+      "cost": 0.77824,
+      "records": [
+        "122076c27e44225ebf05c45d63ba6ed34a6211f7aabfe2d24e94b6c46e042ff71399",
+        "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321"
+      ]
+    },
+    {
+      "boots": 1,
+      "cause": "a broken plan that failed at an earlier check (replaced)",
+      "cost": 0.606296,
+      "records": [
+        "12202f6bb99809123f803dde4504f383ea73441de5a21ea108c9ea39271cbd4c5eb0"
+      ]
+    },
+    {
+      "boots": 1,
+      "cause": "the harness: harness:boot_deadline (from the log)",
+      "cost": 0.35948,
+      "records": [
+        "1220348ef02b049d4a023353f2614899f8df69eb5f5c12b9005401d3cdc9e6c56200"
+      ]
+    },
+    {
+      "boots": 1,
+      "cause": "the harness: harness:toolchain (from the log)",
+      "cost": 0.133174,
+      "records": [
+        "1220c680fcc992ddaed4a2fe12932d260df60e27ac18a4aaa1aa6aa86176dad01242"
+      ]
+    },
+    {
+      "boots": 2,
+      "cause": "the harness: harness:download_incomplete",
+      "cost": 0.004076,
+      "records": [
+        "1220c29b418403035748d2d55fcecdee03deaa643650f50268c2baea28f817e08973",
+        "1220c4ab40df7487bbb966eef1140379a46a0868a9ca7b7f330353c03b8dbf3438eb"
+      ]
+    },
+    {
+      "boots": 2,
+      "cause": "the harness: harness:exception:QueryError",
+      "cost": 0.000349,
+      "records": [
+        "122016a2683145411b02d0b4db83379a2ef5c446c8727b73edd254490dbcd9fb0003",
+        "1220763a9b91627f8634f8a16f911359ad08e5d8782695ddc29c57219d096b0bf31f"
+      ]
+    }
+  ],
   "fixes": [
     {
       "broken_gpu": "NVIDIA GeForce RTX 4090",
