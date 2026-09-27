@@ -1,12 +1,24 @@
 {
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 2.931771,
-    "ledger_classifier": 0.128028,
-    "ledger_pod_idle": 0.008048,
-    "ledger_settled": 4.4641,
-    "ledger_spent": 4.600176,
+    "failed_boot_total": 4.324673,
+    "ledger_classifier": 0.150939,
+    "ledger_pod_idle": 0.026888,
+    "ledger_settled": 8.105976,
+    "ledger_spent": 8.283803,
     "per_solution": [
+      {
+        "cost": 1.392902,
+        "failed_boot_cost": 1.392902,
+        "failed_boots": 1,
+        "gpu": "NVIDIA B200",
+        "gpu_count": 1,
+        "label": "class6-fixed",
+        "model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
+        "records": [
+          "1220e2bb9d9e3077ec36a3b1996d3fa982eb9268665a8054c69a161934461b3fd41d"
+        ]
+      },
       {
         "cost": 0.606296,
         "failed_boot_cost": 0.606296,
@@ -116,7 +128,7 @@
         ]
       },
       {
-        "cost": 0.092424,
+        "cost": 0.39219,
         "failed_boot_cost": 0.092424,
         "failed_boots": 1,
         "gpu": "NVIDIA A100 80GB PCIe",
@@ -124,11 +136,16 @@
         "label": "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1",
         "model": "Qwen/Qwen3-32B",
         "records": [
-          "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321"
+          "122031e0061b860a1c6248f2f842f9c2c37bd6c4355e99ccf426f768addd8e207518",
+          "1220374d2a3c7d3a33d8fe3102211051c5dc5185751d49fbd620a90eb1d34897a479",
+          "12204b987acc6061352ec60e95dd8ac0ba60541e6df312fd9df29a605826368f7097",
+          "1220af8eeb74909ff10d6aaf75cd997eeff629ea101a03594e2362668982ba470a5d",
+          "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321",
+          "1220feb7179d87e1a4a32c0fc2d620681501189ce5bfd4741d91e5ac5b2d8815ce6f"
         ]
       },
       {
-        "cost": 0.685816,
+        "cost": 1.648881,
         "failed_boot_cost": 0.685816,
         "failed_boots": 1,
         "gpu": "NVIDIA H100 80GB HBM3",
@@ -136,7 +153,12 @@
         "label": "Qwen/Qwen3-32B@NVIDIA H100 80GB HBM3x1",
         "model": "Qwen/Qwen3-32B",
         "records": [
-          "122076c27e44225ebf05c45d63ba6ed34a6211f7aabfe2d24e94b6c46e042ff71399"
+          "12200e1c9bcb2f03ace90f778169bcb65a59fb09057157787ee289714fe6baef0e51",
+          "12202aec7f802585999a697d2cfa6fa10feafb407883f1af46548a8aff895d745a0e",
+          "122076c27e44225ebf05c45d63ba6ed34a6211f7aabfe2d24e94b6c46e042ff71399",
+          "12208ed8e15b1aa9bb219b41e8579aee84188cb050cd874a30bc310432311e5368f4",
+          "1220b4918863630e2f43ecc3cf55d19816369f57531ec0d8adcb433cae00cbc83c24",
+          "1220eef514a1a275cd13bd98c041db9bda93e42c9df0b5126d4f6ede6c0811582fca"
         ]
       },
       {
@@ -149,6 +171,22 @@
         "model": "Qwen/Qwen3-8B",
         "records": [
           "122003cbc66ff472bb0cb1d9c953851df1267de80f9d2e736ea1c1d21a5038bccd00"
+        ]
+      },
+      {
+        "cost": 0.848029,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA A100-SXM4-80GB",
+        "gpu_count": 4,
+        "label": "class5-fixed",
+        "model": "Qwen/Qwen3-8B",
+        "records": [
+          "12204b0b6a60d45a87848e0f9d53a6900f57344f09d682202001450ba736bc4a632c",
+          "12208e0b44a2622cdde84df6c1924b4068ffa97b5f5c2fe48f8c4b14f738a4960744",
+          "12208e62684da57990e16a8ae38a628367cd44f3ed8bc065d673b3ab220810ece591",
+          "12209ac3de7807d51809acd76e127d26d804a5ec59e024150da7d0c9536599571ea5",
+          "1220f1afa7d19d18820b69802a295db5dcabb783b192a14add004f93115478352bc4"
         ]
       },
       {
@@ -257,6 +295,24 @@
         ]
       },
       {
+        "cost": 0.142191,
+        "failed_boot_cost": 0.004076,
+        "failed_boots": 2,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "class3-fixed",
+        "model": "mistralai/Mistral-7B-Instruct-v0.3",
+        "records": [
+          "12201d4d83eb617dea2cbddab96a17b4d713307a431fa3bcc3905d8d3b186aa1967e",
+          "12201d81b4264e0ae66e0331be18190df340b4a57952d24ce893302f1ebd5e8493c0",
+          "1220bffbae5f2817e9418b1a8ad049348340235fd050c8e9a6df5dd48c0841ed5a06",
+          "1220c29b418403035748d2d55fcecdee03deaa643650f50268c2baea28f817e08973",
+          "1220c4ab40df7487bbb966eef1140379a46a0868a9ca7b7f330353c03b8dbf3438eb",
+          "1220c4ad8130d1bb5d01e086aa11b4155e57e820ff67e02fed5be6c2b1111bc090bb",
+          "1220e2ff97b499fe579c4c72b9b6d8ddd2b5b2f58f40762cebccef770f5c419cd4af"
+        ]
+      },
+      {
         "cost": 0.031313,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -285,19 +341,6 @@
         ]
       },
       {
-        "cost": 0.004076,
-        "failed_boot_cost": 0.004076,
-        "failed_boots": 2,
-        "gpu": "NVIDIA GeForce RTX 4090",
-        "gpu_count": 1,
-        "label": "class3-fixed",
-        "model": "mistralai/Mistral-7B-Instruct-v0.3",
-        "records": [
-          "1220c29b418403035748d2d55fcecdee03deaa643650f50268c2baea28f817e08973",
-          "1220c4ab40df7487bbb966eef1140379a46a0868a9ca7b7f330353c03b8dbf3438eb"
-        ]
-      },
-      {
         "cost": 0.035833,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -314,7 +357,7 @@
         ]
       }
     ],
-    "records_total": 3.9871
+    "records_total": 7.628977
   },
   "fixes": [
     {
@@ -333,6 +376,7 @@
       "error_line": "torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 70.00 MiB. GPU 0 has a total capacity of 23.52 GiB of which 57.69 MiB is free. Process 1697959 has 23.45 GiB memory in use",
       "family": "oom_weight_load",
       "fixed_gpu": "NVIDIA RTX A6000",
+      "fixed_model": "Qwen/Qwen3-14B",
       "label": "Fixed",
       "mechanism_outcome": "verified",
       "promoted_rule": "122086922dd909b8f4043e41915d2e0dbdf8da7f1d1b65d0996cacd11ef85d1cf998",
@@ -359,6 +403,7 @@
       "error_line": "To serve at least one request with the model's max seq len (40960), (5.62 GiB KV cache is needed, which is larger than the available KV cache memory (4.48 GiB). Based on the available memory, the estimated maximum model length is 32640.",
       "family": "oom_kv_cache",
       "fixed_gpu": "NVIDIA GeForce RTX 4090",
+      "fixed_model": "Qwen/Qwen3-8B",
       "label": "Fixed",
       "mechanism_outcome": "verified",
       "promoted_rule": "122030c2dc6cc5b2fdbf1599394f8dd6e2dbfbfc76078747b2a127f20272432eea5f",
@@ -385,12 +430,13 @@
       "error_line": "User-specified max_model_len (999999) is greater than the derived max_model_len (max_position_embeddings=32768.0 or model_max_length=None in model's config.json)",
       "family": "max_model_len",
       "fixed_gpu": "NVIDIA GeForce RTX 4090",
-      "label": "Unverified suggestion",
-      "mechanism_outcome": "failed",
-      "promoted_rule": null,
-      "proving_boot": null,
-      "remediation": "122038c4efeb13a982df42723fc6f044144e3bf1c41cbe96772843b8701ace9be507",
-      "request_outcome": "not_evaluated",
+      "fixed_model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "label": "Fixed",
+      "mechanism_outcome": "verified",
+      "promoted_rule": "122081fa89dcf99b50901a9320acc968303522f070e71fd7dd4af4403e0717312bf2",
+      "proving_boot": "1220c4ad8130d1bb5d01e086aa11b4155e57e820ff67e02fed5be6c2b1111bc090bb",
+      "remediation": "12207f1e236c341ae6cf886ffefa5ab680f56ab96ff1de4687e3986509feaa3cc2ac",
+      "request_outcome": "satisfied",
       "status": "run",
       "strategy": "clamp_max_model_len",
       "violated_constraints": []
@@ -411,6 +457,7 @@
       "error_line": "The model type 'gemma2' does not support float16. Reason: Numerical instability. Please use bfloat16 or float32 instead.",
       "family": "dtype_incompatible",
       "fixed_gpu": "NVIDIA GeForce RTX 4090",
+      "fixed_model": "google/gemma-2-2b-it",
       "label": "Fixed",
       "mechanism_outcome": "verified",
       "promoted_rule": "122031d26e41fe87515f7c0e4d066271f03315eea06e4816ef409a8b6892a316bcfa",
@@ -422,16 +469,58 @@
       "violated_constraints": []
     },
     {
+      "broken_gpu": "NVIDIA A100-SXM4-80GB",
+      "broken_model": "Qwen/Qwen3-8B",
       "call_site": "config/model.py:1414",
+      "change": {
+        "tensor_parallel": [
+          3,
+          2
+        ]
+      },
       "class": 5,
+      "classifier_model_id": "claude-haiku-4-5-20251001",
+      "diagnosed": "tp_divisibility",
+      "error_line": "Total number of attention heads (32) must be divisible by tensor parallel size (3)",
       "family": "tp_divisibility",
-      "status": "not run"
+      "fixed_gpu": "NVIDIA A100-SXM4-80GB",
+      "fixed_model": "Qwen/Qwen3-8B",
+      "label": "Fixed",
+      "mechanism_outcome": "verified",
+      "promoted_rule": "12200d3224fb9f7d2ce7983561282caa816fec615cdb736f23bcf859249cf31088d5",
+      "proving_boot": "12209ac3de7807d51809acd76e127d26d804a5ec59e024150da7d0c9536599571ea5",
+      "remediation": "12208faa3f0af81963f77483fff4f3f9a6ae1e6d478511d1fc87f95d85703867771b",
+      "request_outcome": "satisfied",
+      "status": "run",
+      "strategy": "reduce_tensor_parallel",
+      "violated_constraints": []
     },
     {
+      "broken_gpu": "NVIDIA H100 80GB HBM3",
+      "broken_model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
       "call_site": "config/vllm.py:791",
+      "change": {
+        "resource_allocation.gpu_sku": [
+          "NVIDIA H100 80GB HBM3",
+          "NVIDIA B200"
+        ]
+      },
       "class": 6,
+      "classifier_model_id": "claude-haiku-4-5-20251001",
+      "diagnosed": "quant_compute_capability",
+      "error_line": "The quantization method fp_quant is not supported for the current GPU. Minimum capability: 100. Current capability: 90.",
       "family": "quant_compute_capability",
-      "status": "not run"
+      "fixed_gpu": "NVIDIA B200",
+      "fixed_model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
+      "label": "Unverified suggestion",
+      "mechanism_outcome": "failed",
+      "promoted_rule": null,
+      "proving_boot": null,
+      "remediation": "122026637da7197ec4a9c5cd00d61a44827492673e8306c87d3a3cac2d54ebe41490",
+      "request_outcome": "not_evaluated",
+      "status": "run",
+      "strategy": "retarget_capability",
+      "violated_constraints": []
     }
   ],
   "memory": [
@@ -511,6 +600,51 @@
       "weight_delta_bytes": -12760596
     },
     {
+      "claim": "12205dc23e4ea562a0a87d9bf2f7e0127f16788e2a2fc6f56b76d63c36576dbf71d3",
+      "gpu": "NVIDIA A100 80GB PCIe",
+      "gpu_count": 1,
+      "kv_consistency_bytes": -4399496406,
+      "measured_persistent_bytes": 65831111229,
+      "measured_weight_bytes": 65530463518,
+      "model": "Qwen/Qwen3-32B",
+      "notes": [],
+      "predicted_total_bytes": 74047759820,
+      "predicted_weight_bytes": 65524246528,
+      "record": "1220374d2a3c7d3a33d8fe3102211051c5dc5185751d49fbd620a90eb1d34897a479",
+      "total_delta_bytes": 8216648591,
+      "weight_delta_bytes": -6216990
+    },
+    {
+      "claim": "122042bad93e68eeac6f8b890aa50321f0dbfd947cbc3423a3b60cd243d18a37b476",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "kv_consistency_bytes": -523288421,
+      "measured_persistent_bytes": 68021544550,
+      "measured_weight_bytes": 65530463518,
+      "model": "Qwen/Qwen3-32B",
+      "notes": [],
+      "predicted_total_bytes": 74047759820,
+      "predicted_weight_bytes": 65524246528,
+      "record": "1220eef514a1a275cd13bd98c041db9bda93e42c9df0b5126d4f6ede6c0811582fca",
+      "total_delta_bytes": 6026215270,
+      "weight_delta_bytes": -6216990
+    },
+    {
+      "claim": "12204614973ffec7e72a288c0db9df2b1224d87e84ca25e35fcd786abc0392f50e02",
+      "gpu": "NVIDIA A100-SXM4-80GB",
+      "gpu_count": 4,
+      "kv_consistency_bytes": -11180654766,
+      "measured_persistent_bytes": 8428873318,
+      "measured_weight_bytes": 8203387535,
+      "model": "Qwen/Qwen3-8B",
+      "notes": [],
+      "predicted_total_bytes": 19697105152,
+      "predicted_weight_bytes": 16381470720,
+      "record": "12209ac3de7807d51809acd76e127d26d804a5ec59e024150da7d0c9536599571ea5",
+      "total_delta_bytes": 11268231834,
+      "weight_delta_bytes": 8178083185
+    },
+    {
       "claim": "122024e608b51563420427eba1dc86f61ec236a9f5117aebe8a066737b5205863d30",
       "gpu": "NVIDIA GeForce RTX 4090",
       "gpu_count": 1,
@@ -586,6 +720,21 @@
       "weight_delta_bytes": -45604864
     },
     {
+      "claim": "12204247fcb7178fe59f2c000d0b9c5f6e6785c136062a0626661836290831b2e35a",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "gpu_count": 1,
+      "kv_consistency_bytes": -1869668894,
+      "measured_persistent_bytes": 14656575897,
+      "measured_weight_bytes": 14506252042,
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "notes": [],
+      "predicted_total_bytes": 17581196134,
+      "predicted_weight_bytes": 14496047104,
+      "record": "1220c4ad8130d1bb5d01e086aa11b4155e57e820ff67e02fed5be6c2b1111bc090bb",
+      "total_delta_bytes": 2924620237,
+      "weight_delta_bytes": -10204938
+    },
+    {
       "claim": "1220f03dd95e2b39929e1925db9e0c277cfebbe602a26bf66a924e431818b9c1b009",
       "gpu": "NVIDIA GeForce RTX 4090",
       "gpu_count": 1,
@@ -634,7 +783,7 @@
       "status": "unknown"
     }
   ],
-  "record_count": 103,
+  "record_count": 128,
   "repeat_measurements": [
     {
       "activation_spread_pct": 0.0,
@@ -723,6 +872,48 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA A100 80GB PCIe",
+      "model": "Qwen/Qwen3-32B",
+      "output_token_throughput": 78.30705081947352,
+      "p99_tpot_ms": 48.079752439768676,
+      "p99_ttft_ms": 716.3692039158195,
+      "recomputed_verdict": "pass",
+      "record": "122031e0061b860a1c6248f2f842f9c2c37bd6c4355e99ccf426f768addd8e207518",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3-32B",
+      "output_token_throughput": 143.29834581226876,
+      "p99_tpot_ms": 26.44419687880775,
+      "p99_ttft_ms": 223.411506395787,
+      "recomputed_verdict": "pass",
+      "record": "1220b4918863630e2f43ecc3cf55d19816369f57531ec0d8adcb433cae00cbc83c24",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA A100-SXM4-80GB",
+      "model": "Qwen/Qwen3-8B",
+      "output_token_throughput": 473.0954456288433,
+      "p99_tpot_ms": 7.958398646763049,
+      "p99_ttft_ms": 91.891596945934,
+      "recomputed_verdict": "pass",
+      "record": "12208e0b44a2622cdde84df6c1924b4068ffa97b5f5c2fe48f8c4b14f738a4960744",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA GeForce RTX 4090",
       "model": "Qwen/Qwen3-8B",
       "output_token_throughput": 198.26314356830352,
@@ -795,6 +986,20 @@
       "failed": 0,
       "gpu": "NVIDIA GeForce RTX 4090",
       "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "output_token_throughput": 216.96382632852473,
+      "p99_tpot_ms": 17.41889072160464,
+      "p99_ttft_ms": 202.98205516766757,
+      "recomputed_verdict": "pass",
+      "record": "12201d81b4264e0ae66e0331be18190df340b4a57952d24ce893302f1ebd5e8493c0",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
       "output_token_throughput": 215.7628203823365,
       "p99_tpot_ms": 17.510629600284283,
       "p99_ttft_ms": 212.99922600155696,
@@ -827,18 +1032,21 @@
     "first_event": "2026-09-26T21:48:08.665977+00:00",
     "gpus_measured": [
       "NVIDIA A100 80GB PCIe",
+      "NVIDIA A100-SXM4-80GB",
       "NVIDIA GeForce RTX 4090",
+      "NVIDIA H100 80GB HBM3",
       "NVIDIA L4",
       "NVIDIA RTX A6000"
     ],
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-27T02:23:18.666524+00:00",
+    "last_event": "2026-09-27T03:24:13.987424+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-1.7B",
       "Qwen/Qwen3-14B",
+      "Qwen/Qwen3-32B",
       "Qwen/Qwen3-8B",
       "deepseek-ai/DeepSeek-V2-Lite",
       "google/gemma-2-2b-it",
@@ -925,6 +1133,48 @@
       "accepted": 3,
       "attempts": 3,
       "cases": 3,
+      "gpu": "NVIDIA A100 80GB PCIe",
+      "model": "Qwen/Qwen3-32B",
+      "passed": true,
+      "records": [
+        "12204b987acc6061352ec60e95dd8ac0ba60541e6df312fd9df29a605826368f7097",
+        "1220af8eeb74909ff10d6aaf75cd997eeff629ea101a03594e2362668982ba470a5d",
+        "1220feb7179d87e1a4a32c0fc2d620681501189ce5bfd4741d91e5ac5b2d8815ce6f"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3-32B",
+      "passed": true,
+      "records": [
+        "12200e1c9bcb2f03ace90f778169bcb65a59fb09057157787ee289714fe6baef0e51",
+        "12202aec7f802585999a697d2cfa6fa10feafb407883f1af46548a8aff895d745a0e",
+        "12208ed8e15b1aa9bb219b41e8579aee84188cb050cd874a30bc310432311e5368f4"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA A100-SXM4-80GB",
+      "model": "Qwen/Qwen3-8B",
+      "passed": true,
+      "records": [
+        "12204b0b6a60d45a87848e0f9d53a6900f57344f09d682202001450ba736bc4a632c",
+        "12208e62684da57990e16a8ae38a628367cd44f3ed8bc065d673b3ab220810ece591",
+        "1220f1afa7d19d18820b69802a295db5dcabb783b192a14add004f93115478352bc4"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
       "gpu": "NVIDIA GeForce RTX 4090",
       "model": "Qwen/Qwen3-8B",
       "passed": true,
@@ -988,6 +1238,20 @@
         "122084195d84d5675e8cbcf0b9afbca0b5bf292dc6b280ddbc11c1c1e5b2d4891751",
         "12208c23032bd47caf2ff2ce057e1a5e98c528a12336204280ce26bafb1a40f60d01",
         "1220b871596474c6147fd47a73849565c4864919debdf7d64c4865163609b583760d"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "passed": true,
+      "records": [
+        "12201d4d83eb617dea2cbddab96a17b4d713307a431fa3bcc3905d8d3b186aa1967e",
+        "1220bffbae5f2817e9418b1a8ad049348340235fd050c8e9a6df5dd48c0841ed5a06",
+        "1220e2ff97b499fe579c4c72b9b6d8ddd2b5b2f58f40762cebccef770f5c419cd4af"
       ],
       "retries": 0
     },

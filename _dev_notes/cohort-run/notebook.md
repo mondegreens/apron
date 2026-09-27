@@ -251,3 +251,42 @@ unless marked.  Machine events are in `events.jsonl`.
   truncated files; a fixed boot that never reached the engine is recorded
   "not_evaluated".  The false class 3 record stays in the evidence; class 3
   is re-run.
+- **Class 4 PROVEN (02:23 UTC):** gemma-2-2b-it float16 → bfloat16 on the
+  RTX 4090 → Fixed; rule `dtype_incompatible` promoted.  $0.025.
+- **Class 5 PROVEN (02:31 UTC):** Qwen3-8B TP 3 on 4× A100-SXM → TP 2 → Fixed;
+  rule `tp_divisibility` promoted.  $0.85 (4 GPUs).
+- **Class 6: the retarget removed the capability error, then weights failed
+  to load (02:43 UTC).**  fp_quant model on a B200 (the only catalog GPU the
+  QuTLASS kernels are built for): "no module or parameter named
+  'layers.0.mlp.down_proj.backward_hadamard_matrix' in Qwen3Model".  Pinned
+  v0.29.0 `fp_quant.py:198-209` registers `forward_hadamard_matrix` only.
+  Afterwards I read the safetensors headers of all 32 FPQuant checkpoints on
+  the Hub: every one stores `backward_hadamard_matrix`, so no GPU makes them
+  load in v0.29.0.  No public report of this found (web search, 2026-09-27).
+  $1.39 — avoidable: the header check is free and should have preceded the
+  B200 boot (the L0-F failure stopped at the capability check, before
+  weights, so it hid this).
+- **Qwen3-32B re-runs, after the volume + download fixes:** A100 PCIe healthy,
+  served the benchmark (02:55 UTC, $0.30); H100 healthy (03:11 UTC, $0.96).
+- **Class 3 PROVEN on re-run (03:24 UTC):** Mistral-7B max_model_len 999999 →
+  32768 on the RTX 4090 → Fixed; rule `max_model_len` promoted.  $0.14.
+  `fix-proofs.json` now merges re-runs by class instead of overwriting.
+- Exit gate over the real records: 8 of 9 items pass; item 2 is short class 6.
+- **Class 6 decision (owner, 2026-09-27):** the §10.1 fallback ("artifact
+  substitution to the declared base model") had a gap: the checkpoint's card
+  declares no base model (empty template; `_name_or_path` empty — true of all
+  32 FPQuant repos).  Owner: the agent proposes the base, code confirms it;
+  prefer a quantized sibling the GPU runs over the full-size original.
+  Implemented as rule v2 strategy `substitute_artifact` (v1 in history):
+  classifier proposes the base (Haiku 4.5, $0.0017) → Hub confirms it exists,
+  is unquantized, same architecture → the Hub's model tree lists 455
+  checkpoints marked *quantized* from `Qwen/Qwen3-0.6B` (fine-tunes are a
+  separate relation) → 432 in formats v0.29.0 cannot load (GGUF, MLX, and
+  bitsandbytes, which v0.29.0 dropped although the latest docs list it) → 20
+  candidates with identical architecture → objective: base publisher first,
+  closest weight precision, downloads → `Qwen/Qwen3-0.6B-FP8` on the same
+  H100.  Caveat: the Hub's "quantized" relation is publisher-declared and
+  sometimes wrong (`buttercoconut/Qwen3-ko-alpaca-0.6B-Q4` is a fine-tune);
+  the publisher preference keeps those out here, the architecture check
+  cannot.  Label per §10.2: Fixed if the request is satisfied (the request
+  does not pin the artifact); the record shows the model change.

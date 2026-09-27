@@ -198,7 +198,7 @@
       "gpus": []
     },
     "measured": [],
-    "remaining_budget": 97.110917,
+    "remaining_budget": 93.130435,
     "rates": {
       "NVIDIA RTX A5000": 0.27,
       "NVIDIA L4": 0.49,

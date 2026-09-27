@@ -3,14 +3,10 @@
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "max_model_len",
-  "rule_version": 2,
-  "supersedes": "1220a3255fc12aaec1ba0b5aa56653da6804e7896072f67a6ae68642c3bb765c59db",
   "correction_strategy": "clamp_max_model_len",
-  "correction_spec": {},
   "extraction_schema": {
     "derived_max": {
       "type": "int",
-      "enum": [],
       "source": "config/model.py:2502 ('the derived max_model_len ({max_len_key}={derived_max_model_len}')"
     }
   },
@@ -36,14 +32,6 @@
       "line": 111
     }
   ],
-  "float16_blocklist": [],
-  "float16_blocklist_source": null,
-  "kernel_architectures": {},
-  "kernel_architectures_source": null,
-  "exception_class": null,
-  "engine_callsite_module": null,
-  "status": "mechanism_verified",
-  "promoting_verification_fingerprint": "1220c4ad8130d1bb5d01e086aa11b4155e57e820ff67e02fed5be6c2b1111bc090bb",
   "examples": [
     "max_model_len must be a positive integer, got {type.__name__}: {self.max_model_len}. Example: max_model_len=2048",
     "{msg} To allow overriding this maximum, set the env var VLLM_ALLOW_LONG_MAX_MODEL_LEN=1. {warning}",
@@ -51,7 +39,8 @@
     "truncate_prompt_tokens value is greater than max_model_len. Please request a smaller truncation size.",
     "{name} ({value}) must be less than max_model_len ({self.model_config.max_model_len})."
   ],
+  "status": "hypothesis",
   "count": 5,
-  "curation": "Hand-curated for the Phase 1b §10 fix proof: typed fields, each citing the vLLM v0.29.0 line that prints it. The source scanner must not overwrite this file.",
-  "replaces": []
+  "rule_version": 1,
+  "curation": "Hand-curated for the Phase 1b §10 fix proof: typed fields, each citing the vLLM v0.29.0 line that prints it. The source scanner must not overwrite this file."
 }

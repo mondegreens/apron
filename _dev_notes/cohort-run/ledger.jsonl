@@ -135,3 +135,37 @@
 {"amount": 0.010229, "at": "2026-09-27T02:23:17.925782+00:00", "estimate": 0.02, "label": "classifier:class5", "op": "settle"}
 {"amount": 2.65, "at": "2026-09-27T02:23:18.665902+00:00", "label": "class5-fixed", "op": "hold"}
 {"amount": 0.001695, "at": "2026-09-27T02:23:19.236173+00:00", "estimate": 0.123333, "label": "pod-idle:uen772hwen7url", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T02:26:03.322601+00:00", "label": "class5-fixed", "op": "annotate", "pod_id": "hi4g7vmxjzj6gc"}
+{"amount": 1.06, "at": "2026-09-27T02:31:19.247274+00:00", "label": "pod-idle:hi4g7vmxjzj6gc", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T02:31:19.252723+00:00", "label": "pod-idle:hi4g7vmxjzj6gc", "op": "annotate", "pod_id": "hi4g7vmxjzj6gc"}
+{"amount": 0.84803, "at": "2026-09-27T02:31:19.256565+00:00", "estimate": 2.65, "label": "class5-fixed", "op": "settle"}
+{"amount": 0.02, "at": "2026-09-27T02:31:19.854545+00:00", "label": "classifier:class6", "op": "hold"}
+{"amount": 0.010758, "at": "2026-09-27T02:31:27.499057+00:00", "estimate": 0.02, "label": "classifier:class6", "op": "settle"}
+{"amount": 2.8292, "at": "2026-09-27T02:31:28.261274+00:00", "label": "class6-fixed", "op": "hold"}
+{"amount": 0.01675, "at": "2026-09-27T02:31:28.734676+00:00", "estimate": 1.06, "label": "pod-idle:hi4g7vmxjzj6gc", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T02:42:35.825091+00:00", "label": "class6-fixed", "op": "annotate", "pod_id": "9be0zp7egjw2mn"}
+{"amount": 1.131667, "at": "2026-09-27T02:43:47.236942+00:00", "label": "pod-idle:9be0zp7egjw2mn", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T02:43:47.239178+00:00", "label": "pod-idle:9be0zp7egjw2mn", "op": "annotate", "pod_id": "9be0zp7egjw2mn"}
+{"amount": 1.392902, "at": "2026-09-27T02:43:47.240359+00:00", "estimate": 2.8292, "label": "class6-fixed", "op": "settle"}
+{"amount": 0.000949, "at": "2026-09-27T02:43:47.742491+00:00", "estimate": 1.131667, "label": "pod-idle:9be0zp7egjw2mn", "op": "settle"}
+{"amount": 1.8264, "at": "2026-09-27T02:43:55.915521+00:00", "label": "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T02:50:03.115894+00:00", "label": "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1", "op": "annotate", "pod_id": "ot51tsgbndl8ju"}
+{"amount": 0.265, "at": "2026-09-27T02:55:14.627360+00:00", "label": "pod-idle:ot51tsgbndl8ju", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T02:55:14.629262+00:00", "label": "pod-idle:ot51tsgbndl8ju", "op": "annotate", "pod_id": "ot51tsgbndl8ju"}
+{"amount": 0.299765, "at": "2026-09-27T02:55:14.630471+00:00", "estimate": 1.8264, "label": "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1", "op": "settle"}
+{"amount": 4.0088, "at": "2026-09-27T02:55:15.173267+00:00", "label": "Qwen/Qwen3-32B@NVIDIA H100 80GB HBM3x1", "op": "hold"}
+{"amount": 0.000462, "at": "2026-09-27T02:55:15.676686+00:00", "estimate": 0.265, "label": "pod-idle:ot51tsgbndl8ju", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-27T03:06:28.484981+00:00", "label": "Qwen/Qwen3-32B@NVIDIA H100 80GB HBM3x1", "op": "annotate", "pod_id": "ib72nxo5ln3a0n"}
+{"amount": 0.581667, "at": "2026-09-27T03:11:49.093496+00:00", "label": "pod-idle:ib72nxo5ln3a0n", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T03:11:49.094587+00:00", "label": "pod-idle:ib72nxo5ln3a0n", "op": "annotate", "pod_id": "ib72nxo5ln3a0n"}
+{"amount": 0.963064, "at": "2026-09-27T03:11:49.095385+00:00", "estimate": 4.0088, "label": "Qwen/Qwen3-32B@NVIDIA H100 80GB HBM3x1", "op": "settle"}
+{"amount": 0.000578, "at": "2026-09-27T03:11:49.690582+00:00", "estimate": 0.581667, "label": "pod-idle:ib72nxo5ln3a0n", "op": "settle"}
+{"amount": 0.02, "at": "2026-09-27T03:12:53.478584+00:00", "label": "classifier:class3", "op": "hold"}
+{"amount": 0.010424, "at": "2026-09-27T03:13:00.936978+00:00", "estimate": 0.02, "label": "classifier:class3", "op": "settle"}
+{"amount": 0.3083, "at": "2026-09-27T03:13:01.587832+00:00", "label": "class3-fixed", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T03:20:03.437434+00:00", "label": "class3-fixed", "op": "annotate", "pod_id": "de5pcy04eqo3f1"}
+{"amount": 0.123333, "at": "2026-09-27T03:24:13.476253+00:00", "label": "pod-idle:de5pcy04eqo3f1", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T03:24:13.493093+00:00", "label": "pod-idle:de5pcy04eqo3f1", "op": "annotate", "pod_id": "de5pcy04eqo3f1"}
+{"amount": 0.138115, "at": "2026-09-27T03:24:13.497596+00:00", "estimate": 0.3083, "label": "class3-fixed", "op": "settle"}
+{"amount": 0.000101, "at": "2026-09-27T03:24:13.986673+00:00", "estimate": 0.123333, "label": "pod-idle:de5pcy04eqo3f1", "op": "settle"}
+{"amount": 0.001729, "at": "2026-09-27T03:53:50.889586+00:00", "label": "classifier:base-model:ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4", "op": "spend"}
