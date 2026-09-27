@@ -205,7 +205,7 @@ Failed boots and retries are included.
 | Pooled pods between solutions (ledger) |  | 0.0276 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  | 0.6502 |  |  |
 | **Ledger spent** |  | **9.9949** |  | cap $100 |
-| RunPod billed, same window |  | 8.6640 |  | not billed yet: 1 pod(s) |
+| RunPod billed, same window |  | 9.3879 |  | not billed yet: 1 pod(s) |
 <!-- /findings:cost -->
 
 ## How to reproduce
