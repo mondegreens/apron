@@ -207,3 +207,18 @@ def test_failed_spend_accounts_for_every_failed_boot(findings: dict) -> None:
     assert sum(g["cost"] for g in groups) == pytest.approx(findings["cost"]["failed_boot_total"])
     assert sum(len(g["records"]) for g in groups) == sum(g["boots"] for g in groups)
     assert any(g["cause"].startswith("a broken plan, failing as its class names") for g in groups)
+
+
+def test_an_answer_cut_at_the_token_limit_is_counted() -> None:
+    from types import SimpleNamespace
+
+    from apron.application.orchestration.findings import _truncated
+
+    limits = {"arith-2": 8}
+    cut = SimpleNamespace(case_id="arith-2", output_tokens=8, failures=())
+    tagged = SimpleNamespace(
+        case_id="arith-2", output_tokens=None, failures=("evaluation:truncated at max_tokens",)
+    )
+    short = SimpleNamespace(case_id="arith-2", output_tokens=2, failures=())
+    assert _truncated(cut, limits) and _truncated(tagged, limits)
+    assert not _truncated(short, limits)

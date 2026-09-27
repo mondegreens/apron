@@ -296,6 +296,11 @@ def _tasks(run: CohortRun) -> list[dict[str, Any]]:
     for (sfp, protocol_fp), digests in sorted(by_solution.items(), key=lambda kv: order(kv[0])):
         entry = _entry(run, sfp)
         protocol = run.records.protocols.get(protocol_fp)
+        limits = (
+            {c.get("id", ""): int(c.get("max_tokens", 0) or 0) for c in entry.task_suite.cases}
+            if entry
+            else {}
+        )
         attempts = [run.records.attempts[d] for d in digests]
         verdict = (
             task_verdict(
@@ -315,12 +320,22 @@ def _tasks(run: CohortRun) -> list[dict[str, Any]]:
                 "attempts": len(attempts),
                 "retries": sum(1 for a in attempts if a.retries),
                 "accepted": len({a.case_id for a in attempts if a.accepted}),
+                # Cut at the case's max_tokens: tagged since the harness reads
+                # finish_reason; before that, the output used every allowed token.
+                "truncated": sum(1 for a in attempts if _truncated(a, limits)),
                 "passed": verdict.passed if verdict else None,
                 "scoring": list(protocol.deterministic_checks) if protocol else None,
                 "records": sorted(digests),
             }
         )
     return rows
+
+
+def _truncated(attempt: Any, limits: Mapping[str, int]) -> bool:
+    if "evaluation:truncated at max_tokens" in attempt.failures:
+        return True
+    limit = limits.get(attempt.case_id, 0)
+    return bool(limit and attempt.output_tokens is not None and attempt.output_tokens >= limit)
 
 
 def _entry_key(run: CohortRun, sfp: str) -> tuple[str, str, str]:
@@ -704,7 +719,15 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
         NO_RECORDS,
     )
     blocks["tasks"] = _table(
-        ["Model", "GPU", "Scoring", "Accepted / cases", "Attempts (retries)", "Passed"],
+        [
+            "Model",
+            "GPU",
+            "Scoring",
+            "Accepted / cases",
+            "Attempts (retries)",
+            "Cut at the token limit",
+            "Passed",
+        ],
         [
             [
                 _v(r["model"]),
@@ -712,6 +735,7 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
                 ", ".join(r.get("scoring") or []) or "—",
                 f"{r['accepted']} / {_v(r['cases'])}",
                 f"{r['attempts']} ({r['retries']})",
+                str(r.get("truncated", 0)),
                 _v(r["passed"]),
             ]
             for r in findings["tasks"]
