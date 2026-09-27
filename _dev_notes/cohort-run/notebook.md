@@ -372,3 +372,31 @@ unless marked.  Machine events are in `events.jsonl`.
   RTX 4090 pod for Qwen3-0.6B + Qwen3-0.6B-FP8 (class 6: FP8 or size?) and
   Mamba-2.8B (validates ssm_decode); est. ~$0.5-0.8 pooled.
 - Draft article PR: mondegreens/apron#43 (stacked on #42).
+
+## 2026-09-27 — pass 3: one RTX 4090 for Qwen3-0.6B, its FP8 copy, Mamba-2.8B
+
+- Owner's go.  Pod `idy00eidbjrj64`, three solutions on one pod, $0.17
+  total (FP8 $0.12, Mamba $0.03, base $0.02; the image pull is on the first).
+- **Qwen3-0.6B-FP8 and Qwen3-0.6B answer identically** on the 4090: "2",
+  "10 * 5 = 5", "Paris" — also identical to the FP8 run on the H100.  FP8 did
+  not cause class 6's misses.
+- **Independent reference, no GPU:** Qwen3-0.6B in transformers on CPU,
+  greedy, the same rendered prompt (chat template checked by rendering it:
+  non-thinking format, `enable_thinking=False` applied).  Same answers at 8
+  tokens.  At 64 tokens: "10 * 5 = 50" (10 tokens — Qwen writes one digit per
+  token) and "2" followed by end-of-turn.  So "10 * 5 = 5" was **our harness
+  cutting a correct answer** at max_tokens 8, recorded as a plain wrong
+  answer; "2 + 2 = 2" is the model's own non-thinking greedy answer.
+- **Mamba-2.8B:** healthy, served the benchmark.  Weights measured 10.31 GiB
+  against 5.16 predicted: our plan named float32 (from the config) while the
+  calculator assumed vLLM's 16-bit default — the planner and the calculator
+  disagreed.  Activation 0.52 GiB measured, 0.52 with the float32 plan.
+  The per-sequence SSM state is not observable in what we record: not
+  validated.  All chat task requests: HTTP 400 — a base model without a chat
+  template; the record kept only "400".
+- Fixed: the planner now names vLLM's served dtype (float32 checkpoints in 16
+  bits); a model without a chat template is not sent the chat suite (reason
+  recorded per case); an engine refusal keeps its reason; a cut answer
+  (finish_reason "length") is marked "truncated at max_tokens".  Not changed:
+  the suite's max_tokens (a task-suite change re-runs every model's tasks —
+  owner's call).

@@ -14,9 +14,9 @@ drafted from _dev_notes/cohort-run/notebook.md after the run, then the owner
 rewrites it. This post stays `draft: true` until the owner publishes it. -->
 
 <!-- findings:headline -->
-- Models measured: 11 on 6 GPU types
+- Models measured: 13 on 6 GPU types
 - Failure classes fixed and re-verified: 5 of 6
-- Total cost: $9.99 of the $100 cap (failed boots included: $4.32)
+- Total cost: $10.17 of the $100 cap (failed boots included: $4.32)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -37,9 +37,9 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 |---|---|
 | Provider / cloud | runpod / SECURE |
 | Runner image | `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
-| Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-0.6B-FP8, Qwen/Qwen3-1.7B, Qwen/Qwen3-14B, Qwen/Qwen3-32B, Qwen/Qwen3-8B, deepseek-ai/DeepSeek-V2-Lite, deepseek-ai/DeepSeek-V2-Lite-Chat, google/gemma-2-2b-it, meta-llama/Llama-3.1-8B-Instruct, mistralai/Mistral-7B-Instruct-v0.3 |
+| Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-0.6B, Qwen/Qwen3-0.6B-FP8, Qwen/Qwen3-1.7B, Qwen/Qwen3-14B, Qwen/Qwen3-32B, Qwen/Qwen3-8B, deepseek-ai/DeepSeek-V2-Lite, deepseek-ai/DeepSeek-V2-Lite-Chat, google/gemma-2-2b-it, meta-llama/Llama-3.1-8B-Instruct, mistralai/Mistral-7B-Instruct-v0.3, state-spaces/mamba-2.8b-hf |
 | GPUs measured | NVIDIA A100 80GB PCIe, NVIDIA A100-SXM4-80GB, NVIDIA GeForce RTX 4090, NVIDIA H100 80GB HBM3, NVIDIA L4, NVIDIA RTX A6000 |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T05:24:48.737395+00:00 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T16:01:59.557004+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -50,6 +50,8 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | Model | GPU | Weights pred. GiB | Weights meas. GiB | Δ weights | Total pred. GiB | Persistent meas. GiB | Δ total | Record |
 |---|---|---|---|---|---|---|---|---|
 | JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 x1 | 5.68 | 5.68 | +0.00 | 7.82 | 5.97 | +1.85 | `1220b9e409435a57` |
+| Qwen/Qwen3-0.6B | NVIDIA GeForce RTX 4090 x1 | 1.11 | 1.12 | -0.01 | 2.89 | 1.73 | +1.16 | `1220c6220073e292` |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA GeForce RTX 4090 x1 | 0.70 | 0.74 | -0.04 | 2.48 | 1.02 | +1.46 | `1220e319388876e8` |
 | Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 x1 | 0.58 | 0.74 | -0.16 | 2.12 | 1.91 | +0.21 | `12200078d8e3999e` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 3.78 | 3.22 | +0.56 | 5.65 | 4.11 | +1.54 | `1220066392da9480` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 3.78 | 3.22 | +0.56 | 5.65 | 4.11 | +1.54 | `122056e563edf84b` |
@@ -67,6 +69,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 13.50 | 13.51 | -0.01 | 16.37 | 13.65 | +2.72 | `1220c4ad8130d1bb` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 13.50 | 13.51 | -0.01 | 16.37 | 13.65 | +2.72 | `122075e500841efe` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 x1 | 13.50 | 13.51 | -0.01 | 16.37 | 13.62 | +2.75 | `1220ac02237cee07` |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 5.16 | 10.31 | -5.15 | 6.67 | 10.98 | -4.31 | `12200ac02bfdf76a` |
 <!-- /findings:memory -->
 
 Repeat boots of one solution bound the measurement noise:
@@ -110,6 +113,8 @@ measurement.
 |---|---|---|---|---|---|
 | JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
 | JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
+| Qwen/Qwen3-0.6B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | False |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | False |
 | Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match | 1 / 3 | 3 (0) | False |
 | Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | whitespace_normalized_exact_match, strip_terminal_punctuation | 1 / 3 | 3 (0) | False |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match | 3 / 3 | 6 (0) | True |
@@ -141,6 +146,7 @@ measurement.
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | whitespace_normalized_exact_match | 3 / 3 | 3 (0) | True |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | whitespace_normalized_exact_match, strip_terminal_punctuation | 3 / 3 | 3 (0) | True |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | whitespace_normalized_exact_match, strip_terminal_punctuation | 0 / 3 | 6 (3) | False |
 <!-- /findings:tasks -->
 
 ## Serving against the declared SLO
@@ -149,6 +155,8 @@ measurement.
 | Model | GPU | p99 TTFT ms | p99 TPOT ms | SLO TTFT / TPOT ms | Completed / failed | Verdict | Record |
 |---|---|---|---|---|---|---|---|
 | JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 | 208.824 | 8.15893 | 2000 / 100 | 50 / 0 | pass | `12206a93cab1c283` |
+| Qwen/Qwen3-0.6B | NVIDIA GeForce RTX 4090 | 62.4123 | 2.68633 | 2000 / 100 | 50 / 0 | pass | `12205f7089d8d35b` |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA GeForce RTX 4090 | 65.4212 | 2.32438 | 2000 / 100 | 50 / 0 | pass | `12205e8684024f7f` |
 | Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 | 68.694 | 1.76838 | 2000 / 100 | 50 / 0 | pass | `1220dfabcbad7ac0` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 52.7041 | 5.49613 | 2000 / 100 | 50 / 0 | pass | `1220073713910e21` |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 50.7468 | 5.44501 | 2000 / 100 | 50 / 0 | pass | `1220d33394092906` |
@@ -166,6 +174,7 @@ measurement.
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | 202.982 | 17.4189 | 2000 / 100 | 50 / 0 | pass | `12201d81b4264e0a` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 | 212.999 | 17.5106 | 2000 / 100 | 50 / 0 | pass | `1220dcda4554108a` |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 | 718.149 | 62.5568 | 2000 / 100 | 50 / 0 | pass | `12203758d37c241f` |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | 403.514 | 16.2317 | 2000 / 100 | 50 / 0 | pass | `12208be4514014b9` |
 <!-- /findings:serving -->
 
 ## What it cost
@@ -179,6 +188,8 @@ Failed boots and retries are included.
 | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.6063 | 1 (0.6063) | 1 |
 | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.3099 | 1 (0.3099) | 1 |
 | JunHowie/Qwen3-8B-GPTQ-Int4 | NVIDIA GeForce RTX 4090 x1 | 0.1181 | 0 (0.0000) | 8 |
+| Qwen/Qwen3-0.6B | NVIDIA GeForce RTX 4090 x1 | 0.0231 | 0 (0.0000) | 5 |
+| Qwen/Qwen3-0.6B-FP8 | NVIDIA GeForce RTX 4090 x1 | 0.1198 | 0 (0.0000) | 5 |
 | Qwen/Qwen3-0.6B-FP8 | NVIDIA H100 80GB HBM3 x1 | 0.7171 | 0 (0.0000) | 8 |
 | Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.6918 | 3 (0.4928) | 19 |
 | Qwen/Qwen3-1.7B | NVIDIA L4 x1 | 0.0850 | 0 (0.0000) | 8 |
@@ -200,12 +211,13 @@ Failed boots and retries are included.
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0313 | 0 (0.0000) | 8 |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0157 | 1 (0.0157) | 1 |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA L4 x1 | 0.0358 | 0 (0.0000) | 8 |
-| **Records total** |  | **8.6750** |  |  |
+| state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | 0.0314 | 0 (0.0000) | 8 |
+| **Records total** |  | **8.8493** |  |  |
 | Classifier calls (ledger) |  | 0.1651 |  |  |
-| Pooled pods between solutions (ledger) |  | 0.0276 |  |  |
+| Pooled pods between solutions (ledger) |  | 0.0278 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  | 0.6502 |  |  |
-| **Ledger spent** |  | **9.9949** |  | cap $100 |
-| RunPod billed, same window |  | 9.3879 |  | not billed yet: 1 pod(s) |
+| **Ledger spent** |  | **10.1693** |  | cap $100 |
+| RunPod billed, same window |  | 9.7224 |  | not billed yet: 1 pod(s) |
 <!-- /findings:cost -->
 
 ## How to reproduce
