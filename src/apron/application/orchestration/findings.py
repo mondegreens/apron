@@ -173,6 +173,7 @@ def _modern(
                 "gpu": best["gpu"] if best else m.get("gpu"),
                 "gpu_count": best["gpu_count"] if best else m.get("gpu_count"),
                 "status": status,
+                "before_gpu": _before_gpu(m.get("prediction")),
                 "predicted_weight_bytes": best["predicted_weight_bytes"] if best else None,
                 "measured_weight_bytes": best["measured_weight_bytes"] if best else None,
                 "accepted": latest_rule["accepted"] if latest_rule else None,
@@ -182,6 +183,29 @@ def _modern(
             }
         )
     return rows
+
+
+def _before_gpu(prediction: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    """What the plan pipeline said with no GPU: its verdict and bytes per GPU."""
+    if not prediction or prediction.get("error"):
+        return {"status": "error", "detail": prediction.get("error")} if prediction else None
+    return {
+        "status": prediction.get("status"),
+        "mechanism": prediction.get("mechanism"),
+        "tensor_parallel": prediction.get("tensor_parallel"),
+        "weight_gib_per_gpu": prediction.get("weight_gib_per_gpu"),
+        "total_gib_per_gpu": prediction.get("total_gib_per_gpu"),
+    }
+
+
+def _before_gpu_text(before: Mapping[str, Any] | None) -> str:
+    if not before:
+        return "—"
+    if before["status"] == "unknown":
+        return "unknown (no memory model yet)"
+    if before["status"] != "planned":
+        return str(before["status"])
+    return f"fits: {before['total_gib_per_gpu']} GiB per GPU"
 
 
 def _weights_time(run: CohortRun) -> list[dict[str, Any]]:
@@ -812,6 +836,7 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
             "Size (B params)",
             "Downloads / 30 days",
             "GPU",
+            "Before any GPU",
             "Status",
             "Weights GiB: predicted / measured",
             "Questions answered",
@@ -825,6 +850,7 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
                 _v(r["params_b"]),
                 f"{r['downloads_30d']:,}" if r.get("downloads_30d") else "—",
                 f"{_v(r['gpu'])} x{_v(r['gpu_count'])}",
+                _before_gpu_text(r.get("before_gpu")),
                 r["status"],
                 f"{_gib(r['predicted_weight_bytes'])} / {_gib(r['measured_weight_bytes'])}"
                 if r["status"] == "booted"

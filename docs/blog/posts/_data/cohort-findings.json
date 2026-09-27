@@ -1410,6 +1410,13 @@
   "modern_models": [
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "autoregressive_decode",
+        "status": "planned",
+        "tensor_parallel": 1,
+        "total_gib_per_gpu": 15.15,
+        "weight_gib_per_gpu": 12.82
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 6759761,
@@ -1425,6 +1432,13 @@
     },
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "autoregressive_decode",
+        "status": "planned",
+        "tensor_parallel": 1,
+        "total_gib_per_gpu": 63.18,
+        "weight_gib_per_gpu": 60.77
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 4484728,
@@ -1440,6 +1454,13 @@
     },
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "mla_decode",
+        "status": "planned",
+        "tensor_parallel": 1,
+        "total_gib_per_gpu": 60.15,
+        "weight_gib_per_gpu": 58.15
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 1854281,
@@ -1455,6 +1476,13 @@
     },
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "encoder_decoder_generation",
+        "status": "unknown",
+        "tensor_parallel": 1,
+        "total_gib_per_gpu": 0.0,
+        "weight_gib_per_gpu": 0.0
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 9460570,
@@ -1470,6 +1498,13 @@
     },
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "unknown",
+        "status": "unknown",
+        "tensor_parallel": 1,
+        "total_gib_per_gpu": 0.0,
+        "weight_gib_per_gpu": 0.0
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 6727629,
@@ -1485,6 +1520,13 @@
     },
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "unknown",
+        "status": "unknown",
+        "tensor_parallel": 1,
+        "total_gib_per_gpu": 0.0,
+        "weight_gib_per_gpu": 0.0
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 7638786,
@@ -1500,6 +1542,13 @@
     },
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "unknown",
+        "status": "unknown",
+        "tensor_parallel": 1,
+        "total_gib_per_gpu": 0.0,
+        "weight_gib_per_gpu": 0.0
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 1048456,
@@ -1515,6 +1564,13 @@
     },
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "autoregressive_decode",
+        "status": "planned",
+        "tensor_parallel": 2,
+        "total_gib_per_gpu": 109.67,
+        "weight_gib_per_gpu": 107.16
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 1191260,
@@ -1530,6 +1586,13 @@
     },
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "autoregressive_decode",
+        "status": "planned",
+        "tensor_parallel": 4,
+        "total_gib_per_gpu": 40.72,
+        "weight_gib_per_gpu": 38.85
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 3959727,
@@ -1545,6 +1608,13 @@
     },
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "mla_decode",
+        "status": "planned",
+        "tensor_parallel": 8,
+        "total_gib_per_gpu": 90.11,
+        "weight_gib_per_gpu": 87.97
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 1351716,
@@ -1560,6 +1630,13 @@
     },
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "mla_decode",
+        "status": "planned",
+        "tensor_parallel": 8,
+        "total_gib_per_gpu": 82.28,
+        "weight_gib_per_gpu": 80.27
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 2979489,
@@ -1575,6 +1652,13 @@
     },
     {
       "accepted": null,
+      "before_gpu": {
+        "mechanism": "mla_decode",
+        "status": "planned",
+        "tensor_parallel": 8,
+        "total_gib_per_gpu": 122.07,
+        "weight_gib_per_gpu": 119.81
+      },
       "cases": null,
       "cost": null,
       "downloads_30d": 60539,

@@ -24,20 +24,20 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 ## The models
 
 <!-- findings:modern_models -->
-| Group | Model | Size (B params) | Downloads / 30 days | GPU | Status | Weights GiB: predicted / measured | Questions answered | Cost $ | Records |
-|---|---|---|---|---|---|---|---|---|---|
-| A | openai/gpt-oss-20b | 20.9 | 6,759,761 | NVIDIA GeForce RTX 4090 x1 | not run yet | — | — | — | — |
-| A | openai/gpt-oss-120b | 116.8 | 4,484,728 | NVIDIA H100 80GB HBM3 x1 | not run yet | — | — | — | — |
-| A | zai-org/GLM-4.7-Flash | 31.2 | 1,854,281 | NVIDIA H100 80GB HBM3 x1 | not run yet | — | — | — | — |
-| A | google/gemma-4-31B-it | 31.3 | 9,460,570 | NVIDIA H100 80GB HBM3 x1 | not run yet | — | — | — | — |
-| B | Qwen/Qwen3.8-27B | 27.8 | 6,727,629 | NVIDIA H100 80GB HBM3 x1 | not run yet | — | — | — | — |
-| B | Qwen/Qwen3.6-35B-A3B-FP8 | 36 | 7,638,786 | NVIDIA H100 80GB HBM3 x1 | not run yet | — | — | — | — |
-| B | nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4 | 18.2 | 1,048,456 | NVIDIA H100 80GB HBM3 x1 | not run yet | — | — | — | — |
-| C | MiniMaxAI/MiniMax-M2.7 | 228.7 | 1,191,260 | NVIDIA H200 x2 | not run yet | — | — | — | — |
-| C | deepseek-ai/DeepSeek-V4-Flash-0731 | 304.2 | 3,959,727 | NVIDIA H200 x4 | not run yet | — | — | — | — |
-| D | zai-org/GLM-5.3 | 753.3 | 1,351,716 | NVIDIA H200 x8 | not run yet | — | — | — | — |
-| D | deepseek-ai/DeepSeek-V3.2 | 685.4 | 2,979,489 | NVIDIA H200 x8 | not run yet | — | — | — | — |
-| D | moonshotai/Kimi-K2-Instruct-0905 | 1026.5 | 60,539 | NVIDIA B200 x8 | not run yet | — | — | — | — |
+| Group | Model | Size (B params) | Downloads / 30 days | GPU | Before any GPU | Status | Weights GiB: predicted / measured | Questions answered | Cost $ | Records |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A | openai/gpt-oss-20b | 20.9 | 6,759,761 | NVIDIA GeForce RTX 4090 x1 | fits: 15.15 GiB per GPU | not run yet | — | — | — | — |
+| A | openai/gpt-oss-120b | 116.8 | 4,484,728 | NVIDIA H100 80GB HBM3 x1 | fits: 63.18 GiB per GPU | not run yet | — | — | — | — |
+| A | zai-org/GLM-4.7-Flash | 31.2 | 1,854,281 | NVIDIA H100 80GB HBM3 x1 | fits: 60.15 GiB per GPU | not run yet | — | — | — | — |
+| A | google/gemma-4-31B-it | 31.3 | 9,460,570 | NVIDIA H100 80GB HBM3 x1 | unknown (no memory model yet) | not run yet | — | — | — | — |
+| B | Qwen/Qwen3.8-27B | 27.8 | 6,727,629 | NVIDIA H100 80GB HBM3 x1 | unknown (no memory model yet) | not run yet | — | — | — | — |
+| B | Qwen/Qwen3.6-35B-A3B-FP8 | 36 | 7,638,786 | NVIDIA H100 80GB HBM3 x1 | unknown (no memory model yet) | not run yet | — | — | — | — |
+| B | nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4 | 18.2 | 1,048,456 | NVIDIA H100 80GB HBM3 x1 | unknown (no memory model yet) | not run yet | — | — | — | — |
+| C | MiniMaxAI/MiniMax-M2.7 | 228.7 | 1,191,260 | NVIDIA H200 x2 | fits: 109.67 GiB per GPU | not run yet | — | — | — | — |
+| C | deepseek-ai/DeepSeek-V4-Flash-0731 | 304.2 | 3,959,727 | NVIDIA H200 x4 | fits: 40.72 GiB per GPU | not run yet | — | — | — | — |
+| D | zai-org/GLM-5.3 | 753.3 | 1,351,716 | NVIDIA H200 x8 | fits: 90.11 GiB per GPU | not run yet | — | — | — | — |
+| D | deepseek-ai/DeepSeek-V3.2 | 685.4 | 2,979,489 | NVIDIA H200 x8 | fits: 82.28 GiB per GPU | not run yet | — | — | — | — |
+| D | moonshotai/Kimi-K2-Instruct-0905 | 1026.5 | 60,539 | NVIDIA B200 x8 | fits: 122.07 GiB per GPU | not run yet | — | — | — | — |
 <!-- /findings:modern_models -->
 
 ## Not paying a GPU to download

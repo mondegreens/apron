@@ -46,6 +46,14 @@ def generate(run_dir: Path, rules_dir: Path) -> tuple[str, dict[str, str]]:
         problems = [*(f"{w}: {why}" for w, why in run.records.invalid), *run.rule_errors]
         raise SystemExit("invalid records — fix them first:\n" + "\n".join(problems))
     modern = json.loads(MODERN.read_text()) if MODERN.exists() else None
+    predictions = run_dir / "modern-predictions.json"
+    if modern is not None and predictions.exists():
+        # The GPU-free plan of each model (scripts/modern_predictions.py).
+        by_model = {r["model"]: r for r in json.loads(predictions.read_text())["rows"]}
+        modern = {
+            **modern,
+            "models": [{**m, "prediction": by_model.get(m["model_id"])} for m in modern["models"]],
+        }
     findings = build_findings(run, authorized=AUTHORIZED_USD, modern=modern)
     data = json.dumps(findings, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
     return data, render_tables(findings)
