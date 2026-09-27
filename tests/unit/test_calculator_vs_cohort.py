@@ -70,9 +70,9 @@ def test_weight_prediction_matches_the_measurement(
 # Activation: the calculator's estimate against vLLM's profiled torch peak
 # ---------------------------------------------------------------------------
 
-# 20% of the measurement, or 0.08 GiB for the small ones (log values are
-# printed to 0.01 GiB).
-ACTIVATION_TOLERANCE = (0.20, int(0.08 * 2**30))
+# 10% of the measurement, or 0.03 GiB for the small ones (log values are
+# printed to 0.01 GiB).  Every point, TP 2 included, now fits within 0.02 GiB.
+ACTIVATION_TOLERANCE = (0.10, int(0.03 * 2**30))
 
 
 def _activation_points() -> list[tuple[str, str, int, str, int]]:
@@ -102,18 +102,7 @@ def _activation_points() -> list[tuple[str, str, int, str, int]]:
 
 
 def _activation_params() -> list[Any]:
-    return [
-        pytest.param(
-            *point,
-            marks=pytest.mark.xfail(
-                strict=True,
-                reason="TP 2: measured 0.21 GiB against 0.61 predicted; one point, not modelled",
-            ),
-        )
-        if point[2] > 1
-        else pytest.param(*point)
-        for point in _activation_points()
-    ]
+    return [pytest.param(*point) for point in _activation_points()]
 
 
 @pytest.mark.skipif(not (RUN / "records").is_dir(), reason="cohort records not present")
@@ -121,7 +110,10 @@ def _activation_params() -> list[Any]:
 def test_activation_estimate_matches_the_profiled_peak(
     model_id: str, gpu: str, tp: int, dtype: str, measured: int
 ) -> None:
-    from apron.adapters.backends.vllm_quantization import default_max_num_batched_tokens
+    from apron.adapters.backends.vllm_quantization import (
+        default_max_num_batched_tokens,
+        default_max_num_seqs,
+    )
     from apron.domain.mechanisms import CalculatorInput, ComponentMechanism, TextWorkload
     from apron.domain.mechanisms.calculator import _activation_estimate
     from apron.interfaces.cohort_root import hardware_for
@@ -134,7 +126,10 @@ def test_activation_estimate_matches_the_profiled_peak(
         workload=TextWorkload(kind="text", input_length=512, output_length=128),
         artifact_metadata={},
         hardware=hardware,
-        execution_spec_data={"max_num_batched_tokens": tokens},
+        execution_spec_data={
+            "max_num_batched_tokens": tokens,
+            "max_num_seqs": default_max_num_seqs(hardware.total_memory_bytes, gpu),
+        },
     )
     metadata = {"vocab_size": entry["vocab_size"], "hidden_size": entry["hidden_size"]}
     metadata["torch_dtype"] = dtype  # the plan's served dtype

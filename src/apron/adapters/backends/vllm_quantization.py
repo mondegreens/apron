@@ -198,3 +198,13 @@ def default_max_num_batched_tokens(total_memory_bytes: int, gpu_name: str) -> in
     if total_memory_bytes >= 70 * _GIB and "a100" not in gpu_name.lower():
         return 8192
     return 2048
+
+
+def default_max_num_seqs(total_memory_bytes: int, gpu_name: str) -> int:
+    """``max_num_seqs`` v0.29.0 uses for the OpenAI server on this GPU
+    (engine/arg_utils.py:2698-2727): 1024 at >= 70 GiB unless "a100", else 256."""
+    if total_memory_bytes >= 160 * _GIB:
+        return 1024
+    if total_memory_bytes >= 70 * _GIB and "a100" not in gpu_name.lower():
+        return 1024
+    return 256

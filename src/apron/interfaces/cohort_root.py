@@ -28,6 +28,7 @@ from apron.adapters.backends.runpod import CLOUD_TYPE, GPU_SPECS, RunPodTarget
 from apron.adapters.backends.vllm_engine import VllmEngineAdapter
 from apron.adapters.backends.vllm_quantization import (
     default_max_num_batched_tokens,
+    default_max_num_seqs,
     load_problems,
 )
 from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
@@ -233,6 +234,7 @@ class CohortPlanner:
             max_num_batched_tokens=default_max_num_batched_tokens(
                 hardware_for(gpu).total_memory_bytes, gpu
             ),
+            max_num_seqs=default_max_num_seqs(hardware_for(gpu).total_memory_bytes, gpu),
             load_check=load_problems,
         )
         if pipeline.model_spec is None or pipeline.claim is None:

@@ -86,6 +86,7 @@ def run_plan_pipeline(
     id_gen: IdGenerator,
     tensor_parallel: int = 1,
     max_num_batched_tokens: int | None = None,
+    max_num_seqs: int | None = None,
     load_check: Callable[[Iterable[str], dict[str, Any] | None], tuple[str, ...] | None]
     | None = None,
 ) -> PlanPipelineResult:
@@ -154,6 +155,7 @@ def run_plan_pipeline(
                 if max_num_batched_tokens
                 else {}
             ),
+            **({"max_num_seqs": max_num_seqs} if max_num_seqs else {}),
         },
     )
 
