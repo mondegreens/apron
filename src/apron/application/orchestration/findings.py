@@ -278,12 +278,17 @@ def _serving(run: CohortRun) -> list[dict[str, Any]]:
 
 
 def _tasks(run: CohortRun) -> list[dict[str, Any]]:
-    by_solution: dict[str, list[str]] = defaultdict(list)
+    """One row per solution and scoring rule: attempts under different
+    evaluation protocols are never pooled into one verdict."""
+    by_solution: dict[tuple[str, str], list[str]] = defaultdict(list)
     for digest, a in run.records.attempts.items():
-        by_solution[a.solution_fingerprint].append(digest)
+        by_solution[(a.solution_fingerprint, a.evaluation_protocol_fingerprint)].append(digest)
     rows = []
-    for sfp, digests in sorted(by_solution.items(), key=lambda kv: _entry_key(run, kv[0])):
+    for (sfp, protocol_fp), digests in sorted(
+        by_solution.items(), key=lambda kv: (*_entry_key(run, kv[0][0]), kv[0][1])
+    ):
         entry = _entry(run, sfp)
+        protocol = run.records.protocols.get(protocol_fp)
         attempts = [run.records.attempts[d] for d in digests]
         verdict = (
             task_verdict(
@@ -304,6 +309,7 @@ def _tasks(run: CohortRun) -> list[dict[str, Any]]:
                 "retries": sum(1 for a in attempts if a.retries),
                 "accepted": len({a.case_id for a in attempts if a.accepted}),
                 "passed": verdict.passed if verdict else None,
+                "scoring": list(protocol.deterministic_checks) if protocol else None,
                 "records": sorted(digests),
             }
         )
@@ -608,11 +614,12 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
         NO_RECORDS,
     )
     blocks["tasks"] = _table(
-        ["Model", "GPU", "Accepted / cases", "Attempts (retries)", "Passed"],
+        ["Model", "GPU", "Scoring", "Accepted / cases", "Attempts (retries)", "Passed"],
         [
             [
                 _v(r["model"]),
                 _v(r["gpu"]),
+                ", ".join(r.get("scoring") or []) or "—",
                 f"{r['accepted']} / {_v(r['cases'])}",
                 f"{r['attempts']} ({r['retries']})",
                 _v(r["passed"]),

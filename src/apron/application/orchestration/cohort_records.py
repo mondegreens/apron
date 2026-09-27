@@ -24,6 +24,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from apron.domain.canonical import record_digest_hex
+from apron.domain.fingerprints import fingerprint_hex
 from apron.domain.protocols import RecordStore
 from apron.domain.schemas.authority import DecisionRequest
 from apron.domain.schemas.migrations import load_record
@@ -126,6 +127,9 @@ class CohortRecords:
     remediations: dict[str, RemediationRecord] = field(default_factory=dict)
     decisions: dict[str, DecisionReport] = field(default_factory=dict)
     solutions: dict[str, SolutionEntry] = field(default_factory=dict)
+    # Every evaluation protocol the manifest records, by fingerprint: one
+    # solution is scored under a second protocol when the scoring rule changes.
+    protocols: dict[str, EvaluationProtocol] = field(default_factory=dict)
     invalid: list[tuple[str, str]] = field(default_factory=list)  # (where, why)
 
     def reports_for(
@@ -209,6 +213,9 @@ def load_cohort_records(
         except ValidationError as exc:
             out.invalid.append((f"manifest line {n + 1}", str(exc)))
             continue
+        out.protocols.setdefault(
+            fingerprint_hex(entry.evaluation_protocol), entry.evaluation_protocol
+        )
         known = out.solutions.get(entry.solution_fingerprint)
         if known is None:
             out.solutions[entry.solution_fingerprint] = entry
@@ -221,7 +228,9 @@ def load_cohort_records(
     return out
 
 
-_RUN_METADATA = ("at", "label", "status", "coverage")
+# Not part of a solution's identity: when and why it ran, and which scoring
+# rule scored it (a changed rule re-scores the same solution).
+_RUN_METADATA = ("at", "label", "status", "coverage", "evaluation_protocol")
 
 
 def _identity(entry: SolutionEntry) -> dict[str, Any]:

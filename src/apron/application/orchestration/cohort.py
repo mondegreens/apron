@@ -886,12 +886,37 @@ class RecordedEvidence:
         return RunScope(task_evaluation=not self.attempts, serving=not self.serving_reports)
 
 
-def recorded_evidence(store: RecordStore, solution_fp: str) -> RecordedEvidence:
-    """Index stored records by solution fingerprint (single-operator scale)."""
+def evaluation_fingerprint(sp: SolutionPlan, inputs: AcceptedInputs) -> str:
+    """The evaluation protocol a run of *sp* under *inputs* scores its tasks with."""
+    model_id = sp.plan.resource_allocation.get("model_id", sp.model_id)
+    return EvidenceContext.bind(
+        request=inputs.request_for(model_id),
+        task_suite=inputs.task_suite,
+        application=inputs.application,
+        protocol_template=inputs.protocol_template,
+        solution_fp=sp.solution_fp,
+    ).evaluation_protocol_fingerprint
+
+
+def recorded_evidence(
+    store: RecordStore, solution_fp: str, evaluation_fp: str | None = None
+) -> RecordedEvidence:
+    """Index stored records by solution fingerprint (single-operator scale).
+
+    With ``evaluation_fp``, only task attempts scored under that protocol
+    count: attempts under another protocol neither complete the solution nor
+    enter its verdict (a changed scoring rule is re-run, never mixed in).
+    """
     found = RecordedEvidence()
     for digest in store.search(""):
         raw = store.retrieve(digest)
         if raw is None or raw.get("solution_fingerprint") != solution_fp:
+            continue
+        if (
+            evaluation_fp is not None
+            and raw.get("claim_scope") == "task_outcome"
+            and raw.get("evaluation_protocol_fingerprint") != evaluation_fp
+        ):
             continue
         if "producer" in raw and "proposed_configuration" in raw:
             found.claims.append(digest)
@@ -1054,7 +1079,9 @@ def _run_plans(
 
     unexpected_in_a_row = 0
     for sp in group_by_execution(plans) if ports.pool is not None else plans:
-        recorded = recorded_evidence(ports.store, sp.solution_fp)
+        recorded = recorded_evidence(
+            ports.store, sp.solution_fp, evaluation_fingerprint(sp, inputs)
+        )
         record_identity(sp, inputs, ports)
         if sp.status != "planned":
             if recorded.claims:
@@ -1154,7 +1181,7 @@ def qualify_cohort(
     )
     entries = []
     for sp in plans:
-        recorded = recorded_evidence(store, sp.solution_fp)
+        recorded = recorded_evidence(store, sp.solution_fp, evaluation_fingerprint(sp, inputs))
         evidence = EvidenceDigests(
             task_attempts=tuple(recorded.attempts) if recorded.attempts else None,
             serving_report=recorded.serving_reports[-1] if recorded.serving_reports else None,

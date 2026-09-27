@@ -307,7 +307,11 @@ def test_cohort_run() -> None:
     rates = live_rates(os.environ["RUNPOD_API_KEY"])
     ports = build_ports(rates=rates)
     planner = CohortPlanner(rates=rates)
-    approved = set(json.loads((RUN_DIR / "approved-candidates.json").read_text()))
+    # A later pass names its own owner-approved list and tags its outputs
+    # (cohort-ranking-<tag>.json); the first cohort's files stay as recorded.
+    approved_file = os.environ.get("APRON_APPROVED", "approved-candidates.json")
+    tag = f"-{os.environ['APRON_RUN_TAG']}" if os.environ.get("APRON_RUN_TAG") else ""
+    approved = set(json.loads((RUN_DIR / approved_file).read_text()))
     seeds = [s for s in load_seed() if s.key in approved]
     ranking = rank_candidates(
         seeds, Coverage(), measured=[], remaining_budget=ports.budget.remaining, rates=rates
@@ -315,7 +319,7 @@ def test_cohort_run() -> None:
     plans = [planner.plan_seed(r.seed) for r in ranking.ranked]
     inputs = load_inputs()
     _write(
-        "cohort-ranking.json",
+        f"cohort-ranking{tag}.json",
         {
             **ranking_record(
                 ranking,
@@ -331,7 +335,7 @@ def test_cohort_run() -> None:
     result = run_cohort(plans, inputs, ports)
     report = qualify_cohort(plans, inputs, ports.store, ports.clock, ports.ids)
     _write(
-        "cohort-result.json",
+        f"cohort-result{tag}.json",
         {
             "executed": {k: v.__dict__ for k, v in result.executed.items()},
             "prediction_errors": result.prediction_errors,

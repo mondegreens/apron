@@ -46,7 +46,7 @@ from apron.application.orchestration.correction import (
     CatalogEntry,
     CorrectionContext,
 )
-from apron.application.orchestration.evidence import protocol_template, solution_fingerprint
+from apron.application.orchestration.evidence import solution_fingerprint
 from apron.application.orchestration.plan_pipeline import run_plan_pipeline
 from apron.application.orchestration.pods import TargetPool
 from apron.application.orchestration.remediation import FixProofPorts
@@ -62,7 +62,6 @@ from apron.domain.schemas.primitives import HardwareSpec
 from apron.domain.schemas.records import DiagnosisRule
 from apron.domain.schemas.solutions import (
     DeploymentPlan,
-    EvaluationProtocol,
     RequestedExecutionSpec,
 )
 from apron.domain.schemas.tasks import ApplicationSpec, ServingWorkloadSpec, TaskSuiteSpec
@@ -76,6 +75,9 @@ REPO = Path(__file__).resolve().parents[3]
 RUN_DIR = REPO / "_dev_notes" / "cohort-run"
 FIXTURES = REPO / "tests" / "fixtures" / "phase-1a-run"
 SEED = REPO / "cohort" / "phase-1b-seed.json"
+# Phase 1b's scoring rule: Phase 1a's whitespace-normalized exact match, plus a
+# trailing full stop ignored ("Paris." answers "just the city name"; L5 review).
+PROTOCOL = REPO / "cohort" / "phase-1b-evaluation-protocol.json"
 RULES_DIR = REPO / "rules"
 AUTHORIZED_USD = 100.0  # D4: the owner's cap
 
@@ -100,7 +102,9 @@ def cohort_envelope(maximum_spend: float = AUTHORIZED_USD) -> AuthorizationEnvel
 
 
 def load_inputs(
-    fixtures: Path = FIXTURES, envelope: AuthorizationEnvelope | None = None
+    fixtures: Path = FIXTURES,
+    envelope: AuthorizationEnvelope | None = None,
+    protocol: Path = PROTOCOL,
 ) -> AcceptedInputs:
     return AcceptedInputs(
         request=DecisionRequest.model_validate_json(
@@ -112,11 +116,7 @@ def load_inputs(
         application=ApplicationSpec.model_validate_json(
             (fixtures / "application-spec.json").read_text()
         ),
-        protocol_template=protocol_template(
-            EvaluationProtocol.model_validate_json(
-                (fixtures / "evaluation-protocol.json").read_text()
-            )
-        ),
+        protocol_template=json.loads(protocol.read_text()),
         serving_workload=ServingWorkloadSpec.model_validate_json(
             (fixtures / "serving-workload-spec.json").read_text()
         ),

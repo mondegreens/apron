@@ -76,6 +76,8 @@ class GateRun:
     scanned: dict[str, str]  # path -> text, for the secret scan
     authorized: float
     ranking: dict[str, Any] | None = None  # cohort-ranking.json (§1 item 7)
+    # Later passes (cohort-ranking-<tag>.json), e.g. the re-scoring pass.
+    later_rankings: tuple[dict[str, Any], ...] = ()
 
 
 def load_run(run_dir: Path, rules_dir: Path, authorized: float) -> GateRun:
@@ -96,6 +98,9 @@ def load_run(run_dir: Path, rules_dir: Path, authorized: float) -> GateRun:
         scanned=scanned,
         authorized=authorized,
         ranking=json.loads(ranking_path.read_text("utf-8")) if ranking_path.exists() else None,
+        later_rankings=tuple(
+            json.loads(p.read_text("utf-8")) for p in sorted(run_dir.glob("cohort-ranking-*.json"))
+        ),
     )
 
 
@@ -575,13 +580,19 @@ def check_selection(run: GateRun) -> list[str]:
             problems.append(f"{e.label}: provider {req.provider} outside authorization")
         if cloud and req.cloud_type != cloud:
             problems.append(f"{e.label}: cloud {req.cloud_type} outside authorization")
-    recorded = [r["key"] for r in record["ranked"]]
-    if [r.seed.key for r in rerank(record).ranked] != recorded:
-        problems.append("recorded ranking is not what the scheduler derives from its inputs")
+    chosen: set[str] = set()
+    for n, ranking in enumerate((record, *run.later_rankings)):
+        recorded = [r["key"] for r in ranking["ranked"]]
+        chosen.update(recorded)
+        if [r.seed.key for r in rerank(ranking).ranked] != recorded:
+            where = "recorded ranking" if n == 0 else f"later ranking {n}"
+            problems.append(f"{where} is not what the scheduler derives from its inputs")
+        if n and not (ranking.get("authorization") or {}).get("permitted_providers"):
+            problems.append(f"later ranking {n} carries no authorization")
     entries, _ = _measured_entries(run)
     for e in entries:
         key = f"{e.model_id}@{e.requested_execution.gpu_sku}x{e.requested_execution.gpu_count}"
-        if e.coverage and key not in recorded:
+        if e.coverage and key not in chosen:
             problems.append(f"{key}: measured but never chosen by the scheduler")
     return problems
 

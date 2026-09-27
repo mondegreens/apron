@@ -27,6 +27,7 @@ from apron.application.orchestration.cohort import (
     NoCapacityError,
     RunScope,
     close_pool,
+    evaluation_fingerprint,
     execute_when_available,
     load_attempts,
     recorded_evidence,
@@ -308,7 +309,8 @@ def prove_fix(
     # 5-6. Fixed boot of the object diagnosis returned, then the request re-run.
     fixed = fix.plan_solution(p_fix, f"class{case.failure_class}-fixed")
     proof.fixed_solution_fp = fixed.solution_fp
-    recorded = recorded_evidence(ports.store, fixed.solution_fp)
+    evaluation_fp = evaluation_fingerprint(fixed, inputs)
+    recorded = recorded_evidence(ports.store, fixed.solution_fp, evaluation_fp)
     scope = recorded.missing(fixed)
     if scope is not None:
         try:
@@ -322,7 +324,7 @@ def prove_fix(
                 ports, inputs, bad, None, diagnosis, proof, proving=(), reason="no capacity"
             )
             return proof
-        recorded = recorded_evidence(ports.store, fixed.solution_fp)
+        recorded = recorded_evidence(ports.store, fixed.solution_fp, evaluation_fp)
     boot_digest = recorded.memory_reports[0] if recorded.memory_reports else None
     if boot_digest:
         proof.mechanism_outcome = "verified"

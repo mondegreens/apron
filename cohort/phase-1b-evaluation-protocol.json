@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "harness": "deterministic_exact_match",
+  "harness_version": "0.1",
+  "dataset_snapshot": null,
+  "scorer": "deterministic_exact_match",
+  "rubric": null,
+  "deterministic_checks": [
+    "whitespace_normalized_exact_match",
+    "strip_terminal_punctuation"
+  ],
+  "judge_model": null,
+  "judge_prompt": null,
+  "sampling_temperature": 0.0,
+  "sampling_top_p": null,
+  "seeds": [
+    42
+  ],
+  "repetitions": 1,
+  "concurrency": 1,
+  "stopping_rules": [],
+  "aggregation_method": "pass_rate",
+  "uncertainty_method": null
+}

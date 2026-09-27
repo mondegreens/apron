@@ -252,6 +252,39 @@ def test_resume_skips_complete_and_reruns_only_missing_steps(tmp_path: Path) -> 
     assert len(after.serving_reports) == 1
 
 
+def test_a_changed_scoring_rule_reruns_tasks_and_never_mixes_attempts(tmp_path: Path) -> None:
+    """L5 review: attempts were indexed by solution only, so a new protocol
+    would have looked complete (skipped) or pooled both protocols' attempts."""
+    from dataclasses import replace
+
+    from apron.application.orchestration.cohort import evaluation_fingerprint
+
+    cohort_ports, engine, *_ = ports(tmp_path, _healthy)
+    sp = solution("Qwen/Qwen3-1.7B", "NVIDIA GeForce RTX 4090")
+    old = accepted_inputs()
+    run_cohort([sp], old, cohort_ports)
+    template = dict(old.protocol_template)
+    template["deterministic_checks"] = [
+        *template["deterministic_checks"],
+        "strip_terminal_punctuation",
+    ]
+    new = replace(old, protocol_template=template)
+    old_fp, new_fp = evaluation_fingerprint(sp, old), evaluation_fingerprint(sp, new)
+    assert old_fp != new_fp
+    assert recorded_evidence(cohort_ports.store, sp.solution_fp, new_fp).attempts == []
+
+    serving_before = len(recorded_evidence(cohort_ports.store, sp.solution_fp).serving_reports)
+    rerun = run_cohort([sp], new, cohort_ports)
+    assert sp.label in rerun.executed and len(engine.booted) == 2
+    under_new = recorded_evidence(cohort_ports.store, sp.solution_fp, new_fp).attempts
+    under_old = recorded_evidence(cohort_ports.store, sp.solution_fp, old_fp).attempts
+    assert len(under_new) == len(under_old) == 3
+    assert not set(under_new) & set(under_old)
+    # serving does not depend on the scoring rule: not measured again
+    after = recorded_evidence(cohort_ports.store, sp.solution_fp)
+    assert len(after.serving_reports) == serving_before
+
+
 def test_outside_authorization_is_refused(tmp_path: Path) -> None:
     cohort_ports, engine, *_ = ports(tmp_path, _healthy)
     sp = solution("Qwen/Qwen3-1.7B", "NVIDIA GeForce RTX 4090")
