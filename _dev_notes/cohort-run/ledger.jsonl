@@ -30,3 +30,9 @@
 {"amount": 2.65, "at": "2026-09-26T23:56:06.900960+00:00", "label": "class5-broken", "op": "hold"}
 {"amount": 0.0, "at": "2026-09-26T23:59:42.381785+00:00", "label": "class5-broken", "op": "annotate", "pod_id": "nuuqycrd55wa07"}
 {"amount": 0.519583, "at": "2026-09-27T00:01:01.005594+00:00", "estimate": 2.65, "label": "class5-broken", "op": "settle"}
+{"amount": 0.477, "at": "2026-09-27T00:02:18.328202+00:00", "label": "l0a3-run1", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T00:08:46.775997+00:00", "label": "l0a3-run1", "op": "annotate", "pod_id": "jaw52t8omxeh6w"}
+{"amount": 0.107309, "at": "2026-09-27T00:11:00.372082+00:00", "estimate": 0.477, "label": "l0a3-run1", "op": "settle"}
+{"amount": 0.477, "at": "2026-09-27T00:11:01.104989+00:00", "label": "l0a3-run2", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-27T00:16:14.326395+00:00", "label": "l0a3-run2", "op": "annotate", "pod_id": "fv58mbh1ieedqv"}
+{"amount": 0.091689, "at": "2026-09-27T00:18:27.157704+00:00", "estimate": 0.477, "label": "l0a3-run2", "op": "settle"}

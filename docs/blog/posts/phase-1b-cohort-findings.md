@@ -14,9 +14,9 @@ drafted from _dev_notes/cohort-run/notebook.md after the run, then the owner
 rewrites it. This post stays `draft: true` until the owner publishes it. -->
 
 <!-- findings:headline -->
-- Models measured: 0 on 0 GPU types
+- Models measured: 1 on 1 GPU types
 - Failure classes fixed and re-verified: 0 of 6
-- Total cost: $2.63 of the $100 cap (failed boots included: $2.15)
+- Total cost: $2.83 of the $100 cap (failed boots included: $2.15)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -37,9 +37,9 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 |---|---|
 | Provider / cloud | runpod / SECURE |
 | Runner image | `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
-| Models measured | — |
-| GPUs measured | — |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T00:01:01.014932+00:00 |
+| Models measured | Qwen/Qwen3-1.7B |
+| GPUs measured | NVIDIA GeForce RTX 4090 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-27T00:18:27.164895+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -47,13 +47,18 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 ## Memory: predicted vs measured
 
 <!-- findings:memory -->
-_No records yet._
+| Model | GPU | Weights pred. GiB | Weights meas. GiB | Δ weights | Total pred. GiB | Persistent meas. GiB | Δ total | Record |
+|---|---|---|---|---|---|---|---|---|
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 3.78 | 3.22 | +0.56 | 5.65 | 4.11 | +1.54 | `1220066392da9480` |
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 3.78 | 3.22 | +0.56 | 5.65 | 4.11 | +1.54 | `122056e563edf84b` |
 <!-- /findings:memory -->
 
 Repeat boots of one solution bound the measurement noise:
 
 <!-- findings:repeats -->
-_No solution was measured twice yet._
+| Model | GPU | Boots | Weights spread % | KV spread % | Activation spread % |
+|---|---|---|---|---|---|
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 2 | 0 | 0 | 0 |
 <!-- /findings:repeats -->
 
 Candidates that never ran, by prediction:
@@ -82,13 +87,18 @@ measurement.
 ## Task results
 
 <!-- findings:tasks -->
-_No records yet._
+| Model | GPU | Accepted / cases | Attempts (retries) | Passed |
+|---|---|---|---|---|
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 3 / 3 | 6 (0) | True |
 <!-- /findings:tasks -->
 
 ## Serving against the declared SLO
 
 <!-- findings:serving -->
-_No records yet._
+| Model | GPU | p99 TTFT ms | p99 TPOT ms | SLO TTFT / TPOT ms | Completed / failed | Verdict | Record |
+|---|---|---|---|---|---|---|---|
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 52.7041 | 5.49613 | 2000 / 100 | 50 / 0 | pass | `1220073713910e21` |
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 | 50.7468 | 5.44501 | 2000 / 100 | 50 / 0 | pass | `1220d33394092906` |
 <!-- /findings:serving -->
 
 ## What it cost
@@ -100,15 +110,15 @@ Failed boots and retries are included.
 |---|---|---|---|---|
 | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.6063 | 1 (0.6063) | 1 |
 | ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 | NVIDIA H100 80GB HBM3 x1 | 0.3099 | 1 (0.3099) | 1 |
-| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.4928 | 3 (0.4928) | 3 |
+| Qwen/Qwen3-1.7B | NVIDIA GeForce RTX 4090 x1 | 0.6918 | 3 (0.4928) | 13 |
 | Qwen/Qwen3-14B | NVIDIA GeForce RTX 4090 x1 | 0.1093 | 1 (0.1093) | 1 |
 | Qwen/Qwen3-8B | NVIDIA A100-SXM4-80GB x4 | 0.5196 | 1 (0.5196) | 1 |
 | Qwen/Qwen3-8B | NVIDIA GeForce RTX 4090 x1 | 0.0273 | 1 (0.0273) | 1 |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | 0.0683 | 1 (0.0683) | 1 |
 | mistralai/Mistral-7B-Instruct-v0.3 | NVIDIA GeForce RTX 4090 x1 | 0.0157 | 1 (0.0157) | 1 |
-| **Records total** |  | **2.1493** |  |  |
+| **Records total** |  | **2.3483** |  |  |
 | Classifier calls (ledger) |  | 0.0000 |  |  |
-| **Ledger spent** |  | **2.6263** |  | cap $100 |
+| **Ledger spent** |  | **2.8253** |  | cap $100 |
 <!-- /findings:cost -->
 
 ## How to reproduce

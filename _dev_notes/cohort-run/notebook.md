@@ -142,3 +142,23 @@ unless marked.  Machine events are in `events.jsonl`.
   whole group and execs vLLM (a pipe test reproduces the hang: old 8.0 s vs
   new 0.0 s); `execute()` enforces its own deadline and raises
   RemoteCommandTimeout (never retried); downloads get a longer one.
+- **Class 5 (Qwen3-8B TP 3 on 4x A100-SXM, $0.52): failed as named.**
+- **Verification pass over all six L0-F logs (owner asked for evidence, not
+  assumptions):** each failure checked against where vLLM actually raised it
+  in the pinned source, not only by text match — class 1
+  `linear.py:192` under `gpu/model_runner.py:384` (frames in the log);
+  class 2 `kv_cache_utils.py:879` (innermost engine frame); class 3 message
+  template `config/model.py:2501-2504`; class 4 `config/model.py:2262`;
+  class 5 `raise` at `config/model.py:1414`; class 6 `raise` at
+  `config/vllm.py:791`.
+- **L0-A3 PASSED (00:02-00:18 UTC, pods `jaw52t8omxeh6w` and
+  `fv58mbh1ieedqv`, $0.10 each).**  Watched from inside the pod every 2 min.
+  Both runs: healthy, 3/3 task cases accepted, serving 50/50 completed,
+  p99 TTFT ~51 ms / TPOT 5.4 ms (SLO pass), F7 check token-free.  The two
+  memory reports are distinct records from different hosts (different
+  execution fingerprints) with byte-identical weights, KV cache, activation
+  and persistent memory: 0% spread, no uncertainty note needed.  Limit: two
+  boots on one GPU type.  First real prediction deltas: weights +0.56 GiB,
+  total +1.54 GiB (calculator over-predicts Qwen3-1.7B).
+- L0-A age-path proof, attempt 1: RunPod API "Something went wrong" at
+  creation, no pod, $0; retried.

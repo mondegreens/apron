@@ -3,8 +3,8 @@
     "authorized": 100.0,
     "failed_boot_total": 2.149275,
     "ledger_classifier": 0,
-    "ledger_settled": 2.626275,
-    "ledger_spent": 2.626275,
+    "ledger_settled": 2.825273,
+    "ledger_spent": 2.825273,
     "per_solution": [
       {
         "cost": 0.606296,
@@ -31,7 +31,7 @@
         ]
       },
       {
-        "cost": 0.492823,
+        "cost": 0.691819,
         "failed_boot_cost": 0.492823,
         "failed_boots": 3,
         "gpu": "NVIDIA GeForce RTX 4090",
@@ -39,9 +39,19 @@
         "label": "l0a3-run1",
         "model": "Qwen/Qwen3-1.7B",
         "records": [
+          "1220066392da9480498cd4d467896ce42d89d66605a5a0ad783a12c4615fddb32493",
+          "1220073713910e21ee0e8c1831e6ccf77ee83beba42832b3f7dc14613f14064c3787",
+          "12201194f88627ec3f28664da1633d7276714619827ed2956bec26c3fb52e1e8b2a5",
           "122016a2683145411b02d0b4db83379a2ef5c446c8727b73edd254490dbcd9fb0003",
+          "12203417638dd813ee4bff84d64273024a3f58b41e2eeca73bbf1af06858795532bf",
           "1220348ef02b049d4a023353f2614899f8df69eb5f5c12b9005401d3cdc9e6c56200",
-          "1220c680fcc992ddaed4a2fe12932d260df60e27ac18a4aaa1aa6aa86176dad01242"
+          "122056e563edf84b102233abdb30ce90733de29eaa8ba8e23b06bbf302188c3ca8e6",
+          "122068c372c3fa7a65ee0920a0032b6ae05306d9db9249115614c92826b199b47553",
+          "1220805d46a1bfc0cf068b7cb3ee1b80853defa0a8eeed341867f5a0b877cf7d01d0",
+          "1220c680fcc992ddaed4a2fe12932d260df60e27ac18a4aaa1aa6aa86176dad01242",
+          "1220d3339409290661dc36d71cf93f39545ad8e9fd7757a0496bfd80b62acacfc7e7",
+          "1220d50f1d7cd237f0dcc7326728546cbc0fb44e7f2ed0e564b3960b3d0502c5225f",
+          "1220df2ce6e23fc836a75e0623ff0b72ab9e301c43cca97af775c0545e74cf8d4aa4"
         ]
       },
       {
@@ -105,7 +115,7 @@
         ]
       }
     ],
-    "records_total": 2.149275
+    "records_total": 2.348271
   },
   "fixes": [
     {
@@ -145,23 +155,100 @@
       "status": "not run"
     }
   ],
-  "memory": [],
+  "memory": [
+    {
+      "claim": "12206a26099b8f3a1fe281ef226476fe0d1e907bbcf4e194e51ff6a80ca2c69f631e",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 114277408,
+      "measured_persistent_bytes": 4413078896,
+      "measured_weight_bytes": 3457448673,
+      "model": "Qwen/Qwen3-1.7B",
+      "notes": [],
+      "predicted_total_bytes": 6063429068,
+      "predicted_weight_bytes": 4063479808,
+      "record": "1220066392da9480498cd4d467896ce42d89d66605a5a0ad783a12c4615fddb32493",
+      "total_delta_bytes": 1650350172,
+      "weight_delta_bytes": 606031135
+    },
+    {
+      "claim": "12206a26099b8f3a1fe281ef226476fe0d1e907bbcf4e194e51ff6a80ca2c69f631e",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 114277408,
+      "measured_persistent_bytes": 4413078896,
+      "measured_weight_bytes": 3457448673,
+      "model": "Qwen/Qwen3-1.7B",
+      "notes": [],
+      "predicted_total_bytes": 6063429068,
+      "predicted_weight_bytes": 4063479808,
+      "record": "122056e563edf84b102233abdb30ce90733de29eaa8ba8e23b06bbf302188c3ca8e6",
+      "total_delta_bytes": 1650350172,
+      "weight_delta_bytes": 606031135
+    }
+  ],
   "prediction_errors": [],
-  "record_count": 18,
-  "repeat_measurements": [],
-  "serving": [],
+  "record_count": 28,
+  "repeat_measurements": [
+    {
+      "activation_spread_pct": 0.0,
+      "boots": 2,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "kv_spread_pct": 0.0,
+      "model": "Qwen/Qwen3-1.7B",
+      "records": [
+        "1220066392da9480498cd4d467896ce42d89d66605a5a0ad783a12c4615fddb32493",
+        "122056e563edf84b102233abdb30ce90733de29eaa8ba8e23b06bbf302188c3ca8e6"
+      ],
+      "weight_spread_pct": 0.0
+    }
+  ],
+  "serving": [
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "Qwen/Qwen3-1.7B",
+      "output_token_throughput": 691.4062280654558,
+      "p99_tpot_ms": 5.496132782858423,
+      "p99_ttft_ms": 52.7041057869792,
+      "recomputed_verdict": "pass",
+      "record": "1220073713910e21ee0e8c1831e6ccf77ee83beba42832b3f7dc14613f14064c3787",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "Qwen/Qwen3-1.7B",
+      "output_token_throughput": 696.2651972016934,
+      "p99_tpot_ms": 5.445006462034043,
+      "p99_ttft_ms": 50.74676385149359,
+      "recomputed_verdict": "pass",
+      "record": "1220d3339409290661dc36d71cf93f39545ad8e9fd7757a0496bfd80b62acacfc7e7",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    }
+  ],
   "setup": {
     "authorized": 100.0,
     "cloud_types": [
       "SECURE"
     ],
     "first_event": "2026-09-26T21:48:08.665977+00:00",
-    "gpus_measured": [],
+    "gpus_measured": [
+      "NVIDIA GeForce RTX 4090"
+    ],
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-27T00:01:01.014932+00:00",
-    "models_measured": [],
+    "last_event": "2026-09-27T00:18:27.164895+00:00",
+    "models_measured": [
+      "Qwen/Qwen3-1.7B"
+    ],
     "providers": [
       "runpod"
     ],
@@ -178,5 +265,23 @@
       "fingerprint": "1220e96408006e07d5195e411433887559500bfa58a8f533d2db5bab709a73cee159"
     }
   },
-  "tasks": []
+  "tasks": [
+    {
+      "accepted": 3,
+      "attempts": 6,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "Qwen/Qwen3-1.7B",
+      "passed": true,
+      "records": [
+        "12201194f88627ec3f28664da1633d7276714619827ed2956bec26c3fb52e1e8b2a5",
+        "12203417638dd813ee4bff84d64273024a3f58b41e2eeca73bbf1af06858795532bf",
+        "122068c372c3fa7a65ee0920a0032b6ae05306d9db9249115614c92826b199b47553",
+        "1220805d46a1bfc0cf068b7cb3ee1b80853defa0a8eeed341867f5a0b877cf7d01d0",
+        "1220d50f1d7cd237f0dcc7326728546cbc0fb44e7f2ed0e564b3960b3d0502c5225f",
+        "1220df2ce6e23fc836a75e0623ff0b72ab9e301c43cca97af775c0545e74cf8d4aa4"
+      ],
+      "retries": 0
+    }
+  ]
 }
