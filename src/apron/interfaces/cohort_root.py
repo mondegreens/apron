@@ -26,7 +26,10 @@ from apron.adapters.backends.rule_loader import load_rules
 from apron.adapters.backends.rule_repository import FileRuleRepository
 from apron.adapters.backends.runpod import CLOUD_TYPE, GPU_SPECS, RunPodTarget
 from apron.adapters.backends.vllm_engine import VllmEngineAdapter
-from apron.adapters.backends.vllm_quantization import load_problems
+from apron.adapters.backends.vllm_quantization import (
+    default_max_num_batched_tokens,
+    load_problems,
+)
 from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
 from apron.adapters.evidence.hf_hub import HFHubResolver
 from apron.adapters.evidence.hf_lineage import HubLineage
@@ -227,6 +230,9 @@ class CohortPlanner:
             clock=self.clock,
             id_gen=self.ids,
             tensor_parallel=tensor_parallel,
+            max_num_batched_tokens=default_max_num_batched_tokens(
+                hardware_for(gpu).total_memory_bytes, gpu
+            ),
             load_check=load_problems,
         )
         if pipeline.model_spec is None or pipeline.claim is None:

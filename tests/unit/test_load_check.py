@@ -16,8 +16,10 @@ _LAYER = "model.layers.0.mlp.down_proj"
 
 
 def test_the_class6_checkpoint_is_refused_before_any_boot() -> None:
-    names = [f"{_LAYER}.{s}" for s in ("qweight", "scales", "forward_hadamard_matrix",
-                                         "backward_hadamard_matrix")]
+    names = [
+        f"{_LAYER}.{s}"
+        for s in ("qweight", "scales", "forward_hadamard_matrix", "backward_hadamard_matrix")
+    ]
     problems = load_problems([*names, "model.norm.weight"], _FPQ)
     assert problems is not None and len(problems) == 1
     assert problems[0].startswith("backward_hadamard_matrix x1")
@@ -44,5 +46,7 @@ def test_what_cannot_be_checked_says_so() -> None:
     assert load_problems(["x.weight"], None) is None  # unquantized: the main load path
     assert load_problems(["x.weight"], {"quant_method": "hqq"}) is None
     mixed = {"g": {"weights": {"num_bits": 4, "type": "float"}}}
-    assert load_problems(["x.weight"], {"quant_method": "compressed-tensors",
-                                         "config_groups": mixed}) is None
+    assert (
+        load_problems(["x.weight"], {"quant_method": "compressed-tensors", "config_groups": mixed})
+        is None
+    )

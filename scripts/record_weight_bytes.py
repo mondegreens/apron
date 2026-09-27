@@ -40,11 +40,16 @@ def main() -> int:
         if not tensors or config_raw is None:
             print(f"{model_id}: no safetensors headers or config", file=sys.stderr)
             return 1
+        config = json.loads(config_raw)
+        text = config.get("text_config") if isinstance(config.get("text_config"), dict) else {}
         models[model_id] = {
             "revision": revision,
             "total_bytes": sum(tensors.values()),
             "lm_head_bytes": tensors.get("lm_head.weight", 0),
-            "tie_word_embeddings": _tied_embeddings(json.loads(config_raw)),
+            "tie_word_embeddings": _tied_embeddings(config),
+            "vocab_size": config.get("vocab_size", text.get("vocab_size")),
+            "hidden_size": config.get("hidden_size", text.get("hidden_size")),
+            "torch_dtype": config.get("torch_dtype", text.get("torch_dtype", "bfloat16")),
         }
         print(model_id, models[model_id])
     OUT.parent.mkdir(parents=True, exist_ok=True)

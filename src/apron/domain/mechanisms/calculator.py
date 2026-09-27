@@ -35,6 +35,29 @@ def _kv_dtype_bytes(metadata: dict[str, Any], inputs: CalculatorInput) -> int:
     return DTYPE_BYTES.get(metadata.get("torch_dtype", "bfloat16"), 2)
 
 
+def _activation_estimate(metadata: dict[str, Any], inputs: CalculatorInput, tp: int) -> int | None:
+    """Peak activation vLLM measures in its startup profiling run.
+
+    Empirical, from the 15 cohort boots (L5, 2026-09-27): the peak tracks the
+    output projection's size (vocab x hidden x dtype, per tensor-parallel
+    rank) plus two hidden-state buffers per profiled token (the engine's
+    ``max_num_batched_tokens``).  It does not track the model's weights: the
+    old estimate (10% of weights) was 4x high for Qwen3-32B and 4x low for
+    Qwen3-0.6B.  12 of 13 single-GPU points are within ~10%.  Why the output
+    projection's size appears in the peak is not traced to a vLLM line; the
+    one TP 2 point (Qwen3-8B, measured 0.21 GiB against 0.61) does not fit.
+    ``None`` when the config lacks the vocabulary or hidden size.
+    """
+    vocab = metadata.get("vocab_size")
+    hidden = metadata.get("hidden_size")
+    if not vocab or not hidden:
+        return None
+    dtype_bytes = DTYPE_BYTES.get(metadata.get("torch_dtype", "bfloat16"), 2)
+    tokens = int(inputs.execution_spec_data.get("max_num_batched_tokens", 2048))
+    output_projection = -(-int(vocab) * int(hidden) * dtype_bytes // tp)
+    return output_projection + 2 * tokens * int(hidden) * dtype_bytes
+
+
 def _tensor_parallel(inputs: CalculatorInput) -> int:
     return max(1, int(inputs.execution_spec_data.get("tensor_parallel", 1) or 1))
 
@@ -67,15 +90,6 @@ def _extract_gqa_params(metadata: dict[str, Any]) -> dict[str, int] | None:
         "head_dim": head_dim,
         "num_attention_heads": int(num_attention_heads),
     }
-
-
-def _adjust_activation_for_moe(activation_estimate: int, metadata: dict[str, Any]) -> int:
-    """Scale activation estimate by the MoE expert routing ratio."""
-    n_routed = metadata.get("n_routed_experts", 0)
-    n_active = metadata.get("num_experts_per_tok", 0)
-    if n_routed > 0 and n_active > 0 and n_active < n_routed:
-        return int(activation_estimate * n_active / n_routed)
-    return activation_estimate
 
 
 def _apply_sliding_window(
@@ -174,7 +188,9 @@ def calculate_autoregressive_decode(
         kv_per_token, seq_len, max_batch_size, metadata
     )
 
-    activation_estimate = _adjust_activation_for_moe(int(weight_bytes * 0.10), metadata)
+    activation_estimate = _activation_estimate(metadata, inputs, tp)
+    if activation_estimate is None:
+        return None
 
     overhead = _common_overhead(weight_bytes, kv_cache, activation_estimate, inputs)
 
@@ -252,7 +268,9 @@ def calculate_mla_decode(
         kv_per_token, seq_len, max_batch_size, metadata
     )
 
-    activation_estimate = _adjust_activation_for_moe(int(weight_bytes * 0.10), metadata)
+    activation_estimate = _activation_estimate(metadata, inputs, tp)
+    if activation_estimate is None:
+        return None
 
     overhead = _common_overhead(weight_bytes, kv_cache, activation_estimate, inputs)
 

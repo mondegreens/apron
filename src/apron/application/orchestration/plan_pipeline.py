@@ -85,6 +85,7 @@ def run_plan_pipeline(
     clock: Clock,
     id_gen: IdGenerator,
     tensor_parallel: int = 1,
+    max_num_batched_tokens: int | None = None,
     load_check: Callable[[Iterable[str], dict[str, Any] | None], tuple[str, ...] | None]
     | None = None,
 ) -> PlanPipelineResult:
@@ -136,7 +137,18 @@ def run_plan_pipeline(
     claim = planning_source.predict(
         calc_metadata,
         hardware,
-        {"isl": 512, "osl": 128, "max_batch_size": 4, "tensor_parallel": tensor_parallel},
+        {
+            "isl": 512,
+            "osl": 128,
+            "max_batch_size": 4,
+            "tensor_parallel": tensor_parallel,
+            # The engine's profiling run size on this GPU (sizes the activation peak).
+            **(
+                {"max_num_batched_tokens": max_num_batched_tokens}
+                if max_num_batched_tokens
+                else {}
+            ),
+        },
     )
 
     if claim.proposed_configuration.get("status") == "unknown":

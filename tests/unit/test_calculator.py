@@ -351,22 +351,34 @@ def test_mla_missing_kv_lora_rank_returns_none():
 # ---------------------------------------------------------------------------
 
 
-def test_moe_activation_adjustment():
-    """DeepSeek-V3: 256 experts, 8 active → activation scaled by 8/256."""
+def test_moe_activation_is_not_scaled_by_the_routing_ratio():
+    """The old estimate scaled 10% of weights by 8/256 for DeepSeek-V3.  The
+    profiled peak tracks the output projection instead; DeepSeek-V2-Lite (MoE)
+    measured 0.41 GiB against 0.41 predicted with no routing factor (L5)."""
     result = calculate(_deepseek_input())
     assert result is not None
-    weight_bytes = 671_000_000_000
-    full_activation = int(weight_bytes * 0.10)
-    expected = int(full_activation * 8 / 256)
+    config = _deepseek_input().artifact_metadata
+    expected = (
+        config["vocab_size"] * config["hidden_size"] * 2 + 2 * 2048 * config["hidden_size"] * 2
+    )
     assert result["activation_estimate_bytes"] == expected
 
 
-def test_non_moe_activation_unchanged():
-    """Qwen3-8B has no MoE fields — activation stays at 10% of weights."""
+def test_activation_tracks_the_output_projection_not_the_weights():
+    """Qwen3-8B measured 1.19 GiB of peak activation on an RTX 4090 (2048
+    profiled tokens); 10% of its weights would be 1.53 GiB, and its GPTQ copy
+    with a third of the weights measured the same 1.19 GiB (L5)."""
     result = calculate(_qwen3_input())
     assert result is not None
-    expected = int(16_381_470_720 * 0.10)
+    expected = 151936 * 4096 * 2 + 2 * 2048 * 4096 * 2
     assert result["activation_estimate_bytes"] == expected
+    assert abs(expected - int(1.19 * 2**30)) < 0.03 * 2**30
+
+
+def test_activation_needs_vocabulary_and_hidden_size():
+    inputs = _qwen3_input()
+    metadata = {k: v for k, v in inputs.artifact_metadata.items() if k != "vocab_size"}
+    assert calculate(inputs.model_copy(update={"artifact_metadata": metadata})) is None
 
 
 # ---------------------------------------------------------------------------
@@ -472,6 +484,8 @@ def test_mla_latent_cache_is_not_split_by_tensor_parallel():
         "num_hidden_layers": 27,
         "num_attention_heads": 16,
         "num_key_value_heads": 16,
+        "vocab_size": 102400,
+        "hidden_size": 2048,
         "kv_lora_rank": 512,
         "qk_rope_head_dim": 64,
         "torch_dtype": "bfloat16",

@@ -121,6 +121,9 @@ class RecordedWeightBytes(_Strict):
     total_bytes: int
     lm_head_bytes: int
     tie_word_embeddings: bool
+    vocab_size: int
+    hidden_size: int
+    torch_dtype: str
 
 
 def load_weight_bytes(data: dict[str, Any]) -> dict[str, RecordedWeightBytes]:

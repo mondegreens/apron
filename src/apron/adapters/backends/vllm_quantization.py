@@ -177,3 +177,24 @@ def load_problems(
         for suffix, count in sorted(unknown.items())
         if suffix not in allowed
     )
+
+
+# ---------------------------------------------------------------------------
+# Scheduler defaults `vllm serve` picks for a GPU (they size the profiling run)
+# ---------------------------------------------------------------------------
+
+_GIB = 1 << 30
+
+
+def default_max_num_batched_tokens(total_memory_bytes: int, gpu_name: str) -> int:
+    """``max_num_batched_tokens`` v0.29.0 uses for the OpenAI server on this GPU.
+
+    ``engine/arg_utils.py:2698-2727`` (``get_batch_defaults``): 16384 at
+    >= 160 GiB; 8192 at >= 70 GiB unless the name contains "a100"; else 2048.
+    The startup profiling forward runs this many tokens.
+    """
+    if total_memory_bytes >= 160 * _GIB:
+        return 16384
+    if total_memory_bytes >= 70 * _GIB and "a100" not in gpu_name.lower():
+        return 8192
+    return 2048
