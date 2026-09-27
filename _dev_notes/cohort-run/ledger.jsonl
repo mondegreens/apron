@@ -208,3 +208,29 @@
 {"amount": 0.0, "at": "2026-09-27T16:01:59.002744+00:00", "label": "pod-idle:idy00eidbjrj64", "op": "annotate", "pod_id": "idy00eidbjrj64"}
 {"amount": 0.023106, "at": "2026-09-27T16:01:59.004349+00:00", "estimate": 0.4717, "label": "Qwen/Qwen3-0.6B@NVIDIA GeForce RTX 4090x1", "op": "settle"}
 {"amount": 0.000114, "at": "2026-09-27T16:01:59.555880+00:00", "estimate": 0.123333, "label": "pod-idle:idy00eidbjrj64", "op": "settle"}
+{"amount": -0.233918, "at": "2026-09-27T17:27:04.563563+00:00", "label": "reconcile:correct:i4wm7xzhu4r1wz", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.012514, "at": "2026-09-27T17:27:04.563785+00:00", "label": "reconcile:correct:n99tlxduol1a1q", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.007304, "at": "2026-09-27T17:27:39.676797+00:00", "label": "reconcile:correct:17xicayf2q4xfm", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.002083, "at": "2026-09-27T17:27:39.677602+00:00", "label": "reconcile:correct:1hy0qrztswpvsn", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.003831, "at": "2026-09-27T17:27:39.678070+00:00", "label": "reconcile:correct:1zyr660l6vlrdw", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.003848, "at": "2026-09-27T17:27:39.678310+00:00", "label": "reconcile:correct:9be0zp7egjw2mn", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.005572, "at": "2026-09-27T17:27:39.678498+00:00", "label": "reconcile:correct:adf11ef12rl1qa", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.005555, "at": "2026-09-27T17:27:39.678866+00:00", "label": "reconcile:correct:de5pcy04eqo3f1", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.003803, "at": "2026-09-27T17:27:39.679261+00:00", "label": "reconcile:correct:fv58mbh1ieedqv", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.006415, "at": "2026-09-27T17:27:39.679489+00:00", "label": "reconcile:correct:fy7vvlu4f5l5l5", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.003875, "at": "2026-09-27T17:27:39.679667+00:00", "label": "reconcile:correct:hi4g7vmxjzj6gc", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.008048, "at": "2026-09-27T17:27:39.680106+00:00", "label": "reconcile:correct:ib72nxo5ln3a0n", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.0073, "at": "2026-09-27T17:27:39.680293+00:00", "label": "reconcile:correct:idy00eidbjrj64", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.003839, "at": "2026-09-27T17:27:39.680466+00:00", "label": "reconcile:correct:j4fbisf6dwj12x", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.003829, "at": "2026-09-27T17:27:39.680630+00:00", "label": "reconcile:correct:jaw52t8omxeh6w", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.002944, "at": "2026-09-27T17:27:39.680781+00:00", "label": "reconcile:correct:koirwqhngdflxi", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.004727, "at": "2026-09-27T17:27:39.680925+00:00", "label": "reconcile:correct:myporq0l8cpm99", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.005334, "at": "2026-09-27T17:27:39.681055+00:00", "label": "reconcile:correct:n6xd7bcy6rpwrx", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.000545, "at": "2026-09-27T17:27:39.681225+00:00", "label": "reconcile:correct:nuuqycrd55wa07", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.005557, "at": "2026-09-27T17:27:39.681512+00:00", "label": "reconcile:correct:os8pm9616t4z9v", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.005304, "at": "2026-09-27T17:27:39.681724+00:00", "label": "reconcile:correct:ot51tsgbndl8ju", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.005642, "at": "2026-09-27T17:27:39.681907+00:00", "label": "reconcile:correct:rpxdrib9e80tkn", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.005293, "at": "2026-09-27T17:27:39.682076+00:00", "label": "reconcile:correct:tbwmztvyaiaej2", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.00737, "at": "2026-09-27T17:27:39.682226+00:00", "label": "reconcile:correct:uctmsoz02bawey", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.006342, "at": "2026-09-27T17:27:39.682382+00:00", "label": "reconcile:correct:uek7y94mhlfqam", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.007276, "at": "2026-09-27T17:27:39.682530+00:00", "label": "reconcile:correct:uen772hwen7url", "op": "correct", "source": "runpod billing API"}

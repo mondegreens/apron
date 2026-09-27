@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 13 on 6 GPU types
 - Failure classes fixed and re-verified: 5 of 6
-- Total cost: $10.17 of the $100 cap (failed boots included: $4.32)
+- Total cost: $10.07 of the $100 cap (failed boots included: $4.32)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -216,8 +216,9 @@ Failed boots and retries are included.
 | Classifier calls (ledger) |  | 0.1651 |  |  |
 | Pooled pods between solutions (ledger) |  | 0.0278 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  | 0.6502 |  |  |
-| **Ledger spent** |  | **10.1693** |  | cap $100 |
-| RunPod billed, same window |  | 9.7224 |  | not billed yet: 1 pod(s) |
+| Corrections to RunPod's bill (estimates, clock differences) |  | -0.0998 |  |  |
+| **Ledger spent** |  | **10.0696** |  | cap $100 |
+| RunPod billed, same window |  | 9.9041 |  | not billed yet: 0 pod(s) |
 <!-- /findings:cost -->
 
 ## How to reproduce
