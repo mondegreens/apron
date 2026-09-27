@@ -197,3 +197,35 @@ unless marked.  Machine events are in `events.jsonl`.
 - Class 1's retarget now chooses from GPUs with image-compatible stock at
   diagnosis time (availability removes an option): with the A6000 out, the
   next cheapest fitting GPU.  Live catalog x1 now: 4090, A100-SXM, H100, B200.
+
+## 2026-09-27 — L5 cohort
+
+- **4090 pod `17xicayf2q4xfm`, reused for 4 solutions:** Qwen3-8B-GPTQ
+  ($0.118, paid the image pull), gemma-2-2b ($0.025), Llama-3.1-8B ($0.030),
+  Mistral-7B ($0.031) — all healthy, 3 task attempts and serving each.
+  Qwen3-32B@4090 stored as predicted infeasible; Qwen3-1.7B@4090 skipped
+  (measured in L0-A3).  Verified inside the pod: 3 chat requests + 55
+  benchmark requests per model, all 200.
+- **A100 PCIe pod `tbwmztvyaiaej2`:** DeepSeek-V2-Lite (MLA/MoE) healthy
+  ($0.25).  Qwen3-32B failed in the tokenizer constructor ("vocab and merges
+  must be both from memory or both filenames").
+- **L4 pod `uctmsoz02bawey`** (L4 had stock this time): Qwen3-1.7B ($0.085)
+  and Mistral-7B ($0.036) healthy.
+- **H100 pod `fy7vvlu4f5l5l5`:** Qwen3-32B, same tokenizer error, 64 s
+  after SSH on a fresh pod.
+- **My wrong turns, recorded:** I first blamed the reused A100 pod, then
+  misread the L4 pod as the H100 and claimed the "experiment" had answered
+  it.  Both wrong; corrected to the owner from the events.
+- **Root cause (looked, not guessed):** Qwen3-32B's tokenizer files are
+  byte-identical to Qwen3-1.7B's.  Inside the class 1 fix pod: `/workspace`
+  is the 50 GB container disk — the SDK mounts the requested 100 GB volume at
+  `/runpod-volume` by default — and the download command ended in `| tail
+  -20`, so its exit status was tail's: a failed download always looked
+  successful.  The 65.5 GB model filled the disk, the partial directory had
+  no vocab/merges, vLLM failed in the tokenizer.  Fixes: exit status kept +
+  every repo file verified at its size (DOWNLOAD_INCOMPLETE is a harness
+  failure); weights on the volume (`/runpod-volume/models`), mount explicit.
+  Both Qwen3-32B records are harness failures mislabelled as model failures;
+  the two rows are re-run after the fix proofs.
+- Fix proofs started 01:52 UTC.  Class 1 retargeted to RTX A6000 (had CUDA
+  13.x stock at diagnosis time); download verified (28 GB).

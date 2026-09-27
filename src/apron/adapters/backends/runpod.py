@@ -36,6 +36,10 @@ GRAPHQL_URL = "https://api.runpod.io/graphql"
 DEFAULT_IMAGE = RUNNER_IMAGE
 DEFAULT_MAX_UPTIME = 3600
 POD_NAME_PREFIX = "apron-run"
+# Model weights go on the pod volume (vllm_engine.MODELS_DIR), sized for the
+# largest seed model (Qwen3-32B, 65.5 GB) with room to spare.
+VOLUME_GB = 100
+VOLUME_MOUNT = "/runpod-volume"
 CLOUD_TYPE = "SECURE"  # D4: RunPod Secure only; Community is never used
 TEARDOWN_BACKOFF_SECONDS = (2, 4, 8)
 DEFAULT_LEAK_LOG = Path("_dev_notes/cohort-run/leaked_pods.json")
@@ -324,7 +328,8 @@ class RunPodTarget:
             cloud_type=CLOUD_TYPE,
             allowed_cuda_versions=list(RUNNER_HOST_CUDA_VERSIONS),
             ports="22/tcp,8000/http",
-            volume_in_gb=100,
+            volume_in_gb=VOLUME_GB,
+            volume_mount_path=VOLUME_MOUNT,  # explicit: model weights live here
             container_disk_in_gb=50,
             env=env or {},
         )

@@ -56,7 +56,10 @@ _RE_PROFILING_RESULT = re.compile(
 
 GIB = 1 << 30
 
-MODELS_DIR = "/workspace/models"
+# On the pod's volume, not the 50 GB container disk: RunPod mounts the volume
+# at /runpod-volume, and /workspace is the container disk.  A 65 GB model
+# filled that disk and left a partial download (L5, Qwen3-32B, 2026-09-27).
+MODELS_DIR = "/runpod-volume/models"
 VLLM_LOG = "/var/log/vllm.log"
 TOKEN_VARS = ("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN")
 # vLLM API server and its engine-core children.  The bracket keeps the

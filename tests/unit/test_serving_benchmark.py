@@ -50,7 +50,7 @@ def test_benchmark_command_uses_declared_workload() -> None:
         "--metric-percentiles 50,90,95,99",
         "--save-result",
         "--model Qwen/Qwen3-1.7B",
-        "--tokenizer /workspace/models/Qwen/Qwen3-1.7B",
+        "--tokenizer /runpod-volume/models/Qwen/Qwen3-1.7B",
     ):
         assert flag in command, flag
 

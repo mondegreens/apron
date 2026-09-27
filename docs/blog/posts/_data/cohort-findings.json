@@ -1,11 +1,11 @@
 {
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 2.241699,
-    "ledger_classifier": 0.06381,
-    "ledger_pod_idle": 0.000659,
-    "ledger_settled": 3.372446,
-    "ledger_spent": 3.436915,
+    "failed_boot_total": 2.927515,
+    "ledger_classifier": 0.075109,
+    "ledger_pod_idle": 0.001249,
+    "ledger_settled": 4.179072,
+    "ledger_spent": 4.25543,
     "per_solution": [
       {
         "cost": 0.606296,
@@ -72,6 +72,22 @@
         ]
       },
       {
+        "cost": 0.084976,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA L4",
+        "gpu_count": 1,
+        "label": "Qwen/Qwen3-1.7B@NVIDIA L4x1",
+        "model": "Qwen/Qwen3-1.7B",
+        "records": [
+          "1220205b397c672ee4ad674fc589d167da7dda4c181ee1603eafcd7c66235184198f",
+          "122052ddb3ca62378b8a6da3ffecb34fb468f0e2e1fb4077f6e6b323ea7edfcf4d24",
+          "1220715f23ad9671aebdd9a57e50d3b214b31148738cc267163365f9d9be3b166d46",
+          "1220c6fe521bb6009e712c2956eb12b468bf330b01bbbb6d06d524507b273dfff3b8",
+          "1220dad9155b4119fb6b58cebe264353221af8a88c01d6cb890ab1269ba49ad734eb"
+        ]
+      },
+      {
         "cost": 0.109297,
         "failed_boot_cost": 0.109297,
         "failed_boots": 1,
@@ -93,6 +109,18 @@
         "model": "Qwen/Qwen3-32B",
         "records": [
           "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321"
+        ]
+      },
+      {
+        "cost": 0.685816,
+        "failed_boot_cost": 0.685816,
+        "failed_boots": 1,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "Qwen/Qwen3-32B@NVIDIA H100 80GB HBM3x1",
+        "model": "Qwen/Qwen3-32B",
+        "records": [
+          "122076c27e44225ebf05c45d63ba6ed34a6211f7aabfe2d24e94b6c46e042ff71399"
         ]
       },
       {
@@ -206,9 +234,25 @@
         "records": [
           "122082b8cebddc87b2ccaca644d351f8eef4f52c4526bbae1df2b3603c549a32b710"
         ]
+      },
+      {
+        "cost": 0.035833,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA L4",
+        "gpu_count": 1,
+        "label": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA L4x1",
+        "model": "mistralai/Mistral-7B-Instruct-v0.3",
+        "records": [
+          "12200b886612e9838f059ca5f7f0a6aee2635cffca9de380c2404e6ab4039079e0a0",
+          "12203758d37c241f2c591f6e08945ab2f7b11cf5a89bf19c91f08269223f7f3057b3",
+          "12206313935a53ff7c3a43322ef5041ecd093915cba793babb263f21c785c370d492",
+          "1220ac02237cee071400d8ff6a286d8975f85c8f18558aa041bdeaaac5f6a578a165",
+          "1220f42f4f523a5a979b719998a96fd13d31b7233f1655e1b759518a699d6957d500"
+        ]
       }
     ],
-    "records_total": 2.895445
+    "records_total": 3.70207
   },
   "fixes": [
     {
@@ -295,6 +339,21 @@
       "weight_delta_bytes": 606031135
     },
     {
+      "claim": "1220cb060733a643f8ca01ac02d45e38d77993a1d607bfe8d461c25f1582bfc189ce",
+      "gpu": "NVIDIA L4",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 1499404361,
+      "measured_persistent_bytes": 4380866641,
+      "measured_weight_bytes": 3457448673,
+      "model": "Qwen/Qwen3-1.7B",
+      "notes": [],
+      "predicted_total_bytes": 6063429068,
+      "predicted_weight_bytes": 4063479808,
+      "record": "1220205b397c672ee4ad674fc589d167da7dda4c181ee1603eafcd7c66235184198f",
+      "total_delta_bytes": 1682562427,
+      "weight_delta_bytes": 606031135
+    },
+    {
       "claim": "122001a3fa3351e82534d27e6861f214efdd19163876827b8677cf9bb75ba6057031",
       "gpu": "NVIDIA A100 80GB PCIe",
       "gpu_count": 1,
@@ -353,6 +412,21 @@
       "record": "122075e500841efea613add26e52f3a827c8b87c32ddca193ffdf8fd23c0867db745",
       "total_delta_bytes": 2924620237,
       "weight_delta_bytes": -10204938
+    },
+    {
+      "claim": "1220d9af2d0ab7279285b8f08c3f465139dad0519f987748dcd15b8e633d926f5731",
+      "gpu": "NVIDIA L4",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 30854134,
+      "measured_persistent_bytes": 14624363642,
+      "measured_weight_bytes": 14506252042,
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "notes": [],
+      "predicted_total_bytes": 17581196134,
+      "predicted_weight_bytes": 14496047104,
+      "record": "1220ac02237cee071400d8ff6a286d8975f85c8f18558aa041bdeaaac5f6a578a165",
+      "total_delta_bytes": 2956832492,
+      "weight_delta_bytes": -10204938
     }
   ],
   "prediction_errors": [
@@ -373,7 +447,7 @@
       "status": "unknown"
     }
   ],
-  "record_count": 63,
+  "record_count": 77,
   "repeat_measurements": [
     {
       "activation_spread_pct": 0.0,
@@ -434,6 +508,20 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA L4",
+      "model": "Qwen/Qwen3-1.7B",
+      "output_token_throughput": 222.66343664634118,
+      "p99_tpot_ms": 17.055784813385074,
+      "p99_ttft_ms": 173.1801080331206,
+      "recomputed_verdict": "pass",
+      "record": "1220715f23ad9671aebdd9a57e50d3b214b31148738cc267163365f9d9be3b166d46",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA A100 80GB PCIe",
       "model": "deepseek-ai/DeepSeek-V2-Lite",
       "output_token_throughput": 316.3572444177437,
@@ -486,6 +574,20 @@
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
       "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA L4",
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "output_token_throughput": 60.314202043323505,
+      "p99_tpot_ms": 62.556760059449616,
+      "p99_ttft_ms": 718.1487227231264,
+      "recomputed_verdict": "pass",
+      "record": "12203758d37c241f2c591f6e08945ab2f7b11cf5a89bf19c91f08269223f7f3057b3",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
     }
   ],
   "setup": {
@@ -496,12 +598,13 @@
     "first_event": "2026-09-26T21:48:08.665977+00:00",
     "gpus_measured": [
       "NVIDIA A100 80GB PCIe",
-      "NVIDIA GeForce RTX 4090"
+      "NVIDIA GeForce RTX 4090",
+      "NVIDIA L4"
     ],
     "image_digests": [
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-27T01:26:01.807112+00:00",
+    "last_event": "2026-09-27T01:59:34.103309+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-1.7B",
@@ -559,6 +662,20 @@
       "retries": 0
     },
     {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA L4",
+      "model": "Qwen/Qwen3-1.7B",
+      "passed": true,
+      "records": [
+        "122052ddb3ca62378b8a6da3ffecb34fb468f0e2e1fb4077f6e6b323ea7edfcf4d24",
+        "1220c6fe521bb6009e712c2956eb12b468bf330b01bbbb6d06d524507b273dfff3b8",
+        "1220dad9155b4119fb6b58cebe264353221af8a88c01d6cb890ab1269ba49ad734eb"
+      ],
+      "retries": 0
+    },
+    {
       "accepted": 0,
       "attempts": 3,
       "cases": 3,
@@ -611,6 +728,20 @@
         "1220533c7088dda6eb4272dc3aec8e9c820e7f526a5bb24b8921223bdb51da8c4b63",
         "1220a6224c34845b72053479b0ae0c2c8ea77977f58c09c225906774734ac21c8509",
         "1220f4cdf74d42208d6a32e1ca691e2694379191b3b9d51fcf7be445d90eb9689126"
+      ],
+      "retries": 0
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA L4",
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "passed": true,
+      "records": [
+        "12200b886612e9838f059ca5f7f0a6aee2635cffca9de380c2404e6ab4039079e0a0",
+        "12206313935a53ff7c3a43322ef5041ecd093915cba793babb263f21c785c370d492",
+        "1220f42f4f523a5a979b719998a96fd13d31b7233f1655e1b759518a699d6957d500"
       ],
       "retries": 0
     }

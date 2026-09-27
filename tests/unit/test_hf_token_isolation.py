@@ -45,7 +45,7 @@ def test_boot_serves_local_path_with_tokens_unset() -> None:
     launch = target.commands[0]
     assert result.healthy
     assert "env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1" in launch
-    assert "vllm serve /workspace/models/meta-llama/Llama-3.1-8B-Instruct" in launch
+    assert "vllm serve /runpod-volume/models/meta-llama/Llama-3.1-8B-Instruct" in launch
     assert "--served-model-name meta-llama/Llama-3.1-8B-Instruct" in launch
     assert "hf_" not in launch
     # The container environment (PATH with ninja, CUDA_HOME) is loaded first,

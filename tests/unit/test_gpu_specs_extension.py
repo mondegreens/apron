@@ -54,6 +54,12 @@ def test_gpu_count_reaches_create_pod_and_secure_cloud_only() -> None:
     assert created[0]["cloud_type"] == CLOUD_TYPE == "SECURE"
     assert created[0]["name"] == "apron-run"
     assert created[0]["allowed_cuda_versions"] == list(RUNNER_HOST_CUDA_VERSIONS)
+    # weights go on the volume, mounted where the engine writes them (L5 disk incident)
+    from apron.adapters.backends.vllm_engine import MODELS_DIR
+
+    assert created[0]["volume_mount_path"] == "/runpod-volume"
+    assert MODELS_DIR.startswith(created[0]["volume_mount_path"] + "/")
+    assert created[0]["volume_in_gb"] >= 80
     # 13.0 or newer: an exact "13.0" excluded newer drivers (every B200 host)
     assert all(float(v) >= float(RUNNER_IMAGE_CUDA) for v in RUNNER_HOST_CUDA_VERSIONS)
 
