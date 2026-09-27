@@ -187,3 +187,13 @@ unless marked.  Machine events are in `events.jsonl`.
   evidence-only fields).  $0.064, recorded in the ledger.  Replayed in CI
   through the real pipeline: 1 → RTX A6000 (predicted 31.9 GiB), 2 →
   max_model_len 32640, 3 → 32768, 4 → bfloat16, 5 → TP 2, 6 → B200.
+- **Stock map by host CUDA version (read-only, 2026-09-27).**  RunPod's
+  `allowedCudaVersions` matches the host's version exactly, and the API
+  accepts values past its documented list: B200 hosts run CUDA 13.2, so the
+  "13.0" filter had excluded every B200 (and some 4090) host.  Filter now
+  13.0-13.4.  RTX A6000 exists only on CUDA 12.8 hosts (cannot run the CUDA
+  13 image); L4, A5000, L40: no Secure stock; 4x4090 none; 4x A100-SXM/H100
+  and B200 x1/x4 yes.
+- Class 1's retarget now chooses from GPUs with image-compatible stock at
+  diagnosis time (availability removes an option): with the A6000 out, the
+  next cheapest fitting GPU.  Live catalog x1 now: 4090, A100-SXM, H100, B200.

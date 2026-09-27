@@ -12,7 +12,7 @@ from unittest.mock import patch
 import pytest
 
 from apron.adapters.backends.runpod import CLOUD_TYPE, GPU_SPECS, RunPodTarget
-from apron.adapters.runner_image import RUNNER_IMAGE_CUDA
+from apron.adapters.runner_image import RUNNER_HOST_CUDA_VERSIONS, RUNNER_IMAGE_CUDA
 
 
 @pytest.mark.parametrize(
@@ -53,7 +53,9 @@ def test_gpu_count_reaches_create_pod_and_secure_cloud_only() -> None:
     assert created[0]["gpu_count"] == 4
     assert created[0]["cloud_type"] == CLOUD_TYPE == "SECURE"
     assert created[0]["name"] == "apron-run"
-    assert created[0]["allowed_cuda_versions"] == [RUNNER_IMAGE_CUDA]
+    assert created[0]["allowed_cuda_versions"] == list(RUNNER_HOST_CUDA_VERSIONS)
+    # 13.0 or newer: an exact "13.0" excluded newer drivers (every B200 host)
+    assert all(float(v) >= float(RUNNER_IMAGE_CUDA) for v in RUNNER_HOST_CUDA_VERSIONS)
 
 
 def test_gpu_count_in_execution_fingerprint() -> None:

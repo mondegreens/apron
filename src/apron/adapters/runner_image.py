@@ -17,3 +17,8 @@ RUNNER_IMAGE = f"{RUNNER_IMAGE_REPOSITORY}@{RUNNER_IMAGE_DIGEST}"
 # NVIDIA_DISABLE_REQUIRE, so on an older driver it would start and then fail
 # with CUDA error 804 (forward compatibility is not supported on GeForce).
 RUNNER_IMAGE_CUDA = "13.0"
+# Host CUDA versions whose driver runs a 13.0 toolkit.  RunPod's filter matches
+# the host's version exactly: "13.0" alone excluded newer drivers — every B200
+# host (13.2) among them (stock map, 2026-09-27).  The API accepts values past
+# its documented list (13.0).
+RUNNER_HOST_CUDA_VERSIONS = ("13.0", "13.1", "13.2", "13.3", "13.4")

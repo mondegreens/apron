@@ -98,8 +98,9 @@ def test_class2_clamps_to_the_estimated_max_model_len_in_the_log() -> None:
     assert result.corrected_plan.engine_configuration["max_model_len"] == str(
         fx["extraction"]["estimated_max_model_len"]
     )
-    assert f"estimated maximum model length is {fx['extraction']['estimated_max_model_len']}" in (
-        fx["log"]
+    assert (
+        f"estimated maximum model length is {fx['extraction']['estimated_max_model_len']}"
+        in (fx["log"])
     )
 
 
@@ -125,3 +126,30 @@ def test_class6_retargets_to_a_gpu_the_kernels_were_built_for() -> None:
     chosen = result.corrected_plan.resource_allocation["gpu_sku"]
     assert hardware_for(chosen).compute_capability == "10.0"
     assert chosen == "NVIDIA B200"
+
+
+def test_class1_never_retargets_to_a_gpu_without_capacity() -> None:
+    """At run time the catalog holds only GPUs with image-compatible stock.
+
+    RTX A6000 hosts run CUDA 12.8 only (stock map, 2026-09-27): the cheapest
+    fitting GPU on paper cannot boot the image, so the fix goes to the next one.
+    """
+    from apron.interfaces.cohort_root import available_catalog
+
+    listed = {"NVIDIA GeForce RTX 4090", "NVIDIA A100 80GB PCIe", "NVIDIA H100 80GB HBM3"}
+    catalog = available_catalog({}, 1, stock=lambda sku: "Low" if sku in listed else None)
+    assert {e.hardware.gpu_sku for e in catalog} == listed
+    case, fx = SIX_CLASSES[0], _fixture(1)
+    result = run_diagnosis_pipeline(
+        fx["log"],
+        RecordedEngine(fx),
+        case.broken_plan,
+        fx["model_config"],
+        hardware_for(fx["gpu_sku"]),
+        RULES,
+        correction_context=CorrectionContext(
+            catalog=catalog, predicted_total_bytes=fx["predicted_total_bytes"]
+        ),
+    )
+    assert result.corrected_plan is not None
+    assert result.corrected_plan.resource_allocation["gpu_sku"] == "NVIDIA A100 80GB PCIe"

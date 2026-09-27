@@ -278,7 +278,7 @@ def test_stock_status_asks_secure_stock_under_the_image_cuda(tmp_path: Path) -> 
     query = gql.call_args.args[0]
     assert 'id: "NVIDIA GeForce RTX 4090"' in query
     assert "gpuCount: 4" in query and "secureCloud: true" in query
-    assert 'allowedCudaVersions: ["13.0"]' in query
+    assert 'allowedCudaVersions: ["13.0", "13.1", "13.2", "13.3", "13.4"]' in query
     empty = {"gpuTypes": [{"id": "x", "lowestPrice": {"stockStatus": None}}]}
     with patch.object(target, "_gql_status", return_value=empty):
         assert target.stock_status() is None

@@ -443,16 +443,35 @@ def load_cohort_run(
     )
 
 
+def available_catalog(
+    rates: dict[str, float], gpu_count: int, stock: Any = None
+) -> tuple[CatalogEntry, ...]:
+    """GPUs a retarget may choose: only those with Secure stock on hosts that can
+    run the image, now.  Availability removes an option (product definition
+    §2b); an A6000 on CUDA 12.8 hosts only cannot boot the CUDA 13 image.
+    """
+    stock = stock or (lambda sku: RunPodTarget(gpu_type=sku, gpu_count=gpu_count).stock_status())
+    entries = []
+    for sku in GPU_SPECS:
+        try:
+            listed = stock(sku)
+        except Exception:
+            listed = None
+        if listed:
+            entries.append(
+                CatalogEntry(hardware_for(sku), hourly_rate("runpod", sku, live_rates=rates)[0])
+            )
+    return tuple(entries)
+
+
 def build_fix_ports(planner: CohortPlanner, rates: dict[str, float]) -> FixProofPorts:
     rules = load_rules(RULES_DIR, "vllm", "v0.29.0")
-    catalog = tuple(
-        CatalogEntry(hardware_for(sku), rate)
-        for sku in GPU_SPECS
-        for rate in [hourly_rate("runpod", sku, live_rates=rates)[0]]
-    )
 
     def correction_context(sp: SolutionPlan) -> CorrectionContext:
-        return CorrectionContext(catalog=catalog, predicted_total_bytes=sp.predicted_total_bytes)
+        return CorrectionContext(
+            catalog=available_catalog(rates, sp.requested.gpu_count),
+            predicted_total_bytes=sp.predicted_total_bytes,
+        )
 
     return FixProofPorts(
         plan_solution=planner.plan_for,

@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 
-from apron.adapters.runner_image import RUNNER_IMAGE, RUNNER_IMAGE_CUDA
+from apron.adapters.runner_image import RUNNER_HOST_CUDA_VERSIONS, RUNNER_IMAGE
 from apron.application.orchestration.errors import PodLeakError
 from apron.application.sanitization import mask_secrets
 from apron.domain.canonical import canonicalize, digest_hex
@@ -100,7 +100,7 @@ _STOCK_QUERY = """query Stock {{
   gpuTypes(input: {{id: "{gpu}"}}) {{
     id
     lowestPrice(input: {{
-      gpuCount: {count}, secureCloud: true, allowedCudaVersions: ["{cuda}"]
+      gpuCount: {count}, secureCloud: true, allowedCudaVersions: [{cuda}]
     }}) {{
       stockStatus
     }}
@@ -322,7 +322,7 @@ class RunPodTarget:
             gpu_type_id=self._gpu_type,
             gpu_count=self._gpu_count,
             cloud_type=CLOUD_TYPE,
-            allowed_cuda_versions=[RUNNER_IMAGE_CUDA],
+            allowed_cuda_versions=list(RUNNER_HOST_CUDA_VERSIONS),
             ports="22/tcp,8000/http",
             volume_in_gb=100,
             container_disk_in_gb=50,
@@ -490,7 +490,8 @@ class RunPodTarget:
         """
         gpu = gpu_type or self._gpu_type
         count = gpu_count or self._gpu_count
-        query = _STOCK_QUERY.format(gpu=gpu, count=int(count), cuda=RUNNER_IMAGE_CUDA)
+        cuda = ", ".join(f'"{v}"' for v in RUNNER_HOST_CUDA_VERSIONS)
+        query = _STOCK_QUERY.format(gpu=gpu, count=int(count), cuda=cuda)
         data = self._gql_status(query)
         types = data.get("gpuTypes") or []
         lowest = (types[0].get("lowestPrice") or {}) if types else {}
