@@ -118,6 +118,12 @@ class CalculatorPlanningSource:
                 "kv_per_token_bytes": result["kv_per_token_bytes"],
                 "isl": result["isl"],
                 "osl": result["osl"],
+                # A state-space model keeps a fixed state per sequence instead.
+                **(
+                    {"state_per_sequence_bytes": result["state_per_sequence_bytes"]}
+                    if "state_per_sequence_bytes" in result
+                    else {}
+                ),
             },
             claim_scope="memory",
             producer_epistemic_tier="MECHANISM",

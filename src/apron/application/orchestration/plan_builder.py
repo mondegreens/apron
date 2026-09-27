@@ -104,10 +104,7 @@ def _derive_batch_size(
     isl = config.get("isl", 512)
     osl = config.get("osl", 128)
 
-    if kv_per_token <= 0:
-        return 4
-
-    per_sequence = kv_per_token * (isl + osl)
+    per_sequence = config.get("state_per_sequence_bytes") or kv_per_token * (isl + osl)
     if per_sequence <= 0:
         return 4
 

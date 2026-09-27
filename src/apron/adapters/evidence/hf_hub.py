@@ -134,9 +134,9 @@ class HFHubResolver:
         except Exception:
             return None
 
-    def _tensor_bytes(self, model_id: str, revision: str) -> dict[str, int] | None:
-        """Stored bytes per tensor, from the safetensors headers (range reads,
-        no weights downloaded).  ``None`` when the repo has no safetensors."""
+    def _tensor_meta(self, model_id: str, revision: str) -> dict[str, tuple[str, int]] | None:
+        """Stored (dtype, bytes) per tensor, from the safetensors headers
+        (range reads, no weights downloaded).  ``None`` without safetensors."""
         from huggingface_hub import get_safetensors_metadata
 
         try:
@@ -144,10 +144,15 @@ class HFHubResolver:
         except Exception:
             return None
         return {
-            name: int(info.data_offsets[1] - info.data_offsets[0])
+            name: (str(info.dtype), int(info.data_offsets[1] - info.data_offsets[0]))
             for file in meta.files_metadata.values()
             for name, info in file.tensors.items()
         }
+
+    def _tensor_bytes(self, model_id: str, revision: str) -> dict[str, int] | None:
+        """Stored bytes per tensor (see ``_tensor_meta``)."""
+        meta = self._tensor_meta(model_id, revision)
+        return None if meta is None else {name: size for name, (_, size) in meta.items()}
 
 
 class FixtureHFHubResolver(HFHubResolver):
@@ -168,6 +173,9 @@ class FixtureHFHubResolver(HFHubResolver):
         path = self._fixture_dir / filename
         if path.exists():
             return path.read_bytes()
+        return None
+
+    def _tensor_meta(self, model_id: str, revision: str) -> dict[str, tuple[str, int]] | None:
         return None
 
     def _tensor_bytes(self, model_id: str, revision: str) -> dict[str, int] | None:

@@ -110,10 +110,15 @@ def run_plan_pipeline(
 
     config = json.loads(config_content)
 
-    read_tensors = getattr(resolver, "_tensor_bytes", None)
-    tensors = (
-        read_tensors(model_id, result.observation.resolved_revision) if read_tensors else None
-    )
+    read_meta = getattr(resolver, "_tensor_meta", None)
+    meta = read_meta(model_id, result.observation.resolved_revision) if read_meta else None
+    if meta:
+        tensors: dict[str, int] | None = loaded_tensor_bytes(meta, config)
+    else:
+        read_tensors = getattr(resolver, "_tensor_bytes", None)
+        tensors = (
+            read_tensors(model_id, result.observation.resolved_revision) if read_tensors else None
+        )
     total_weight_bytes = _resolve_weight_bytes(
         resolver, model_id, result.observation, config, tensors=tensors
     )
@@ -131,6 +136,7 @@ def run_plan_pipeline(
     )
 
     calc_metadata = dict(config)
+    calc_metadata["torch_dtype"] = runtime_dtype(config)
     calc_metadata["total_weight_bytes"] = total_weight_bytes
     calc_metadata["components"] = [c.model_dump(mode="json") for c in model_spec.components]
 
@@ -231,6 +237,29 @@ SAFETENSORS_DTYPE_BYTES: dict[str, int] = {
     "U8": 1,
     "BOOL": 1,
 }
+
+
+def loaded_tensor_bytes(
+    meta: dict[str, tuple[str, int]], config: dict[str, Any]
+) -> dict[str, int]:
+    """Bytes each tensor occupies once the engine has loaded it.
+
+    With the default ``dtype=auto`` vLLM serves a float32 checkpoint in a
+    16-bit dtype (config/model.py:2285-2287: "Downcast for float32 models";
+    bfloat16 from compute capability 8.0, else float16 — 2 bytes either way,
+    platforms/cuda.py:237-243), so an unquantized checkpoint's F32 tensors
+    load at half their stored size.  Quantized checkpoints keep their stored
+    sizes (their scales are created in float32 by the method).
+    """
+    if config.get("quantization_config"):
+        return {name: size for name, (_, size) in meta.items()}
+    return {name: size // 2 if dtype == "F32" else size for name, (dtype, size) in meta.items()}
+
+
+def runtime_dtype(config: dict[str, Any]) -> str:
+    """The dtype the engine serves in with dtype=auto (float32 downcast to 16 bits)."""
+    stored = str(config.get("torch_dtype") or "bfloat16")
+    return "bfloat16" if stored == "float32" else stored
 
 
 def _tied_embeddings(config: dict[str, Any]) -> bool:

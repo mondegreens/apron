@@ -62,3 +62,20 @@ def test_parameter_counts_sum_every_dtype_at_its_width() -> None:
 def test_an_unknown_dtype_makes_the_total_unknown() -> None:
     observation = _Observation(publisher_metadata={"parameters_BF16": "100", "parameters_Q3": "9"})
     assert _resolve_weight_bytes(_Resolver(), "m", observation, {}) == 0
+
+
+def test_an_unquantized_float32_checkpoint_loads_at_16_bits() -> None:
+    """vLLM's dtype=auto serves a float32 checkpoint in bfloat16/float16
+    (config/model.py:2285-2287): Mamba-2.8B stores 11.07 GB and loads ~5.5."""
+    from apron.application.orchestration.plan_pipeline import loaded_tensor_bytes, runtime_dtype
+
+    meta = {"a.weight": ("F32", 400), "b.weight": ("BF16", 200)}
+    assert loaded_tensor_bytes(meta, {"torch_dtype": "float32"}) == {
+        "a.weight": 200,
+        "b.weight": 200,
+    }
+    quantized = {"torch_dtype": "bfloat16", "quantization_config": {"quant_method": "fp8"}}
+    scale = {"a.weight_scale": ("F32", 4)}
+    assert loaded_tensor_bytes(scale, quantized) == {"a.weight_scale": 4}
+    assert runtime_dtype({"torch_dtype": "float32"}) == "bfloat16"
+    assert runtime_dtype({"torch_dtype": "float16"}) == "float16"

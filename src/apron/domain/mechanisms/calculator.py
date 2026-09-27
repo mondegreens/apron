@@ -3,6 +3,7 @@
 Each registered branch handles a specific attention/state mechanism:
 - autoregressive_decode: dense GQA/MHA/MQA (Llama, Qwen, Gemma, etc.)
 - mla_decode: Multi-Latent Attention (DeepSeek-V2/V3/R1)
+- ssm_decode: Mamba-1 state-space models (a fixed state per sequence)
 
 MoE activation adjustment and sliding-window KV cap are applied
 within each branch when the config signals them.
@@ -293,4 +294,65 @@ def calculate_mla_decode(
         "effective_seq_len": effective_seq,
         "tensor_parallel": tp,
         "mechanism_detail": "mla",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Branch: ssm_decode (Mamba-1 — a fixed-size state per sequence, no KV cache)
+# ---------------------------------------------------------------------------
+
+
+@register_calculator("ssm_decode")
+def calculate_ssm_decode(
+    inputs: CalculatorInput,
+) -> dict[str, Any] | None:
+    """Mamba-1 memory: the state per sequence does not grow with its length.
+
+    Per layer and sequence vLLM v0.29.0 keeps a conv state of
+    ``intermediate/tp x (conv_kernel - 1)`` and an SSM state of
+    ``intermediate/tp x state_size`` (model_executor/layers/mamba/
+    mamba_utils.py:169-181), both in the model dtype when the cache dtypes are
+    "auto" (mamba_utils.py:97-109; config/cache.py:184).  Not yet checked
+    against a measured boot.
+    """
+    metadata = inputs.artifact_metadata
+    layers = metadata.get("num_hidden_layers")
+    intermediate = metadata.get("intermediate_size")
+    state_size = metadata.get("state_size")
+    conv_kernel = metadata.get("conv_kernel")
+    if not (layers and intermediate and state_size and conv_kernel):
+        return None
+    weight_bytes = metadata.get("total_weight_bytes", 0)
+    if weight_bytes <= 0:
+        return None
+    tp = _tensor_parallel(inputs)
+    dtype_bytes = _kv_dtype_bytes(metadata, inputs)
+    weight_bytes = _per_gpu(int(weight_bytes), tp)
+    per_rank = -(-int(intermediate) // tp)
+    state_per_sequence = (
+        int(layers) * per_rank * ((int(conv_kernel) - 1) + int(state_size)) * dtype_bytes
+    )
+    isl, osl, max_batch_size = _workload_params(inputs)
+    state_cache = state_per_sequence * max_batch_size
+    activation_estimate = _activation_estimate(metadata, inputs, tp)
+    if activation_estimate is None:
+        return None
+    overhead = _common_overhead(weight_bytes, state_cache, activation_estimate, inputs)
+    return {
+        "weight_memory_bytes": weight_bytes,
+        "kv_cache_bytes": state_cache,
+        "kv_per_token_bytes": 0,
+        "state_per_sequence_bytes": state_per_sequence,
+        "activation_estimate_bytes": activation_estimate,
+        **overhead,
+        "num_layers": int(layers),
+        "num_attention_heads": 0,
+        "num_kv_heads": 0,
+        "dtype_bytes": dtype_bytes,
+        "isl": isl,
+        "osl": osl,
+        "max_batch_size": max_batch_size,
+        "effective_seq_len": isl + osl,
+        "tensor_parallel": tp,
+        "mechanism_detail": "mamba1",
     }
