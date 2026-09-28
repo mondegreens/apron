@@ -1,0 +1,164 @@
+{
+  "site": {
+    "volume_id": "7jiuum2nk6",
+    "data_center_id": "US-CA-2",
+    "size_gb": 228
+  },
+  "staging": {
+    "pod_id": "wgm6rh8g0tvdhb",
+    "cost": 0.024467,
+    "seconds": 737.3,
+    "error": null,
+    "models": [
+      {
+        "model_id": "google/gemma-4-31B-it",
+        "ok": true,
+        "seconds": 132.6,
+        "output_tail": "\rFetching 12 files:   0%|          | 0/12 [00:00<?, ?it/s]\rFetching 12 files:   8%|\u258a         | 1/12 [00:00<00:04,  2.35it/s]\rFetching 12 files:  25%|\u2588\u2588\u258c       | 3/12 [00:00<00:01,  6.54it/s]\rFetching 12 files:  50%|\u2588\u2588\u2588\u2588\u2588     | 6/12 [00:00<00:00,  9.35it/s]\rFetching 12 files:  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 8/12 [00:00<00:00, 11.14it/s]\rFetching 12 files:  83%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e | 10/12 [00:05<00:01,  1.20it/s]\rFetching 12 files:  92%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 11/12 [00:52<00:10, 10.02s/it]\rFetching 12 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 12/12 [02:11<00:00, 25.08s/it]\rFetching 12 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 12/12 [02:11<00:00, 10.92s/it]\nDOWNLOAD_VERIFIED\n"
+      },
+      {
+        "model_id": "openai/gpt-oss-120b",
+        "ok": true,
+        "seconds": 128.4,
+        "output_tail": "\rFetching 26 files:   0%|          | 0/26 [00:00<?, ?it/s]\rFetching 26 files:   4%|\u258d         | 1/26 [00:00<00:10,  2.48it/s]\rFetching 26 files:   8%|\u258a         | 2/26 [00:00<00:05,  4.35it/s]\rFetching 26 files:  15%|\u2588\u258c        | 4/26 [00:00<00:04,  4.91it/s]\rFetching 26 files:  31%|\u2588\u2588\u2588       | 8/26 [00:37<01:46,  5.93s/it]\rFetching 26 files:  35%|\u2588\u2588\u2588\u258d      | 9/26 [00:38<01:25,  5.03s/it]\rFetching 26 files:  38%|\u2588\u2588\u2588\u258a      | 10/26 [00:51<01:46,  6.67s/it]\rFetching 26 files:  42%|\u2588\u2588\u2588\u2588\u258f     | 11/26 [01:00<01:48,  7.25s/it]\rFetching 26 files:  46%|\u2588\u2588\u2588\u2588\u258c     | 12/26 [01:04<01:30,  6.49s/it]\rFetching 26 files:  50%|\u2588\u2588\u2588\u2588\u2588     | 13/26 [01:16<01:43,  7.97s/it]\rFetching 26 files:  54%|\u2588\u2588\u2588\u2588\u2588\u258d    | 14/26 [01:26<01:41,  8.44s/it]\rFetching 26 files:  58%|\u2588\u2588\u2588\u2588\u2588\u258a    | 15/26 [01:37<01:42,  9.29s/it]\rFetching 26 files:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258f   | 16/26 [01:38<01:07,  6.75s/it]\rFetching 26 files:  65%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c   | 17/26 [01:38<00:44,  4.91s/it]\rFetching 26 files:  69%|\u2588\u2588\u2588\u2588\u2588\u2588\u2589   | 18/26 [01:40<00:30,  3.85s/it]\rFetching 26 files:  73%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 19/26 [01:40<00:19,  2.83s/it]\rFetching 26 files:  77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 20/26 [01:41<00:13,  2.22s/it]\rFetching 26 files:  81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 21/26 [01:47<00:16,  3.27s/it]\rFetching 26 files:  85%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 22/26 [01:49<00:11,  2.99s/it]\rFetching 26 files:  88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 23/26 [01:54<00:11,  3.76s/it]\rFetching 26 files:  92%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 24/26 [01:58<00:07,  3.79s/it]\rFetching 26 files:  96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 25/26 [02:05<00:04,  4.54s/it]\rFetching 26 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 26/26 [02:07<00:00,  3.85s/it]\rFetching 26 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 26/26 [02:07<00:00,  4.90s/it]\nDOWNLOAD_VERIFIED\n"
+      },
+      {
+        "model_id": "zai-org/GLM-4.7-Flash",
+        "ok": true,
+        "seconds": 133.9,
+        "output_tail": "\u2588\u258f    | 30/58 [01:10<01:08,  2.44s/it]\rFetching 58 files:  53%|\u2588\u2588\u2588\u2588\u2588\u258e    | 31/58 [01:14<01:16,  2.83s/it]\rFetching 58 files:  55%|\u2588\u2588\u2588\u2588\u2588\u258c    | 32/58 [01:17<01:10,  2.73s/it]\rFetching 58 files:  57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 33/58 [01:18<01:01,  2.46s/it]\rFetching 58 files:  59%|\u2588\u2588\u2588\u2588\u2588\u258a    | 34/58 [01:24<01:16,  3.19s/it]\rFetching 58 files:  60%|\u2588\u2588\u2588\u2588\u2588\u2588    | 35/58 [01:25<01:00,  2.62s/it]\rFetching 58 files:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258f   | 36/58 [01:27<00:52,  2.40s/it]\rFetching 58 files:  64%|\u2588\u2588\u2588\u2588\u2588\u2588\u258d   | 37/58 [01:32<01:08,  3.26s/it]\rFetching 58 files:  66%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c   | 38/58 [01:34<01:00,  3.05s/it]\rFetching 58 files:  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 39/58 [01:36<00:48,  2.57s/it]\rFetching 58 files:  69%|\u2588\u2588\u2588\u2588\u2588\u2588\u2589   | 40/58 [01:39<00:50,  2.83s/it]\rFetching 58 files:  71%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588   | 41/58 [01:41<00:40,  2.36s/it]\rFetching 58 files:  72%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f  | 42/58 [01:45<00:45,  2.84s/it]\rFetching 58 files:  74%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d  | 43/58 [01:45<00:32,  2.15s/it]\rFetching 58 files:  76%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 44/58 [01:46<00:26,  1.87s/it]\rFetching 58 files:  78%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a  | 45/58 [01:51<00:34,  2.65s/it]\rFetching 58 files:  79%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589  | 46/58 [01:52<00:26,  2.17s/it]\rFetching 58 files:  81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 47/58 [01:54<00:24,  2.26s/it]\rFetching 58 files:  83%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e | 48/58 [01:58<00:28,  2.83s/it]\rFetching 58 files:  84%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 49/58 [01:59<00:19,  2.13s/it]\rFetching 58 files:  86%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c | 50/58 [02:01<00:16,  2.06s/it]\rFetching 58 files:  88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 51/58 [02:01<00:10,  1.55s/it]\rFetching 58 files:  90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589 | 52/58 [02:03<00:09,  1.52s/it]\rFetching 58 files:  91%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 53/58 [02:04<00:06,  1.34s/it]\rFetching 58 files:  93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 54/58 [02:05<00:05,  1.45s/it]\rFetching 58 files:  95%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d| 55/58 [02:07<00:04,  1.52s/it]\rFetching 58 files:  97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 56/58 [02:10<00:03,  1.83s/it]\rFetching 58 files:  98%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 57/58 [02:11<00:01,  1.80s/it]\rFetching 58 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 58/58 [02:12<00:00,  1.56s/it]\rFetching 58 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 58/58 [02:12<00:00,  2.29s/it]\nDOWNLOAD_VERIFIED\n"
+      }
+    ]
+  },
+  "storage_cost": 0.0,
+  "result": {
+    "executed": {
+      "openai/gpt-oss-120b@NVIDIA H100 80GB HBM3x1": {
+        "solution_fp": "1220666c11f9a2493f0047e42c0fd1f2bd30cb61f936cb2771797f62726d9a19b7bc",
+        "healthy": true,
+        "boot_report_digest": "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef",
+        "failed_boot_digests": [],
+        "attempt_digests": [
+          "1220ae1058c874e50f368003b8b84f7d49d665d76c637812efc968651847b1c250b6",
+          "1220a3bfd7722e5e755212e9c74d8356053c860573fdb17ced6c9f79d77434ab6c79",
+          "1220b219fc84bdd8adaeb3f6548db80b2798df43b71e9798858cb50d72bac3aa43be"
+        ],
+        "serving_digest": "1220719de8bb1ea7c739fd651d2ed8915425ef7c6797d7a1dc2a3afd2af987c15da3",
+        "log_tail": "",
+        "harness_failures": [],
+        "cost": 0.586516,
+        "provider_reported_cost": null,
+        "token_check": {
+          "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+          "processes": {
+            "220": 0,
+            "790": 0
+          },
+          "token_free": true
+        }
+      },
+      "zai-org/GLM-4.7-Flash@NVIDIA H100 80GB HBM3x1": {
+        "solution_fp": "1220786d044867dc848053584aad58e539e772ccf63c7084d202ebc34786b1880a95",
+        "healthy": true,
+        "boot_report_digest": "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
+        "failed_boot_digests": [],
+        "attempt_digests": [
+          "12208edaefdd8c44dd1726e94205cc21cb5b95c239141db16df098135762e773a168",
+          "122005193f21e06cd4ba493c44b08a268fa97e28e66b6becf2d8b962407c39b7f636",
+          "122082aeafa81c543998b6759da7d2b90574b9bdcb41b9d79d7713b519681af92845"
+        ],
+        "serving_digest": "12208087085572ae72f624dfd25a5c8cbcdaf6fc271e34e84cd6bdcd4b6bc49bede6",
+        "log_tail": "",
+        "harness_failures": [],
+        "cost": 0.131136,
+        "provider_reported_cost": null,
+        "token_check": {
+          "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+          "processes": {
+            "2452": 0,
+            "2931": 0
+          },
+          "token_free": true
+        }
+      },
+      "google/gemma-4-31B-it@NVIDIA H100 80GB HBM3x1": {
+        "solution_fp": "12206cc70194ea116b93f46feab326b5e721caa33ca5d9bc964d851d4e3997c2add9",
+        "healthy": true,
+        "boot_report_digest": "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd",
+        "failed_boot_digests": [],
+        "attempt_digests": [
+          "1220a8806dc9c88fcb09d9c0729e5837b54876a1e6a7641a8ea56fa2c9bec280b14e",
+          "1220d0d5e01ab2396cb6acff431adfba3d2985d10d3fb5f6addf158352aa12593f02",
+          "1220620ad832acce780556de652ac6ad3871eb350506187a512a344dfc2611a429eb"
+        ],
+        "serving_digest": "1220b22a2a0c23ede05a672102199f0692c7f7472b9766b0a91aa0f80c0f5cc2d7b0",
+        "log_tail": "",
+        "harness_failures": [],
+        "cost": 0.323475,
+        "provider_reported_cost": null,
+        "token_check": {
+          "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+          "processes": {
+            "4499": 0,
+            "5001": 0
+          },
+          "token_free": true
+        }
+      }
+    },
+    "skipped": {},
+    "stopped": null,
+    "budget": {
+      "authorized": 500.0,
+      "spent": 12.471427,
+      "held": 0,
+      "remaining": 487.528573,
+      "open_holds": [],
+      "flags": [
+        "l0a3-run1:replayed:estimate",
+        "stage:Qwen/Qwen3-32B:replayed:estimate"
+      ],
+      "overruns": []
+    },
+    "decision_report": {
+      "schema_version": 1,
+      "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+      "candidates": [
+        {
+          "solution_fingerprint": "1220666c11f9a2493f0047e42c0fd1f2bd30cb61f936cb2771797f62726d9a19b7bc",
+          "qualification_status": "task_evaluated",
+          "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220594543e7908c\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"1220a3bfd7722e5e755212e9c74d8356053c860573fdb17ced6c9f79d77434ab6c79\", \"1220ae1058c874e50f368003b8b84f7d49d665d76c637812efc968651847b1c250b6\", \"1220b219fc84bdd8adaeb3f6548db80b2798df43b71e9798858cb50d72bac3aa43be\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": false, \"evidence\": [\"1220719de8bb1ea7c739fd651d2ed8915425ef7c6797d7a1dc2a3afd2af987c15da3\"], \"detail\": [\"fail\", \"p99_ttft_ms 2292.4 exceeds SLO 2000.0\"], \"reason\": \"p99_ttft_ms 2292.4 exceeds SLO 2000.0\"}, \"stopped_at\": \"serving_verified\"}",
+          "rejection_reason": "p99_ttft_ms 2292.4 exceeds SLO 2000.0",
+          "evidence_state": null,
+          "evaluation_coverage": null,
+          "economics": null,
+          "trade_off": null
+        },
+        {
+          "solution_fingerprint": "1220786d044867dc848053584aad58e539e772ccf63c7084d202ebc34786b1880a95",
+          "qualification_status": "serving_verified",
+          "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"122016c89832b64c\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"122005193f21e06cd4ba493c44b08a268fa97e28e66b6becf2d8b962407c39b7f636\", \"122082aeafa81c543998b6759da7d2b90574b9bdcb41b9d79d7713b519681af92845\", \"12208edaefdd8c44dd1726e94205cc21cb5b95c239141db16df098135762e773a168\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"12208087085572ae72f624dfd25a5c8cbcdaf6fc271e34e84cd6bdcd4b6bc49bede6\"], \"detail\": [\"pass\", \"p99_ttft_ms 1324.1 within SLO 2000.0\", \"p99_tpot_ms 8.5 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+          "rejection_reason": null,
+          "evidence_state": null,
+          "evaluation_coverage": null,
+          "economics": null,
+          "trade_off": null
+        },
+        {
+          "solution_fingerprint": "12206cc70194ea116b93f46feab326b5e721caa33ca5d9bc964d851d4e3997c2add9",
+          "qualification_status": "serving_verified",
+          "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"122025a1b03ff458\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"1220620ad832acce780556de652ac6ad3871eb350506187a512a344dfc2611a429eb\", \"1220a8806dc9c88fcb09d9c0729e5837b54876a1e6a7641a8ea56fa2c9bec280b14e\", \"1220d0d5e01ab2396cb6acff431adfba3d2985d10d3fb5f6addf158352aa12593f02\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"1220b22a2a0c23ede05a672102199f0692c7f7472b9766b0a91aa0f80c0f5cc2d7b0\"], \"detail\": [\"pass\", \"p99_ttft_ms 204.2 within SLO 2000.0\", \"p99_tpot_ms 26.0 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+          "rejection_reason": null,
+          "evidence_state": null,
+          "evaluation_coverage": null,
+          "economics": null,
+          "trade_off": null
+        }
+      ],
+      "outcome_economics": null,
+      "uncertainty": null,
+      "disclosed_comparable_set": [],
+      "exclusions": []
+    }
+  }
+}

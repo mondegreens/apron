@@ -54,3 +54,16 @@ exports reaches SSH sessions.  The F7 `/proc/<pid>/environ` check would fail.
 The image must be rebuilt, pushed, re-pinned here and pulled by digest before
 L0-A3 (the first GPU boot).  Tracked as task #29.  A pull by digest has not
 been verified yet; it is part of that task.
+
+## v0.30.0-rc1 (2026-09-28)
+
+- Built by `docker-publish.yml` run 36361024237 on tag `runner-v0.30.0-rc1`,
+  requirements `docker/requirements-v0.30.0.txt` (vllm==0.30.0, torch==2.13.0),
+  CUDA 13.0 base, linux/amd64, on a GitHub-hosted runner (no GPU needed to build).
+- Registry manifest `ghcr.io/mondegreens/apron-runner:v0.30.0-rc1` →
+  `sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba`
+  (docker-content-digest, read anonymously from ghcr.io).
+- v0.29.0-rc8 re-read the same way: still
+  `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336`.
+- The workflow also moved `:latest` to this image.  Nothing in Apron reads
+  `:latest` (pods use the digest); stopping the move is task V.8.

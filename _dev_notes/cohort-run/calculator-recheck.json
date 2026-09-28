@@ -155,6 +155,34 @@
       "weights_now": 14496047104
     },
     {
+      "activation_at_run": 1084227584,
+      "activation_measured": 2061584302,
+      "activation_now": 2013265920,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "profiled_tokens": 8192,
+      "record": "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
+      "tensor_parallel": 1,
+      "weights_at_run": 37454789472,
+      "weights_measured": 36754182635,
+      "weights_now": 36601120992
+    },
+    {
+      "activation_at_run": 701497344,
+      "activation_measured": 2190433320,
+      "activation_now": 2181038080,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "zai-org/GLM-4.7-Flash",
+      "profiled_tokens": 8192,
+      "record": "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
+      "tensor_parallel": 1,
+      "weights_at_run": 62442977152,
+      "weights_measured": 59989955706,
+      "weights_now": 59886787712
+    },
+    {
       "activation_at_run": 1638147072,
       "activation_measured": 225485783,
       "activation_now": 211255296,
@@ -167,6 +195,20 @@
       "weights_at_run": 16381470720,
       "weights_measured": 8203387535,
       "weights_now": 8190735360
+    },
+    {
+      "activation_at_run": 2907766784,
+      "activation_measured": 1964947537,
+      "activation_now": 1908277248,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "meta-models/Muse-Glimmer-30B",
+      "profiled_tokens": 8192,
+      "record": "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
+      "tensor_parallel": 1,
+      "weights_at_run": 59553253376,
+      "weights_measured": 59947006033,
+      "weights_now": 59553253376
     },
     {
       "activation_at_run": 1449604710,
@@ -225,6 +267,20 @@
       "weights_now": 1192099840
     },
     {
+      "activation_at_run": 1252638720,
+      "activation_measured": 1256277934,
+      "activation_now": 1252638720,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "openai/gpt-oss-120b",
+      "profiled_tokens": 8192,
+      "record": "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef",
+      "tensor_parallel": 1,
+      "weights_at_run": 65248815744,
+      "weights_measured": 65959960248,
+      "weights_now": 65248815744
+    },
+    {
       "activation_at_run": 1378877440,
       "activation_measured": 1385126952,
       "activation_now": 1378877440,
@@ -251,6 +307,20 @@
       "weights_at_run": 751751680,
       "weights_measured": 794568949,
       "weights_now": 751751680
+    },
+    {
+      "activation_at_run": 2994733056,
+      "activation_measured": 1599875317,
+      "activation_now": 1589641216,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "google/gemma-4-31B-it",
+      "profiled_tokens": 8192,
+      "record": "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd",
+      "tensor_parallel": 1,
+      "weights_at_run": 62766378712,
+      "weights_measured": 63340030197,
+      "weights_now": 62546177752
     },
     {
       "activation_at_run": 6552424652,

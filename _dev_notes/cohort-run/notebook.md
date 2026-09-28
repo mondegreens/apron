@@ -605,3 +605,22 @@ H200 memory in GPU_SPECS is not yet confirmed on a pod.
   (`tokenizers/registry.py:147-163`).  Plans now name that mode when the
   model type has one (generated from the registry); such a model is sent the
   task suite.
+
+## 2026-09-28 — group A measured; cap back to $100
+
+- **Group A (staged, US-CA-2, one H100 pod reused):** gpt-oss-120b, GLM-4.7-Flash,
+  Gemma 4-31B all healthy, 3/3 answers each (suite v2).  CPU stager: 190 GB in
+  ~6.5 min for $0.024; each GPU boot checked the staged weights in ~1-2 s.
+  - gpt-oss-120b: weights 61.43 vs 60.77 GiB predicted; startup peak 1.17 vs
+    1.17; engine start 227 s; p99 TTFT 2.29 s — misses the 2 s SLO (first SLO
+    miss in the records).
+  - GLM-4.7-Flash: weights 55.87 vs 58.15 predicted — its MTP layer (2.38
+    GiB) is stored but not loaded by the main model (`models/utils.py:542`,
+    `glm4_moe_lite.py:361`); fixed, now 55.77.  Startup peak 2.04 vs 0.65
+    predicted — a MoE/MLA buffer the formula misses; being traced.
+  - Gemma 4-31B: weights 58.99 vs 58.46; startup peak 1.49 vs 2.79 predicted
+    (over-estimate; to trace); KV pool 8.57 GiB, 9,986 tokens, concurrency 15.6.
+- **Cap back to $100 (owner):** the cap is the total for the whole cohort, not
+  per day or run; A cost ~$1.1, B about the same, C roughly $30-50, so A-C fit
+  under $100 and the ledger itself stops the run before group D — the agreed
+  checkpoint, enforced in code.  Spent so far $12.47.

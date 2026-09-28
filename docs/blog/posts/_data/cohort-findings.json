@@ -155,6 +155,34 @@
       "weights_now": 14496047104
     },
     {
+      "activation_at_run": 1084227584,
+      "activation_measured": 2061584302,
+      "activation_now": 2013265920,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "profiled_tokens": 8192,
+      "record": "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
+      "tensor_parallel": 1,
+      "weights_at_run": 37454789472,
+      "weights_measured": 36754182635,
+      "weights_now": 36601120992
+    },
+    {
+      "activation_at_run": 701497344,
+      "activation_measured": 2190433320,
+      "activation_now": 2181038080,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "zai-org/GLM-4.7-Flash",
+      "profiled_tokens": 8192,
+      "record": "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
+      "tensor_parallel": 1,
+      "weights_at_run": 62442977152,
+      "weights_measured": 59989955706,
+      "weights_now": 59886787712
+    },
+    {
       "activation_at_run": 1638147072,
       "activation_measured": 225485783,
       "activation_now": 211255296,
@@ -167,6 +195,20 @@
       "weights_at_run": 16381470720,
       "weights_measured": 8203387535,
       "weights_now": 8190735360
+    },
+    {
+      "activation_at_run": 2907766784,
+      "activation_measured": 1964947537,
+      "activation_now": 1908277248,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "meta-models/Muse-Glimmer-30B",
+      "profiled_tokens": 8192,
+      "record": "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
+      "tensor_parallel": 1,
+      "weights_at_run": 59553253376,
+      "weights_measured": 59947006033,
+      "weights_now": 59553253376
     },
     {
       "activation_at_run": 1449604710,
@@ -225,6 +267,20 @@
       "weights_now": 1192099840
     },
     {
+      "activation_at_run": 1252638720,
+      "activation_measured": 1256277934,
+      "activation_now": 1252638720,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "openai/gpt-oss-120b",
+      "profiled_tokens": 8192,
+      "record": "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef",
+      "tensor_parallel": 1,
+      "weights_at_run": 65248815744,
+      "weights_measured": 65959960248,
+      "weights_now": 65248815744
+    },
+    {
       "activation_at_run": 1378877440,
       "activation_measured": 1385126952,
       "activation_now": 1378877440,
@@ -253,6 +309,20 @@
       "weights_now": 751751680
     },
     {
+      "activation_at_run": 2994733056,
+      "activation_measured": 1599875317,
+      "activation_now": 1589641216,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "google/gemma-4-31B-it",
+      "profiled_tokens": 8192,
+      "record": "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd",
+      "tensor_parallel": 1,
+      "weights_at_run": 62766378712,
+      "weights_measured": 63340030197,
+      "weights_now": 62546177752
+    },
+    {
       "activation_at_run": 6552424652,
       "activation_measured": 1728724336,
       "activation_now": 1723596800,
@@ -268,16 +338,17 @@
     }
   ],
   "cost": {
-    "authorized": 500.0,
-    "failed_boot_total": 5.086735,
+    "authorized": 100.0,
+    "failed_boot_total": 6.659765,
     "ledger_classifier": 0.193358,
     "ledger_corrected": -0.239436,
-    "ledger_pod_idle": 0.230238,
+    "ledger_pod_idle": 0.232423,
+    "ledger_probe": 1.397938,
     "ledger_reconciled": 0.650187,
-    "ledger_settled": 10.380046,
-    "ledger_spent": 11.405072,
-    "ledger_staging": 0.1556,
-    "ledger_storage": 0.035079,
+    "ledger_settled": 13.987208,
+    "ledger_spent": 16.606962,
+    "ledger_staging": 0.285668,
+    "ledger_storage": 0.099616,
     "per_solution": [
       {
         "cost": 1.392902,
@@ -597,6 +668,46 @@
         ]
       },
       {
+        "cost": 0.758739,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "Qwen/Qwen3.6-35B-A3B-FP8@NVIDIA H100 80GB HBM3x1",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "records": [
+          "12203d42d9edd72738db48d8a2921852c2b4355b8f4f1e2364074184a8b99ac107bc",
+          "1220424b31bb9320ded8dd35ea51494e053c7573624d88f7cfa068a7143b0cfab493",
+          "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
+          "1220bef520489a0b824bb0fb0d0fddbf4b494639a3bec75d6722d2fd01ddafcd1334",
+          "1220fe7f6e1e6e0d9ad1f920688576c1e97098dd3fdea64dd4f1ce27a5895e679ece"
+        ]
+      },
+      {
+        "cost": 1.075595,
+        "failed_boot_cost": 1.075595,
+        "failed_boots": 1,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "Qwen/Qwen3.6-35B-A3B-FP8@NVIDIA H100 80GB HBM3x1",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "records": [
+          "12208be5e9e11a3ef0bf29d251d223ce5b2cefe1b94b7046c5a9bcbce383217d2491"
+        ]
+      },
+      {
+        "cost": 0.374655,
+        "failed_boot_cost": 0.374655,
+        "failed_boots": 1,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1",
+        "model": "Qwen/Qwen3.8-27B",
+        "records": [
+          "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc"
+        ]
+      },
+      {
         "cost": 0.249715,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -682,6 +793,22 @@
         ]
       },
       {
+        "cost": 0.323474,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "google/gemma-4-31B-it@NVIDIA H100 80GB HBM3x1",
+        "model": "google/gemma-4-31B-it",
+        "records": [
+          "1220620ad832acce780556de652ac6ad3871eb350506187a512a344dfc2611a429eb",
+          "1220a8806dc9c88fcb09d9c0729e5837b54876a1e6a7641a8ea56fa2c9bec280b14e",
+          "1220b22a2a0c23ede05a672102199f0692c7f7472b9766b0a91aa0f80c0f5cc2d7b0",
+          "1220d0d5e01ab2396cb6acff431adfba3d2985d10d3fb5f6addf158352aa12593f02",
+          "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd"
+        ]
+      },
+      {
         "cost": 0.03038,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -698,6 +825,22 @@
           "1220b871596474c6147fd47a73849565c4864919debdf7d64c4865163609b583760d",
           "1220c62d62ae67ec438ebca7e7facc6f53eb71e65853a9e6b29aee797a3e470e5948",
           "1220f4995e57ae2c4bc182084b0f54feaa9e8d99307987f54422a56bee1155a2c806"
+        ]
+      },
+      {
+        "cost": 0.211968,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1",
+        "model": "meta-models/Muse-Glimmer-30B",
+        "records": [
+          "12200349a8c7fb9e7d09c507d10be75323fb9bec456b6dbea00e44e2371d0bfbbaed",
+          "122019a9e31626f29a4c1d4525c324a4a6a4c809a0f5c3b095c38323f2e9b161428b",
+          "12206d543bd95f7e97eb237181e5edd75c3e9ab42be7274b32f2e45a2121911faa53",
+          "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
+          "1220abba11b486e2ce47648e40f5db2b35545f5312e9b60f2c9917e70f171080a3db"
         ]
       },
       {
@@ -772,6 +915,34 @@
         ]
       },
       {
+        "cost": 0.12278,
+        "failed_boot_cost": 0.12278,
+        "failed_boots": 1,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16@NVIDIA H100 80GB HBM3x1",
+        "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+        "records": [
+          "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
+        ]
+      },
+      {
+        "cost": 0.586517,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "openai/gpt-oss-120b@NVIDIA H100 80GB HBM3x1",
+        "model": "openai/gpt-oss-120b",
+        "records": [
+          "1220719de8bb1ea7c739fd651d2ed8915425ef7c6797d7a1dc2a3afd2af987c15da3",
+          "1220a3bfd7722e5e755212e9c74d8356053c860573fdb17ced6c9f79d77434ab6c79",
+          "1220ae1058c874e50f368003b8b84f7d49d665d76c637812efc968651847b1c250b6",
+          "1220b219fc84bdd8adaeb3f6548db80b2798df43b71e9798858cb50d72bac3aa43be",
+          "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef"
+        ]
+      },
+      {
         "cost": 0.09866,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -805,6 +976,22 @@
           "12208be4514014b93e1df25668c0ed3ebb2d327105bde0b618f14305b15bfe77b6cb",
           "1220b91ed705392b8d73e427d49b02bb78d16873551c543c67b8e478371077062acc"
         ]
+      },
+      {
+        "cost": 0.131137,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "zai-org/GLM-4.7-Flash@NVIDIA H100 80GB HBM3x1",
+        "model": "zai-org/GLM-4.7-Flash",
+        "records": [
+          "122005193f21e06cd4ba493c44b08a268fa97e28e66b6becf2d8b962407c39b7f636",
+          "12208087085572ae72f624dfd25a5c8cbcdaf6fc271e34e84cd6bdcd4b6bc49bede6",
+          "122082aeafa81c543998b6759da7d2b90574b9bdcb41b9d79d7713b519681af92845",
+          "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
+          "12208edaefdd8c44dd1726e94205cc21cb5b95c239141db16df098135762e773a168"
+        ]
       }
     ],
     "provider_billed": 11.174188,
@@ -812,7 +999,7 @@
     "provider_not_yet_billed": [
       "f9vbojnauynvah"
     ],
-    "records_total": 9.903045
+    "records_total": 13.48791
   },
   "failed_spend": [
     {
@@ -837,6 +1024,14 @@
       ]
     },
     {
+      "boots": 1,
+      "cause": "the harness: harness:exception:RemoteCommandTimeout",
+      "cost": 1.075595,
+      "records": [
+        "12208be5e9e11a3ef0bf29d251d223ce5b2cefe1b94b7046c5a9bcbce383217d2491"
+      ]
+    },
+    {
       "boots": 2,
       "cause": "an earlier broken plan, since replaced",
       "cost": 0.916205,
@@ -852,6 +1047,15 @@
       "records": [
         "122076c27e44225ebf05c45d63ba6ed34a6211f7aabfe2d24e94b6c46e042ff71399",
         "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321"
+      ]
+    },
+    {
+      "boots": 2,
+      "cause": "the model",
+      "cost": 0.497435,
+      "records": [
+        "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc",
+        "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
       ]
     },
     {
@@ -1256,6 +1460,21 @@
       "weight_delta_bytes": -150698311
     },
     {
+      "claim": "1220ae50b57be40a8f05ffb3c4d2ffe85a9a4cf814899a7b01f81d91567c71196b6a",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 2648946920,
+      "measured_persistent_bytes": 38880191447,
+      "measured_weight_bytes": 36754182635,
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "notes": [],
+      "predicted_total_bytes": 40444569696,
+      "predicted_weight_bytes": 37454789472,
+      "record": "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
+      "total_delta_bytes": 1564378249,
+      "weight_delta_bytes": 700606837
+    },
+    {
       "claim": "122001a3fa3351e82534d27e6861f214efdd19163876827b8677cf9bb75ba6057031",
       "gpu": "NVIDIA A100 80GB PCIe",
       "gpu_count": 1,
@@ -1316,6 +1535,21 @@
       "weight_delta_bytes": -75600834
     },
     {
+      "claim": "12208615c17fd6da2572bbb1429a358e6391f3e45514c79b1f0b8619e036eba2f879",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 1046332129,
+      "measured_persistent_bytes": 64918430679,
+      "measured_weight_bytes": 63340030197,
+      "model": "google/gemma-4-31B-it",
+      "notes": [],
+      "predicted_total_bytes": 69420407768,
+      "predicted_weight_bytes": 62766378712,
+      "record": "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd",
+      "total_delta_bytes": 4501977089,
+      "weight_delta_bytes": -573651485
+    },
+    {
       "claim": "12207fb485bc2e4171db73b4a5ccddcdbbc092d79b101c5cec40e60262878a1adbea",
       "gpu": "NVIDIA GeForce RTX 4090",
       "gpu_count": 1,
@@ -1329,6 +1563,21 @@
       "record": "1220636ca167b3f0c240df5c80fa2aec588bd2bec55f7a763fb5acc33fe1bcfb5cec",
       "total_delta_bytes": 2927556249,
       "weight_delta_bytes": -45604864
+    },
+    {
+      "claim": "12207159438c7b5ffcfcdf97f9247aa365e365f26cb48aedc1cd4251bf7dff05a70c",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 1747968523,
+      "measured_persistent_bytes": 61353607823,
+      "measured_weight_bytes": 59947006033,
+      "model": "meta-models/Muse-Glimmer-30B",
+      "notes": [],
+      "predicted_total_bytes": 63899890944,
+      "predicted_weight_bytes": 59553253376,
+      "record": "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
+      "total_delta_bytes": 2546283121,
+      "weight_delta_bytes": -393752657
     },
     {
       "claim": "12204247fcb7178fe59f2c000d0b9c5f6e6785c136062a0626661836290831b2e35a",
@@ -1376,6 +1625,21 @@
       "weight_delta_bytes": -10204938
     },
     {
+      "claim": "1220d80c36171d676dc889011fbb30153db20bcd4d6678c7aa42f089c03fe6a0fa18",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 3387628468,
+      "measured_persistent_bytes": 68322192261,
+      "measured_weight_bytes": 65959960248,
+      "model": "openai/gpt-oss-120b",
+      "notes": [],
+      "predicted_total_bytes": 67839203200,
+      "predicted_weight_bytes": 65248815744,
+      "record": "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef",
+      "total_delta_bytes": -482989061,
+      "weight_delta_bytes": -711144504
+    },
+    {
       "claim": "12209d690270761812757fe2a523b6c05b6db5ff88ee1b90896807ce4432cabc7c45",
       "gpu": "NVIDIA GeForce RTX 4090",
       "gpu_count": 1,
@@ -1404,6 +1668,21 @@
       "record": "12200ac02bfdf76a32406e83fc4d9de4a191dd9e7ed394552fcd7ce148df5f5fd64a",
       "total_delta_bytes": -4624781547,
       "weight_delta_bytes": -5533587005
+    },
+    {
+      "claim": "12203344458b4fa1179fa684fec7bc6be46384cf6093e0ac6ac29306183d58f66df9",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 3705919074,
+      "measured_persistent_bytes": 62051540008,
+      "measured_weight_bytes": 59989955706,
+      "model": "zai-org/GLM-4.7-Flash",
+      "notes": [],
+      "predicted_total_bytes": 64583083136,
+      "predicted_weight_bytes": 62442977152,
+      "record": "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
+      "total_delta_bytes": 2531543128,
+      "weight_delta_bytes": 2453021446
     }
   ],
   "modern_models": [
@@ -1413,7 +1692,7 @@
         "mechanism": "autoregressive_decode",
         "status": "planned",
         "tensor_parallel": 1,
-        "total_gib_per_gpu": 15.15,
+        "total_gib_per_gpu": 14.55,
         "weight_gib_per_gpu": 12.82
       },
       "cases": null,
@@ -1430,70 +1709,100 @@
       "status": "not run yet"
     },
     {
-      "accepted": null,
+      "accepted": 3,
       "before_gpu": {
         "mechanism": "autoregressive_decode",
         "status": "planned",
         "tensor_parallel": 1,
-        "total_gib_per_gpu": 63.18,
+        "total_gib_per_gpu": 64.02,
         "weight_gib_per_gpu": 60.77
       },
-      "cases": null,
-      "cost": null,
+      "cases": 3,
+      "cost": 0.5865,
       "downloads_30d": 4484728,
       "gpu": "NVIDIA H100 80GB HBM3",
       "gpu_count": 1,
       "group": "A",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 65959960248,
       "model": "openai/gpt-oss-120b",
       "params_b": 116.8,
-      "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet"
+      "predicted_weight_bytes": 65248815744,
+      "records": [
+        "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef"
+      ],
+      "status": "booted"
     },
     {
-      "accepted": null,
-      "before_gpu": {
-        "mechanism": "mla_decode",
-        "status": "planned",
-        "tensor_parallel": 1,
-        "total_gib_per_gpu": 60.15,
-        "weight_gib_per_gpu": 58.15
-      },
-      "cases": null,
-      "cost": null,
-      "downloads_30d": 1854281,
-      "gpu": "NVIDIA H100 80GB HBM3",
-      "gpu_count": 1,
-      "group": "A",
-      "measured_weight_bytes": null,
-      "model": "zai-org/GLM-4.7-Flash",
-      "params_b": 31.2,
-      "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet"
-    },
-    {
-      "accepted": null,
+      "accepted": 3,
       "before_gpu": {
         "mechanism": "layered_decode",
         "status": "planned",
         "tensor_parallel": 1,
-        "total_gib_per_gpu": 64.65,
+        "total_gib_per_gpu": 65.14,
         "weight_gib_per_gpu": 58.46
       },
-      "cases": null,
-      "cost": null,
+      "cases": 3,
+      "cost": 0.3235,
       "downloads_30d": 9460570,
       "gpu": "NVIDIA H100 80GB HBM3",
       "gpu_count": 1,
       "group": "A",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 63340030197,
       "model": "google/gemma-4-31B-it",
       "params_b": 31.3,
-      "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet"
+      "predicted_weight_bytes": 62766378712,
+      "records": [
+        "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd"
+      ],
+      "status": "booted"
+    },
+    {
+      "accepted": 0,
+      "before_gpu": {
+        "mechanism": "layered_decode",
+        "status": "planned",
+        "tensor_parallel": 1,
+        "total_gib_per_gpu": 59.95,
+        "weight_gib_per_gpu": 55.46
+      },
+      "cases": 3,
+      "cost": 0.212,
+      "downloads_30d": 286662,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "group": "A",
+      "measured_weight_bytes": 59947006033,
+      "model": "meta-models/Muse-Glimmer-30B",
+      "params_b": 29.6,
+      "predicted_weight_bytes": 59553253376,
+      "records": [
+        "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c"
+      ],
+      "status": "booted"
+    },
+    {
+      "accepted": 3,
+      "before_gpu": {
+        "mechanism": "mla_decode",
+        "status": "planned",
+        "tensor_parallel": 1,
+        "total_gib_per_gpu": 60.09,
+        "weight_gib_per_gpu": 55.77
+      },
+      "cases": 3,
+      "cost": 0.1311,
+      "downloads_30d": 1854281,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "group": "A",
+      "measured_weight_bytes": 59989955706,
+      "model": "zai-org/GLM-4.7-Flash",
+      "params_b": 31.2,
+      "predicted_weight_bytes": 62442977152,
+      "records": [
+        "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb"
+      ],
+      "status": "booted"
     },
     {
       "accepted": null,
@@ -1501,11 +1810,11 @@
         "mechanism": "layered_decode",
         "status": "planned",
         "tensor_parallel": 1,
-        "total_gib_per_gpu": 56.82,
-        "weight_gib_per_gpu": 51.75
+        "total_gib_per_gpu": 56.0,
+        "weight_gib_per_gpu": 50.96
       },
       "cases": null,
-      "cost": null,
+      "cost": 0.3747,
       "downloads_30d": 6727629,
       "gpu": "NVIDIA H100 80GB HBM3",
       "gpu_count": 1,
@@ -1514,27 +1823,78 @@
       "model": "Qwen/Qwen3.8-27B",
       "params_b": 27.8,
       "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet"
+      "records": [
+        "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc"
+      ],
+      "status": "failed"
     },
     {
-      "accepted": null,
+      "accepted": 3,
       "before_gpu": {
         "mechanism": "layered_decode",
         "status": "planned",
         "tensor_parallel": 1,
-        "total_gib_per_gpu": 37.67,
-        "weight_gib_per_gpu": 34.88
+        "total_gib_per_gpu": 38.91,
+        "weight_gib_per_gpu": 34.09
       },
-      "cases": null,
-      "cost": null,
+      "cases": 3,
+      "cost": 1.8343,
       "downloads_30d": 7638786,
       "gpu": "NVIDIA H100 80GB HBM3",
       "gpu_count": 1,
       "group": "B",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 36754182635,
       "model": "Qwen/Qwen3.6-35B-A3B-FP8",
       "params_b": 36.0,
+      "predicted_weight_bytes": 37454789472,
+      "records": [
+        "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
+        "12208be5e9e11a3ef0bf29d251d223ce5b2cefe1b94b7046c5a9bcbce383217d2491"
+      ],
+      "status": "booted"
+    },
+    {
+      "accepted": null,
+      "before_gpu": {
+        "mechanism": "layered_decode",
+        "status": "planned",
+        "tensor_parallel": 1,
+        "total_gib_per_gpu": 61.93,
+        "weight_gib_per_gpu": 58.82
+      },
+      "cases": null,
+      "cost": 0.1228,
+      "downloads_30d": 462733,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "group": "B",
+      "measured_weight_bytes": null,
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+      "params_b": 31.6,
+      "predicted_weight_bytes": null,
+      "records": [
+        "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
+      ],
+      "status": "failed"
+    },
+    {
+      "accepted": null,
+      "before_gpu": {
+        "mechanism": "layered_decode",
+        "status": "planned",
+        "tensor_parallel": 4,
+        "total_gib_per_gpu": 80.19,
+        "weight_gib_per_gpu": 74.7
+      },
+      "cases": null,
+      "cost": null,
+      "downloads_30d": 4332082,
+      "gpu": "NVIDIA H200",
+      "gpu_count": 4,
+      "group": "C",
+      "measured_weight_bytes": null,
+      "model": "zai-org/GLM-5.3-Flash",
+      "params_b": 321,
       "predicted_weight_bytes": null,
       "records": [],
       "status": "not run yet"
@@ -1544,41 +1904,19 @@
       "before_gpu": {
         "mechanism": "layered_decode",
         "status": "planned",
-        "tensor_parallel": 1,
-        "total_gib_per_gpu": 20.38,
-        "weight_gib_per_gpu": 18.0
+        "tensor_parallel": 4,
+        "total_gib_per_gpu": 81.29,
+        "weight_gib_per_gpu": 77.98
       },
       "cases": null,
       "cost": null,
-      "downloads_30d": 1048456,
-      "gpu": "NVIDIA H100 80GB HBM3",
-      "gpu_count": 1,
-      "group": "B",
-      "measured_weight_bytes": null,
-      "model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4",
-      "params_b": 18.2,
-      "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet"
-    },
-    {
-      "accepted": null,
-      "before_gpu": {
-        "mechanism": "autoregressive_decode",
-        "status": "planned",
-        "tensor_parallel": 2,
-        "total_gib_per_gpu": 109.67,
-        "weight_gib_per_gpu": 107.16
-      },
-      "cases": null,
-      "cost": null,
-      "downloads_30d": 1191260,
+      "downloads_30d": 651078,
       "gpu": "NVIDIA H200",
-      "gpu_count": 2,
+      "gpu_count": 4,
       "group": "C",
       "measured_weight_bytes": null,
-      "model": "MiniMaxAI/MiniMax-M2.7",
-      "params_b": 228.7,
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "params_b": 763,
       "predicted_weight_bytes": null,
       "records": [],
       "status": "not run yet"
@@ -1586,11 +1924,33 @@
     {
       "accepted": null,
       "before_gpu": {
-        "mechanism": "autoregressive_decode",
+        "mechanism": "layered_decode",
         "status": "planned",
         "tensor_parallel": 4,
-        "total_gib_per_gpu": 40.72,
-        "weight_gib_per_gpu": 38.85
+        "total_gib_per_gpu": 62.85,
+        "weight_gib_per_gpu": 58.76
+      },
+      "cases": null,
+      "cost": null,
+      "downloads_30d": 1226891,
+      "gpu": "NVIDIA H200",
+      "gpu_count": 4,
+      "group": "C",
+      "measured_weight_bytes": null,
+      "model": "Qwen/Qwen3.8-Flash-Next",
+      "params_b": 180,
+      "predicted_weight_bytes": null,
+      "records": [],
+      "status": "not run yet"
+    },
+    {
+      "accepted": null,
+      "before_gpu": {
+        "mechanism": "layered_decode",
+        "status": "planned",
+        "tensor_parallel": 4,
+        "total_gib_per_gpu": 41.19,
+        "weight_gib_per_gpu": 37.25
       },
       "cases": null,
       "cost": null,
@@ -1608,11 +1968,11 @@
     {
       "accepted": null,
       "before_gpu": {
-        "mechanism": "mla_decode",
-        "status": "planned",
+        "mechanism": "unknown",
+        "status": "unknown",
         "tensor_parallel": 8,
-        "total_gib_per_gpu": 90.11,
-        "weight_gib_per_gpu": 87.97
+        "total_gib_per_gpu": 0.0,
+        "weight_gib_per_gpu": 0.0
       },
       "cases": null,
       "cost": null,
@@ -1630,21 +1990,21 @@
     {
       "accepted": null,
       "before_gpu": {
-        "mechanism": "mla_decode",
+        "mechanism": "layered_decode",
         "status": "planned",
         "tensor_parallel": 8,
-        "total_gib_per_gpu": 82.28,
-        "weight_gib_per_gpu": 80.27
+        "total_gib_per_gpu": 107.44,
+        "weight_gib_per_gpu": 101.94
       },
       "cases": null,
       "cost": null,
-      "downloads_30d": 2979489,
+      "downloads_30d": 116119,
       "gpu": "NVIDIA H200",
       "gpu_count": 8,
       "group": "D",
       "measured_weight_bytes": null,
-      "model": "deepseek-ai/DeepSeek-V3.2",
-      "params_b": 685.4,
+      "model": "deepseek-ai/DeepSeek-V4-Pro-0813",
+      "params_b": 1650,
       "predicted_weight_bytes": null,
       "records": [],
       "status": "not run yet"
@@ -1652,21 +2012,21 @@
     {
       "accepted": null,
       "before_gpu": {
-        "mechanism": "mla_decode",
-        "status": "planned",
+        "mechanism": "encoder_decoder_generation",
+        "status": "unknown",
         "tensor_parallel": 8,
-        "total_gib_per_gpu": 122.07,
-        "weight_gib_per_gpu": 119.81
+        "total_gib_per_gpu": 0.0,
+        "weight_gib_per_gpu": 0.0
       },
       "cases": null,
       "cost": null,
-      "downloads_30d": 60539,
-      "gpu": "NVIDIA B200",
+      "downloads_30d": 164729,
+      "gpu": "NVIDIA H200",
       "gpu_count": 8,
       "group": "D",
       "measured_weight_bytes": null,
-      "model": "moonshotai/Kimi-K2-Instruct-0905",
-      "params_b": 1026.5,
+      "model": "MiniMaxAI/MiniMax-M3",
+      "params_b": 427,
       "predicted_weight_bytes": null,
       "records": [],
       "status": "not run yet"
@@ -1690,7 +2050,7 @@
       "status": "unknown"
     }
   ],
-  "record_count": 228,
+  "record_count": 265,
   "repeat_measurements": [
     {
       "activation_spread_pct": 0.0,
@@ -1891,6 +2251,20 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "output_token_throughput": 635.4573573456765,
+      "p99_tpot_ms": 5.237237965526778,
+      "p99_ttft_ms": 140.94415191560984,
+      "recomputed_verdict": "pass",
+      "record": "1220bef520489a0b824bb0fb0d0fddbf4b494639a3bec75d6722d2fd01ddafcd1334",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA A100 80GB PCIe",
       "model": "deepseek-ai/DeepSeek-V2-Lite",
       "output_token_throughput": 316.3572444177437,
@@ -1947,6 +2321,20 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "google/gemma-4-31B-it",
+      "output_token_throughput": 146.4024201353428,
+      "p99_tpot_ms": 26.01993224693565,
+      "p99_ttft_ms": 204.17094931006432,
+      "recomputed_verdict": "pass",
+      "record": "1220b22a2a0c23ede05a672102199f0692c7f7472b9766b0a91aa0f80c0f5cc2d7b0",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA GeForce RTX 4090",
       "model": "meta-llama/Llama-3.1-8B-Instruct",
       "output_token_throughput": 205.15691850343964,
@@ -1954,6 +2342,20 @@
       "p99_ttft_ms": 221.69030246324837,
       "recomputed_verdict": "pass",
       "record": "1220c62d62ae67ec438ebca7e7facc6f53eb71e65853a9e6b29aee797a3e470e5948",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "meta-models/Muse-Glimmer-30B",
+      "output_token_throughput": 167.922881666846,
+      "p99_tpot_ms": 22.585682856197668,
+      "p99_ttft_ms": 185.09713247418404,
+      "recomputed_verdict": "pass",
+      "record": "12206d543bd95f7e97eb237181e5edd75c3e9ab42be7274b32f2e45a2121911faa53",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
       "verdict": "pass"
@@ -2003,6 +2405,20 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "openai/gpt-oss-120b",
+      "output_token_throughput": 400.63272566723566,
+      "p99_tpot_ms": 7.057647535093422,
+      "p99_ttft_ms": 2292.4148860946298,
+      "recomputed_verdict": "fail",
+      "record": "1220719de8bb1ea7c739fd651d2ed8915425ef7c6797d7a1dc2a3afd2af987c15da3",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "fail"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA GeForce RTX 4090",
       "model": "state-spaces/mamba-2.8b-hf",
       "output_token_throughput": 429.0505377424363,
@@ -2027,10 +2443,24 @@
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
       "verdict": "pass"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "zai-org/GLM-4.7-Flash",
+      "output_token_throughput": 396.48674056574583,
+      "p99_tpot_ms": 8.508985566459302,
+      "p99_ttft_ms": 1324.051704928279,
+      "recomputed_verdict": "pass",
+      "record": "12208087085572ae72f624dfd25a5c8cbcdaf6fc271e34e84cd6bdcd4b6bc49bede6",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass"
     }
   ],
   "setup": {
-    "authorized": 500.0,
+    "authorized": 100.0,
     "cloud_types": [
       "SECURE"
     ],
@@ -2044,9 +2474,10 @@
       "NVIDIA RTX A6000"
     ],
     "image_digests": [
+      "sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-27T18:16:26.943581+00:00",
+    "last_event": "2026-09-28T01:50:42.687940+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B",
@@ -2056,12 +2487,17 @@
       "Qwen/Qwen3-32B",
       "Qwen/Qwen3-8B",
       "Qwen/Qwen3-8B-AWQ",
+      "Qwen/Qwen3.6-35B-A3B-FP8",
       "deepseek-ai/DeepSeek-V2-Lite",
       "deepseek-ai/DeepSeek-V2-Lite-Chat",
       "google/gemma-2-2b-it",
+      "google/gemma-4-31B-it",
       "meta-llama/Llama-3.1-8B-Instruct",
+      "meta-models/Muse-Glimmer-30B",
       "mistralai/Mistral-7B-Instruct-v0.3",
-      "state-spaces/mamba-2.8b-hf"
+      "openai/gpt-oss-120b",
+      "state-spaces/mamba-2.8b-hf",
+      "zai-org/GLM-4.7-Flash"
     ],
     "providers": [
       "runpod"
@@ -2477,6 +2913,25 @@
       "truncated": 0
     },
     {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "passed": true,
+      "records": [
+        "12203d42d9edd72738db48d8a2921852c2b4355b8f4f1e2364074184a8b99ac107bc",
+        "1220424b31bb9320ded8dd35ea51494e053c7573624d88f7cfa068a7143b0cfab493",
+        "1220fe7f6e1e6e0d9ad1f920688576c1e97098dd3fdea64dd4f1ce27a5895e679ece"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "truncated": 0
+    },
+    {
       "accepted": 0,
       "attempts": 3,
       "cases": 3,
@@ -2607,6 +3062,25 @@
       "truncated": 0
     },
     {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "google/gemma-4-31B-it",
+      "passed": true,
+      "records": [
+        "1220620ad832acce780556de652ac6ad3871eb350506187a512a344dfc2611a429eb",
+        "1220a8806dc9c88fcb09d9c0729e5837b54876a1e6a7641a8ea56fa2c9bec280b14e",
+        "1220d0d5e01ab2396cb6acff431adfba3d2985d10d3fb5f6addf158352aa12593f02"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "truncated": 0
+    },
+    {
       "accepted": 2,
       "attempts": 3,
       "cases": 3,
@@ -2635,6 +3109,25 @@
         "12203eb26d453a280cad801d9dca9ea0cfcb8322945188df31f3517f7ad775519fa6",
         "12207d816078edb4ff45879a7de1e85cbe18fa44aebabd7406e8475c76d9664eab47",
         "1220f4995e57ae2c4bc182084b0f54feaa9e8d99307987f54422a56bee1155a2c806"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "truncated": 0
+    },
+    {
+      "accepted": 0,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "meta-models/Muse-Glimmer-30B",
+      "passed": false,
+      "records": [
+        "12200349a8c7fb9e7d09c507d10be75323fb9bec456b6dbea00e44e2371d0bfbbaed",
+        "122019a9e31626f29a4c1d4525c324a4a6a4c809a0f5c3b095c38323f2e9b161428b",
+        "1220abba11b486e2ce47648e40f5db2b35545f5312e9b60f2c9917e70f171080a3db"
       ],
       "retries": 0,
       "scoring": [
@@ -2755,6 +3248,25 @@
       "truncated": 0
     },
     {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "openai/gpt-oss-120b",
+      "passed": true,
+      "records": [
+        "1220a3bfd7722e5e755212e9c74d8356053c860573fdb17ced6c9f79d77434ab6c79",
+        "1220ae1058c874e50f368003b8b84f7d49d665d76c637812efc968651847b1c250b6",
+        "1220b219fc84bdd8adaeb3f6548db80b2798df43b71e9798858cb50d72bac3aa43be"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "truncated": 0
+    },
+    {
       "accepted": 0,
       "attempts": 3,
       "cases": 3,
@@ -2794,7 +3306,77 @@
         "strip_terminal_punctuation"
       ],
       "truncated": 0
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "zai-org/GLM-4.7-Flash",
+      "passed": true,
+      "records": [
+        "122005193f21e06cd4ba493c44b08a268fa97e28e66b6becf2d8b962407c39b7f636",
+        "122082aeafa81c543998b6759da7d2b90574b9bdcb41b9d79d7713b519681af92845",
+        "12208edaefdd8c44dd1726e94205cc21cb5b95c239141db16df098135762e773a168"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "truncated": 0
     }
   ],
-  "weights_time": []
+  "weights_time": [
+    {
+      "engine_start_seconds": 507.2,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "hourly_rate": 3.49,
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "pod_seconds": 782.6538469791412,
+      "record": "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
+      "weights_seconds": 1.4,
+      "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
+    },
+    {
+      "engine_start_seconds": 268.4,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "hourly_rate": 3.49,
+      "model": "google/gemma-4-31B-it",
+      "pod_seconds": 333.67055010795593,
+      "record": "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd",
+      "weights_seconds": 0.8,
+      "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
+    },
+    {
+      "engine_start_seconds": 155.6,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "hourly_rate": 3.49,
+      "model": "meta-models/Muse-Glimmer-30B",
+      "pod_seconds": 218.64953088760376,
+      "record": "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
+      "weights_seconds": 0.8,
+      "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
+    },
+    {
+      "engine_start_seconds": 227.1,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "hourly_rate": 3.49,
+      "model": "openai/gpt-oss-120b",
+      "pod_seconds": 605.0021140575409,
+      "record": "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef",
+      "weights_seconds": 1.3,
+      "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
+    },
+    {
+      "engine_start_seconds": 103.5,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "hourly_rate": 3.49,
+      "model": "zai-org/GLM-4.7-Flash",
+      "pod_seconds": 135.26904797554016,
+      "record": "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
+      "weights_seconds": 1.1,
+      "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
+    }
+  ]
 }

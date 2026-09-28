@@ -1,0 +1,754 @@
+{
+ "deployment_plan_digest": "12205b72f0e550a41817b77a94bbd391a58f80ddcb73ffa605e59437a0b7948195d9",
+ "gpu": "NVIDIA H100 80GB HBM3",
+ "hygiene": {
+  "clean": true,
+  "gpu_memory_used_mib": [
+   0
+  ],
+  "port_8000_busy": false
+ },
+ "image": "ghcr.io/mondegreens/apron-runner@sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
+ "launch": "( . /etc/apron_environment && cd /workspace && exec env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 APRON_PEAK_PROBE=1 APRON_PEAK_PROBE_OUT=/workspace/peak-probe-0.json PYTHONPATH=/workspace/peak_probe VLLM_CACHE_ROOT=/workspace/probe-cache-0 /opt/venv/bin/vllm serve /runpod-volume/models/Qwen/Qwen3.6-35B-A3B-FP8 --served-model-name Qwen/Qwen3.6-35B-A3B-FP8 --dtype bfloat16 --gpu-memory-utilization 0.9 --max-model-len 640 ) > /var/log/vllm.log 2>&1 < /dev/null & ( exec tail -n +1 -F /var/log/vllm.log > /proc/1/fd/1 ) 2>/dev/null < /dev/null &",
+ "load_args": [],
+ "log_tail": "(EngineCore pid=953) INFO 09-28 02:45:20 [compilation/monitor.py:81] Initial profiling/warmup run took 19.96 s\n(EngineCore pid=953) \nCapturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s](APIServer pid=218) DEBUG 09-28 02:45:29 [v1/engine/utils.py:1295] Waiting for 1 local, 0 remote core engine proc(s) to start.\n(EngineCore pid=953) DEBUG 09-28 02:45:34 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=512, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:34 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=512, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):   2%|\u258f         | 1/51 [00:11<09:40, 11.60s/it](EngineCore pid=953) DEBUG 09-28 02:45:34 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=496, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:34 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=496, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):   4%|\u258d         | 2/51 [00:11<03:58,  4.86s/it](EngineCore pid=953) DEBUG 09-28 02:45:34 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=480, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:34 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=480, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):   6%|\u258c         | 3/51 [00:11<02:10,  2.71s/it](EngineCore pid=953) DEBUG 09-28 02:45:34 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=464, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:34 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=464, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):   8%|\u258a         | 4/51 [00:12<01:19,  1.70s/it](EngineCore pid=953) DEBUG 09-28 02:45:36 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=448, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:36 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=448, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  10%|\u2589         | 5/51 [00:13<01:19,  1.72s/it](EngineCore pid=953) DEBUG 09-28 02:45:36 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=432, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:36 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=432, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  12%|\u2588\u258f        | 6/51 [00:13<00:53,  1.19s/it](EngineCore pid=953) DEBUG 09-28 02:45:36 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=416, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:36 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=416, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  14%|\u2588\u258e        | 7/51 [00:14<00:37,  1.18it/s](EngineCore pid=953) DEBUG 09-28 02:45:36 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=400, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:36 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=400, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  16%|\u2588\u258c        | 8/51 [00:14<00:26,  1.60it/s](APIServer pid=218) DEBUG 09-28 02:45:39 [v1/engine/utils.py:1295] Waiting for 1 local, 0 remote core engine proc(s) to start.\n(EngineCore pid=953) DEBUG 09-28 02:45:46 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=384, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:46 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=384, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  18%|\u2588\u258a        | 9/51 [00:23<02:25,  3.46s/it](EngineCore pid=953) DEBUG 09-28 02:45:46 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=368, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:46 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=368, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  20%|\u2588\u2589        | 10/51 [00:24<01:40,  2.44s/it](EngineCore pid=953) DEBUG 09-28 02:45:46 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=352, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:46 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=352, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  22%|\u2588\u2588\u258f       | 11/51 [00:24<01:09,  1.74s/it](EngineCore pid=953) DEBUG 09-28 02:45:46 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=336, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:46 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=336, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  24%|\u2588\u2588\u258e       | 12/51 [00:24<00:49,  1.26s/it](APIServer pid=218) DEBUG 09-28 02:45:49 [v1/engine/utils.py:1295] Waiting for 1 local, 0 remote core engine proc(s) to start.\n(EngineCore pid=953) DEBUG 09-28 02:45:50 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=320, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:50 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=320, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  25%|\u2588\u2588\u258c       | 13/51 [00:27<01:12,  1.91s/it](EngineCore pid=953) DEBUG 09-28 02:45:50 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=304, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:50 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=304, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  27%|\u2588\u2588\u258b       | 14/51 [00:27<00:50,  1.37s/it](EngineCore pid=953) DEBUG 09-28 02:45:50 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=288, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:50 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=288, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  29%|\u2588\u2588\u2589       | 15/51 [00:28<00:36,  1.01s/it](EngineCore pid=953) DEBUG 09-28 02:45:50 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=272, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:45:50 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=272, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  31%|\u2588\u2588\u2588\u258f      | 16/51 [00:28<00:26,  1.33it/s](APIServer pid=218) DEBUG 09-28 02:45:59 [v1/engine/utils.py:1295] Waiting for 1 local, 0 remote core engine proc(s) to start.\n(EngineCore pid=953) DEBUG 09-28 02:46:01 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=256, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:01 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=256, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  33%|\u2588\u2588\u2588\u258e      | 17/51 [00:39<02:09,  3.81s/it](EngineCore pid=953) DEBUG 09-28 02:46:01 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=248, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:01 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=248, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  35%|\u2588\u2588\u2588\u258c      | 18/51 [00:39<01:30,  2.75s/it](EngineCore pid=953) DEBUG 09-28 02:46:02 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=240, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:02 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=240, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  37%|\u2588\u2588\u2588\u258b      | 19/51 [00:39<01:03,  1.97s/it](EngineCore pid=953) DEBUG 09-28 02:46:02 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=232, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:02 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=232, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  39%|\u2588\u2588\u2588\u2589      | 20/51 [00:39<00:44,  1.43s/it](EngineCore pid=953) DEBUG 09-28 02:46:02 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=224, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:02 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=224, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  41%|\u2588\u2588\u2588\u2588      | 21/51 [00:39<00:31,  1.04s/it](EngineCore pid=953) DEBUG 09-28 02:46:02 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=216, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:02 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=216, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  43%|\u2588\u2588\u2588\u2588\u258e     | 22/51 [00:40<00:22,  1.29it/s](EngineCore pid=953) DEBUG 09-28 02:46:02 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=208, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:02 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=208, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  45%|\u2588\u2588\u2588\u2588\u258c     | 23/51 [00:40<00:16,  1.70it/s](EngineCore pid=953) DEBUG 09-28 02:46:02 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=200, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:02 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=200, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  47%|\u2588\u2588\u2588\u2588\u258b     | 24/51 [00:40<00:12,  2.18it/s](APIServer pid=218) DEBUG 09-28 02:46:09 [v1/engine/utils.py:1295] Waiting for 1 local, 0 remote core engine proc(s) to start.\n(EngineCore pid=953) DEBUG 09-28 02:46:10 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=192, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:10 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=192, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  49%|\u2588\u2588\u2588\u2588\u2589     | 25/51 [00:47<01:04,  2.49s/it](EngineCore pid=953) DEBUG 09-28 02:46:10 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=184, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:10 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=184, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  51%|\u2588\u2588\u2588\u2588\u2588     | 26/51 [00:47<00:44,  1.80s/it](EngineCore pid=953) DEBUG 09-28 02:46:10 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=176, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:10 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=176, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  53%|\u2588\u2588\u2588\u2588\u2588\u258e    | 27/51 [00:47<00:31,  1.30s/it](EngineCore pid=953) DEBUG 09-28 02:46:10 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=168, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:10 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=168, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  55%|\u2588\u2588\u2588\u2588\u2588\u258d    | 28/51 [00:48<00:22,  1.04it/s](EngineCore pid=953) DEBUG 09-28 02:46:10 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=160, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:10 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=160, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 29/51 [00:48<00:15,  1.40it/s](EngineCore pid=953) DEBUG 09-28 02:46:10 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=152, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:10 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=152, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  59%|\u2588\u2588\u2588\u2588\u2588\u2589    | 30/51 [00:48<00:11,  1.82it/s](EngineCore pid=953) DEBUG 09-28 02:46:11 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=144, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:11 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=144, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  61%|\u2588\u2588\u2588\u2588\u2588\u2588    | 31/51 [00:48<00:08,  2.33it/s](EngineCore pid=953) DEBUG 09-28 02:46:11 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=136, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:11 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=136, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  63%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 32/51 [00:48<00:06,  2.87it/s](APIServer pid=218) DEBUG 09-28 02:46:19 [v1/engine/utils.py:1295] Waiting for 1 local, 0 remote core engine proc(s) to start.\n(EngineCore pid=953) DEBUG 09-28 02:46:20 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=128, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:20 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=128, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  65%|\u2588\u2588\u2588\u2588\u2588\u2588\u258d   | 33/51 [00:58<00:55,  3.07s/it](EngineCore pid=953) DEBUG 09-28 02:46:20 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=120, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:20 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=120, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 34/51 [00:58<00:37,  2.19s/it](EngineCore pid=953) DEBUG 09-28 02:46:20 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=112, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:20 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=112, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  69%|\u2588\u2588\u2588\u2588\u2588\u2588\u258a   | 35/51 [00:58<00:25,  1.58s/it](EngineCore pid=953) DEBUG 09-28 02:46:21 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=104, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:21 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=104, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  71%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588   | 36/51 [00:58<00:17,  1.15s/it](EngineCore pid=953) DEBUG 09-28 02:46:21 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=96, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:21 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=96, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  73%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 37/51 [00:58<00:11,  1.17it/s](EngineCore pid=953) DEBUG 09-28 02:46:21 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=88, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:21 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=88, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d  | 38/51 [00:58<00:08,  1.55it/s](EngineCore pid=953) DEBUG 09-28 02:46:21 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=80, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:21 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=80, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  76%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 39/51 [00:59<00:05,  2.01it/s](EngineCore pid=953) DEBUG 09-28 02:46:21 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=72, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:21 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=72, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  78%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a  | 40/51 [00:59<00:04,  2.54it/s](APIServer pid=218) DEBUG 09-28 02:46:29 [v1/engine/utils.py:1295] Waiting for 1 local, 0 remote core engine proc(s) to start.\n(EngineCore pid=953) DEBUG 09-28 02:46:29 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=64, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:29 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=64, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 41/51 [01:07<00:27,  2.70s/it](EngineCore pid=953) DEBUG 09-28 02:46:29 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=56, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:29 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=56, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  82%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f | 42/51 [01:07<00:17,  1.94s/it](EngineCore pid=953) DEBUG 09-28 02:46:30 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=48, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:30 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=48, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  84%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 43/51 [01:07<00:11,  1.40s/it](EngineCore pid=953) DEBUG 09-28 02:46:30 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=40, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:30 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=40, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  86%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 44/51 [01:07<00:07,  1.03s/it](APIServer pid=218) DEBUG 09-28 02:46:39 [v1/engine/utils.py:1295] Waiting for 1 local, 0 remote core engine proc(s) to start.\n(EngineCore pid=953) DEBUG 09-28 02:46:39 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=32, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:46:39 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=32, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 45/51 [01:16<00:20,  3.47s/it](APIServer pid=218) DEBUG 09-28 02:46:49 [v1/engine/utils.py:1295] Waiting for 1 local, 0 remote core engine proc(s) to start.\n[... 5 more 'waiting for core engine' lines]\n(EngineCore pid=953) DEBUG 09-28 02:47:44 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=24, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:47:44 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=24, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 46/51 [02:22<01:50, 22.09s/it](EngineCore pid=953) DEBUG 09-28 02:47:48 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=16, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:47:48 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=16, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  92%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 47/51 [02:25<01:05, 16.38s/it](EngineCore pid=953) DEBUG 09-28 02:47:48 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=8, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:47:48 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=8, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  94%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d| 48/51 [02:26<00:34, 11.65s/it](EngineCore pid=953) DEBUG 09-28 02:47:49 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=4, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:47:49 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=4, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n(APIServer pid=218) DEBUG 09-28 02:47:49 [v1/engine/utils.py:1295] Waiting for 1 local, 0 remote core engine proc(s) to start.\n\nCapturing CUDA graphs (PIECEWISE):  96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 49/51 [02:26<00:16,  8.33s/it](EngineCore pid=953) DEBUG 09-28 02:47:49 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=2, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:47:49 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=2, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE):  98%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 50/51 [02:26<00:05,  5.87s/it](EngineCore pid=953) DEBUG 09-28 02:47:50 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=PIECEWISE, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.PIECEWISE: 1>, num_tokens=1, num_reqs=None, uniform_token_count=None, max_query_len=None, num_active_loras=0, num_ubatches=1)\n(EngineCore pid=953) DEBUG 09-28 02:47:50 [compilation/cuda_graph.py:273] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=1, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))\n\nCapturing CUDA graphs (PIECEWISE): 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 51/51 [02:28<00:00,  4.54s/it]\nCapturing CUDA graphs (PIECEWISE): 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 51/51 [02:28<00:00,  2.91s/it]\n(EngineCore pid=953) \nCapturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s](EngineCore pid=953) DEBUG 09-28 02:47:50 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=FULL, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.FULL: 2>, num_tokens=512, num_reqs=512, uniform_token_count=1, max_query_len=None, num_active_loras=0, num_ubatches=1)\n\nCapturing CUDA graphs (FULL):  50%|\u2588\u2588\u2588\u2588\u2588     | 1/2 [00:00<00:00,  8.13it/s](EngineCore pid=953) DEBUG 09-28 02:47:51 [v1/worker/gpu/cudagraph_utils.py:442] CG Capture: mode=FULL, batch_desc=BatchExecutionDescriptor(cg_mode=<CUDAGraphMode.FULL: 2>, num_tokens=496, num_reqs=496, uniform_token_count=1, max_query_len=None, num_active_loras=0, num_ubatches=1)\n\nCapturing CUDA graphs (FULL): 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 2/2 [00:00<00:00,  8.19it/s]\nCapturing CUDA graphs (FULL): 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 2/2 [00:00<00:00,  8.18it/s]\n(EngineCore pid=953) INFO 09-28 02:47:51 [v1/worker/gpu/model_runner.py:1066] Graph capturing finished in 149 secs, took 0.94 GiB\n(EngineCore pid=953) DEBUG 09-28 02:47:52 [v1/worker/gpu_worker.py:628] Initial free memory: 78.66 GiB; Requested memory: 0.900000 (util), 71.26 GiB\n(EngineCore pid=953) DEBUG 09-28 02:47:52 [v1/worker/gpu_worker.py:634] Free memory after profiling: 42.46 GiB (total), 35.05 GiB (within requested)\n(EngineCore pid=953) DEBUG 09-28 02:47:52 [v1/worker/gpu_worker.py:639] Memory profiling takes 45.32 seconds. Total non KV cache memory: 37.58GiB; torch peak memory increase: 1.92GiB; total consumed (from mem_get_info): 36.21GiB; weights memory: 34.23GiB.\n(EngineCore pid=953) INFO 09-28 02:47:52 [v1/worker/gpu_worker.py:640] Available KV cache memory: 32.43 GiB\n(EngineCore pid=953) INFO 09-28 02:47:52 [v1/worker/gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9000 is equivalent to --gpu-memory-utilization=0.8842 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9158. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.\n(EngineCore pid=953) INFO 09-28 02:47:52 [v1/core/kv_cache_utils.py:2395] GPU KV cache size: 147,108 tokens, Maximum concurrency for 640 tokens per request: 229.86x\n(EngineCore pid=953) INFO 09-28 02:47:52 [model_executor/warmup/kernel_warmup.py:172] JIT kernel warmup starting.\n(EngineCore pid=953) INFO 09-28 02:47:52 [model_executor/warmup/kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.\n(EngineCore pid=953) INFO 09-28 02:47:52 [model_executor/warmup/qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.\n(EngineCore pid=953) INFO 09-28 02:47:53 [model_executor/warmup/qwen_vl_triton_warmup.py:57] Warmed position embedding and vision rotary kernels on grids=[(1, 16, 16), (1, 16, 2), (1, 2, 16), (1, 2, 2)].\n(EngineCore pid=953) INFO 09-28 02:47:53 [model_executor/warmup/qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.\n(EngineCore pid=953) INFO 09-28 02:47:53 [model_executor/warmup/mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.\n(EngineCore pid=953) DEBUG 09-28 02:47:54 [compilation/decorators.py:223] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.qwen3_dflash.DFlashQwen3Model'>: ['input_ids', 'positions', 'input_embeds']\n(EngineCore pid=953) DEBUG 09-28 02:47:54 [compilation/decorators.py:223] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_v2.DeepseekV2Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']\n(EngineCore pid=953) DEBUG 09-28 02:47:54 [compilation/decorators.py:223] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_mtp.DeepSeekMTP'>: ['input_ids', 'positions', 'hidden_states', 'intermediate_tensors', 'inputs_embeds']\n(EngineCore pid=953) DEBUG 09-28 02:47:54 [model_executor/warmup/kernel_warmup.py:90] Skipping ll_bf16 router GEMM warmup: no bf16 GateLinear shapes found.\n(EngineCore pid=953) DEBUG 09-28 02:47:54 [model_executor/warmup/cutedsl_warmup.py:104] Skipping CuTeDSL warmup because no compile units were requested.\n(EngineCore pid=953) \nDeepGEMM warmup:   0%|          | 0/1253 [00:00<?, ?it/s]\nDeepGEMM warmup:   0%|          | 1/1253 [00:03<1:12:39,  3.48s/it]",
+ "model_id": "Qwen/Qwen3.6-35B-A3B-FP8",
+ "pod_id": "b2cxgxzq5opvxj",
+ "probe": {
+  "argv": [
+   "/opt/venv/bin/vllm",
+   "serve",
+   "/runpod-volume/models/Qwen/Qwen3.6-35B-A3B-FP8",
+   "--served-model-name",
+   "Qwen/Qwen3.6-35B-A3B-FP8",
+   "--dtype",
+   "bfloat16",
+   "--gpu-memory-utilization",
+   "0.9",
+   "--max-model-len",
+   "640"
+  ],
+  "errors": [],
+  "pid": 953,
+  "probe": "apron-startup-peak-probe",
+  "runs": [
+   {
+    "analysis": {
+     "actions": {
+      "alloc": 3199,
+      "free_completed": 3192,
+      "free_requested": 3192,
+      "segment_alloc": 77,
+      "segment_free": 67
+     },
+     "device": 0,
+     "dominant_phase_at_peak": "encoder",
+     "end_increase_bytes": 576995840,
+     "events": 9727,
+     "freed_pre_recording_bytes": 0,
+     "freed_pre_recording_count": 0,
+     "largest_blocks_at_peak": [
+      {
+       "addr": 130532176297984,
+       "index": 31,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/parameter.py:126:__torch_function__",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 452984832,
+       "site": [
+        "vllm/model_executor/parameter.py:126:__torch_function__",
+        "vllm/model_executor/layers/utils.py:90:default_unquantized_gemm",
+        "vllm/model_executor/layers/linear.py:238:apply",
+        "vllm/model_executor/layers/linear.py:606:forward",
+        "vllm/model_executor/models/qwen2_5_vl.py:413:forward",
+        "vllm/model_executor/models/qwen3_vl.py:490:forward"
+       ],
+       "size": 452984832,
+       "stream": 0
+      },
+      {
+       "addr": 130531874308096,
+       "index": 33,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/models/qwen2_5_vl.py:429:forward",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 301989888,
+       "site": [
+        "vllm/model_executor/models/qwen2_5_vl.py:429:forward",
+        "vllm/model_executor/models/qwen3_vl.py:490:forward",
+        "vllm/compilation/decorators.py:509:__call__",
+        "vllm/model_executor/models/qwen3_vl.py:872:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal"
+       ],
+       "size": 301989888,
+       "stream": 0
+      },
+      {
+       "addr": 130531572318208,
+       "index": 35,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/vllm/vllm_flash_attn/ops/triton/rotary.py:188:apply_rotary",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 301989888,
+       "site": [
+        "vllm/vllm_flash_attn/ops/triton/rotary.py:188:apply_rotary",
+        "vllm/vllm_flash_attn/layers/rotary.py:50:forward",
+        "vllm/vllm_flash_attn/layers/rotary.py:124:apply_rotary_emb",
+        "vllm/model_executor/layers/rotary_embedding/common.py:235:forward_cuda",
+        "vllm/model_executor/custom_op.py:136:forward",
+        "vllm/model_executor/models/qwen2_5_vl.py:430:forward"
+       ],
+       "size": 301989888,
+       "stream": 0
+      },
+      {
+       "addr": 130533317148672,
+       "index": 1,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/vllm/multimodal/inputs.py:326:_h2d",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 201326592,
+       "site": [
+        "vllm/multimodal/inputs.py:326:_h2d",
+        "vllm/utils/jsontree.py:95:json_map_leaves",
+        "vllm/multimodal/inputs.py:328:_nested_tensors_h2d",
+        "vllm/multimodal/inputs.py:509:reduce_data",
+        "vllm/multimodal/utils.py:206:_batch_mm_items",
+        "vllm/multimodal/utils.py:281:group_and_batch_mm_items"
+       ],
+       "size": 201326592,
+       "stream": 0
+      },
+      {
+       "addr": 130532813832192,
+       "index": 9,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/models/qwen3_vl.py:751:fast_pos_embed_interpolate",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 150994944,
+       "site": [
+        "vllm/model_executor/models/qwen3_vl.py:751:fast_pos_embed_interpolate",
+        "vllm/model_executor/models/qwen3_vl.py:786:prepare_encoder_metadata",
+        "vllm/model_executor/models/qwen3_vl.py:864:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:168:execute_mm_encoder"
+       ],
+       "size": 150994944,
+       "stream": 0
+      },
+      {
+       "addr": 130532646060032,
+       "index": 20,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/models/qwen3_vl.py:867:forward",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 150994944,
+       "site": [
+        "vllm/model_executor/models/qwen3_vl.py:867:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:168:execute_mm_encoder",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:139:profile_encoder_cache",
+        "vllm/v1/worker/gpu/model_runner.py:951:profile_run"
+       ],
+       "size": 150994944,
+       "stream": 0
+      },
+      {
+       "addr": 130533149376512,
+       "index": 23,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/torch/nn/functional.py:2987:layer_norm",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 150994944,
+       "site": [
+        "vllm/model_executor/models/qwen3_vl.py:491:forward",
+        "vllm/compilation/decorators.py:509:__call__",
+        "vllm/model_executor/models/qwen3_vl.py:872:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:168:execute_mm_encoder"
+       ],
+       "size": 150994944,
+       "stream": 0
+      },
+      {
+       "addr": 130531404546048,
+       "index": 38,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/torch/_ops.py:1279:__call__",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 150994944,
+       "site": [
+        "vllm/vllm_flash_attn/flash_attn_interface.py:349:flash_attn_varlen_func",
+        "vllm/v1/attention/ops/vit_attn_wrappers.py:62:flash_attn_maxseqlen_wrapper",
+        "vllm/v1/attention/ops/vit_attn_wrappers.py:111:vit_flash_attn_wrapper",
+        "vllm/model_executor/layers/attention/mm_encoder_attention.py:581:_forward_fa",
+        "vllm/model_executor/layers/attention/mm_encoder_attention.py:796:forward_cuda",
+        "vllm/model_executor/custom_op.py:136:forward"
+       ],
+       "size": 150994944,
+       "stream": 0
+      },
+      {
+       "addr": 130531236773888,
+       "index": 48,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/parameter.py:126:__torch_function__",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 150994944,
+       "site": [
+        "vllm/model_executor/parameter.py:126:__torch_function__",
+        "vllm/model_executor/layers/utils.py:90:default_unquantized_gemm",
+        "vllm/model_executor/layers/linear.py:238:apply",
+        "vllm/model_executor/layers/linear.py:1773:forward",
+        "vllm/model_executor/models/qwen2_5_vl.py:459:forward",
+        "vllm/model_executor/models/qwen3_vl.py:490:forward"
+       ],
+       "size": 150994944,
+       "stream": 0
+      },
+      {
+       "addr": 130567039352832,
+       "index": 5,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/layers/conv.py:174:_forward_mulmat",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 33554432,
+       "site": [
+        "vllm/model_executor/layers/conv.py:174:_forward_mulmat",
+        "vllm/model_executor/layers/conv.py:198:forward_native",
+        "vllm/model_executor/custom_op.py:136:forward",
+        "vllm/model_executor/models/qwen3_vl.py:397:forward",
+        "vllm/compilation/decorators.py:509:__call__",
+        "vllm/model_executor/models/qwen3_vl.py:857:forward"
+       ],
+       "size": 33554432,
+       "stream": 0
+      },
+      {
+       "addr": 130532981604352,
+       "index": 14,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/models/qwen3_vl.py:729:rot_pos_emb",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 4718592,
+       "site": [
+        "vllm/model_executor/models/qwen3_vl.py:729:rot_pos_emb",
+        "vllm/model_executor/models/qwen3_vl.py:787:prepare_encoder_metadata",
+        "vllm/model_executor/models/qwen3_vl.py:864:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:168:execute_mm_encoder"
+       ],
+       "size": 4718592,
+       "stream": 0
+      },
+      {
+       "addr": 130532986322944,
+       "index": 15,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/models/qwen3_vl.py:730:rot_pos_emb",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 4718592,
+       "site": [
+        "vllm/model_executor/models/qwen3_vl.py:730:rot_pos_emb",
+        "vllm/model_executor/models/qwen3_vl.py:787:prepare_encoder_metadata",
+        "vllm/model_executor/models/qwen3_vl.py:864:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:168:execute_mm_encoder"
+       ],
+       "size": 4718592,
+       "stream": 0
+      },
+      {
+       "addr": 130579611778048,
+       "index": 18,
+       "innermost": "/opt/venv/lib/python3.12/site-packages/vllm/utils/torch_utils.py:732:async_tensor_h2d",
+       "phase": "encoder",
+       "pool_id": [
+        0,
+        0
+       ],
+       "requested_size": 8,
+       "site": [
+        "vllm/utils/torch_utils.py:732:async_tensor_h2d",
+        "vllm/model_executor/layers/attention/mm_encoder_attention.py:314:maybe_recompute_cu_seqlens",
+        "vllm/model_executor/models/qwen3_vl.py:838:prepare_encoder_metadata",
+        "vllm/model_executor/models/qwen3_vl.py:864:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal"
+       ],
+       "size": 512,
+       "stream": 0
+      }
+     ],
+     "live_at_end_bytes": 576995840,
+     "oom": [],
+     "peak_event": {
+      "frames": [
+       "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/parameter.py:126:__torch_function__",
+       "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/layers/utils.py:90:default_unquantized_gemm",
+       "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/layers/linear.py:238:apply",
+       "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/layers/linear.py:1773:forward",
+       "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py:1789:_call_impl",
+       "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py:1778:_wrapped_call_impl",
+       "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/models/qwen2_5_vl.py:459:forward",
+       "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py:1789:_call_impl",
+       "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py:1778:_wrapped_call_impl",
+       "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/models/qwen3_vl.py:490:forward",
+       "/opt/venv/lib/python3.12/site-packages/vllm/compilation/decorators.py:509:__call__",
+       "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/models/qwen3_vl.py:872:forward",
+       "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py:1789:_call_impl",
+       "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py:1778:_wrapped_call_impl",
+       "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+       "/opt/venv/lib/python3.12/site-packages/vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal",
+       "/opt/venv/lib/python3.12/site-packages/vllm/v1/worker/gpu/mm/encoder_runner.py:168:execute_mm_encoder",
+       "/opt/venv/lib/python3.12/site-packages/torch/utils/_contextlib.py:124:decorate_context",
+       "/opt/venv/lib/python3.12/site-packages/vllm/v1/worker/gpu/mm/encoder_runner.py:139:profile_encoder_cache",
+       "/opt/venv/lib/python3.12/site-packages/torch/utils/_contextlib.py:124:decorate_context",
+       "/opt/venv/lib/python3.12/site-packages/vllm/v1/worker/gpu/model_runner.py:951:profile_run",
+       "/opt/venv/lib/python3.12/site-packages/torch/utils/_contextlib.py:124:decorate_context",
+       "/workspace/peak_probe/sitecustomize.py:151:_probed",
+       "/workspace/peak_probe/sitecustomize.py:210:profile_run",
+       "/opt/venv/lib/python3.12/site-packages/vllm/v1/worker/gpu_worker.py:572:determine_available_memory"
+      ],
+      "index": 48,
+      "phase": "encoder",
+      "requested_size": 150994944
+     },
+     "peak_event_index": 48,
+     "peak_increase_bytes": 2056258048,
+     "peak_increase_requested_bytes": 2056257544,
+     "peak_live_bytes": 2056258048,
+     "peak_live_count": 13,
+     "phase_at_peak": {
+      "encoder": 2056258048
+     },
+     "sites_at_peak": [
+      {
+       "bytes": 452984832,
+       "count": 1,
+       "phases": {
+        "encoder": 452984832
+       },
+       "requested_bytes": 452984832,
+       "site": [
+        "vllm/model_executor/parameter.py:126:__torch_function__",
+        "vllm/model_executor/layers/utils.py:90:default_unquantized_gemm",
+        "vllm/model_executor/layers/linear.py:238:apply",
+        "vllm/model_executor/layers/linear.py:606:forward",
+        "vllm/model_executor/models/qwen2_5_vl.py:413:forward",
+        "vllm/model_executor/models/qwen3_vl.py:490:forward"
+       ]
+      },
+      {
+       "bytes": 301989888,
+       "count": 1,
+       "phases": {
+        "encoder": 301989888
+       },
+       "requested_bytes": 301989888,
+       "site": [
+        "vllm/model_executor/models/qwen2_5_vl.py:429:forward",
+        "vllm/model_executor/models/qwen3_vl.py:490:forward",
+        "vllm/compilation/decorators.py:509:__call__",
+        "vllm/model_executor/models/qwen3_vl.py:872:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal"
+       ]
+      },
+      {
+       "bytes": 301989888,
+       "count": 1,
+       "phases": {
+        "encoder": 301989888
+       },
+       "requested_bytes": 301989888,
+       "site": [
+        "vllm/vllm_flash_attn/ops/triton/rotary.py:188:apply_rotary",
+        "vllm/vllm_flash_attn/layers/rotary.py:50:forward",
+        "vllm/vllm_flash_attn/layers/rotary.py:124:apply_rotary_emb",
+        "vllm/model_executor/layers/rotary_embedding/common.py:235:forward_cuda",
+        "vllm/model_executor/custom_op.py:136:forward",
+        "vllm/model_executor/models/qwen2_5_vl.py:430:forward"
+       ]
+      },
+      {
+       "bytes": 201326592,
+       "count": 1,
+       "phases": {
+        "encoder": 201326592
+       },
+       "requested_bytes": 201326592,
+       "site": [
+        "vllm/multimodal/inputs.py:326:_h2d",
+        "vllm/utils/jsontree.py:95:json_map_leaves",
+        "vllm/multimodal/inputs.py:328:_nested_tensors_h2d",
+        "vllm/multimodal/inputs.py:509:reduce_data",
+        "vllm/multimodal/utils.py:206:_batch_mm_items",
+        "vllm/multimodal/utils.py:281:group_and_batch_mm_items"
+       ]
+      },
+      {
+       "bytes": 150994944,
+       "count": 1,
+       "phases": {
+        "encoder": 150994944
+       },
+       "requested_bytes": 150994944,
+       "site": [
+        "vllm/model_executor/models/qwen3_vl.py:491:forward",
+        "vllm/compilation/decorators.py:509:__call__",
+        "vllm/model_executor/models/qwen3_vl.py:872:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:168:execute_mm_encoder"
+       ]
+      },
+      {
+       "bytes": 150994944,
+       "count": 1,
+       "phases": {
+        "encoder": 150994944
+       },
+       "requested_bytes": 150994944,
+       "site": [
+        "vllm/model_executor/models/qwen3_vl.py:751:fast_pos_embed_interpolate",
+        "vllm/model_executor/models/qwen3_vl.py:786:prepare_encoder_metadata",
+        "vllm/model_executor/models/qwen3_vl.py:864:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:168:execute_mm_encoder"
+       ]
+      },
+      {
+       "bytes": 150994944,
+       "count": 1,
+       "phases": {
+        "encoder": 150994944
+       },
+       "requested_bytes": 150994944,
+       "site": [
+        "vllm/model_executor/models/qwen3_vl.py:867:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:168:execute_mm_encoder",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:139:profile_encoder_cache",
+        "vllm/v1/worker/gpu/model_runner.py:951:profile_run"
+       ]
+      },
+      {
+       "bytes": 150994944,
+       "count": 1,
+       "phases": {
+        "encoder": 150994944
+       },
+       "requested_bytes": 150994944,
+       "site": [
+        "vllm/model_executor/parameter.py:126:__torch_function__",
+        "vllm/model_executor/layers/utils.py:90:default_unquantized_gemm",
+        "vllm/model_executor/layers/linear.py:238:apply",
+        "vllm/model_executor/layers/linear.py:1773:forward",
+        "vllm/model_executor/models/qwen2_5_vl.py:459:forward",
+        "vllm/model_executor/models/qwen3_vl.py:490:forward"
+       ]
+      },
+      {
+       "bytes": 150994944,
+       "count": 1,
+       "phases": {
+        "encoder": 150994944
+       },
+       "requested_bytes": 150994944,
+       "site": [
+        "vllm/vllm_flash_attn/flash_attn_interface.py:349:flash_attn_varlen_func",
+        "vllm/v1/attention/ops/vit_attn_wrappers.py:62:flash_attn_maxseqlen_wrapper",
+        "vllm/v1/attention/ops/vit_attn_wrappers.py:111:vit_flash_attn_wrapper",
+        "vllm/model_executor/layers/attention/mm_encoder_attention.py:581:_forward_fa",
+        "vllm/model_executor/layers/attention/mm_encoder_attention.py:796:forward_cuda",
+        "vllm/model_executor/custom_op.py:136:forward"
+       ]
+      },
+      {
+       "bytes": 33554432,
+       "count": 1,
+       "phases": {
+        "encoder": 33554432
+       },
+       "requested_bytes": 33554432,
+       "site": [
+        "vllm/model_executor/layers/conv.py:174:_forward_mulmat",
+        "vllm/model_executor/layers/conv.py:198:forward_native",
+        "vllm/model_executor/custom_op.py:136:forward",
+        "vllm/model_executor/models/qwen3_vl.py:397:forward",
+        "vllm/compilation/decorators.py:509:__call__",
+        "vllm/model_executor/models/qwen3_vl.py:857:forward"
+       ]
+      },
+      {
+       "bytes": 4718592,
+       "count": 1,
+       "phases": {
+        "encoder": 4718592
+       },
+       "requested_bytes": 4718592,
+       "site": [
+        "vllm/model_executor/models/qwen3_vl.py:729:rot_pos_emb",
+        "vllm/model_executor/models/qwen3_vl.py:787:prepare_encoder_metadata",
+        "vllm/model_executor/models/qwen3_vl.py:864:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:168:execute_mm_encoder"
+       ]
+      },
+      {
+       "bytes": 4718592,
+       "count": 1,
+       "phases": {
+        "encoder": 4718592
+       },
+       "requested_bytes": 4718592,
+       "site": [
+        "vllm/model_executor/models/qwen3_vl.py:730:rot_pos_emb",
+        "vllm/model_executor/models/qwen3_vl.py:787:prepare_encoder_metadata",
+        "vllm/model_executor/models/qwen3_vl.py:864:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal",
+        "vllm/v1/worker/gpu/mm/encoder_runner.py:168:execute_mm_encoder"
+       ]
+      },
+      {
+       "bytes": 512,
+       "count": 1,
+       "phases": {
+        "encoder": 512
+       },
+       "requested_bytes": 8,
+       "site": [
+        "vllm/utils/torch_utils.py:732:async_tensor_h2d",
+        "vllm/model_executor/layers/attention/mm_encoder_attention.py:314:maybe_recompute_cu_seqlens",
+        "vllm/model_executor/models/qwen3_vl.py:838:prepare_encoder_metadata",
+        "vllm/model_executor/models/qwen3_vl.py:864:forward",
+        "vllm/model_executor/models/qwen3_vl.py:2316:_process_image_input",
+        "vllm/model_executor/models/qwen3_vl.py:2906:embed_multimodal"
+       ]
+      }
+     ],
+     "sites_live_at_end": [
+      {
+       "bytes": 536870912,
+       "count": 1,
+       "phases": {
+        "forward": 536870912
+       },
+       "requested_bytes": 536870912,
+       "site": [
+        "vllm/v1/worker/workspace.py:207:_ensure_workspace_size",
+        "vllm/v1/worker/workspace.py:134:get_simultaneous",
+        "vllm/model_executor/layers/fused_moe/modular_kernel.py:1189:_allocate_buffers",
+        "vllm/model_executor/layers/fused_moe/modular_kernel.py:1330:_fused_experts",
+        "vllm/model_executor/layers/fused_moe/modular_kernel.py:1516:apply",
+        "vllm/model_executor/layers/fused_moe/modular_kernel.py:1747:apply"
+       ]
+      },
+      {
+       "bytes": 33554432,
+       "count": 1,
+       "phases": {
+        "encoder": 33554432
+       },
+       "requested_bytes": 33554432,
+       "site": [
+        "vllm/model_executor/layers/conv.py:174:_forward_mulmat",
+        "vllm/model_executor/layers/conv.py:198:forward_native",
+        "vllm/model_executor/custom_op.py:136:forward",
+        "vllm/model_executor/models/qwen3_vl.py:397:forward",
+        "vllm/compilation/decorators.py:509:__call__",
+        "vllm/model_executor/models/qwen3_vl.py:857:forward"
+       ]
+      },
+      {
+       "bytes": 2097152,
+       "count": 1,
+       "phases": {
+        "forward": 2097152
+       },
+       "requested_bytes": 2097152,
+       "site": [
+        "flashinfer/utils.py:238:_get_cache_buf",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:54:_get_cp_workspace",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:1741:cp_delta_rule_mn_precompute_dsl_sm90",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:4418:cp_delta_rule_dsl_sm90",
+        "flashinfer/gdn_prefill.py:443:chunk_gated_delta_rule",
+        "flashinfer/api_logging.py:2333:_auto_dump_wrapper"
+       ]
+      },
+      {
+       "bytes": 2097152,
+       "count": 1,
+       "phases": {
+        "forward": 2097152
+       },
+       "requested_bytes": 2097152,
+       "site": [
+        "flashinfer/utils.py:238:_get_cache_buf",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:54:_get_cp_workspace",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:1744:cp_delta_rule_mn_precompute_dsl_sm90",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:4418:cp_delta_rule_dsl_sm90",
+        "flashinfer/gdn_prefill.py:443:chunk_gated_delta_rule",
+        "flashinfer/api_logging.py:2333:_auto_dump_wrapper"
+       ]
+      },
+      {
+       "bytes": 2097152,
+       "count": 1,
+       "phases": {
+        "forward": 2097152
+       },
+       "requested_bytes": 2097152,
+       "site": [
+        "flashinfer/utils.py:238:_get_cache_buf",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:54:_get_cp_workspace",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:2710:cp_delta_rule_fixup_dsl_sm90",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:4431:cp_delta_rule_dsl_sm90",
+        "flashinfer/gdn_prefill.py:443:chunk_gated_delta_rule",
+        "flashinfer/api_logging.py:2333:_auto_dump_wrapper"
+       ]
+      },
+      {
+       "bytes": 262144,
+       "count": 1,
+       "phases": {
+        "forward": 262144
+       },
+       "requested_bytes": 262144,
+       "site": [
+        "flashinfer/utils.py:238:_get_cache_buf",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:54:_get_cp_workspace",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:533:cp_delta_rule_t_precompute_dsl_sm90",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:4408:cp_delta_rule_dsl_sm90",
+        "flashinfer/gdn_prefill.py:443:chunk_gated_delta_rule",
+        "flashinfer/api_logging.py:2333:_auto_dump_wrapper"
+       ]
+      },
+      {
+       "bytes": 16896,
+       "count": 1,
+       "phases": {
+        "forward": 16896
+       },
+       "requested_bytes": 16896,
+       "site": [
+        "flashinfer/utils.py:238:_get_cache_buf",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:4187:cp_delta_rule_prefill_dsl_sm90",
+        "flashinfer/gdn_kernels/delta_rule_dsl/delta_rule_cp_sm90.py:4443:cp_delta_rule_dsl_sm90",
+        "flashinfer/gdn_prefill.py:443:chunk_gated_delta_rule",
+        "flashinfer/api_logging.py:2333:_auto_dump_wrapper",
+        "vllm/model_executor/layers/mamba/gdn/qwen_gdn_linear_attn.py:220:fi_chunk_gated_delta_rule"
+       ]
+      }
+     ],
+     "truncated": false
+    },
+    "analysis_seconds": 0.141,
+    "baseline_allocated": 37889621504,
+    "baseline_max_allocated": 37889621504,
+    "baseline_reserved": 37912313856,
+    "device": 0,
+    "device_name": "NVIDIA H100 80GB HBM3",
+    "end_allocated": 38467665920,
+    "end_max_allocated": 39945879552,
+    "end_reserved": 39684407296,
+    "errors": [],
+    "max_entries": 1000000,
+    "profile_run_seconds": 44.758,
+    "replay_minus_torch_peak_bytes": 0,
+    "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner",
+    "snapshot_seconds": 0.031,
+    "torch_max_minus_baseline_allocated": 2056258048,
+    "torch_peak_increase": 2056258048,
+    "torch_version": "2.13.0+cu130",
+    "vllm_version": "0.30.0"
+   }
+  ],
+  "schema": 1
+ },
+ "recorded": [
+  {
+   "deployment_plan_digest": "12205b72f0e550a41817b77a94bbd391a58f80ddcb73ffa605e59437a0b7948195d9",
+   "profiling_shape": {
+    "max_num_batched_tokens": 8192
+   },
+   "record": "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
+   "torch_peak_increase": 2061584302,
+   "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
+  }
+ ],
+ "seconds": 274.0,
+ "serve": "vllm serve /runpod-volume/models/Qwen/Qwen3.6-35B-A3B-FP8 --served-model-name Qwen/Qwen3.6-35B-A3B-FP8 --dtype bfloat16 --gpu-memory-utilization 0.9 --max-model-len 640",
+ "solution_fingerprint": "1220c66c80c7c3f939572d7e51959603a85e2b40be0df1014852b840e698f9265e62",
+ "status": "profiled",
+ "token_check": {
+  "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+  "processes": {
+   "218": 0,
+   "953": 0
+  },
+  "token_free": true
+ },
+ "variant_flags": [],
+ "vllm_logged": {
+  "available_kv_cache_gib": 32.43,
+  "kv_cache_tokens": 147108,
+  "max_concurrency": 229.86,
+  "max_num_batched_tokens": 8192,
+  "non_kv_cache_memory": 40351217745,
+  "torch_peak_increase": 2061584302,
+  "total_consumed": 38880191447,
+  "weights_memory": 36754182635
+ },
+ "weights_check": {
+  "ok": true,
+  "seconds": 1.4
+ }
+}

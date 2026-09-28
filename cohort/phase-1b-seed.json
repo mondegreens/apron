@@ -27,6 +27,8 @@
     {"model_id": "google/gemma-4-31B-it", "gpu_sku": "NVIDIA H100 80GB HBM3", "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 62.6, "features": ["sliding_window", "multimodal"]},
     {"model_id": "Qwen/Qwen3.8-27B", "gpu_sku": "NVIDIA H100 80GB HBM3", "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 55.6, "features": ["hybrid_linear_attention", "multimodal"]},
     {"model_id": "Qwen/Qwen3.6-35B-A3B-FP8", "gpu_sku": "NVIDIA H100 80GB HBM3", "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 37.5, "features": ["hybrid_linear_attention", "moe", "fp8", "multimodal"]},
-    {"model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4", "gpu_sku": "NVIDIA H100 80GB HBM3", "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 19.4, "features": ["hybrid_mamba", "moe", "nvfp4"]}
+    {"model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4", "gpu_sku": "NVIDIA H100 80GB HBM3", "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 19.4, "features": ["hybrid_mamba", "moe", "nvfp4"]},
+    {"model_id": "meta-models/Muse-Glimmer-30B", "gpu_sku": "NVIDIA H100 80GB HBM3", "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 59.6, "features": ["sliding_window", "multimodal"]},
+    {"model_id": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16", "gpu_sku": "NVIDIA H100 80GB HBM3", "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 63.2, "features": ["hybrid_mamba", "moe"]}
   ]
 }

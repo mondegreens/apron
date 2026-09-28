@@ -1,0 +1,39 @@
+{
+  "site": {
+    "volume_id": "7jiuum2nk6",
+    "data_center_id": "US-CA-2",
+    "size_gb": 480
+  },
+  "staging": {
+    "pod_id": "96btwmak638rdj",
+    "cost": 0.043067,
+    "seconds": 648.6,
+    "error": null,
+    "models": [
+      {
+        "model_id": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "ok": true,
+        "seconds": 1.8,
+        "output_tail": "\rFetching 56 files:   0%|          | 0/56 [00:00<?, ?it/s]\rFetching 56 files:  16%|\u2588\u258c        | 9/56 [00:00<00:00, 70.37it/s]\rFetching 56 files:  45%|\u2588\u2588\u2588\u2588\u258d     | 25/56 [00:00<00:00, 104.48it/s]\rFetching 56 files:  80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 45/56 [00:00<00:00, 140.01it/s]\rFetching 56 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 56/56 [00:00<00:00, 138.57it/s]\nDOWNLOAD_VERIFIED\n"
+      },
+      {
+        "model_id": "Qwen/Qwen3.8-27B",
+        "ok": true,
+        "seconds": 94.3,
+        "output_tail": "\rFetching 32 files:   0%|          | 0/32 [00:00<?, ?it/s]\rFetching 32 files:  28%|\u2588\u2588\u258a       | 9/32 [00:29<01:16,  3.32s/it]\rFetching 32 files:  31%|\u2588\u2588\u2588\u258f      | 10/32 [00:38<01:27,  3.99s/it]\rFetching 32 files:  34%|\u2588\u2588\u2588\u258d      | 11/32 [00:39<01:14,  3.54s/it]\rFetching 32 files:  38%|\u2588\u2588\u2588\u258a      | 12/32 [00:40<01:03,  3.17s/it]\rFetching 32 files:  41%|\u2588\u2588\u2588\u2588      | 13/32 [00:48<01:16,  4.05s/it]\rFetching 32 files:  44%|\u2588\u2588\u2588\u2588\u258d     | 14/32 [00:52<01:15,  4.17s/it]\rFetching 32 files:  47%|\u2588\u2588\u2588\u2588\u258b     | 15/32 [00:53<00:54,  3.23s/it]\rFetching 32 files:  50%|\u2588\u2588\u2588\u2588\u2588     | 16/32 [00:54<00:41,  2.61s/it]\rFetching 32 files:  53%|\u2588\u2588\u2588\u2588\u2588\u258e    | 17/32 [01:00<00:55,  3.68s/it]\rFetching 32 files:  56%|\u2588\u2588\u2588\u2588\u2588\u258b    | 18/32 [01:02<00:44,  3.17s/it]\rFetching 32 files:  59%|\u2588\u2588\u2588\u2588\u2588\u2589    | 19/32 [01:14<01:12,  5.59s/it]\rFetching 32 files:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 20/32 [01:15<00:51,  4.30s/it]\rFetching 32 files:  66%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c   | 21/32 [01:15<00:34,  3.15s/it]\rFetching 32 files:  69%|\u2588\u2588\u2588\u2588\u2588\u2588\u2589   | 22/32 [01:17<00:28,  2.88s/it]\rFetching 32 files:  72%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f  | 23/32 [01:18<00:19,  2.13s/it]\rFetching 32 files:  75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 24/32 [01:18<00:12,  1.59s/it]\rFetching 32 files:  78%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a  | 25/32 [01:19<00:09,  1.38s/it]\rFetching 32 files:  81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f | 26/32 [01:21<00:10,  1.67s/it]\rFetching 32 files:  84%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 27/32 [01:22<00:06,  1.28s/it]\rFetching 32 files:  88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 28/32 [01:23<00:05,  1.39s/it]\rFetching 32 files:  91%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 29/32 [01:26<00:05,  1.72s/it]\rFetching 32 files:  94%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d| 30/32 [01:32<00:06,  3.05s/it]\rFetching 32 files:  97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 31/32 [01:33<00:02,  2.45s/it]\rFetching 32 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 32/32 [01:33<00:00,  2.92s/it]\nDOWNLOAD_VERIFIED\n"
+      },
+      {
+        "model_id": "meta-models/Muse-Glimmer-30B",
+        "ok": true,
+        "seconds": 120.4,
+        "output_tail": "\rFetching 13 files:   0%|          | 0/13 [00:00<?, ?it/s]\rFetching 13 files:   8%|\u258a         | 1/13 [00:00<00:03,  3.98it/s]\rFetching 13 files:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258f   | 8/13 [00:00<00:00, 14.26it/s]\rFetching 13 files:  85%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 11/13 [00:05<00:01,  1.49it/s]\rFetching 13 files:  92%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 12/13 [00:42<00:05,  5.95s/it]\rFetching 13 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 13/13 [01:59<00:00, 18.10s/it]\rFetching 13 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 13/13 [01:59<00:00,  9.18s/it]\nDOWNLOAD_VERIFIED\n"
+      },
+      {
+        "model_id": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+        "ok": true,
+        "seconds": 112.2,
+        "output_tail": "\rFetching 30 files:   0%|          | 0/30 [00:00<?, ?it/s]\rFetching 30 files:   3%|\u258e         | 1/30 [00:00<00:11,  2.55it/s]\rFetching 30 files:  13%|\u2588\u258e        | 4/30 [00:00<00:02,  9.57it/s]\rFetching 30 files:  23%|\u2588\u2588\u258e       | 7/30 [00:00<00:02, 10.88it/s]\rFetching 30 files:  30%|\u2588\u2588\u2588       | 9/30 [00:00<00:01, 10.77it/s]\rFetching 30 files:  33%|\u2588\u2588\u2588\u258e      | 10/30 [00:20<00:01, 10.77it/s]\rFetching 30 files:  37%|\u2588\u2588\u2588\u258b      | 11/30 [01:04<03:19, 10.48s/it]\rFetching 30 files:  40%|\u2588\u2588\u2588\u2588      | 12/30 [01:05<02:35,  8.64s/it]\rFetching 30 files:  50%|\u2588\u2588\u2588\u2588\u2588     | 15/30 [01:07<01:15,  5.05s/it]\rFetching 30 files:  63%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 19/30 [01:07<00:30,  2.78s/it]\rFetching 30 files:  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 20/30 [01:08<00:24,  2.42s/it]\rFetching 30 files:  70%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588   | 21/30 [01:08<00:18,  2.07s/it]\rFetching 30 files:  77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 23/30 [01:09<00:10,  1.50s/it]\rFetching 30 files:  80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 24/30 [01:12<00:10,  1.77s/it]\rFetching 30 files:  83%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e | 25/30 [01:30<00:26,  5.30s/it]\rFetching 30 files:  87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 26/30 [01:40<00:25,  6.49s/it]\rFetching 30 files:  90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 27/30 [01:47<00:19,  6.42s/it]\rFetching 30 files:  93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 28/30 [01:51<00:11,  5.78s/it]\rFetching 30 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [01:51<00:00,  3.70s/it]\nDOWNLOAD_VERIFIED\n"
+      }
+    ]
+  }
+}
