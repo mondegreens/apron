@@ -473,3 +473,44 @@ def test_hybrid_architectures_are_an_explicit_unknown() -> None:
     assert plain.components[0].mechanism == "autoregressive_decode"  # the old, wrong reading
     hybrid = build_model_spec(config, unmodelled_architectures=HYBRID_ARCHITECTURES)
     assert hybrid.components[0].mechanism == UNKNOWN_MECHANISM
+
+
+def test_the_volume_is_sized_for_earlier_groups_weights_too(tmp_path: Path) -> None:
+    """Group B filled the volume group A left 190 GB on (2026-09-28): the size
+    counts every model earlier staging runs wrote there, not only the new ones."""
+    from apron.interfaces import cohort_root
+
+    (tmp_path / "prestage-groupA.json").write_text(
+        json.dumps(
+            {
+                "site": {"volume_id": "v1"},
+                "staging": {"models": [{"model_id": "a", "ok": True}]},
+            }
+        )
+    )
+    (tmp_path / "prestage-other.json").write_text(
+        json.dumps({"site": {"volume_id": "v9"}, "staging": {"models": [{"model_id": "z"}]}})
+    )
+    assert cohort_root.staged_on("v1", tmp_path) == {"a"}
+
+    storage = RunPodStorage("k")
+    sizes: list[int] = []
+
+    def ensure(dc: str, size_gb: int) -> dict[str, Any]:
+        sizes.append(size_gb)
+        return {"id": "v1", "size": size_gb}
+
+    execution = SimpleNamespace(gpu_sku="H100", gpu_count=1)
+    with (
+        patch.object(storage, "list_volumes", return_value=[]),
+        patch.object(storage, "storage_datacenters", return_value=["US-CA-2"]),
+        patch.object(storage, "stock_in", return_value="High"),
+        patch.object(storage, "cpu_stock", return_value=["cpu3c"]),
+        patch.object(storage, "ensure_volume", side_effect=ensure),
+        patch.object(cohort_root, "staged_bytes", side_effect=lambda m: 100_000_000_000),
+        patch.object(cohort_root, "RUN_DIR", tmp_path),
+    ):
+        site = cohort_root.weights_site(storage, [execution], ["b"], headroom=1.0)  # type: ignore[list-item]
+    assert site is not None
+    assert sizes == [110, 210]  # b alone, then a + b (+10 GB)
+    assert site.size_gb == 210

@@ -16,6 +16,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from conformance.test_execution_target import *  # noqa: F403 — the shared suite, on the real adapter
+from unit._fake_channel import FakeChannel
 
 from apron.adapters.backends.runpod import RunPodTarget
 from apron.domain.schemas.primitives import ExecutionTarget
@@ -45,12 +46,8 @@ class FakeSSHClient:
         self, command: str, timeout: int | None = None
     ) -> tuple[Any, MagicMock, MagicMock]:
         self._commands.append(command)
-        stdout = MagicMock()
-        stderr = MagicMock()
-        stdout.read.return_value = b'{"exit_code": 0}'
-        stderr.read.return_value = b""
-        stdout.channel.recv_exit_status.return_value = 0
-        return MagicMock(), stdout, stderr
+        stdout = MagicMock(channel=FakeChannel(b'{"exit_code": 0}'))
+        return MagicMock(), stdout, MagicMock()
 
     def get_transport(self) -> MagicMock:
         transport = MagicMock()
@@ -196,11 +193,8 @@ def test_teardown_sdk_failure_raises_pod_leak_after_recording(runpod_target: Run
 
 
 def test_execute_returns_structured_result(runpod_target: RunPodTarget) -> None:
-    stdout_mock = MagicMock()
-    stdout_mock.read.return_value = b"hello world"
-    stdout_mock.channel.recv_exit_status.return_value = 0
+    stdout_mock = MagicMock(channel=FakeChannel(b"hello world"))
     stderr_mock = MagicMock()
-    stderr_mock.read.return_value = b""
 
     ssh_mock = MagicMock()
     ssh_mock.get_transport.return_value.is_active.return_value = True
@@ -256,11 +250,7 @@ class _PodSSH(FakeSSHClient):
             out = b"3, 512, 24564\n"
         else:
             out = b"hello\n"
-        stdout, stderr = MagicMock(), MagicMock()
-        stdout.read.return_value = out
-        stderr.read.return_value = b""
-        stdout.channel.recv_exit_status.return_value = 0
-        return MagicMock(), stdout, stderr
+        return MagicMock(), MagicMock(channel=FakeChannel(out)), MagicMock()
 
     def open_sftp(self) -> MagicMock:
         sftp = MagicMock()

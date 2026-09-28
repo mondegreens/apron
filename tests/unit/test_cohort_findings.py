@@ -264,3 +264,27 @@ def test_modern_models_list_every_approved_model(synthetic: tuple[Path, CohortRu
 def test_weights_time_is_empty_without_staged_boots(findings: dict) -> None:
     assert findings["weights_time"] == []
     assert "No boot from staged weights yet" in render_tables(findings)["weights_time"]
+
+
+def test_diagnostic_probe_spend_is_its_own_line(synthetic: tuple[Path, CohortRun]) -> None:
+    """A peak-probe boot (scripts/peak_probe.py) is paid for but is no solution:
+    it is counted in the total, never in the per-solution settled spend."""
+    from dataclasses import replace
+
+    from apron.application.orchestration.findings import PROBE_PREFIX
+
+    run = synthetic[1]
+    before = build_findings(run, authorized=100.0)["cost"]
+    label = f"{PROBE_PREFIX}zai-org/GLM-4.7-Flash"
+    probed = replace(
+        run,
+        ledger=[
+            *run.ledger,
+            {"op": "hold", "label": label, "amount": 3.0},
+            {"op": "settle", "label": label, "amount": 1.25, "estimate": 3.0},
+        ],
+    )
+    cost = build_findings(probed, authorized=100.0)["cost"]
+    assert cost["ledger_probe"] == pytest.approx(1.25)
+    assert cost["ledger_settled"] == pytest.approx(before["ledger_settled"])
+    assert cost["ledger_spent"] == pytest.approx(before["ledger_spent"] + 1.25)

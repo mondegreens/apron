@@ -45,39 +45,52 @@ CLOUD_TYPE = "SECURE"  # D4: RunPod Secure only; Community is never used
 TEARDOWN_BACKOFF_SECONDS = (2, 4, 8)
 DEFAULT_LEAK_LOG = Path("_dev_notes/cohort-run/leaked_pods.json")
 
+# ``total_memory_bytes`` is the memory CUDA reports for one GPU
+# (``torch.cuda.get_device_properties(0).total_memory``), not the nominal size:
+# vLLM requests ``ceil(total x gpu_memory_utilization)`` of it
+# (v1/worker/utils.py:521-523 in v0.29.0 and v0.30.0).  Where a cohort pod
+# detected the GPU, the value is the byte count it detected: every stored
+# verification report's ``detected_hardware_fingerprint`` hashes a HardwareSpec
+# with that count, and the count is the one whose hash matches (search within
+# +-0.0051 GiB of the startup log's rounded total; ``_dev_notes/cohort-run/
+# kv-budget-residuals.md``).  The nominal sizes (80, 48, 24 GiB) over-stated the
+# requested memory by 0.44-1.77 GiB per GPU.  SKUs no pod has detected keep a
+# nominal or reported figure and say so.
 GPU_SPECS: dict[str, dict[str, Any]] = {
     "NVIDIA GeForce RTX 4090": {
-        "total_memory_bytes": 25_769_803_776,
+        "total_memory_bytes": 25_250_627_584,  # detected (24,080.875 MiB)
         "compute_capability": "8.9",
     },
     "NVIDIA RTX A5000": {
-        "total_memory_bytes": 25_769_803_776,
+        "total_memory_bytes": 25_769_803_776,  # nominal 24 GiB: never detected
         "compute_capability": "8.6",
     },
     "NVIDIA L4": {
-        "total_memory_bytes": 25_769_803_776,
+        "total_memory_bytes": 23_659_151_360,  # detected (22,563.125 MiB)
         "compute_capability": "8.9",
     },
     "NVIDIA RTX A6000": {
-        "total_memory_bytes": 51_539_607_552,
+        "total_memory_bytes": 50_899_648_512,  # detected (48,541.6875 MiB)
         "compute_capability": "8.6",
     },
     "NVIDIA A100 80GB PCIe": {
-        "total_memory_bytes": 85_899_345_920,
+        # Detected 81,151.75 MiB on one pod, 81,152.75 on another (another
+        # driver): the smaller, so the requested memory is never over-stated.
+        "total_memory_bytes": 85_093_777_408,
         "compute_capability": "8.0",
     },
     "NVIDIA A100-SXM4-80GB": {
-        "total_memory_bytes": 85_899_345_920,
+        "total_memory_bytes": 85_093_777_408,  # detected (81,151.75 MiB)
         "compute_capability": "8.0",
     },
     "NVIDIA H100 80GB HBM3": {
-        "total_memory_bytes": 85_899_345_920,
+        "total_memory_bytes": 85_017_493_504,  # detected (81,079 MiB)
         "compute_capability": "9.0",
     },
     # Phase 1b additions (§6.2).  Type IDs and memory are re-checked against
     # runpod.get_gpus() and the detected hardware at L0.
     "NVIDIA GeForce RTX 3090": {
-        "total_memory_bytes": 25_769_803_776,
+        "total_memory_bytes": 25_769_803_776,  # nominal 24 GiB: never detected
         "compute_capability": "8.6",
     },
     "NVIDIA L40": {
@@ -154,6 +167,41 @@ _POD_AGE_QUERY = """query PodAge {{
     runtime {{ uptimeInSeconds }}
   }}
 }}"""
+
+
+def _drain(channel: Any, deadline: float, poll: float = 0.05) -> tuple[str, str, int | None]:
+    """Read a command's stdout and stderr while it runs; its exit code, or None
+    past *deadline* seconds (the channel is then closed).
+
+    Output is read as it arrives, not after the exit: the SSH channel window
+    is 2 MiB, and a command writing more blocks until it is read.  Waiting for
+    the exit first deadlocked on a 12.7 MB vLLM log (Qwen3.6 boot, group B,
+    2026-09-28: ``cat`` stopped at exactly 2,097,152 bytes and the read timed
+    out after 600 s on a healthy, billed pod).
+    """
+    out, err = bytearray(), bytearray()
+    end = time.monotonic() + deadline
+    while True:
+        busy = False
+        while channel.recv_ready():
+            out += channel.recv(1 << 16)
+            busy = True
+        while channel.recv_stderr_ready():
+            err += channel.recv_stderr(1 << 16)
+            busy = True
+        if (
+            channel.exit_status_ready()
+            and channel.eof_received
+            and not channel.recv_ready()
+            and not channel.recv_stderr_ready()
+        ):
+            code = channel.recv_exit_status()
+            return out.decode(errors="replace"), err.decode(errors="replace"), code
+        if time.monotonic() > end:
+            channel.close()
+            return out.decode(errors="replace"), err.decode(errors="replace"), None
+        if not busy:
+            time.sleep(poll)
 
 
 def _age_from(pod: dict[str, Any], now: float) -> int:
@@ -591,19 +639,14 @@ class RunPodTarget:
             try:
                 self._ensure_ssh()
                 assert self._ssh is not None
-                _, stdout, stderr = self._ssh.exec_command(command, timeout=deadline)
-                if not stdout.channel.status_event.wait(deadline):
-                    stdout.channel.close()
+                _, stdout, _ = self._ssh.exec_command(command, timeout=deadline)
+                out, err, exit_code = _drain(stdout.channel, deadline)
+                if exit_code is None:
                     raise RemoteCommandTimeout(
                         f"remote command did not finish in {deadline}s: "
                         f"{mask_secrets(command[:120])}"
                     )
-                exit_code = stdout.channel.recv_exit_status()
-                return {
-                    "stdout": stdout.read().decode(),
-                    "stderr": stderr.read().decode(),
-                    "exit_code": exit_code,
-                }
+                return {"stdout": out, "stderr": err, "exit_code": exit_code}
             except (_paramiko.SSHException, OSError, EOFError):
                 if attempt == retries:
                     raise

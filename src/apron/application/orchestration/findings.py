@@ -28,6 +28,9 @@ from apron.domain.fingerprints import fingerprint_hex
 from apron.domain.schemas.records import derive_remediation_result
 from apron.domain.verdicts import task_verdict
 
+# Ledger label of a diagnostic boot (scripts/peak_probe.py LABEL_PREFIX).
+PROBE_PREFIX = "probe:"
+
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
 
@@ -508,6 +511,10 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
     def is_staging(e: dict[str, Any]) -> bool:
         return str(e.get("label", "")).startswith(STAGE_PREFIX)
 
+    def is_probe(e: dict[str, Any]) -> bool:
+        # Diagnostic boots (scripts/peak_probe.py): paid, but not a solution.
+        return str(e.get("label", "")).startswith(PROBE_PREFIX)
+
     settled = sum(
         float(e["amount"])
         for e in run.ledger
@@ -515,7 +522,9 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
         and not is_classifier(e)
         and not is_pod_idle(e)
         and not is_staging(e)
+        and not is_probe(e)
     )
+    probe = sum(float(e["amount"]) for e in run.ledger if e["op"] == "settle" and is_probe(e))
     staging = sum(float(e["amount"]) for e in run.ledger if e["op"] == "settle" and is_staging(e))
     storage = sum(
         float(e["amount"])
@@ -546,8 +555,10 @@ def _cost(run: CohortRun, authorized: float) -> dict[str, Any]:
         "ledger_corrected": round(corrected, 6),
         "ledger_staging": round(staging, 6),
         "ledger_storage": round(storage, 6),
+        "ledger_probe": round(probe, 6),
         "ledger_spent": round(
-            settled + classifier + pod_idle + staging + storage + reconciled + corrected, 6
+            settled + classifier + pod_idle + staging + storage + probe + reconciled + corrected,
+            6,
         ),
         "provider_billed": billing.get("billed_total"),
         "provider_not_yet_billed": list(billing.get("not_yet_billed", [])),
