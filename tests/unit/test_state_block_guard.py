@@ -128,7 +128,12 @@ MUSE = {
     "num_key_value_heads": 4,
     "head_dim": 128,
     "sliding_window": 4096,
-    "layer_types": ["sliding_attention", "sliding_attention", "sliding_attention", "full_attention"],
+    "layer_types": [
+        "sliding_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "full_attention",
+    ],
 }
 WEIGHTS = {
     # 61.31 GiB stored, less the 2.49 GiB of mtp.layers.* vLLM's NemotronH
@@ -258,9 +263,7 @@ def test_grouped_layout_block_is_group_size_pages(
 ) -> None:
     kinds = layer_kinds(config, tp=1, kv_dtype_bytes=2, model_dtype_bytes=2)
     assert kinds is not None
-    blocks = block_accounting(
-        kinds, 262_144, in_flight_tokens=16_384, layout=kv_layout(config)
-    )
+    blocks = block_accounting(kinds, 262_144, in_flight_tokens=16_384, layout=kv_layout(config))
     assert blocks is not None
     assert blocks.bytes_per_block == per_block
     assert blocks.bytes_per_sequence == per_sequence
@@ -432,9 +435,7 @@ def test_rule_is_a_typed_hypothesis_citing_the_check(version: str, line: int) ->
         "max_num_seqs": "int",
         "mamba_cache_blocks": "int",
     }
-    assert schema["mamba_cache_blocks"]["source"].startswith(
-        f"config/compilation.py:{line + 2} "
-    )
+    assert schema["mamba_cache_blocks"]["source"].startswith(f"config/compilation.py:{line + 2} ")
     # The pinned checkout, when present (.sources/ is not committed).
     for root in (REPO / ".sources", REPO.parents[2] / ".sources"):
         tree = root / ("vllm" if version == "v0.29.0" else f"vllm-{version}") / "vllm"

@@ -53,7 +53,9 @@ def main(argv: list[str] | None = None) -> int:
     accrue_storage(before, ports.budget)  # the hours so far, at the size they had
     grown = storage.ensure_volume(args.dc, need_gb)
     site = WeightsSite(before.volume_id, args.dc, int(grown.get("size") or need_gb))
-    print(f"volume {site.volume_id} in {site.data_center_id}: {before.size_gb} -> {site.size_gb} GB")
+    print(
+        f"volume {site.volume_id} in {site.data_center_id}: {before.size_gb} -> {site.size_gb} GB"
+    )
 
     result = stage_site(site, list(args.models), ports)
     record = {
