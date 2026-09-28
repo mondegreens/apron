@@ -89,7 +89,9 @@ class FakeVllm:
         if request.url.path == "/tokenize":
             n = self.count(body)
             self.tokenized.append(n)
-            return httpx.Response(200, json={"count": n, "max_model_len": self.max_model_len, "tokens": []})
+            return httpx.Response(
+                200, json={"count": n, "max_model_len": self.max_model_len, "tokens": []}
+            )
         assert request.url.path == "/v1/chat/completions"
         self.chats.append(body)
         if self.chat_status != 200:
@@ -106,7 +108,7 @@ class FakeVllm:
 def run(
     server: FakeVllm,
     case_ids: list[str],
-    facts: dict[str, str] | None = ALL_ON,  # noqa: B006 — read only
+    facts: dict[str, str] | None = ALL_ON,  # read only
     **protocol: Any,
 ) -> list[dict[str, Any]]:
     scorer = DeploymentCheckScorer(client=httpx.Client(transport=httpx.MockTransport(server)))
@@ -239,15 +241,30 @@ def test_a_well_formed_tool_call_passes_and_the_request_is_auto() -> None:
             "none to 'get_weather'",
         ),
         (
-            {"tool_calls": [{**GOOD_CALL, "function": {"name": "get_weather", "arguments": "{city: Paris"}}]},
+            {
+                "tool_calls": [
+                    {**GOOD_CALL, "function": {"name": "get_weather", "arguments": "{city: Paris"}}
+                ]
+            },
             "arguments are not JSON",
         ),
         (
-            {"tool_calls": [{**GOOD_CALL, "function": {"name": "get_weather", "arguments": '"Paris"'}}]},
+            {
+                "tool_calls": [
+                    {**GOOD_CALL, "function": {"name": "get_weather", "arguments": '"Paris"'}}
+                ]
+            },
             "not a JSON object",
         ),
         (
-            {"tool_calls": [{**GOOD_CALL, "function": {"name": "get_weather", "arguments": '{"town": "Paris"}'}}]},
+            {
+                "tool_calls": [
+                    {
+                        **GOOD_CALL,
+                        "function": {"name": "get_weather", "arguments": '{"town": "Paris"}'},
+                    }
+                ]
+            },
             "missing 'city'",
         ),
     ],
@@ -415,7 +432,9 @@ def test_without_plan_facts_the_plan_dependent_checks_skip_and_say_why() -> None
     server = FakeVllm()
     results = run(server, ["tool-1", "image-1", "reasoning-1"], facts=None)
     assert {r["status"] for r in results} == {"skipped"}
-    assert {r["reason"] for r in results} == {"the plan's deployment facts did not reach the scorer"}
+    assert {r["reason"] for r in results} == {
+        "the plan's deployment facts did not reach the scorer"
+    }
 
 
 def test_for_plans_gives_each_model_its_own_facts() -> None:
@@ -480,13 +499,25 @@ QWEN_XML = "{% for tool in tools %}{% endfor %}'<tool_call>\\n<function=' ~ name
 @pytest.mark.parametrize(
     ("model_type", "template", "card", "parser", "why"),
     [
-        ("glm4_moe_lite", "{{ tools }}", "vllm serve --tool-call-parser glm47", "glm47", "model card"),
+        (
+            "glm4_moe_lite",
+            "{{ tools }}",
+            "vllm serve --tool-call-parser glm47",
+            "glm47",
+            "model card",
+        ),
         ("gemma4", "{{ tools }}", None, "gemma4", "under model type gemma4"),
         ("gpt_oss", "{{ tools }}", None, "openai", "vLLM documents"),
         ("qwen3_5", QWEN_XML, None, "qwen3_coder", "qwen3_coder tool-call block"),
         ("llama", "{{ tools }}", None, None, "no tool parser is known"),
         ("gemma4", "{{ messages }}", None, None, "does not render tools"),
-        ("x", "{{ tools }}", "--tool-call-parser hermes / --tool-call-parser openai", None, "several"),
+        (
+            "x",
+            "{{ tools }}",
+            "--tool-call-parser hermes / --tool-call-parser openai",
+            None,
+            "several",
+        ),
     ],
 )
 def test_the_tool_parser_rule(
@@ -526,7 +557,11 @@ def _prepare(case: dict[str, str], **extra: Any) -> Callable[[], Any]:
         ({**CASES["json-1"], "temperature": "1"}, {}, "mean nothing to json_output"),
         ({**CASES["json-1"], "check": "vibes"}, {}, "unknown check"),
         ({**CASES["image-1"], "extra_checks": "stem"}, {}, "unknown extra_checks"),
-        ({**CASES["json-1"], "schema": '{"type": "object", "minProperties": 1}'}, {}, "minProperties"),
+        (
+            {**CASES["json-1"], "schema": '{"type": "object", "minProperties": 1}'},
+            {},
+            "minProperties",
+        ),
         ({**CASES["tool-1"], "expected_tool": "search"}, {}, "not in"),
         ({**CASES["image-1"], "image": "photo.jpg"}, {}, "solid:WxH:R,G,B"),
         (CASES["tool-1"], {"deployment": {"tool_parser": "openai"}}, "unknown deployment facts"),
@@ -582,7 +617,9 @@ def test_the_cohort_step_runs_v3_with_a_for_plans_scorer_and_records_every_verdi
 
     run_dir = Path(__file__).resolve().parents[1] / "fixtures" / "phase-1a-run"
     ctx = EvidenceContext.bind(
-        request=DecisionRequest.model_validate_json((run_dir / "decision-request.json").read_text()),
+        request=DecisionRequest.model_validate_json(
+            (run_dir / "decision-request.json").read_text()
+        ),
         task_suite=SUITE,
         application=ApplicationSpec.model_validate_json(
             (run_dir / "application-spec.json").read_text()
@@ -590,7 +627,9 @@ def test_the_cohort_step_runs_v3_with_a_for_plans_scorer_and_records_every_verdi
         protocol_template=json.loads(PROTOCOL.read_text()),
         solution_fp="1220" + "ab" * 32,
     )
-    gpt_oss_template = "{{ tools }} {% set reasoning_effort = reasoning_effort | default('medium') %}"
+    gpt_oss_template = (
+        "{{ tools }} {% set reasoning_effort = reasoning_effort | default('medium') %}"
+    )
     plan = with_tool_calling(
         DeploymentPlan(
             engine_configuration={"max_model_len": "640", "reasoning_parser": "openai_gptoss"},
@@ -618,6 +657,8 @@ def test_the_cohort_step_runs_v3_with_a_for_plans_scorer_and_records_every_verdi
     }
     assert all(body["reasoning_effort"] == "low" for body in server.chats)
     for attempt, retry in scored:
-        record = build_task_attempt(ctx, attempt, attempt_id=f"a-{attempt['case_id']}", retry=retry)
+        record = build_task_attempt(
+            ctx, attempt, attempt_id=f"a-{attempt['case_id']}", retry=retry
+        )
         output = json.loads(record.output or "")
         assert output["verdict"] == attempt["verdict"] and output["reason"] == attempt["reason"]

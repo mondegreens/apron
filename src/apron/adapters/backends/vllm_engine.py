@@ -227,6 +227,25 @@ def download_command(
     )
 
 
+def detached_command(
+    command: str, rc_path: str = DOWNLOAD_RC, out_path: str = "/tmp/apron-download.out"
+) -> str:
+    """Run *command* on the pod with nothing tied to the SSH channel; its exit
+    code lands in *rc_path*.
+
+    The command runs in a subshell because the download command ends in
+    ``exit`` (without one, the code after it never ran and the rc file never
+    appeared, 2026-09-28).  The code is written to a temporary file and moved,
+    so a poll never reads it half-written.
+    """
+    finish = f"; echo $? > {rc_path}.tmp && mv {rc_path}.tmp {rc_path}"
+    inner = f"( {command} ){finish}"
+    return (
+        f"rm -f {rc_path}; nohup bash -c {shlex.quote(inner)} "
+        f"> {out_path} 2>&1 < /dev/null & echo started"
+    )
+
+
 @dataclass(frozen=True)
 class BootResult:
     """Outcome of one vLLM boot from a rendered plan."""
@@ -564,12 +583,7 @@ class VllmEngineAdapter:
         twice (2026-09-28).  A poll that times out only costs a reconnect.
         """
         command = download_command(model_id, self.model_dir(model_id))
-        # The exit code is written atomically (tmp + mv) so a poll never reads it half-written.
-        finish = f"; echo $? > {DOWNLOAD_RC}.tmp && mv {DOWNLOAD_RC}.tmp {DOWNLOAD_RC}"
-        detached = (
-            f"rm -f {DOWNLOAD_RC}; nohup bash -c {shlex.quote(command + finish)} "
-            "> /tmp/apron-download.out 2>&1 < /dev/null & echo started"
-        )
+        detached = detached_command(command)
         start = time.monotonic()
         target.execute(detached, timeout=120)
         deadline = start + timeout + 120

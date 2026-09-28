@@ -368,3 +368,4 @@
 {"amount": 2.943368, "at": "2026-09-28T13:01:48.007497+00:00", "label": "storage:7jiuum2nk6:3358GB:4.57h", "op": "spend"}
 {"amount": 1.2331, "at": "2026-09-28T13:01:48.809159+00:00", "label": "stage:deepseek-ai/DeepSeek-V4.1-Flash,Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3", "op": "hold"}
 {"amount": 0.0, "at": "2026-09-28T13:06:58.052406+00:00", "label": "stage:deepseek-ai/DeepSeek-V4.1-Flash,Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3", "op": "annotate", "pod_id": "c4ueqolx1ngxc4"}
+{"amount": 0.029683, "at": "2026-09-28T13:31:33.257635+00:00", "estimate": 1.2331, "label": "stage:deepseek-ai/DeepSeek-V4.1-Flash,Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3", "op": "settle"}

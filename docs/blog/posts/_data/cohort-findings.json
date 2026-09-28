@@ -370,8 +370,8 @@
     "ledger_probe": 1.397938,
     "ledger_reconciled": 0.650187,
     "ledger_settled": 14.352689,
-    "ledger_spent": 23.570848,
-    "ledger_staging": 1.848901,
+    "ledger_spent": 23.600531,
+    "ledger_staging": 1.878584,
     "ledger_storage": 5.06977,
     "per_solution": [
       {

@@ -618,3 +618,26 @@ def test_the_download_runs_detached_and_survives_a_dropped_poll(rc: int, ok: boo
     assert "< /dev/null &" in pod.commands[0]  # nothing holds the SSH channel open
     assert pod.dropped  # the timed-out poll did not end the download
     assert "DOWNLOAD_VERIFIED" in got["output_tail"]
+
+
+@pytest.mark.parametrize("code", [0, 3])
+def test_the_detached_command_records_the_exit_code_of_a_command_that_exits(
+    tmp_path: Path, code: int
+) -> None:
+    """The download command ends in ``exit``; run bare, it skipped the line
+    that writes the exit code and the poll waited for a file that never came."""
+    import subprocess
+    import time
+
+    from apron.adapters.backends.vllm_engine import detached_command
+
+    rc = tmp_path / "rc"
+    command = detached_command(
+        f"echo working; exit {code}", rc_path=str(rc), out_path=str(tmp_path / "out")
+    )
+    subprocess.run(["bash", "-c", command], check=True, timeout=10, capture_output=True)
+    deadline = time.monotonic() + 10
+    while not rc.exists() and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert rc.read_text().strip() == str(code)
+    assert not (tmp_path / "rc.tmp").exists()
