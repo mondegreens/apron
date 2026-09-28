@@ -326,6 +326,7 @@ def test_execute_gives_up_on_a_command_that_never_finishes(tmp_path: Path) -> No
         target.execute("vllm serve &", timeout=1)
     assert time.monotonic() - started < 3  # our deadline, not paramiko's
     assert channel.closed
+    assert target._ssh is None  # the next command reconnects instead of reusing it
     assert ssh.exec_command.call_count == 1  # a timeout is not retried like a lost connection
 
 

@@ -584,3 +584,37 @@ def test_a_volume_past_runpods_limit_is_refused_with_a_reason() -> None:
         pytest.raises(ValueError, match="4000 GB network-volume limit"),
     ):
         storage.ensure_volume("US-CA-2", MAX_VOLUME_GB + 1)
+
+
+class _DetachedPod:
+    """A pod whose detached download finishes after a few polls; one poll's
+    connection drops (RunPod's proxy closing a silent channel, 2026-09-28)."""
+
+    def __init__(self, rc: int, polls_before_done: int = 3) -> None:
+        self.rc, self.left, self.commands = rc, polls_before_done, []
+        self.dropped = False
+
+    def execute(self, command: str, timeout: int | None = None) -> dict[str, Any]:
+        self.commands.append(command)
+        if command.startswith("cat /tmp/apron-download.rc"):
+            if not self.dropped:
+                self.dropped = True
+                from apron.adapters.backends.runpod import RemoteCommandTimeout
+
+                raise RemoteCommandTimeout("remote command did not finish in 120s")
+            self.left -= 1
+            return {"stdout": "RUNNING\n" if self.left > 0 else f"{self.rc}\n", "exit_code": 0}
+        if command.startswith("tail -20"):
+            return {"stdout": "DOWNLOAD_VERIFIED\n", "exit_code": 0}
+        return {"stdout": "started\n", "exit_code": 0}
+
+
+@pytest.mark.parametrize(("rc", "ok"), [(0, True), (3, False)])
+def test_the_download_runs_detached_and_survives_a_dropped_poll(rc: int, ok: bool) -> None:
+    pod = _DetachedPod(rc)
+    got = VllmEngineAdapter().download_weights(pod, "org/model", timeout=60, poll_seconds=0)
+    assert got["ok"] is ok
+    assert pod.commands[0].startswith("rm -f /tmp/apron-download.rc; nohup bash -c")
+    assert "< /dev/null &" in pod.commands[0]  # nothing holds the SSH channel open
+    assert pod.dropped  # the timed-out poll did not end the download
+    assert "DOWNLOAD_VERIFIED" in got["output_tail"]

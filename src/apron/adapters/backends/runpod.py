@@ -642,6 +642,11 @@ class RunPodTarget:
                 _, stdout, _ = self._ssh.exec_command(command, timeout=deadline)
                 out, err, exit_code = _drain(stdout.channel, deadline)
                 if exit_code is None:
+                    # A channel that never finished may sit on a connection the
+                    # provider's proxy already dropped: reconnect next time.
+                    with contextlib.suppress(Exception):
+                        self._ssh.close()
+                    self._ssh = None
                     raise RemoteCommandTimeout(
                         f"remote command did not finish in {deadline}s: "
                         f"{mask_secrets(command[:120])}"

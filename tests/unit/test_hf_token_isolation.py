@@ -57,7 +57,7 @@ def test_boot_serves_local_path_with_tokens_unset() -> None:
 
 
 def test_download_reads_token_file_and_never_carries_the_value() -> None:
-    target = _Recorder()
+    target = _Recorder({"apron-download.rc": {"stdout": "0\n", "exit_code": 0}})
     VllmEngineAdapter().download_weights(target, "google/gemma-2-2b-it")
     command = target.commands[0]
     assert "/run/apron/hf_token" in command
@@ -139,7 +139,7 @@ def test_runner_image_capability_check() -> None:
 def test_download_skips_native_duplicates_in_both_paths() -> None:
     from apron.adapters.backends.vllm_engine import DOWNLOAD_IGNORE
 
-    target = _Recorder()
+    target = _Recorder({"apron-download.rc": {"stdout": "0\n", "exit_code": 0}})
     VllmEngineAdapter().download_weights(target, "mistralai/Mistral-7B-Instruct-v0.3")
     for pattern in DOWNLOAD_IGNORE:
         assert pattern in target.commands[0]

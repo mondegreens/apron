@@ -183,6 +183,7 @@ _DOWNLOAD_PY = (
 DOWNLOAD_STALL_SECONDS = 600
 DOWNLOAD_ATTEMPTS = 5
 DOWNLOAD_LOG = "/tmp/apron-download.log"
+DOWNLOAD_RC = "/tmp/apron-download.rc"
 
 
 def download_command(
@@ -551,15 +552,48 @@ class VllmEngineAdapter:
             f'[ "$d" = {keep_q} ] || rm -rf -- "$d"; done; true'
         )
 
-    def download_weights(self, target: Any, model_id: str, timeout: int = 3600) -> dict[str, Any]:
-        """Fetch weights in a separate step — the only one that reads the token."""
+    def download_weights(
+        self, target: Any, model_id: str, timeout: int = 3600, poll_seconds: int = 30
+    ) -> dict[str, Any]:
+        """Fetch weights in a separate step — the only one that reads the token.
+
+        The download runs detached on the pod and is polled with short
+        commands.  One SSH channel held open for the whole download went
+        silent for minutes and RunPod's TCP proxy dropped it without either
+        end noticing: staging waited on a finished download for four hours,
+        twice (2026-09-28).  A poll that times out only costs a reconnect.
+        """
         command = download_command(model_id, self.model_dir(model_id))
+        # The exit code is written atomically (tmp + mv) so a poll never reads it half-written.
+        finish = f"; echo $? > {DOWNLOAD_RC}.tmp && mv {DOWNLOAD_RC}.tmp {DOWNLOAD_RC}"
+        detached = (
+            f"rm -f {DOWNLOAD_RC}; nohup bash -c {shlex.quote(command + finish)} "
+            "> /tmp/apron-download.out 2>&1 < /dev/null & echo started"
+        )
         start = time.monotonic()
-        result = target.execute(command, timeout=timeout + 120)
+        target.execute(detached, timeout=120)
+        deadline = start + timeout + 120
+        rc: int | None = None
+        while rc is None and time.monotonic() < deadline:
+            try:
+                got = target.execute(f"cat {DOWNLOAD_RC} 2>/dev/null || echo RUNNING", timeout=120)
+                text = str(got.get("stdout", "")).strip()
+                if text.lstrip("-").isdigit():
+                    rc = int(text)
+                elif text != "RUNNING":
+                    # Not a shell that ran the poll (a test double): its own exit
+                    # code is the only answer there is.
+                    rc = int(got.get("exit_code", 1))
+            except Exception as exc:  # a dropped connection: reconnect on the next poll
+                logger.warning("download poll failed (%s); retrying", type(exc).__name__)
+            if rc is None:
+                time.sleep(poll_seconds)
+        tail = target.execute(f"tail -20 {DOWNLOAD_LOG}", timeout=120) if rc is not None else {}
         return {
-            "ok": result.get("exit_code", 1) == 0,
+            "ok": rc == 0,
             "seconds": round(time.monotonic() - start, 1),
-            "output_tail": str(result.get("stdout", ""))[-2000:],
+            "output_tail": str(tail.get("stdout", ""))[-2000:]
+            or ("" if rc is not None else f"no exit code within {timeout}s"),
         }
 
     def load_args(self, target: Any, model_id: str) -> list[str]:
