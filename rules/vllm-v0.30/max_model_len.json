@@ -1,0 +1,57 @@
+{
+  "schema_version": 4,
+  "engine": "vllm",
+  "engine_version": "v0.30.0",
+  "error_family": "max_model_len",
+  "rule_version": 1,
+  "supersedes": null,
+  "correction_strategy": "clamp_max_model_len",
+  "correction_spec": {},
+  "extraction_schema": {
+    "derived_max": {
+      "type": "int",
+      "enum": [],
+      "source": "config/model.py:2525 ('the derived max_model_len ({max_len_key}={derived_max_model_len}')"
+    }
+  },
+  "source_sites": [
+    {
+      "file": "config/model.py",
+      "line": 949
+    },
+    {
+      "file": "config/model.py",
+      "line": 2540
+    },
+    {
+      "file": "config/scheduler.py",
+      "line": 300
+    },
+    {
+      "file": "entrypoints/pooling/base/serving.py",
+      "line": 245
+    },
+    {
+      "file": "entrypoints/pooling/scoring/io_processor.py",
+      "line": 114
+    }
+  ],
+  "float16_blocklist": [],
+  "float16_blocklist_source": null,
+  "kernel_architectures": {},
+  "kernel_architectures_source": null,
+  "exception_class": null,
+  "engine_callsite_module": null,
+  "status": "hypothesis",
+  "promoting_verification_fingerprint": null,
+  "examples": [
+    "max_model_len must be a positive integer, got {type.__name__}: {self.max_model_len}. Example: max_model_len=2048",
+    "{msg} To allow overriding this maximum, set the env var VLLM_ALLOW_LONG_MAX_MODEL_LEN=1. {warning}",
+    "max_num_batched_tokens ({self.max_num_batched_tokens}) is smaller than max_model_len ({max_model_len}). This effectively limits the maximum sequence length to max_num_batched_tokens and makes vLLM rej",
+    "truncate_prompt_tokens value is greater than max_model_len. Please request a smaller truncation size.",
+    "{name} ({value}) must be less than max_model_len ({self.model_config.max_model_len})."
+  ],
+  "count": 0,
+  "curation": "Ported from rules/vllm-v0.29/max_model_len.json (rule_version 2, mechanism_verified) to vLLM v0.30.0: every cited line re-found in the pinned v0.30.0 source. A hypothesis on v0.30.0 until a v0.30.0 boot proves it; the v0.29.0 proof does not carry over. The source scanner must not overwrite this file.",
+  "replaces": []
+}

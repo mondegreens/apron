@@ -227,6 +227,16 @@ class CohortPorts:
     pool: TargetPool | None = None
     # Wait for provider stock before a new pod; False when the wait gave up.
     await_capacity: Callable[[RequestedExecutionSpec], bool] | None = None
+    # One adapter per pinned engine version, each with that version's rules: a
+    # plan on v0.30.0 is diagnosed by v0.30.0's rules, never v0.29.0's
+    # (owner, 2026-09-27: Apron follows vLLM releases).  ``engine`` serves a
+    # plan whose version has no entry.
+    engines: dict[str, ExecutionEngine] | None = None
+
+    def engine_for(self, sp: SolutionPlan) -> ExecutionEngine:
+        if self.engines and sp.engine_version in self.engines:
+            return self.engines[sp.engine_version]
+        return self.engine
 
 
 @dataclass(frozen=True)
@@ -269,6 +279,7 @@ class SolutionPlan:
     status: PlanStatus
     chat_template: str | None = None
     chat_renderer: str | None = None  # the engine renders chat (no template in the repo)
+    engine_version: str | None = "v0.29.0"  # the vLLM the plan runs on (image digest in identity)
     license_observed: str | None = None
     gating_observed: str | None = None
     estimate: float = 0.0
@@ -391,7 +402,7 @@ def execute_solution(
     """
     scope = scope or RunScope()
     authorize_execution(sp, inputs.authorization)
-    engine, clock = ports.engine, ports.clock
+    engine, clock = ports.engine_for(sp), ports.clock
     outcome = ExecutionOutcome(solution_fp=sp.solution_fp, healthy=False)
     timing = PhaseTiming()
     model_id = sp.plan.resource_allocation.get("model_id", sp.model_id)
@@ -579,7 +590,7 @@ def _store_outcome(
     leaked: PodLeakError | None,
     error: Exception | None,
 ) -> ExecutionOutcome:
-    engine = ports.engine
+    engine = ports.engine_for(sp)
     base = _report_base(sp, target, timing, rate)
     # Every boot report from this pod — failed harness attempts, retries and
     # the final boot — carries an equal share of the boot-phase cost (§7, exit

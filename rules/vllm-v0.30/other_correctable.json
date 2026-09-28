@@ -1,0 +1,1082 @@
+{
+  "schema_version": 4,
+  "engine": "vllm",
+  "engine_version": "v0.30.0",
+  "error_family": "other_correctable",
+  "correction_spec": {
+    "action": "remove_field",
+    "field": "device_ids"
+  },
+  "extraction_schema": {
+    "options": {
+      "type": "string"
+    },
+    "ids": {
+      "type": "string"
+    },
+    "node_rank": {
+      "type": "string"
+    },
+    "i": {
+      "type": "string"
+    },
+    "device_control_env_var": {
+      "type": "string"
+    },
+    "cvd": {
+      "type": "string"
+    },
+    "supervisor_port": {
+      "type": "string"
+    },
+    "child_port_min": {
+      "type": "string"
+    },
+    "child_port_max": {
+      "type": "string"
+    },
+    "local_rank": {
+      "type": "string"
+    },
+    "start": {
+      "type": "string"
+    },
+    "stop": {
+      "type": "string"
+    },
+    "n": {
+      "type": "string"
+    },
+    "max_tokens_check": {
+      "type": "string"
+    },
+    "pooling_task": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "vocab_size": {
+      "type": "string"
+    },
+    "invalid_token_ids": {
+      "type": "string"
+    },
+    "megakernel": {
+      "type": "string"
+    },
+    "expert_dtype": {
+      "type": "string"
+    },
+    "moe_backend": {
+      "type": "string"
+    },
+    "compress_ratio": {
+      "type": "string"
+    },
+    "adapter_type": {
+      "type": "string"
+    },
+    "window_size": {
+      "type": "string"
+    },
+    "num_experts": {
+      "type": "string"
+    },
+    "ep_size": {
+      "type": "string"
+    },
+    "m": {
+      "type": "string"
+    },
+    "max_m": {
+      "type": "string"
+    },
+    "hidden_size": {
+      "type": "string"
+    },
+    "group_size": {
+      "type": "string"
+    },
+    "ngram_size": {
+      "type": "string"
+    },
+    "heads_per_ngram": {
+      "type": "string"
+    },
+    "hc_lowrank": {
+      "type": "string"
+    },
+    "ple_embed_dim": {
+      "type": "string"
+    },
+    "ple_conv_kernel_size": {
+      "type": "string"
+    },
+    "values": {
+      "type": "string"
+    },
+    "total_bytes": {
+      "type": "string"
+    },
+    "filepath": {
+      "type": "string"
+    },
+    "allowed_local_media_path": {
+      "type": "string"
+    },
+    "allowed_local_media_path_": {
+      "type": "string"
+    },
+    "w": {
+      "type": "string"
+    },
+    "h": {
+      "type": "string"
+    },
+    "max_pixels": {
+      "type": "string"
+    },
+    "total_num_frames": {
+      "type": "string"
+    },
+    "total": {
+      "type": "string"
+    },
+    "capitalize": {
+      "type": "string"
+    },
+    "idx_str": {
+      "type": "string"
+    },
+    "ndim": {
+      "type": "string"
+    },
+    "tuple": {
+      "type": "string"
+    },
+    "idx": {
+      "type": "string"
+    },
+    "item_count": {
+      "type": "string"
+    },
+    "modality": {
+      "type": "string"
+    },
+    "cohere_only_key": {
+      "type": "string"
+    },
+    "config_file_name": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "layer_group_size": {
+      "type": "string"
+    },
+    "log_zero_guard_type": {
+      "type": "string"
+    },
+    "rescale_image_frac": {
+      "type": "string"
+    },
+    "rescale_image_max_upscaled_long_edge": {
+      "type": "string"
+    },
+    "extension": {
+      "type": "string"
+    },
+    "block_size": {
+      "type": "string"
+    },
+    "cache_dtype": {
+      "type": "string"
+    },
+    "kv_block_size": {
+      "type": "string"
+    },
+    "dtype": {
+      "type": "string"
+    },
+    "kv_cache_dtype": {
+      "type": "string"
+    },
+    "max_num_tokens": {
+      "type": "string"
+    },
+    "heads_per_rank": {
+      "type": "string"
+    },
+    "head_dim": {
+      "type": "string"
+    },
+    "max_gathered_tokens": {
+      "type": "string"
+    },
+    "token_dim": {
+      "type": "string"
+    },
+    "block_stride": {
+      "type": "string"
+    },
+    "dense_page_size": {
+      "type": "string"
+    },
+    "ratio": {
+      "type": "string"
+    },
+    "kernel_block_size": {
+      "type": "string"
+    },
+    "offset": {
+      "type": "string"
+    },
+    "total_len": {
+      "type": "string"
+    },
+    "unbound_store_timeout_s": {
+      "type": "string"
+    },
+    "device": {
+      "type": "string"
+    },
+    "range_start": {
+      "type": "string"
+    },
+    "range_end": {
+      "type": "string"
+    },
+    "numa_node": {
+      "type": "string"
+    },
+    "format_gib": {
+      "type": "string"
+    },
+    "gpu_memory_utilization": {
+      "type": "string"
+    },
+    "min_budget": {
+      "type": "string"
+    },
+    "max_budget": {
+      "type": "string"
+    },
+    "supported_dtypes": {
+      "type": "string"
+    },
+    "sorted": {
+      "type": "string"
+    },
+    "list": {
+      "type": "string"
+    },
+    "num_lanes": {
+      "type": "string"
+    }
+  },
+  "source_sites": [
+    {
+      "file": "engine/arg_utils.py",
+      "line": 206
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 1976
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 1983
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 2167
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 2234
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 2198
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 2242
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 2636
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 2640
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 1999
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 2293
+    },
+    {
+      "file": "entrypoints/launchers/cli_args.py",
+      "line": 455
+    },
+    {
+      "file": "entrypoints/launchers/cli_args.py",
+      "line": 463
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 54
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 58
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 62
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 66
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 71
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 76
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 81
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 88
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 93
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 104
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 112
+    },
+    {
+      "file": "entrypoints/launchers/dp_supervisor.py",
+      "line": 150
+    },
+    {
+      "file": "entrypoints/pooling/embed/io_processor.py",
+      "line": 427
+    },
+    {
+      "file": "entrypoints/pooling/embed/protocol.py",
+      "line": 246
+    },
+    {
+      "file": "entrypoints/pooling/offline.py",
+      "line": 138
+    },
+    {
+      "file": "entrypoints/pooling/offline.py",
+      "line": 145
+    },
+    {
+      "file": "entrypoints/pooling/offline.py",
+      "line": 190
+    },
+    {
+      "file": "entrypoints/pooling/offline.py",
+      "line": 184
+    },
+    {
+      "file": "entrypoints/pooling/pooling/io_processor.py",
+      "line": 31
+    },
+    {
+      "file": "entrypoints/pooling/scoring/io_processor.py",
+      "line": 112
+    },
+    {
+      "file": "entrypoints/scale_out/token_in_token_out/protocol.py",
+      "line": 94
+    },
+    {
+      "file": "entrypoints/scale_out/token_in_token_out/protocol.py",
+      "line": 98
+    },
+    {
+      "file": "entrypoints/scale_out/token_in_token_out/protocol.py",
+      "line": 100
+    },
+    {
+      "file": "entrypoints/scale_out/token_in_token_out/protocol.py",
+      "line": 135
+    },
+    {
+      "file": "ir/op.py",
+      "line": 174
+    },
+    {
+      "file": "ir/op.py",
+      "line": 572
+    },
+    {
+      "file": "logger.py",
+      "line": 176
+    },
+    {
+      "file": "logits_process.py",
+      "line": 115
+    },
+    {
+      "file": "lora/lora_model.py",
+      "line": 250
+    },
+    {
+      "file": "models/deepseek_v4/nvidia/fi_moe.py",
+      "line": 151
+    },
+    {
+      "file": "models/deepseek_v4/nvidia/model.py",
+      "line": 798
+    },
+    {
+      "file": "models/deepseek_v4/nvidia/model.py",
+      "line": 824
+    },
+    {
+      "file": "models/deepseek_v4/nvidia/model.py",
+      "line": 1370
+    },
+    {
+      "file": "models/deepseek_v4/xpu/model.py",
+      "line": 605
+    },
+    {
+      "file": "models/deepseek_v4/xpu/model.py",
+      "line": 625
+    },
+    {
+      "file": "models/deepseek_v4/xpu/model.py",
+      "line": 971
+    },
+    {
+      "file": "models/deepseek_v41/amd/model.py",
+      "line": 385
+    },
+    {
+      "file": "models/deepseek_v41/nvidia/model.py",
+      "line": 467
+    },
+    {
+      "file": "models/deepseek_v41/sparse_mla.py",
+      "line": 173
+    },
+    {
+      "file": "models/dots3_note/nvidia/vision.py",
+      "line": 102
+    },
+    {
+      "file": "models/inkling/nvidia/ops/lamport.py",
+      "line": 507
+    },
+    {
+      "file": "models/inkling/nvidia/ops/lamport.py",
+      "line": 509
+    },
+    {
+      "file": "models/kimi_k3/nvidia/model.py",
+      "line": 605
+    },
+    {
+      "file": "models/kimi_k3/nvidia/model.py",
+      "line": 719
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/kda_skinny_gemm.py",
+      "line": 529
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/kda_skinny_gemm.py",
+      "line": 531
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/allreduce_rmsnorm_reduce_scatter_early_exit.py",
+      "line": 64
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/allreduce_rmsnorm_reduce_scatter_early_exit.py",
+      "line": 71
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/allreduce_rmsnorm_reduce_scatter_early_exit.py",
+      "line": 73
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/allreduce_rmsnorm_reduce_scatter_early_exit.py",
+      "line": 77
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/fused_add_multicast_gemm.py",
+      "line": 84
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/fused_add_multicast_gemm.py",
+      "line": 86
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/fused_add_multicast_gemm.py",
+      "line": 88
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/fused_add_multicast_gemm.py",
+      "line": 90
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/fused_add_multicast_gemm.py",
+      "line": 96
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/fused_add_multicast_gemm.py",
+      "line": 1111
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/fused_add_multicast_gemm.py",
+      "line": 1113
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/fused_add_multicast_gemm.py",
+      "line": 1217
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/fused_add_multicast_skinny_gemm.py",
+      "line": 85
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/cute_dsl/latent_moe_tail/fused_add_multicast_skinny_gemm.py",
+      "line": 376
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/latent_moe_tail.py",
+      "line": 276
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/latent_moe_tail.py",
+      "line": 278
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/latent_moe_tail.py",
+      "line": 280
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/latent_moe_tail.py",
+      "line": 251
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/recoverssm.py",
+      "line": 612
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/recoverssm.py",
+      "line": 614
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/recoverssm.py",
+      "line": 638
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/recoverssm.py",
+      "line": 644
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/recoverssm.py",
+      "line": 657
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/recoverssm.py",
+      "line": 676
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/recoverssm.py",
+      "line": 790
+    },
+    {
+      "file": "models/kimi_k3/nvidia/ops/recoverssm.py",
+      "line": 839
+    },
+    {
+      "file": "models/qwen4_exp/amd/model.py",
+      "line": 637
+    },
+    {
+      "file": "models/qwen4_exp/amd/ops/qsa.py",
+      "line": 588
+    },
+    {
+      "file": "models/qwen4_exp/amd/ple_layer.py",
+      "line": 46
+    },
+    {
+      "file": "models/qwen4_exp/amd/ple_layer.py",
+      "line": 183
+    },
+    {
+      "file": "models/qwen4_exp/amd/ple_layer.py",
+      "line": 185
+    },
+    {
+      "file": "models/qwen4_exp/amd/ple_layer.py",
+      "line": 196
+    },
+    {
+      "file": "models/qwen4_exp/common/hyperconnection.py",
+      "line": 65
+    },
+    {
+      "file": "models/qwen4_exp/common/qsa_cache.py",
+      "line": 774
+    },
+    {
+      "file": "models/qwen4_exp/common/qsa_cache.py",
+      "line": 776
+    },
+    {
+      "file": "models/qwen4_exp/common/qsa_cache.py",
+      "line": 778
+    },
+    {
+      "file": "models/qwen4_exp/config.py",
+      "line": 95
+    },
+    {
+      "file": "models/qwen4_exp/config.py",
+      "line": 97
+    },
+    {
+      "file": "models/qwen4_exp/config.py",
+      "line": 99
+    },
+    {
+      "file": "models/qwen4_exp/config.py",
+      "line": 103
+    },
+    {
+      "file": "models/qwen4_exp/config.py",
+      "line": 113
+    },
+    {
+      "file": "models/qwen4_exp/config.py",
+      "line": 118
+    },
+    {
+      "file": "models/qwen4_exp/config.py",
+      "line": 120
+    },
+    {
+      "file": "models/qwen4_exp/config.py",
+      "line": 145
+    },
+    {
+      "file": "models/qwen4_exp/config.py",
+      "line": 149
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/model.py",
+      "line": 667
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/ngram_embedding.py",
+      "line": 650
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/ngram_embedding.py",
+      "line": 652
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/ngram_embedding.py",
+      "line": 663
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/ple_layer.py",
+      "line": 43
+    },
+    {
+      "file": "multimodal/gpu_ipc_memory.py",
+      "line": 63
+    },
+    {
+      "file": "multimodal/media/connector.py",
+      "line": 340
+    },
+    {
+      "file": "multimodal/media/connector.py",
+      "line": 348
+    },
+    {
+      "file": "multimodal/media/connector.py",
+      "line": 187
+    },
+    {
+      "file": "multimodal/media/connector.py",
+      "line": 192
+    },
+    {
+      "file": "multimodal/media/image.py",
+      "line": 58
+    },
+    {
+      "file": "multimodal/media/image.py",
+      "line": 85
+    },
+    {
+      "file": "multimodal/media/video.py",
+      "line": 168
+    },
+    {
+      "file": "multimodal/media/video.py",
+      "line": 170
+    },
+    {
+      "file": "multimodal/media/video.py",
+      "line": 139
+    },
+    {
+      "file": "multimodal/media/video.py",
+      "line": 156
+    },
+    {
+      "file": "multimodal/media/video.py",
+      "line": 179
+    },
+    {
+      "file": "multimodal/parse.py",
+      "line": 157
+    },
+    {
+      "file": "multimodal/parse.py",
+      "line": 195
+    },
+    {
+      "file": "multimodal/processing/processor.py",
+      "line": 1049
+    },
+    {
+      "file": "multimodal/processing/processor.py",
+      "line": 1667
+    },
+    {
+      "file": "multimodal/processing/processor.py",
+      "line": 1686
+    },
+    {
+      "file": "multimodal/video_decoders/pynvvideocodec.py",
+      "line": 65
+    },
+    {
+      "file": "pooling_params.py",
+      "line": 201
+    },
+    {
+      "file": "reasoning/basic_parsers.py",
+      "line": 54
+    },
+    {
+      "file": "reasoning/basic_parsers.py",
+      "line": 60
+    },
+    {
+      "file": "reasoning/ernie45_reasoning_parser.py",
+      "line": 43
+    },
+    {
+      "file": "reasoning/identity_reasoning_parser.py",
+      "line": 28
+    },
+    {
+      "file": "reasoning/kimi_k3_reasoning_parser.py",
+      "line": 87
+    },
+    {
+      "file": "reasoning/step3_reasoning_parser.py",
+      "line": 35
+    },
+    {
+      "file": "renderers/cohere.py",
+      "line": 629
+    },
+    {
+      "file": "sampling_params.py",
+      "line": 955
+    },
+    {
+      "file": "tokenizers/mistral.py",
+      "line": 123
+    },
+    {
+      "file": "tokenizers/mistral.py",
+      "line": 134
+    },
+    {
+      "file": "tokenizers/mistral.py",
+      "line": 140
+    },
+    {
+      "file": "tokenizers/mistral.py",
+      "line": 248
+    },
+    {
+      "file": "transformers_utils/config.py",
+      "line": 1145
+    },
+    {
+      "file": "transformers_utils/config.py",
+      "line": 1321
+    },
+    {
+      "file": "transformers_utils/config.py",
+      "line": 780
+    },
+    {
+      "file": "transformers_utils/configs/bailing_moe_v3_vl.py",
+      "line": 40
+    },
+    {
+      "file": "transformers_utils/processors/cohere_asr.py",
+      "line": 87
+    },
+    {
+      "file": "transformers_utils/processors/cohere_asr.py",
+      "line": 155
+    },
+    {
+      "file": "transformers_utils/processors/inkling.py",
+      "line": 63
+    },
+    {
+      "file": "transformers_utils/processors/inkling.py",
+      "line": 70
+    },
+    {
+      "file": "transformers_utils/processors/inkling.py",
+      "line": 220
+    },
+    {
+      "file": "transformers_utils/processors/minicpmo.py",
+      "line": 542
+    },
+    {
+      "file": "utils/argparse_utils.py",
+      "line": 500
+    },
+    {
+      "file": "utils/argparse_utils.py",
+      "line": 573
+    },
+    {
+      "file": "utils/argparse_utils.py",
+      "line": 522
+    },
+    {
+      "file": "v1/attention/backends/b12x.py",
+      "line": 400
+    },
+    {
+      "file": "v1/attention/backends/flashinfer.py",
+      "line": 1367
+    },
+    {
+      "file": "v1/attention/backends/flashinfer.py",
+      "line": 1374
+    },
+    {
+      "file": "v1/attention/backends/flashinfer.py",
+      "line": 785
+    },
+    {
+      "file": "v1/attention/backends/flex_attention.py",
+      "line": 711
+    },
+    {
+      "file": "v1/attention/backends/mla/rocm_aiter_mla_sparse.py",
+      "line": 789
+    },
+    {
+      "file": "v1/attention/backends/mla/rocm_aiter_mla_sparse.py",
+      "line": 798
+    },
+    {
+      "file": "v1/attention/backends/mla/tokenspeed_mla.py",
+      "line": 207
+    },
+    {
+      "file": "v1/attention/ops/dcp.py",
+      "line": 61
+    },
+    {
+      "file": "v1/attention/ops/dcp.py",
+      "line": 1197
+    },
+    {
+      "file": "v1/attention/ops/dcp.py",
+      "line": 1349
+    },
+    {
+      "file": "v1/core/kv_cache_coordinator.py",
+      "line": 51
+    },
+    {
+      "file": "v1/core/kv_cache_utils.py",
+      "line": 879
+    },
+    {
+      "file": "v1/engine/utils.py",
+      "line": 629
+    },
+    {
+      "file": "v1/executor/ray_executor.py",
+      "line": 538
+    },
+    {
+      "file": "v1/hisparse/coordinator.py",
+      "line": 148
+    },
+    {
+      "file": "v1/kv_cache_interface.py",
+      "line": 373
+    },
+    {
+      "file": "v1/kv_offload/tiering/fs/io.py",
+      "line": 84
+    },
+    {
+      "file": "v1/kv_offload/tiering/kvcr/manager.py",
+      "line": 302
+    },
+    {
+      "file": "v1/kv_offload/tiering/kvcr/manager.py",
+      "line": 343
+    },
+    {
+      "file": "v1/kv_offload/tiering/kvcr/manager.py",
+      "line": 360
+    },
+    {
+      "file": "v1/kv_offload/tiering/p2p/manager.py",
+      "line": 274
+    },
+    {
+      "file": "v1/kv_offload/tiering/spec.py",
+      "line": 246
+    },
+    {
+      "file": "v1/kv_offload/tiering/spec.py",
+      "line": 262
+    },
+    {
+      "file": "v1/pool/metadata.py",
+      "line": 163
+    },
+    {
+      "file": "v1/sample/logits_processor/__init__.py",
+      "line": 151
+    },
+    {
+      "file": "v1/sample/logits_processor/__init__.py",
+      "line": 153
+    },
+    {
+      "file": "v1/spec_decode/dynamic/utils.py",
+      "line": 90
+    },
+    {
+      "file": "v1/spec_decode/dynamic/utils.py",
+      "line": 44
+    },
+    {
+      "file": "v1/spec_decode/dynamic/utils.py",
+      "line": 64
+    },
+    {
+      "file": "v1/watermarking/detector.py",
+      "line": 29
+    },
+    {
+      "file": "v1/watermarking/detector.py",
+      "line": 31
+    },
+    {
+      "file": "v1/watermarking/gumbel.py",
+      "line": 264
+    },
+    {
+      "file": "v1/watermarking/gumbel.py",
+      "line": 110
+    },
+    {
+      "file": "v1/watermarking/gumbel.py",
+      "line": 223
+    },
+    {
+      "file": "v1/worker/cpu_worker.py",
+      "line": 85
+    },
+    {
+      "file": "v1/worker/encoder_cudagraph.py",
+      "line": 97
+    },
+    {
+      "file": "v1/worker/encoder_cudagraph.py",
+      "line": 132
+    },
+    {
+      "file": "v1/worker/gpu/buffer_utils.py",
+      "line": 145
+    },
+    {
+      "file": "v1/worker/gpu/pcp_manager.py",
+      "line": 172
+    },
+    {
+      "file": "v1/worker/gpu/pcp_manager.py",
+      "line": 180
+    },
+    {
+      "file": "v1/worker/gpu/pool/pooling_runner.py",
+      "line": 45
+    },
+    {
+      "file": "v1/worker/gpu_worker.py",
+      "line": 1361
+    },
+    {
+      "file": "v1/worker/workspace.py",
+      "line": 64
+    }
+  ],
+  "examples": [
+    "All options must be of the same type. Got {options} with types {}",
+    "--device-ids must not contain duplicates: {ids}",
+    "--device-ids must not mix integer IDs and UUIDs",
+    "Invalid data-parallel launch options: `--data-parallel-hybrid-lb` and `--data-parallel-external-lb` cannot be enabled together. Enable only one load-balancing mode.",
+    "Non-MoE models do not support external data parallel mode. For external load balancing, launch independent vLLM instances without --data-parallel-* arguments."
+  ],
+  "status": "hypothesis",
+  "count": 0,
+  "rule_version": 1
+}

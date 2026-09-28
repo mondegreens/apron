@@ -1,0 +1,46 @@
+{
+  "schema_version": 4,
+  "engine": "vllm",
+  "engine_version": "v0.30.0",
+  "error_family": "quant_compute_capability",
+  "rule_version": 1,
+  "supersedes": null,
+  "correction_strategy": "substitute_artifact",
+  "correction_spec": {},
+  "extraction_schema": {
+    "min_capability": {
+      "type": "int",
+      "enum": [],
+      "source": "config/vllm.py:840 ('Minimum capability: {quant_config.get_min_capability()}', raised at :837)"
+    },
+    "current_capability": {
+      "type": "int",
+      "enum": [],
+      "source": "config/vllm.py:841 ('Current capability: {capability}')"
+    }
+  },
+  "source_sites": [
+    {
+      "file": "config/vllm.py",
+      "line": 837
+    }
+  ],
+  "float16_blocklist": [],
+  "float16_blocklist_source": null,
+  "kernel_architectures": {
+    "fp_quant": [
+      "10.0"
+    ]
+  },
+  "kernel_architectures_source": "cmake/external_projects/qutlass.cmake:56-85 (QuTLASS compiled for SM100; SM100 selected when SM120 is also requested, :72-79); fp_quant.py:64 min capability 100",
+  "exception_class": null,
+  "engine_callsite_module": null,
+  "status": "hypothesis",
+  "promoting_verification_fingerprint": null,
+  "examples": [
+    "The quantization method fp_quant is not supported for the current GPU. Minimum capability: 100. Current capability: 90."
+  ],
+  "count": 0,
+  "curation": "Ported from rules/vllm-v0.29/quant_compute_capability.json (rule_version 4, mechanism_verified) to vLLM v0.30.0: every cited line re-found in the pinned v0.30.0 source. A hypothesis on v0.30.0 until a v0.30.0 boot proves it; the v0.29.0 proof does not carry over. The source scanner must not overwrite this file. model_executor/layers/quantization/fp_quant.py and cmake/external_projects/qutlass.cmake are byte-identical to v0.29.0: fp_quant.py:198-209 still registers forward_hadamard_matrix only, so substitute_artifact and kernel_architectures carry over unchanged. Carried over from the v0.29.0 rule: v2 replaces retarget_capability with substitute_artifact (PLAN §10.1 fallback). Evidence: v1's fix moved ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4 to a B200; the capability check passed, then weight loading failed ('no module or parameter named ...backward_hadamard_matrix', boot report 1220e2bb9d9e3077ec36a3b1996d3fa982eb9268665a8054c69a161934461b3fd41d, 2026-09-27). v0.29.0 fp_quant.py:198-209 registers forward_hadamard_matrix only, and all 32 FPQuant checkpoints on the Hub store backward_hadamard_matrix (safetensors headers, 2026-09-27), so no GPU makes them load. substitute_artifact serves the same network in a format the pinned engine runs on the requested GPU. kernel_architectures still excludes fp_quant candidates on GPUs its kernels were not built for.",
+  "replaces": []
+}

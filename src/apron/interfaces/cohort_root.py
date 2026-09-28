@@ -32,17 +32,20 @@ from apron.adapters.backends.runpod_storage import (
 )
 from apron.adapters.backends.vllm_engine import VllmEngineAdapter
 from apron.adapters.backends.vllm_quantization import (
-    HYBRID_ARCHITECTURES,
-    MODEL_TOKENIZER_MODES,
-    default_max_num_batched_tokens,
-    default_max_num_seqs,
-    load_problems,
+    VLLM_DEFAULT_GPU_MEMORY_UTILIZATION,
+    engine_facts,
+    engine_for,
 )
 from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
 from apron.adapters.evidence.hf_hub import HFHubResolver
 from apron.adapters.evidence.hf_lineage import HubLineage
 from apron.adapters.planning.calculator_source import CalculatorPlanningSource
-from apron.adapters.runner_image import RUNNER_IMAGE, RUNNER_IMAGE_DIGEST
+from apron.adapters.runner_image import (
+    RUNNER_IMAGES,
+    image_for_digest,
+    newest_runner_image,
+    runner_image,
+)
 from apron.application.cost_estimator import hourly_rate
 from apron.application.orchestration.budget import BudgetTracker
 from apron.application.orchestration.cohort import (
@@ -59,7 +62,8 @@ from apron.application.orchestration.correction import (
     CorrectionContext,
 )
 from apron.application.orchestration.evidence import solution_fingerprint
-from apron.application.orchestration.plan_pipeline import run_plan_pipeline
+from apron.application.orchestration.plan_builder import PLAN_GPU_MEMORY_UTILIZATION
+from apron.application.orchestration.plan_pipeline import StateBlockFacts, run_plan_pipeline
 from apron.application.orchestration.pods import TargetPool
 from apron.application.orchestration.remediation import FixProofPorts
 from apron.application.orchestration.scheduler import CandidateSeed, estimate_cost
@@ -92,7 +96,12 @@ SEED = REPO / "cohort" / "phase-1b-seed.json"
 # trailing full stop ignored ("Paris." answers "just the city name"; L5 review).
 PROTOCOL = REPO / "cohort" / "phase-1b-evaluation-protocol.json"
 RULES_DIR = REPO / "rules"
-AUTHORIZED_USD = 500.0  # D4: the owner's cap ($100, raised to $500 on 2026-09-27 for groups A-D)
+# The engine plans use when a caller does not choose one: the version the
+# first cohort's records were made on.
+RUNNER_IMAGES_DEFAULT = "v0.29.0"
+# D4: the owner's cap for the whole Phase 1b cohort (all passes), not per day
+# or run; raising it is the owner's call (group D).
+AUTHORIZED_USD = 100.0
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +183,62 @@ def hardware_for(gpu_sku: str) -> HardwareSpec:
     )
 
 
+def recorded_prediction(
+    entry: Any, config: dict[str, Any], weights: dict[str, Any]
+) -> dict[str, Any]:
+    """The calculator's prediction for a recorded boot, GPU-free and offline.
+
+    *entry* is the boot's solution (``solutions.jsonl``), *config* the
+    checkpoint's ``config.json`` at the recorded revision
+    (``tests/fixtures/cohort/configs.json``) and *weights* its row of
+    ``weight-bytes.json`` (stored bytes, and the processor fields of the
+    activation estimate).  Predicted as the plan booted: its GPU, tensor
+    parallelism, dtype, utilization (vLLM's default when it set none) and
+    max_num_seqs, and the engine version's batch defaults on that GPU.
+    """
+    from apron.application.orchestration.plan_pipeline import (
+        calculator_metadata,
+        recorded_loaded_bytes,
+        runtime_dtype,
+    )
+    from apron.domain.mechanisms.model_spec_builder import build_model_spec
+
+    version = next(
+        tag
+        for tag, image in RUNNER_IMAGES.items()
+        if image.digest == entry.requested_execution.image_digest
+    )
+    facts = engine_facts(version)
+    gpu = entry.requested_execution.gpu_sku
+    hardware = hardware_for(gpu)
+    plan = entry.deployment_plan
+    engine = plan.engine_configuration
+    dtype = plan.dtype or runtime_dtype(config)
+    spec = build_model_spec(config, repository=entry.model_id)
+    metadata = calculator_metadata(
+        config, spec, total_weight_bytes=recorded_loaded_bytes(weights, dtype), dtype=dtype
+    )
+    # The processor-derived fields the encoder moment reads (config fields agree).
+    metadata.update(
+        {k: v for k, v in (weights.get("activation") or {}).items() if k not in metadata}
+    )
+    memory = hardware.total_memory_bytes
+    shape = {
+        "isl": 512,
+        "osl": 128,
+        "max_batch_size": 4,
+        "tensor_parallel": plan.tensor_parallel,
+        "gpu_memory_utilization": float(
+            engine.get("gpu_memory_utilization") or VLLM_DEFAULT_GPU_MEMORY_UTILIZATION
+        ),
+        "max_num_batched_tokens": facts.default_max_num_batched_tokens(memory, gpu),
+        "max_num_seqs": int(engine.get("max_num_seqs") or facts.default_max_num_seqs(memory, gpu)),
+        **({"enforce_eager": True} if engine.get("enforce_eager") in ("true", True) else {}),
+    }
+    claim = CalculatorPlanningSource(clock=WallClock()).predict(metadata, hardware, shape)
+    return dict(claim.proposed_configuration)
+
+
 def measurement_notes(run_dir: Path = RUN_DIR) -> tuple[str, ...]:
     """Notes every prediction delta carries, from L0-A3's repeat boots (§6.1).
 
@@ -201,17 +266,33 @@ class CohortPlanner:
     ids: IdGenerator = field(default_factory=UuidIdGenerator)
     resolver: Any = field(default_factory=HFHubResolver)
 
+    def engine(self, model_id: str) -> str | None:
+        """The vLLM version a plan for *model_id* runs on: the newest one with a
+        pinned runner image whose model registry serves the checkpoint's
+        architecture (owner, 2026-09-27: Apron follows vLLM releases).  None
+        when no pinned version serves it."""
+        raw = self.resolver._download_file(model_id, "config.json", "main")
+        config = json.loads(raw) if raw else {}
+        architecture = (config.get("architectures") or [""])[0]
+        return engine_for(architecture, RUNNER_IMAGES)
+
     def plan_seed(self, seed: CandidateSeed) -> SolutionPlan:
+        engine = self.engine(seed.model_id)
         # Several GPUs for one model: split it across them (TP = count), and
         # predict per GPU.  Unsplit, a 2-GPU MiniMax-M2.7 read as 214 GiB on
         # one H200 and was called infeasible (GPU-free check, 2026-09-27).
         plan, pipeline = self._pipeline_plan(
-            seed.model_id, seed.gpu_sku, seed.gpu_count, tensor_parallel=seed.gpu_count
+            seed.model_id,
+            seed.gpu_sku,
+            seed.gpu_count,
+            tensor_parallel=seed.gpu_count,
+            engine=engine or newest_runner_image().version,
         )
         return self._solution(
             plan,
             pipeline,
             seed.key,
+            engine=engine,
             check_feasibility=True,
             estimate=estimate_cost(seed, self.rates.get(seed.gpu_sku, 0.0)),
             coverage={
@@ -226,11 +307,23 @@ class CohortPlanner:
         """Plan a given DeploymentPlan (fix proof): the object is kept, never rebuilt,
         and a predicted-infeasible broken plan is booted on purpose."""
         alloc = plan.resource_allocation
+        engine = plan.engine_configuration
         _, pipeline = self._pipeline_plan(
             alloc["model_id"],
             alloc["gpu_sku"],
             int(alloc.get("gpu_count", "1")),
             tensor_parallel=plan.tensor_parallel,
+            # The given plan boots as it is: no max_num_seqs of the planner's own.
+            state_block_guard=False,
+            # ... and is predicted as it boots: its utilization (vLLM's default
+            # when it sets none), dtype and max_num_seqs.  A float32 Mamba plan
+            # was predicted at 16 bits and its KV budget 5.75 GiB high; plans
+            # without a utilization were predicted at 0.90 and booted at 0.92.
+            gpu_memory_utilization=float(
+                engine.get("gpu_memory_utilization") or VLLM_DEFAULT_GPU_MEMORY_UTILIZATION
+            ),
+            dtype=plan.dtype,
+            max_num_seqs=int(engine["max_num_seqs"]) if engine.get("max_num_seqs") else None,
         )
         gpu = alloc["gpu_sku"]
         count = int(alloc.get("gpu_count", "1"))
@@ -241,8 +334,20 @@ class CohortPlanner:
     # ------------------------------------------------------------------
 
     def _pipeline_plan(
-        self, model_id: str, gpu: str, count: int, *, tensor_parallel: int = 1
+        self,
+        model_id: str,
+        gpu: str,
+        count: int,
+        *,
+        tensor_parallel: int = 1,
+        engine: str = RUNNER_IMAGES_DEFAULT,
+        state_block_guard: bool = True,
+        gpu_memory_utilization: float = PLAN_GPU_MEMORY_UTILIZATION,
+        dtype: str | None = None,
+        max_num_seqs: int | None = None,
     ) -> tuple[DeploymentPlan, Any]:
+        facts = engine_facts(engine)
+        memory = hardware_for(gpu).total_memory_bytes
         pipeline = run_plan_pipeline(
             self.resolver,
             CalculatorPlanningSource(clock=self.clock),
@@ -251,13 +356,23 @@ class CohortPlanner:
             clock=self.clock,
             id_gen=self.ids,
             tensor_parallel=tensor_parallel,
-            max_num_batched_tokens=default_max_num_batched_tokens(
-                hardware_for(gpu).total_memory_bytes, gpu
-            ),
-            max_num_seqs=default_max_num_seqs(hardware_for(gpu).total_memory_bytes, gpu),
-            load_check=load_problems,
-            unmodelled_architectures=HYBRID_ARCHITECTURES,
-            tokenizer_modes=MODEL_TOKENIZER_MODES,
+            # The plan's engine version's own defaults for this GPU.
+            max_num_batched_tokens=facts.default_max_num_batched_tokens(memory, gpu),
+            max_num_seqs=max_num_seqs or facts.default_max_num_seqs(memory, gpu),
+            load_check=facts.load_problems,
+            unmodelled_architectures=facts.hybrid_architectures,
+            tokenizer_modes=facts.tokenizer_modes,
+            reasoning_parsers=facts.reasoning_parsers,
+            state_blocks=StateBlockFacts(
+                engine_version=facts.version,
+                check=facts.state_block_check,
+                profiling=facts.state_block_profiling,
+                default_source=facts.default_max_num_seqs_source(memory, gpu),
+            )
+            if state_block_guard
+            else None,
+            gpu_memory_utilization=gpu_memory_utilization,
+            dtype=dtype,
         )
         if pipeline.model_spec is None or pipeline.claim is None:
             raise ValueError(f"{model_id}: planning failed: {pipeline.error}")
@@ -289,6 +404,7 @@ class CohortPlanner:
         check_feasibility: bool,
         estimate: float,
         coverage: dict[str, Any] | None = None,
+        engine: str | None = RUNNER_IMAGES_DEFAULT,
     ) -> SolutionPlan:
         alloc = plan.resource_allocation
         count = int(alloc.get("gpu_count", "1"))
@@ -297,11 +413,14 @@ class CohortPlanner:
             gpu_sku=alloc["gpu_sku"],
             gpu_count=count,
             cloud_type=CLOUD_TYPE,
-            image_digest=RUNNER_IMAGE_DIGEST,
+            # The engine is part of the solution's identity through its image.
+            image_digest=(runner_image(engine) if engine else newest_runner_image()).digest,
         )
         claim = pipeline.claim
         status = "planned"
-        if claim.proposed_configuration.get("status") == "unknown":
+        if engine is None:
+            status = "unknown"  # no pinned vLLM serves the architecture: never booted
+        elif claim.proposed_configuration.get("status") == "unknown":
             status = "unknown"
         elif check_feasibility and pipeline.load_problems:
             status = "infeasible"  # the engine would refuse the checkpoint's tensors
@@ -337,8 +456,11 @@ class CohortPlanner:
             if observation
             else None,
             coverage=coverage or {},
-            notes=measurement_notes(),
+            # What the prediction needs besides the GPUs (host RAM for tables
+            # the engine keeps off them) travels with the measurement notes.
+            notes=measurement_notes() + tuple(getattr(pipeline, "notes", ()) or ()),
             load_problems=tuple(pipeline.load_problems or ()),
+            engine_version=engine,
         )
 
 
@@ -498,9 +620,30 @@ def weights_site(
             break
     if chosen is None:
         return None
-    need_gb = int(sum(staged_bytes(m) for m in model_ids) * headroom / 1e9) + 10
-    volume = storage.ensure_volume(chosen, need_gb)
-    return WeightsSite(str(volume["id"]), chosen, int(volume.get("size") or need_gb))
+
+    def need_gb(models: set[str]) -> int:
+        return int(sum(staged_bytes(m) for m in sorted(models)) * headroom / 1e9) + 10
+
+    volume = storage.ensure_volume(chosen, need_gb(set(model_ids)))
+    # The volume keeps earlier groups' weights (and any partial download), so
+    # it is sized for everything on it, not only this group's models.
+    on_volume = staged_on(str(volume["id"])) | set(model_ids)
+    if on_volume != set(model_ids):
+        volume = storage.ensure_volume(chosen, need_gb(on_volume))
+    size = int(volume.get("size") or need_gb(on_volume))
+    return WeightsSite(str(volume["id"]), chosen, size)
+
+
+def staged_on(volume_id: str, run_dir: Path | None = None) -> set[str]:
+    """Models earlier staging runs wrote to *volume_id* (finished or not: a
+    partial download holds space too), from the ``prestage*.json`` records."""
+    found: set[str] = set()
+    for path in sorted((run_dir or RUN_DIR).glob("prestage*.json")):
+        record = json.loads(path.read_text())
+        if (record.get("site") or {}).get("volume_id") != volume_id:
+            continue
+        found |= {m["model_id"] for m in (record.get("staging") or {}).get("models") or []}
+    return found
 
 
 def stage_site(
@@ -515,7 +658,7 @@ def stage_site(
     hours = (total / STAGER_BYTES_PER_SECOND + STAGER_PULL_SECONDS) / 3600
     stager = RunPodStagerPod(
         api_key=api_key,
-        image=RUNNER_IMAGE,
+        image=newest_runner_image().image,  # any runner image downloads the same
         network_volume_id=site.volume_id,
         data_center_id=site.data_center_id,
         leak_log=run_dir / "leaked_pods.json",
@@ -580,7 +723,8 @@ def build_ports(
     def target_factory(requested: RequestedExecutionSpec) -> RunPodTarget:
         return RunPodTarget(
             api_key=api_key,
-            image=RUNNER_IMAGE,
+            # The plan's engine: its image digest is in the solution's identity.
+            image=image_for_digest(requested.image_digest),
             gpu_type=requested.gpu_sku,
             gpu_count=requested.gpu_count,
             leak_log=run_dir / "leaked_pods.json",
@@ -600,6 +744,12 @@ def build_ports(
     return CohortPorts(
         target_factory=target_factory,
         engine=VllmEngineAdapter(rules=load_rules(RULES_DIR, "vllm", "v0.29.0")),
+        engines={
+            version: VllmEngineAdapter(
+                engine_version=version, rules=load_rules(RULES_DIR, "vllm", version)
+            )
+            for version in RUNNER_IMAGES
+        },
         evaluator=DeterministicScorer(),
         store=LocalRecordStore(run_dir / "records"),
         budget=budget,

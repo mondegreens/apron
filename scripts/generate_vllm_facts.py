@@ -9,6 +9,12 @@ source, never by hand:
   ``BaseKVCacheMethod`` subclass in its module), the scale names that method
   registers plus the checkpoint names vLLM maps onto them;
 
+and, per version: the scheduler defaults `vllm serve` picks per GPU memory
+tier (``get_batch_defaults``), and where the version needs one state (Mamba)
+block per decode sequence (the check that refuses more, and the CUDA-graph
+profiling cache of one block per sequence); and the names its
+``--reasoning-parser`` and ``--tool-call-parser`` registries accept;
+
 and writes ``src/apron/adapters/backends/vllm_facts.json`` with the vLLM
 version and commit they came from.  The index below only says where each
 method lives; a moved or renamed class makes this script fail, never guess.
@@ -310,12 +316,189 @@ def generate(source: Path) -> dict[str, Any]:
         "source_names": _names_entry(version, source_names(source)),
         "architectures": registered_architectures(source),
         "tokenizer_modes": _tokenizer_modes(source),
+        "reasoning_parsers": reasoning_parsers(source),
+        "tool_parsers": tool_parsers(source),
+        "batch_defaults": batch_defaults(source),
+        "state_blocks": state_blocks(source),
         "compressed_tensors": {
             "kv_cache_scales": _has_kv_cache_method(tree(ct_path)),
             "config_min_capability": ct_min,
             "config_min_capability_source": f"{ct_path.removeprefix('vllm/')}:{ct_line}",
             "schemes": schemes,
         },
+    }
+
+
+BATCH_DEFAULTS = ("vllm/engine/arg_utils.py", "EngineArgs", "get_batch_defaults")
+# `vllm serve` sizes the scheduler with the OpenAI server's entry.
+SERVER_CONTEXT = "OPENAI_API_SERVER"
+
+
+def _server_default(body: list[ast.stmt], name: str) -> int | None:
+    """The OpenAI server's value in ``<name> = {UsageContext.X: n, ...}``."""
+    for node in body:
+        if (
+            isinstance(node, ast.Assign)
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == name
+            and isinstance(node.value, ast.Dict)
+        ):
+            for key, value in zip(node.value.keys, node.value.values, strict=True):
+                if (
+                    isinstance(key, ast.Attribute)
+                    and key.attr == SERVER_CONTEXT
+                    and isinstance(value, ast.Constant)
+                    and isinstance(value.value, int)
+                ):
+                    return value.value
+    return None
+
+
+def _memory_tier(test: ast.expr) -> tuple[int, str | None] | None:
+    """``device_memory >= N * GiB_bytes [and "x" not in device_name]`` ->
+    (N, "x"); None for a test of anything else (the TPU / CPU branches)."""
+    parts = (
+        test.values if isinstance(test, ast.BoolOp) and isinstance(test.op, ast.And) else [test]
+    )
+    gib: int | None = None
+    excluded: str | None = None
+    for part in parts:
+        if not (isinstance(part, ast.Compare) and len(part.ops) == 1):
+            return None
+        op, right = part.ops[0], part.comparators[0]
+        if (
+            isinstance(part.left, ast.Name)
+            and part.left.id == "device_memory"
+            and isinstance(op, ast.GtE)
+            and isinstance(right, ast.BinOp)
+            and isinstance(right.left, ast.Constant)
+            and isinstance(right.left.value, int)
+            and isinstance(right.right, ast.Name)
+            and right.right.id == "GiB_bytes"
+        ):
+            gib = right.left.value
+        elif (
+            isinstance(part.left, ast.Constant)
+            and isinstance(op, ast.NotIn)
+            and isinstance(right, ast.Name)
+            and right.id == "device_name"
+        ):
+            excluded = str(part.left.value)
+        else:
+            return None
+    return None if gib is None else (gib, excluded)
+
+
+def batch_defaults(source: Path) -> dict[str, Any]:
+    """``max_num_batched_tokens`` and ``max_num_seqs`` `vllm serve` picks on a
+    CUDA GPU: the device-memory tiers of ``get_batch_defaults``, first match
+    wins (a tier may exclude GPUs whose lower-case name contains a string)."""
+    path, cls_name, fn_name = BATCH_DEFAULTS
+    fn = _method(_class(ast.parse((source / path).read_text()), cls_name, path), fn_name, path)
+    chain = next(
+        (n for n in fn.body if isinstance(n, ast.If) and _memory_tier(n.test) is not None),
+        None,
+    )
+    tiers: list[dict[str, Any]] = []
+    branch: ast.stmt | None = chain
+    while branch is not None:
+        if isinstance(branch, ast.If):
+            tier = _memory_tier(branch.test)
+            if tier is None:
+                raise SystemExit(f"{path}:{branch.lineno}: unexpected batch-default test")
+            body, line = branch.body, branch.lineno
+            min_gib, excluded = tier
+            nxt = branch.orelse
+        else:
+            raise SystemExit(f"{path}: unexpected batch-default branch")
+        tokens = _server_default(body, "default_max_num_batched_tokens")
+        seqs = _server_default(body, "default_max_num_seqs")
+        if tokens is None or seqs is None:
+            raise SystemExit(f"{path}:{line}: {SERVER_CONTEXT} defaults not found — update")
+        tiers.append(
+            {
+                "min_memory_gib": min_gib,
+                "excluded_name": excluded,
+                "max_num_batched_tokens": tokens,
+                "max_num_seqs": seqs,
+                "source": f"{path.removeprefix('vllm/')}:{line}",
+            }
+        )
+        if len(nxt) == 1 and isinstance(nxt[0], ast.If):
+            branch = nxt[0]
+            continue
+        # The final else: every other CUDA GPU.
+        tokens = _server_default(nxt, "default_max_num_batched_tokens")
+        seqs = _server_default(nxt, "default_max_num_seqs")
+        if tokens is None or seqs is None:
+            raise SystemExit(f"{path}:{line}: fallback batch defaults not found — update")
+        tiers.append(
+            {
+                "min_memory_gib": 0,
+                "excluded_name": None,
+                "max_num_batched_tokens": tokens,
+                "max_num_seqs": seqs,
+                "source": f"{path.removeprefix('vllm/')}:{nxt[0].lineno}",
+            }
+        )
+        branch = None
+    if not tiers:
+        raise SystemExit(f"{path}: {cls_name}.{fn_name} memory tiers not found — update")
+    return {
+        "usage_context": SERVER_CONTEXT,
+        "source": f"{path.removeprefix('vllm/')}:{fn.lineno} ({cls_name}.{fn_name})",
+        "tiers": tiers,
+    }
+
+
+# The check that refuses more decode sequences than state (Mamba) blocks, by
+# its message, and the CUDA-graph profiling allocation of one KV block per
+# sequence (``min(max_num_reqs, max_cudagraph_capture_size)``).
+STATE_BLOCK_CHECK = ("vllm/config/compilation.py", "exceeds available Mamba cache")
+PROFILING_RUNNERS = ("vllm/v1/worker/gpu_model_runner.py", "vllm/v1/worker/gpu/cudagraph_utils.py")
+
+
+def _raise_line(tree: ast.Module, text: str) -> int | None:
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Raise) and any(
+            isinstance(c, ast.Constant) and isinstance(c.value, str) and text in c.value
+            for c in ast.walk(node)
+        ):
+            return node.lineno
+    return None
+
+
+def _profiling_min_blocks(tree: ast.Module) -> int | None:
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "min"
+            and len(node.args) == 2
+            and isinstance(node.args[0], ast.Attribute)
+            and node.args[0].attr == "max_num_reqs"
+            and isinstance(node.args[1], ast.Attribute)
+            and node.args[1].attr == "max_cudagraph_capture_size"
+        ):
+            return node.lineno
+    return None
+
+
+def state_blocks(source: Path) -> dict[str, Any]:
+    """Where this version needs one state block per decode sequence: the
+    check that refuses ``max_num_seqs`` above the Mamba cache's blocks (None
+    when the version has none) and each runner's minimal profiling KV cache."""
+    path, text = STATE_BLOCK_CHECK
+    line = _raise_line(ast.parse((source / path).read_text()), text)
+    profiling = []
+    for runner in PROFILING_RUNNERS:
+        if (source / runner).exists():
+            at = _profiling_min_blocks(ast.parse((source / runner).read_text()))
+            if at is not None:
+                profiling.append(f"{runner.removeprefix('vllm/')}:{at}")
+    return {
+        "check": f"{path.removeprefix('vllm/')}:{line}" if line else None,
+        "profiling_min_blocks": profiling,
     }
 
 
@@ -337,6 +520,44 @@ def _tokenizer_modes(source: Path) -> dict[str, Any]:
             keys = sorted(str(k.value) for k in value.keys if isinstance(k, ast.Constant))
             return {"modes": keys, "source": f"{path.removeprefix('vllm/')}:{node.lineno}"}
     raise SystemExit(f"{path}: {name} not found — update the index")
+
+
+# The names `--reasoning-parser` / `--tool-call-parser` accept: the keys of the
+# lazy-registration dicts each package registers at import.
+REASONING_PARSERS = ("vllm/reasoning/__init__.py", "_REASONING_PARSERS_TO_REGISTER")
+TOOL_PARSERS = ("vllm/tool_parsers/__init__.py", "_TOOL_PARSERS_TO_REGISTER")
+
+
+def _registry_names(source: Path, index: tuple[str, str]) -> dict[str, Any]:
+    """The string keys of the module-level dict *index* names."""
+    path, name = index
+    for node in ast.parse((source / path).read_text()).body:
+        if isinstance(node, ast.AnnAssign):
+            target, value = node.target, node.value
+        elif isinstance(node, ast.Assign):
+            target, value = node.targets[0], node.value
+        else:
+            continue
+        if isinstance(target, ast.Name) and target.id == name and isinstance(value, ast.Dict):
+            keys = sorted(
+                str(k.value)
+                for k in value.keys
+                if isinstance(k, ast.Constant) and isinstance(k.value, str)
+            )
+            if not keys:
+                break
+            return {"names": keys, "source": f"{path.removeprefix('vllm/')}:{node.lineno}"}
+    raise SystemExit(f"{path}: {name} not found — update the index")
+
+
+def reasoning_parsers(source: Path) -> dict[str, Any]:
+    """Names ``--reasoning-parser`` accepts in this version."""
+    return _registry_names(source, REASONING_PARSERS)
+
+
+def tool_parsers(source: Path) -> dict[str, Any]:
+    """Names ``--tool-call-parser`` accepts in this version."""
+    return _registry_names(source, TOOL_PARSERS)
 
 
 REGISTRY = "vllm/model_executor/models/registry.py"

@@ -230,12 +230,21 @@ def chat_template_kwargs(chat_template: str | None) -> dict[str, Any] | None:
 
     Qwen3-style templates branch on ``enable_thinking``; for them thinking is
     switched off so the deterministic scorer sees the answer, not the
-    reasoning.  Templates that never read the variable get no kwargs, so the
-    request body is exactly what an ordinary client sends.
+    reasoning.  Muse-Glimmer's template always reasons and reads
+    ``reasoning_strength`` (default ``high``; the model card lists low / medium
+    / high / xhigh); it gets ``low``, the suite's minimal reasoning.  vLLM
+    drops a ``reasoning_effort`` request field for it: the field reaches the
+    template only as a variable of that name (chat_completion/protocol.py:
+    585-598, renderers/hf.py:726-737, v0.30.0).  Templates that read neither
+    variable get no kwargs, so the request body is exactly what an ordinary
+    client sends.
     """
+    kwargs: dict[str, Any] = {}
     if chat_template and "enable_thinking" in chat_template:
-        return {"enable_thinking": False}
-    return None
+        kwargs["enable_thinking"] = False
+    if chat_template and "reasoning_strength" in chat_template:
+        kwargs["reasoning_strength"] = "low"
+    return kwargs or None
 
 
 def reasoning_request_fields(chat_template: str | None) -> dict[str, Any] | None:

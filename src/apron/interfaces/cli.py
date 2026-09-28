@@ -361,7 +361,9 @@ def _print_memory_profile(
         ("model_weight_memory", "weight_memory_bytes"),
         ("transient_peak_headroom", "activation_estimate_bytes"),
         ("non_pytorch_increase", "non_pytorch_overhead_bytes"),
-        ("cuda_graph_actual", "cuda_graph_estimate_bytes"),
+        # vLLM subtracts its estimate, not the capture's actual memory; so does
+        # the calculator (calculator.cuda_graph_estimate_bytes).
+        ("cuda_graph_estimate", "cuda_graph_estimate_bytes"),
         ("available_kv_cache_memory", "available_kv_cache_bytes"),
         ("persistent_consumption", "total_required_bytes"),
     ]

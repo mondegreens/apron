@@ -67,9 +67,10 @@ jobs:
           build-args: |
             REQUIREMENTS=${{ steps.reqs.outputs.file }}
           push: true
+          # One tag per vLLM version and no :latest: several versions are
+          # current at once, and Apron pins each by digest (runner_image.py).
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.tag }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
