@@ -43,6 +43,9 @@ logger = logging.getLogger(__name__)
 
 REST_URL = "https://rest.runpod.io/v1"
 VOLUME_NAME_PREFIX = "apron-weights"
+# NetworkVolumeUpdateInput.size "maximum": 4000 in rest.runpod.io/v1/openapi.json
+# (read 2026-09-28, after a resize to 4.9 TB for groups C and D was refused).
+MAX_VOLUME_GB = 4000
 # Standard tier, docs.runpod.io/storage/network-volumes (2026-09-27).
 VOLUME_USD_PER_GB_MONTH = 0.07
 HOURS_PER_MONTH = 730.0
@@ -143,6 +146,11 @@ class RunPodStorage:
 
     def ensure_volume(self, data_center_id: str, size_gb: int) -> dict[str, Any]:
         """Apron's weights volume in *data_center_id*, created or grown to *size_gb*."""
+        if size_gb > MAX_VOLUME_GB:
+            raise ValueError(
+                f"{size_gb} GB exceeds RunPod's {MAX_VOLUME_GB} GB network-volume limit: "
+                "stage fewer models at once, or remove weights no longer needed"
+            )
         name = f"{VOLUME_NAME_PREFIX}-{data_center_id.lower()}"
         for volume in self.list_volumes():
             if volume.get("name") == name and volume.get("dataCenterId") == data_center_id:

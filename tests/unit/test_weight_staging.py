@@ -571,3 +571,16 @@ def test_a_stalled_download_is_restarted_not_waited_on(tmp_path: Path) -> None:
     assert marker.read_text().strip() == "2"  # one stalled attempt, one resumed
     assert "stalled" in done.stdout and "DOWNLOAD_VERIFIED" in done.stdout
     assert (dest / "model.safetensors").exists()
+
+
+def test_a_volume_past_runpods_limit_is_refused_with_a_reason() -> None:
+    """RunPod caps a network volume at 4000 GB; asking for more used to fail as
+    an opaque HTTP 400 from the REST schema validator."""
+    from apron.adapters.backends.runpod_storage import MAX_VOLUME_GB
+
+    storage = RunPodStorage("k")
+    with (
+        patch.object(storage, "_rest", side_effect=AssertionError("no request")),
+        pytest.raises(ValueError, match="4000 GB network-volume limit"),
+    ):
+        storage.ensure_volume("US-CA-2", MAX_VOLUME_GB + 1)
