@@ -166,6 +166,21 @@
       "weights_now": 14496047104
     },
     {
+      "activation_at_run": 792723456,
+      "activation_measured": 1170378588,
+      "activation_now": 1088421888,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+      "profiled_tokens": 8192,
+      "record": "12208228a1874270fa2f9bdb214d951c18ce192291b5a384edc2fb7dc73a3f325225",
+      "tensor_parallel": 1,
+      "vllm": "v0.30.0",
+      "weights_at_run": 63155880576,
+      "weights_measured": 63264868270,
+      "weights_now": 63155880320
+    },
+    {
       "activation_at_run": 1084227584,
       "activation_measured": 2061584302,
       "activation_now": 2013265920,
@@ -359,6 +374,21 @@
       "weights_at_run": 65524246528,
       "weights_measured": 65530463518,
       "weights_now": 65524246528
+    },
+    {
+      "activation_at_run": 2013265920,
+      "activation_measured": 2061584302,
+      "activation_now": 2013265920,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3.8-27B",
+      "profiled_tokens": 8192,
+      "record": "1220f20079fa79b1a0a51f6320c035b4a744f80896d23157ac9754195fac1dd1df30",
+      "tensor_parallel": 1,
+      "vllm": "v0.30.0",
+      "weights_at_run": 54713457120,
+      "weights_measured": 54868207206,
+      "weights_now": 54713457120
     }
   ],
   "cost": {
@@ -366,13 +396,13 @@
     "failed_boot_total": 6.659765,
     "ledger_classifier": 0.193358,
     "ledger_corrected": -0.174899,
-    "ledger_pod_idle": 0.232904,
+    "ledger_pod_idle": 0.233777,
     "ledger_probe": 1.397938,
     "ledger_reconciled": 0.650187,
-    "ledger_settled": 14.352689,
-    "ledger_spent": 23.600531,
-    "ledger_staging": 1.878584,
-    "ledger_storage": 5.06977,
+    "ledger_settled": 15.336207,
+    "ledger_spent": 25.596287,
+    "ledger_staging": 1.908675,
+    "ledger_storage": 6.051044,
     "per_solution": [
       {
         "cost": 1.392902,
@@ -754,6 +784,23 @@
         "vllm": "v0.29.0"
       },
       {
+        "cost": 0.539107,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1",
+        "model": "Qwen/Qwen3.8-27B",
+        "records": [
+          "1220446b680c5d23797b59f3564f2fe383b27d5e14555fde471917567170b14539fd",
+          "12206d89ea1ec7babefd93e604cefe6fbb51e30f1c404c8906ddb9d9f3365a3afc42",
+          "12207ec2d71b17a00b1b5e07b2c27a8e989306fe09369df05675f477b460ee1ed167",
+          "1220ecab45b6f28ee4d0a2dc177ef9311b56d20e1d0cf1e42c699eff2a6ec25a3033",
+          "1220f20079fa79b1a0a51f6320c035b4a744f80896d23157ac9754195fac1dd1df30"
+        ],
+        "vllm": "v0.30.0"
+      },
+      {
         "cost": 0.249715,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -898,6 +945,23 @@
         "vllm": "v0.30.0"
       },
       {
+        "cost": 0.258294,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1",
+        "model": "meta-models/Muse-Glimmer-30B",
+        "records": [
+          "12205285c266fbeab15a2d9e78282fed4b26a281d53b3f67d042e7e3df418155b1cf",
+          "122053c7f33fb74fde2a7ecf22faf82e93c542d78b4130fd83fd4816b53f7a3b9443",
+          "12209429b65ae390a8032a606b1f7196d1792f1de29ea61ef0c0017a40b4dbdfaf50",
+          "1220b9feee0aa38439d8c35ef1ae31a458cf7eb95c6d896ce4692167bd195f40ae2d",
+          "1220bf6b162c43180f199a86f397319a5b06d51e8e2f7f8f8bd482b22e8258b3b1ed"
+        ],
+        "vllm": "v0.30.0"
+      },
+      {
         "cost": 0.142191,
         "failed_boot_cost": 0.004076,
         "failed_boots": 2,
@@ -971,6 +1035,23 @@
           "1220f42f4f523a5a979b719998a96fd13d31b7233f1655e1b759518a699d6957d500"
         ],
         "vllm": "v0.29.0"
+      },
+      {
+        "cost": 0.186116,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "label": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16@NVIDIA H100 80GB HBM3x1",
+        "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+        "records": [
+          "12200c4a135f78a6207e67fa822d95116513063d1460c70c2f767a5e4cb6c645bd69",
+          "122021a7038d14bc34b741dc419cda1be78c3c96e6fc96a4af8f8f1c5dbcbf90d301",
+          "12208228a1874270fa2f9bdb214d951c18ce192291b5a384edc2fb7dc73a3f325225",
+          "1220d835d0df49343ddfb339873077e8c71898cab265064963113e233049f2d61168",
+          "1220ebba4ee2987202c2e7f719501c633f4adad25e260967c901e9d46ca8d258961a"
+        ],
+        "vllm": "v0.30.0"
       },
       {
         "cost": 0.12278,
@@ -1062,7 +1143,7 @@
     "provider_not_yet_billed": [
       "f9vbojnauynvah"
     ],
-    "records_total": 13.48791
+    "records_total": 14.471427
   },
   "failed_spend": [
     {
@@ -1558,6 +1639,24 @@
       "weight_delta_bytes": 700606837
     },
     {
+      "claim": "12209b6a0bdfcc7938bc022e32b874f5ffdbb55deb9436a3fef7c662d043a078694f",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 324064519,
+      "measured_persistent_bytes": 55823837429,
+      "measured_weight_bytes": 54868207206,
+      "model": "Qwen/Qwen3.8-27B",
+      "notes": [
+        "max_num_seqs 275: vLLM v0.30.0 defaults to 1024 on this GPU, engine/arg_utils.py:2740, but a state (Mamba) cache serves one decode sequence per KV block and the predicted 15.37 GiB of KV memory holds 321 blocks of 51,380,224 bytes, 275 after a 2.19 GiB safety buffer (the largest KV-budget error measured over the cohort's healthy boots, 2.19 GiB); vLLM refuses more sequences than blocks with full CUDA graphs and allocates one block per sequence to profile them (config/compilation.py:1535, v1/worker/gpu_model_runner.py:6550, v1/worker/gpu/cudagraph_utils.py:974)"
+      ],
+      "predicted_total_bytes": 60128334176,
+      "predicted_weight_bytes": 54713457120,
+      "record": "1220f20079fa79b1a0a51f6320c035b4a744f80896d23157ac9754195fac1dd1df30",
+      "total_delta_bytes": 4304496747,
+      "vllm": "v0.30.0",
+      "weight_delta_bytes": -154750086
+    },
+    {
       "claim": "122001a3fa3351e82534d27e6861f214efdd19163876827b8677cf9bb75ba6057031",
       "gpu": "NVIDIA A100 80GB PCIe",
       "gpu_count": 1,
@@ -1670,6 +1769,22 @@
       "weight_delta_bytes": -393752657
     },
     {
+      "claim": "1220a11f278df39584c429946da815e2f121dce902a1218cd457b8ea5956220f552c",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 485210277,
+      "measured_persistent_bytes": 61353607823,
+      "measured_weight_bytes": 59947006033,
+      "model": "meta-models/Muse-Glimmer-30B",
+      "notes": [],
+      "predicted_total_bytes": 64368982016,
+      "predicted_weight_bytes": 59553253376,
+      "record": "1220bf6b162c43180f199a86f397319a5b06d51e8e2f7f8f8bd482b22e8258b3b1ed",
+      "total_delta_bytes": 3015374193,
+      "vllm": "v0.30.0",
+      "weight_delta_bytes": -393752657
+    },
+    {
       "claim": "12204247fcb7178fe59f2c000d0b9c5f6e6785c136062a0626661836290831b2e35a",
       "gpu": "NVIDIA GeForce RTX 4090",
       "gpu_count": 1,
@@ -1716,6 +1831,24 @@
       "total_delta_bytes": 2956832492,
       "vllm": "v0.29.0",
       "weight_delta_bytes": -10204938
+    },
+    {
+      "claim": "1220473d945829dbe7c8312a09c1020ec14afefd518d7ed9bc05e2155dfc17b8d396",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 770575090,
+      "measured_persistent_bytes": 65079491952,
+      "measured_weight_bytes": 63264868270,
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+      "notes": [
+        "max_num_seqs 556: vLLM v0.30.0 defaults to 1024 on this GPU, engine/arg_utils.py:2740, but a state (Mamba) cache serves one decode sequence per KV block and the predicted 9.51 GiB of KV memory holds 793 blocks of 12,877,824 bytes, 556 after a 2.85 GiB safety buffer (the largest KV-budget error measured over the cohort's healthy boots, 2.19 GiB, plus a 0.66 GiB compile segment vLLM may hold); vLLM refuses more sequences than blocks with full CUDA graphs and allocates one block per sequence to profile them (config/compilation.py:1535, v1/worker/gpu_model_runner.py:6550, v1/worker/gpu/cudagraph_utils.py:974)"
+      ],
+      "predicted_total_bytes": 66502144640,
+      "predicted_weight_bytes": 63155880576,
+      "record": "12208228a1874270fa2f9bdb214d951c18ce192291b5a384edc2fb7dc73a3f325225",
+      "total_delta_bytes": 1422652688,
+      "vllm": "v0.30.0",
+      "weight_delta_bytes": -108987694
     },
     {
       "claim": "1220d80c36171d676dc889011fbb30153db20bcd4d6678c7aa42f089c03fe6a0fa18",
@@ -1866,7 +1999,7 @@
         "weight_gib_per_gpu": 55.46
       },
       "cases": 3,
-      "cost": 0.212,
+      "cost": 0.4703,
       "downloads_30d": 286662,
       "gpu": "NVIDIA H100 80GB HBM3",
       "gpu_count": 1,
@@ -1876,7 +2009,7 @@
       "params_b": 29.6,
       "predicted_weight_bytes": 59553253376,
       "records": [
-        "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c"
+        "1220bf6b162c43180f199a86f397319a5b06d51e8e2f7f8f8bd482b22e8258b3b1ed"
       ],
       "status": "booted",
       "vllm": "v0.30.0"
@@ -1907,7 +2040,7 @@
       "vllm": "v0.29.0"
     },
     {
-      "accepted": null,
+      "accepted": 3,
       "before_gpu": {
         "mechanism": "layered_decode",
         "status": "planned",
@@ -1915,21 +2048,22 @@
         "total_gib_per_gpu": 56.0,
         "weight_gib_per_gpu": 50.96
       },
-      "cases": null,
-      "cost": 0.3747,
+      "cases": 3,
+      "cost": 0.9138,
       "downloads_30d": 6727629,
       "gpu": "NVIDIA H100 80GB HBM3",
       "gpu_count": 1,
       "group": "B",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 54868207206,
       "model": "Qwen/Qwen3.8-27B",
       "params_b": 27.8,
-      "predicted_weight_bytes": null,
+      "predicted_weight_bytes": 54713457120,
       "records": [
-        "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc"
+        "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc",
+        "1220f20079fa79b1a0a51f6320c035b4a744f80896d23157ac9754195fac1dd1df30"
       ],
-      "status": "failed",
-      "vllm": "v0.29.0"
+      "status": "booted",
+      "vllm": "v0.30.0"
     },
     {
       "accepted": 3,
@@ -1958,7 +2092,7 @@
       "vllm": "v0.30.0"
     },
     {
-      "accepted": null,
+      "accepted": 3,
       "before_gpu": {
         "mechanism": "layered_decode",
         "status": "planned",
@@ -1966,20 +2100,21 @@
         "total_gib_per_gpu": 61.93,
         "weight_gib_per_gpu": 58.82
       },
-      "cases": null,
-      "cost": 0.1228,
+      "cases": 3,
+      "cost": 0.3089,
       "downloads_30d": 462733,
       "gpu": "NVIDIA H100 80GB HBM3",
       "gpu_count": 1,
       "group": "B",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 63264868270,
       "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
       "params_b": 31.6,
-      "predicted_weight_bytes": null,
+      "predicted_weight_bytes": 63155880576,
       "records": [
+        "12208228a1874270fa2f9bdb214d951c18ce192291b5a384edc2fb7dc73a3f325225",
         "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
       ],
-      "status": "failed",
+      "status": "booted",
       "vllm": "v0.30.0"
     },
     {
@@ -2164,7 +2299,7 @@
       "vllm": "v0.29.0"
     }
   ],
-  "record_count": 266,
+  "record_count": 283,
   "records_table": {
     "broken_on_purpose": {
       "boots": 8,
@@ -2287,7 +2422,7 @@
         "vllm": null
       }
     ],
-    "record_count": 266,
+    "record_count": 283,
     "rows": [
       {
         "accepted": 0,
@@ -2523,11 +2658,11 @@
         "vllm": "v0.29.0"
       },
       {
-        "accepted": 0,
+        "accepted": 3,
         "boot": "booted",
         "cases": 3,
-        "cold_start_seconds": 156.4,
-        "cost": 0.211968,
+        "cold_start_seconds": 206.8,
+        "cost": 0.470262,
         "error": null,
         "failed_boots": 0,
         "failure": null,
@@ -2537,20 +2672,25 @@
         "measured_peak_bytes": 1964947537,
         "measured_weight_bytes": 59947006033,
         "model": "meta-models/Muse-Glimmer-30B",
-        "p99_ttft_ms": 185.09713247418404,
-        "predicted_peak_bytes": 2907766784,
+        "p99_ttft_ms": 175.0097244605422,
+        "predicted_peak_bytes": 1908277248,
         "predicted_weight_bytes": 59553253376,
-        "record": "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
+        "record": "1220bf6b162c43180f199a86f397319a5b06d51e8e2f7f8f8bd482b22e8258b3b1ed",
         "records": [
           "12200349a8c7fb9e7d09c507d10be75323fb9bec456b6dbea00e44e2371d0bfbbaed",
           "122019a9e31626f29a4c1d4525c324a4a6a4c809a0f5c3b095c38323f2e9b161428b",
+          "12205285c266fbeab15a2d9e78282fed4b26a281d53b3f67d042e7e3df418155b1cf",
+          "122053c7f33fb74fde2a7ecf22faf82e93c542d78b4130fd83fd4816b53f7a3b9443",
           "12206d543bd95f7e97eb237181e5edd75c3e9ab42be7274b32f2e45a2121911faa53",
+          "12209429b65ae390a8032a606b1f7196d1792f1de29ea61ef0c0017a40b4dbdfaf50",
           "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
-          "1220abba11b486e2ce47648e40f5db2b35545f5312e9b60f2c9917e70f171080a3db"
+          "1220abba11b486e2ce47648e40f5db2b35545f5312e9b60f2c9917e70f171080a3db",
+          "1220b9feee0aa38439d8c35ef1ae31a458cf7eb95c6d896ce4692167bd195f40ae2d",
+          "1220bf6b162c43180f199a86f397319a5b06d51e8e2f7f8f8bd482b22e8258b3b1ed"
         ],
         "slo_p99_ttft_ms": 2000.0,
         "slo_verdict": "pass",
-        "tasks_passed": false,
+        "tasks_passed": true,
         "vllm": "v0.30.0"
       },
       {
@@ -2632,30 +2772,35 @@
         "vllm": "v0.29.0"
       },
       {
-        "accepted": null,
-        "boot": "failed",
-        "cases": null,
-        "cold_start_seconds": null,
-        "cost": 0.12278,
-        "error": "ValueError: max_num_seqs (1024) exceeds available Mamba cache blocks (733). Each decode sequence requires one…",
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": 165.6,
+        "cost": 0.308896,
+        "error": null,
         "failed_boots": 1,
-        "failure": "the model",
+        "failure": null,
         "gpu": "NVIDIA H100 80GB HBM3",
         "gpu_count": 1,
-        "kv_cache_tokens": null,
-        "measured_peak_bytes": null,
-        "measured_weight_bytes": null,
+        "kv_cache_tokens": 53546,
+        "measured_peak_bytes": 1170378588,
+        "measured_weight_bytes": 63264868270,
         "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
-        "p99_ttft_ms": null,
+        "p99_ttft_ms": 614.9565456993878,
         "predicted_peak_bytes": 792723456,
-        "predicted_weight_bytes": 65826532480,
-        "record": "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6",
+        "predicted_weight_bytes": 63155880576,
+        "record": "12208228a1874270fa2f9bdb214d951c18ce192291b5a384edc2fb7dc73a3f325225",
         "records": [
-          "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
+          "12200c4a135f78a6207e67fa822d95116513063d1460c70c2f767a5e4cb6c645bd69",
+          "122021a7038d14bc34b741dc419cda1be78c3c96e6fc96a4af8f8f1c5dbcbf90d301",
+          "12208228a1874270fa2f9bdb214d951c18ce192291b5a384edc2fb7dc73a3f325225",
+          "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6",
+          "1220d835d0df49343ddfb339873077e8c71898cab265064963113e233049f2d61168",
+          "1220ebba4ee2987202c2e7f719501c633f4adad25e260967c901e9d46ca8d258961a"
         ],
-        "slo_p99_ttft_ms": null,
-        "slo_verdict": null,
-        "tasks_passed": null,
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
         "vllm": "v0.30.0"
       },
       {
@@ -3154,6 +3299,37 @@
         "vllm": "v0.29.0"
       },
       {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": 227.5,
+        "cost": 0.539107,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": 31085,
+        "measured_peak_bytes": 2061584302,
+        "measured_weight_bytes": 54868207206,
+        "model": "Qwen/Qwen3.8-27B",
+        "p99_ttft_ms": 191.1616012826562,
+        "predicted_peak_bytes": 2013265920,
+        "predicted_weight_bytes": 54713457120,
+        "record": "1220f20079fa79b1a0a51f6320c035b4a744f80896d23157ac9754195fac1dd1df30",
+        "records": [
+          "1220446b680c5d23797b59f3564f2fe383b27d5e14555fde471917567170b14539fd",
+          "12206d89ea1ec7babefd93e604cefe6fbb51e30f1c404c8906ddb9d9f3365a3afc42",
+          "12207ec2d71b17a00b1b5e07b2c27a8e989306fe09369df05675f477b460ee1ed167",
+          "1220ecab45b6f28ee4d0a2dc177ef9311b56d20e1d0cf1e42c699eff2a6ec25a3033",
+          "1220f20079fa79b1a0a51f6320c035b4a744f80896d23157ac9754195fac1dd1df30"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.30.0"
+      },
+      {
         "accepted": 0,
         "boot": "booted",
         "cases": 3,
@@ -3454,6 +3630,21 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3.8-27B",
+      "output_token_throughput": 170.47481809700645,
+      "p99_tpot_ms": 21.82953065305244,
+      "p99_ttft_ms": 191.1616012826562,
+      "recomputed_verdict": "pass",
+      "record": "1220446b680c5d23797b59f3564f2fe383b27d5e14555fde471917567170b14539fd",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass",
+      "vllm": "v0.30.0"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA A100 80GB PCIe",
       "model": "deepseek-ai/DeepSeek-V2-Lite",
       "output_token_throughput": 316.3572444177437,
@@ -3559,6 +3750,21 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "meta-models/Muse-Glimmer-30B",
+      "output_token_throughput": 169.81354724036692,
+      "p99_tpot_ms": 22.361746755993273,
+      "p99_ttft_ms": 175.0097244605422,
+      "recomputed_verdict": "pass",
+      "record": "1220b9feee0aa38439d8c35ef1ae31a458cf7eb95c6d896ce4692167bd195f40ae2d",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass",
+      "vllm": "v0.30.0"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA GeForce RTX 4090",
       "model": "mistralai/Mistral-7B-Instruct-v0.3",
       "output_token_throughput": 216.96382632852473,
@@ -3600,6 +3806,21 @@
       "slo_p99_ttft_ms": 2000.0,
       "verdict": "pass",
       "vllm": "v0.29.0"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+      "output_token_throughput": 559.0216092252182,
+      "p99_tpot_ms": 6.340478973859173,
+      "p99_ttft_ms": 614.9565456993878,
+      "recomputed_verdict": "pass",
+      "record": "12200c4a135f78a6207e67fa822d95116513063d1460c70c2f767a5e4cb6c645bd69",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass",
+      "vllm": "v0.30.0"
     },
     {
       "completed": 50,
@@ -3680,7 +3901,7 @@
       "sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-28T08:33:14.321924+00:00",
+    "last_event": "2026-09-28T14:28:29.674655+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B",
@@ -3691,6 +3912,7 @@
       "Qwen/Qwen3-8B",
       "Qwen/Qwen3-8B-AWQ",
       "Qwen/Qwen3.6-35B-A3B-FP8",
+      "Qwen/Qwen3.8-27B",
       "deepseek-ai/DeepSeek-V2-Lite",
       "deepseek-ai/DeepSeek-V2-Lite-Chat",
       "google/gemma-2-2b-it",
@@ -3698,6 +3920,7 @@
       "meta-llama/Llama-3.1-8B-Instruct",
       "meta-models/Muse-Glimmer-30B",
       "mistralai/Mistral-7B-Instruct-v0.3",
+      "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
       "openai/gpt-oss-120b",
       "state-spaces/mamba-2.8b-hf",
       "zai-org/GLM-4.7-Flash"
@@ -3735,6 +3958,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -3755,6 +3979,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -3775,6 +4000,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 1,
       "vllm": "v0.29.0"
     },
@@ -3795,6 +4021,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 1,
       "vllm": "v0.29.0"
     },
@@ -3814,6 +4041,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 1,
       "vllm": "v0.29.0"
     },
@@ -3834,6 +4062,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 1,
       "vllm": "v0.29.0"
     },
@@ -3856,6 +4085,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -3879,6 +4109,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -3898,6 +4129,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -3918,6 +4150,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -3937,6 +4170,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -3957,6 +4191,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -3976,6 +4211,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -3996,6 +4232,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4015,6 +4252,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4035,6 +4273,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4054,6 +4293,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4074,6 +4314,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4093,6 +4334,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4113,6 +4355,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4133,6 +4376,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4153,6 +4397,28 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
+      "truncated": 0,
+      "vllm": "v0.30.0"
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3.8-27B",
+      "passed": true,
+      "records": [
+        "12206d89ea1ec7babefd93e604cefe6fbb51e30f1c404c8906ddb9d9f3365a3afc42",
+        "12207ec2d71b17a00b1b5e07b2c27a8e989306fe09369df05675f477b460ee1ed167",
+        "1220ecab45b6f28ee4d0a2dc177ef9311b56d20e1d0cf1e42c699eff2a6ec25a3033"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.30.0"
     },
@@ -4172,6 +4438,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 3,
       "vllm": "v0.29.0"
     },
@@ -4192,6 +4459,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 3,
       "vllm": "v0.29.0"
     },
@@ -4212,6 +4480,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4231,6 +4500,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4251,6 +4521,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4270,6 +4541,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4290,6 +4562,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4310,6 +4583,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4329,6 +4603,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4349,6 +4624,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4369,6 +4645,28 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
+      "truncated": 0,
+      "vllm": "v0.30.0"
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "meta-models/Muse-Glimmer-30B",
+      "passed": true,
+      "records": [
+        "12205285c266fbeab15a2d9e78282fed4b26a281d53b3f67d042e7e3df418155b1cf",
+        "122053c7f33fb74fde2a7ecf22faf82e93c542d78b4130fd83fd4816b53f7a3b9443",
+        "12209429b65ae390a8032a606b1f7196d1792f1de29ea61ef0c0017a40b4dbdfaf50"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.30.0"
     },
@@ -4388,6 +4686,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4408,6 +4707,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4427,6 +4727,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4447,6 +4748,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4466,6 +4768,7 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4486,8 +4789,30 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+      "passed": true,
+      "records": [
+        "122021a7038d14bc34b741dc419cda1be78c3c96e6fc96a4af8f8f1c5dbcbf90d301",
+        "1220d835d0df49343ddfb339873077e8c71898cab265064963113e233049f2d61168",
+        "1220ebba4ee2987202c2e7f719501c633f4adad25e260967c901e9d46ca8d258961a"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "skipped": 0,
+      "truncated": 0,
+      "vllm": "v0.30.0"
     },
     {
       "accepted": 3,
@@ -4506,6 +4831,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4526,6 +4852,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4549,6 +4876,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     },
@@ -4569,6 +4897,7 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
+      "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
     }
@@ -4583,6 +4912,17 @@
       "record": "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
       "vllm": "v0.30.0",
       "weights_seconds": 1.4,
+      "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
+    },
+    {
+      "engine_start_seconds": 196.8,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "hourly_rate": 3.49,
+      "model": "Qwen/Qwen3.8-27B",
+      "pod_seconds": 556.1002209186554,
+      "record": "1220f20079fa79b1a0a51f6320c035b4a744f80896d23157ac9754195fac1dd1df30",
+      "vllm": "v0.30.0",
+      "weights_seconds": 30.7,
       "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
     },
     {
@@ -4605,6 +4945,28 @@
       "record": "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
       "vllm": "v0.30.0",
       "weights_seconds": 0.8,
+      "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
+    },
+    {
+      "engine_start_seconds": 176.1,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "hourly_rate": 3.49,
+      "model": "meta-models/Muse-Glimmer-30B",
+      "pod_seconds": 266.43378615379333,
+      "record": "1220bf6b162c43180f199a86f397319a5b06d51e8e2f7f8f8bd482b22e8258b3b1ed",
+      "vllm": "v0.30.0",
+      "weights_seconds": 30.7,
+      "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
+    },
+    {
+      "engine_start_seconds": 134.9,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "hourly_rate": 3.49,
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+      "pod_seconds": 191.982990026474,
+      "record": "12208228a1874270fa2f9bdb214d951c18ce192291b5a384edc2fb7dc73a3f325225",
+      "vllm": "v0.30.0",
+      "weights_seconds": 30.7,
       "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
     },
     {

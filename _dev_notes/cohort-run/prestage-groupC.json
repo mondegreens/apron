@@ -1,14 +1,14 @@
 {
   "site": {
     "data_center_id": "US-CA-2",
-    "size_gb": 2050,
+    "size_gb": 3358,
     "volume_id": "7jiuum2nk6"
   },
   "staging": {
-    "cost": 1.033533,
-    "error": "RemoteCommandTimeout: remote command did not finish in 14520s: mkdir -p /runpod-volume/models/zai-org/GLM-5.3-Flash && env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN /opt/venv/bin/python3 ",
+    "cost": 0.000708,
+    "error": "RuntimeError: no longer any instances available for a CPU stager in US-CA-2: ['cpu3cx8', 'cpu3cx4', 'cpu3cx2', 'cpu5cx8', 'cpu5cx4', 'cpu5cx2', 'cpu3gx8', 'cpu3gx4', 'cpu3gx2', 'cpu5gx8', 'cpu5gx4', 'cpu5gx2']",
     "models": [],
-    "pod_id": "nnzli0ens2mc88",
-    "seconds": 15505.9
+    "pod_id": null,
+    "seconds": 8.5
   }
 }

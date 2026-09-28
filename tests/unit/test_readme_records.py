@@ -102,7 +102,9 @@ def test_rows_equal_the_reports(synthetic: CohortRun) -> None:
         assert row["measured_weight_bytes"] == report.model_weight_memory
         assert row["measured_peak_bytes"] == report.transient_peak_headroom
         assert row["kv_cache_tokens"] == report.kv_cache_tokens
-        claim = next(c for c in rec.claims.values() if c.solution_fingerprint == entry.solution_fingerprint)
+        claim = next(
+            c for c in rec.claims.values() if c.solution_fingerprint == entry.solution_fingerprint
+        )
         assert row["predicted_weight_bytes"] == claim.proposed_configuration["weight_memory_bytes"]
         assert row["predicted_peak_bytes"] == claim.proposed_configuration.get(
             "activation_estimate_bytes"
@@ -157,17 +159,13 @@ def test_a_failed_boot_is_a_row_with_its_error(synthetic: CohortRun) -> None:
         reports={**rec.reports, "1220" + "e" * 64: failed},
         solutions={**rec.solutions, sfp: failing},
     )
-    table = build_findings(replace(synthetic, records=records), authorized=100.0)[
-        "records_table"
-    ]
+    table = build_findings(replace(synthetic, records=records), authorized=100.0)["records_table"]
     row = next(r for r in table["rows"] if r["model"] == "acme/Failing-7B")
     assert row["boot"] == "failed" and row["failure"] == "the model"
     assert row["error"] == "ValueError: max_num_seqs (1024) exceeds available cache blocks"
     assert row["measured_weight_bytes"] is None and row["kv_cache_tokens"] is None
     assert row["vllm"] == engine_version(entry.requested_execution.image_digest, None)
-    text = render_readme(
-        {"records_table": table}, reports_href="records", fixes_href="post.md"
-    )
+    text = render_readme({"records_table": table}, reports_href="records", fixes_href="post.md")
     assert "failed: model error" in text
     assert "`ValueError: max_num_seqs (1024) exceeds available cache blocks`" in text
     assert digest  # the healthy boot it was copied from is still its own row
@@ -179,9 +177,7 @@ def test_a_record_without_a_solution_is_listed_not_dropped(synthetic: CohortRun)
     orphan = healthy.model_copy(update={"solution_fingerprint": "1220" + "a" * 64})
     orphan_digest = "1220" + "b" * 64
     records = replace(rec, reports={**rec.reports, orphan_digest: orphan})
-    table = build_findings(replace(synthetic, records=records), authorized=100.0)[
-        "records_table"
-    ]
+    table = build_findings(replace(synthetic, records=records), authorized=100.0)["records_table"]
     assert table["not_rendered"] == [orphan_digest]
     text = render_readme({"records_table": table}, reports_href="r", fixes_href="p.md")
     assert f"`{orphan_digest[:16]}`" in text and "Not rendered" in text
