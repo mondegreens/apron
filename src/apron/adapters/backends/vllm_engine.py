@@ -175,6 +175,57 @@ _DOWNLOAD_PY = (
 )
 
 
+# A download that stops growing is restarted rather than waited on until the
+# overall deadline: staging group C (2026-09-28) finished GLM-5.3-Flash's 328 GB
+# and then held the command open for four hours (the 14,520 s deadline) with
+# nothing left to fetch.  snapshot_download resumes, so a restart only
+# re-checks what is on disk.
+DOWNLOAD_STALL_SECONDS = 600
+DOWNLOAD_ATTEMPTS = 5
+DOWNLOAD_LOG = "/tmp/apron-download.log"
+
+
+def download_command(
+    model_id: str,
+    dest: str,
+    *,
+    python: str = "/opt/venv/bin/python3",
+    stall_seconds: int = DOWNLOAD_STALL_SECONDS,
+    attempts: int = DOWNLOAD_ATTEMPTS,
+    poll_seconds: int = 30,
+    log: str = DOWNLOAD_LOG,
+) -> str:
+    """The staging download, run with a stall watchdog.
+
+    Each attempt runs the download in the background and polls the size of
+    *dest* every *poll_seconds*; if it has not grown for *stall_seconds* the
+    attempt is killed and the next one resumes.  The token is read from the
+    token file by the script, never passed on the command line.
+    """
+    q = shlex.quote
+    run = (
+        f"env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN {q(python)} -c {q(_DOWNLOAD_PY)} "
+        f"{q(model_id)} {q(dest)} >> {q(log)} 2>&1 &"
+    )
+    watchdog = (
+        f"pid=$!; last=-1; still=0; "
+        f"while kill -0 $pid 2>/dev/null; do sleep {poll_seconds}; "
+        f"now=$(du -sb {q(dest)} 2>/dev/null | cut -f1); "
+        'if [ "$now" = "$last" ]; then still=$((still+' + str(poll_seconds) + ")); "
+        'else still=0; last="$now"; fi; '
+        f"if [ $still -ge {stall_seconds} ]; then "
+        f'echo "stalled ${{still}}s: restarting (attempt $a)" >> {q(log)}; '
+        "kill $pid 2>/dev/null; sleep 5; kill -9 $pid 2>/dev/null; break; fi; done; "
+        "wait $pid; rc=$?"
+    )
+    return (
+        f"mkdir -p {q(dest)} && : > {q(log)}; rc=1; "
+        f"for a in $(seq 1 {attempts}); do {run} {watchdog}; "
+        '[ "$rc" -eq 0 ] && break; done; '
+        f"tail -20 {q(log)}; exit $rc"
+    )
+
+
 @dataclass(frozen=True)
 class BootResult:
     """Outcome of one vLLM boot from a rendered plan."""
@@ -502,14 +553,7 @@ class VllmEngineAdapter:
 
     def download_weights(self, target: Any, model_id: str, timeout: int = 3600) -> dict[str, Any]:
         """Fetch weights in a separate step — the only one that reads the token."""
-        dest = self.model_dir(model_id)
-        script = shlex.quote(_DOWNLOAD_PY)
-        command = (
-            f"mkdir -p {shlex.quote(dest)} && "
-            f"env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN /opt/venv/bin/python3 -c {script} "
-            f"{shlex.quote(model_id)} {shlex.quote(dest)} > /tmp/apron-download.log 2>&1; "
-            "rc=$?; tail -20 /tmp/apron-download.log; exit $rc"
-        )
+        command = download_command(model_id, self.model_dir(model_id))
         start = time.monotonic()
         result = target.execute(command, timeout=timeout + 120)
         return {

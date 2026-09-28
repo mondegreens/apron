@@ -342,3 +342,21 @@
 {"amount": 0.0, "at": "2026-09-28T02:43:19.881757+00:00", "label": "probe:peak:Qwen/Qwen3.6-35B-A3B-FP8,meta-models/Muse-Glimmer-30B", "op": "annotate", "pod_id": "b2cxgxzq5opvxj"}
 {"amount": 0.646619, "at": "2026-09-28T02:50:21.010121+00:00", "estimate": 2.792, "label": "probe:peak:Qwen/Qwen3.6-35B-A3B-FP8,meta-models/Muse-Glimmer-30B", "op": "settle"}
 {"amount": 0.064537, "at": "2026-09-28T03:37:44.726681+00:00", "label": "storage-rate:correct:7jiuum2nk6", "op": "correct", "source": "RunPod console 2026-09-28: US-CA-2 high-performance volume $67.20/mo for 480 GB ($0.14/GB-mo); earlier accruals used $0.07"}
+{"amount": 0.2256, "at": "2026-09-28T03:41:23.538204+00:00", "label": "stage:Qwen/Qwen3.8-27B,meta-models/Muse-Glimmer-30B,nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-28T03:47:03.244637+00:00", "label": "stage:Qwen/Qwen3.8-27B,meta-models/Muse-Glimmer-30B,nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16", "op": "annotate", "pod_id": "txxu8odogbzs18"}
+{"amount": 0.011367, "at": "2026-09-28T03:47:07.898288+00:00", "estimate": 0.2256, "label": "stage:Qwen/Qwen3.8-27B,meta-models/Muse-Glimmer-30B,nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16", "op": "settle"}
+{"amount": 3.9127, "at": "2026-09-28T03:47:08.455790+00:00", "label": "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-28T03:51:16.360507+00:00", "label": "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1", "op": "annotate", "pod_id": "uv3q4ny9qmnsiz"}
+{"amount": 0.581667, "at": "2026-09-28T03:53:27.482095+00:00", "label": "pod-idle:uv3q4ny9qmnsiz", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-28T03:53:27.482875+00:00", "label": "pod-idle:uv3q4ny9qmnsiz", "op": "annotate", "pod_id": "uv3q4ny9qmnsiz"}
+{"amount": 0.000481, "at": "2026-09-28T03:53:27.979208+00:00", "estimate": 0.581667, "label": "pod-idle:uv3q4ny9qmnsiz", "op": "settle"}
+{"amount": 0.188336, "at": "2026-09-28T03:53:27.980684+00:00", "label": "storage:7jiuum2nk6:480GB:2.046h", "op": "spend"}
+{"amount": 0.365481, "at": "2026-09-28T03:54:30+00:00", "estimate": 3.9127, "flag": "interrupted_by_owner_stop:uv3q4ny9qmnsiz:377s_at_3.49_per_h", "label": "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1", "op": "settle"}
+{"amount": 0.003474, "at": "2026-09-28T03:55:43.850417+00:00", "label": "storage:7jiuum2nk6:480GB:0.038h", "op": "spend"}
+{"amount": 0.966, "at": "2026-09-28T03:55:45.232464+00:00", "label": "stage:zai-org/GLM-5.3-Flash,deepseek-ai/DeepSeek-V4.1-Flash,Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-28T03:56:40.607515+00:00", "label": "stage:zai-org/GLM-5.3-Flash,deepseek-ai/DeepSeek-V4.1-Flash,Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731", "op": "annotate", "pod_id": "nnzli0ens2mc88"}
+{"amount": 1.033533, "at": "2026-09-28T08:14:11.184361+00:00", "estimate": 0.966, "label": "stage:zai-org/GLM-5.3-Flash,deepseek-ai/DeepSeek-V4.1-Flash,Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731", "op": "settle"}
+{"amount": 1.697049, "at": "2026-09-28T08:14:43.376588+00:00", "label": "storage:7jiuum2nk6:2050GB:4.317h", "op": "spend"}
+{"amount": 1.6766, "at": "2026-09-28T08:14:44.652088+00:00", "label": "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-28T08:20:03.541322+00:00", "label": "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3", "op": "annotate", "pod_id": "ia4lxog3zt7yvq"}
+{"amount": 0.03, "at": "2026-09-28T08:22:30+00:00", "estimate": 1.6766, "flag": "stopped_to_fix_download_hang:ia4lxog3zt7yvq:~450s_at_0.24_per_h", "label": "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3", "op": "settle"}

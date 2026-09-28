@@ -342,13 +342,13 @@
     "failed_boot_total": 6.659765,
     "ledger_classifier": 0.193358,
     "ledger_corrected": -0.174899,
-    "ledger_pod_idle": 0.232423,
+    "ledger_pod_idle": 0.232904,
     "ledger_probe": 1.397938,
     "ledger_reconciled": 0.650187,
-    "ledger_settled": 13.987208,
-    "ledger_spent": 16.671499,
-    "ledger_staging": 0.285668,
-    "ledger_storage": 0.099616,
+    "ledger_settled": 14.352689,
+    "ledger_spent": 20.00122,
+    "ledger_staging": 1.360568,
+    "ledger_storage": 1.988475,
     "per_solution": [
       {
         "cost": 1.392902,
@@ -1968,11 +1968,11 @@
     {
       "accepted": null,
       "before_gpu": {
-        "mechanism": "unknown",
-        "status": "unknown",
+        "mechanism": "layered_decode",
+        "status": "planned",
         "tensor_parallel": 8,
-        "total_gib_per_gpu": 0.0,
-        "weight_gib_per_gpu": 0.0
+        "total_gib_per_gpu": 94.15,
+        "weight_gib_per_gpu": 88.2
       },
       "cases": null,
       "cost": null,
@@ -2012,11 +2012,11 @@
     {
       "accepted": null,
       "before_gpu": {
-        "mechanism": "encoder_decoder_generation",
-        "status": "unknown",
+        "mechanism": "layered_decode",
+        "status": "planned",
         "tensor_parallel": 8,
-        "total_gib_per_gpu": 0.0,
-        "weight_gib_per_gpu": 0.0
+        "total_gib_per_gpu": 103.72,
+        "weight_gib_per_gpu": 99.79
       },
       "cases": null,
       "cost": null,
@@ -2050,7 +2050,7 @@
       "status": "unknown"
     }
   ],
-  "record_count": 265,
+  "record_count": 266,
   "repeat_measurements": [
     {
       "activation_spread_pct": 0.0,
@@ -2477,7 +2477,7 @@
       "sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-28T01:50:42.687940+00:00",
+    "last_event": "2026-09-28T03:53:27.979899+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B",

@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 19 on 6 GPU types
 - Failure classes fixed and re-verified: 6 of 6
-- Total cost: $16.67 of the $100 cap (failed boots included: $6.66)
+- Total cost: $20.00 of the $100 cap (failed boots included: $6.66)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -39,7 +39,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | Runner image | `sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba`, `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
 | Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-0.6B, Qwen/Qwen3-0.6B-FP8, Qwen/Qwen3-1.7B, Qwen/Qwen3-14B, Qwen/Qwen3-32B, Qwen/Qwen3-8B, Qwen/Qwen3-8B-AWQ, Qwen/Qwen3.6-35B-A3B-FP8, deepseek-ai/DeepSeek-V2-Lite, deepseek-ai/DeepSeek-V2-Lite-Chat, google/gemma-2-2b-it, google/gemma-4-31B-it, meta-llama/Llama-3.1-8B-Instruct, meta-models/Muse-Glimmer-30B, mistralai/Mistral-7B-Instruct-v0.3, openai/gpt-oss-120b, state-spaces/mamba-2.8b-hf, zai-org/GLM-4.7-Flash |
 | GPUs measured | NVIDIA A100 80GB PCIe, NVIDIA A100-SXM4-80GB, NVIDIA GeForce RTX 4090, NVIDIA H100 80GB HBM3, NVIDIA L4, NVIDIA RTX A6000 |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-28T01:50:42.687940+00:00 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-28T03:53:27.979899+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -246,12 +246,12 @@ Failed boots and retries are included.
 | zai-org/GLM-4.7-Flash | NVIDIA H100 80GB HBM3 x1 | 0.1311 | 0 (0.0000) | `122005193f21e06c` +4 |
 | **Records total** |  | **13.4879** |  |  |
 | Diagnosis model calls (Claude Haiku) |  | 0.1934 |  |  |
-| Idle time of reused pods |  | 0.2324 |  |  |
-| CPU pods that staged weights |  | 0.2857 |  |  |
-| Network volume storage for staged weights |  | 0.0996 |  |  |
+| Idle time of reused pods |  | 0.2329 |  |  |
+| CPU pods that staged weights |  | 1.3606 |  |  |
+| Network volume storage for staged weights |  | 1.9885 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  | 0.6502 |  |  |
 | Corrections to RunPod's bill (estimates, clock differences) |  | -0.1749 |  |  |
-| **Ledger spent** |  | **16.6715** |  | cap $100 |
+| **Ledger spent** |  | **20.0012** |  | cap $100 |
 | RunPod billed, same window |  | 11.1742 |  | not billed yet: 1 pod(s) |
 <!-- /findings:cost -->
 

@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 19 on 6 GPU types
 - Failure classes fixed and re-verified: 6 of 6
-- Total cost: $16.67 of the $100 cap (failed boots included: $6.66)
+- Total cost: $20.00 of the $100 cap (failed boots included: $6.66)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -38,9 +38,9 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | C | deepseek-ai/DeepSeek-V4.1-Flash | 763 | 651,078 | NVIDIA H200 x4 | fits: 81.29 GiB per GPU | not run yet | — | — | — | — |
 | C | Qwen/Qwen3.8-Flash-Next | 180 | 1,226,891 | NVIDIA H200 x4 | fits: 62.85 GiB per GPU | not run yet | — | — | — | — |
 | C | deepseek-ai/DeepSeek-V4-Flash-0731 | 304.2 | 3,959,727 | NVIDIA H200 x4 | fits: 41.19 GiB per GPU | not run yet | — | — | — | — |
-| D | zai-org/GLM-5.3 | 753.3 | 1,351,716 | NVIDIA H200 x8 | unknown (no memory model yet) | not run yet | — | — | — | — |
+| D | zai-org/GLM-5.3 | 753.3 | 1,351,716 | NVIDIA H200 x8 | fits: 94.15 GiB per GPU | not run yet | — | — | — | — |
 | D | deepseek-ai/DeepSeek-V4-Pro-0813 | 1650 | 116,119 | NVIDIA H200 x8 | fits: 107.44 GiB per GPU | not run yet | — | — | — | — |
-| D | MiniMaxAI/MiniMax-M3 | 427 | 164,729 | NVIDIA H200 x8 | unknown (no memory model yet) | not run yet | — | — | — | — |
+| D | MiniMaxAI/MiniMax-M3 | 427 | 164,729 | NVIDIA H200 x8 | fits: 103.72 GiB per GPU | not run yet | — | — | — | — |
 <!-- /findings:modern_models -->
 
 ## Not paying a GPU to download

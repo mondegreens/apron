@@ -521,3 +521,53 @@ def test_the_volume_is_sized_for_earlier_groups_weights_too(tmp_path: Path) -> N
     assert site is not None
     assert sizes == [110, 210]  # b alone, then a + b (+10 GB)
     assert site.size_gb == 210
+
+
+def test_a_stalled_download_is_restarted_not_waited_on(tmp_path: Path) -> None:
+    """Group C staging (2026-09-28) held a finished download open for the whole
+    four-hour deadline.  The watchdog kills an attempt whose destination stops
+    growing and the next attempt resumes; here the first attempt hangs and the
+    second writes the file and exits 0."""
+    import os
+    import subprocess
+    import textwrap
+
+    from apron.adapters.backends.vllm_engine import download_command
+
+    dest, marker = tmp_path / "dest", tmp_path / "attempts"
+    fake_python = tmp_path / "python"
+    fake_python.write_text(
+        textwrap.dedent(
+            f"""\
+            #!/bin/sh
+            n=$(cat {marker} 2>/dev/null || echo 0); n=$((n+1)); echo $n > {marker}
+            if [ $n -eq 1 ]; then sleep 600; fi
+            echo data > "$4/model.safetensors"; echo DOWNLOAD_VERIFIED; exit 0
+            """
+        )
+    )
+    fake_python.chmod(0o755)
+    bin_dir = tmp_path / "bin"  # GNU du -sb is not on every CI host
+    bin_dir.mkdir()
+    (bin_dir / "du").write_text(
+        '#!/bin/sh\npython3 -c "import os,sys; p=sys.argv[2]; '
+        "print(sum(os.path.getsize(os.path.join(r,f)) for r,_,fs in os.walk(p) for f in fs),"
+        ' p, sep=chr(9))" "$@"\n'
+    )
+    (bin_dir / "du").chmod(0o755)
+    command = download_command(
+        "org/model",
+        str(dest),
+        python=str(fake_python),
+        stall_seconds=2,
+        poll_seconds=1,
+        log=str(tmp_path / "download.log"),
+    )
+    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"}
+    done = subprocess.run(
+        ["bash", "-c", command], env=env, capture_output=True, text=True, timeout=60
+    )
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert marker.read_text().strip() == "2"  # one stalled attempt, one resumed
+    assert "stalled" in done.stdout and "DOWNLOAD_VERIFIED" in done.stdout
+    assert (dest / "model.safetensors").exists()
