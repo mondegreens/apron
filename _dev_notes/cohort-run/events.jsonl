@@ -199,3 +199,4 @@
 {"at": "2026-09-28T03:47:08.456408+00:00", "estimate": 3.9127, "event": "hold", "gpu_count": 1, "gpu_sku": "NVIDIA H100 80GB HBM3", "label": "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1", "model_id": "Qwen/Qwen3.8-27B", "rate": 3.49, "solution_fingerprint": "1220f79c6a7fd6c76fe8ced9a159a5ff87df4df60a3473fe5f767d22d1e537fc767d"}
 {"at": "2026-09-28T03:51:16.361743+00:00", "event": "provisioned", "gpu_count": 1, "gpu_sku": "NVIDIA H100 80GB HBM3", "label": "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1", "model_id": "Qwen/Qwen3.8-27B", "pod_id": "uv3q4ny9qmnsiz", "solution_fingerprint": "1220f79c6a7fd6c76fe8ced9a159a5ff87df4df60a3473fe5f767d22d1e537fc767d"}
 {"at": "2026-09-28T03:53:27.979899+00:00", "event": "pod_closed"}
+{"at": "2026-09-28T08:33:14.321924+00:00", "event": "staged", "location": "US-CA-2", "model_id": "zai-org/GLM-5.3-Flash", "ok": true, "pod_id": "j0vmcky4srjtuf", "seconds": 30.2}

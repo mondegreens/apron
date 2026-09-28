@@ -191,7 +191,7 @@ def test_generated_outputs_hold_no_secrets(findings: dict) -> None:
 
 def test_committed_findings_equal_the_records() -> None:
     script = _script()
-    data, blocks = script.generate(script.RUN_DIR, script.RULES_DIR / "vllm-v0.29")
+    data, blocks, _ = script.generate(script.RUN_DIR, script.RULES_DIR / "vllm-v0.29")
     assert script.DATA.read_text("utf-8") == data, "run scripts/cohort_findings.py"
     for path in script.DOCUMENTS:
         in_doc = read_blocks(path.read_text("utf-8"))

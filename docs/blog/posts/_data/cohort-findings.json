@@ -10,6 +10,7 @@
       "profiled_tokens": 8192,
       "record": "12200078d8e3999ec13fe5d4ac6bfa6d2fdd69b297b01e1763a3ed34dcbee1c96dd0",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 622514688,
       "weights_measured": 794568949,
       "weights_now": 751751680
@@ -24,6 +25,7 @@
       "profiled_tokens": 2048,
       "record": "1220066392da9480498cd4d467896ce42d89d66605a5a0ad783a12c4615fddb32493",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 4063479808,
       "weights_measured": 3457448673,
       "weights_now": 3441149952
@@ -38,6 +40,7 @@
       "profiled_tokens": 2048,
       "record": "12200ac02bfdf76a32406e83fc4d9de4a191dd9e7ed394552fcd7ce148df5f5fd64a",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 5536691200,
       "weights_measured": 11070278205,
       "weights_now": 11073382400
@@ -52,6 +55,7 @@
       "profiled_tokens": 2048,
       "record": "1220205b397c672ee4ad674fc589d167da7dda4c181ee1603eafcd7c66235184198f",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 4063479808,
       "weights_measured": 3457448673,
       "weights_now": 3441149952
@@ -66,6 +70,7 @@
       "profiled_tokens": 2048,
       "record": "1220374d2a3c7d3a33d8fe3102211051c5dc5185751d49fbd620a90eb1d34897a479",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 65524246528,
       "weights_measured": 65530463518,
       "weights_now": 65524246528
@@ -80,6 +85,7 @@
       "profiled_tokens": 2048,
       "record": "12203903ded913c699483a8f5a7902faf7cb5059209d1455fdfbe17c5ec95f0895b3",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 29536614400,
       "weights_measured": 29549374996,
       "weights_now": 29536614400
@@ -94,6 +100,7 @@
       "profiled_tokens": 2048,
       "record": "122046447ffc1d89490228e1a78bf46bfc0f154518d1ee3fc69b76ea755703418513",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 16381470720,
       "weights_measured": 16396037652,
       "weights_now": 16381470720
@@ -108,6 +115,7 @@
       "profiled_tokens": 2048,
       "record": "1220636ca167b3f0c240df5c80fa2aec588bd2bec55f7a763fb5acc33fe1bcfb5cec",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 16060522496,
       "weights_measured": 16106127360,
       "weights_now": 16060522496
@@ -122,6 +130,7 @@
       "profiled_tokens": 2048,
       "record": "1220697d834da838ea2b058265f8dc1159098f8868d943b13b0f887b05fbb10162b9",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 31412968448,
       "weights_measured": 31482110279,
       "weights_now": 31412968448
@@ -136,6 +145,7 @@
       "profiled_tokens": 2048,
       "record": "12206b393c533d0ae1e2e4c644df0af93e2bcc91115d04a0693e0f7494013333b586",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 5228683776,
       "weights_measured": 5304284610,
       "weights_now": 5228683776
@@ -150,6 +160,7 @@
       "profiled_tokens": 2048,
       "record": "122075e500841efea613add26e52f3a827c8b87c32ddca193ffdf8fd23c0867db745",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 14496047104,
       "weights_measured": 14506252042,
       "weights_now": 14496047104
@@ -164,6 +175,7 @@
       "profiled_tokens": 8192,
       "record": "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
       "tensor_parallel": 1,
+      "vllm": "v0.30.0",
       "weights_at_run": 37454789472,
       "weights_measured": 36754182635,
       "weights_now": 36601120992
@@ -178,6 +190,7 @@
       "profiled_tokens": 8192,
       "record": "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 62442977152,
       "weights_measured": 59989955706,
       "weights_now": 59886787712
@@ -192,6 +205,7 @@
       "profiled_tokens": 2048,
       "record": "12209ac3de7807d51809acd76e127d26d804a5ec59e024150da7d0c9536599571ea5",
       "tensor_parallel": 2,
+      "vllm": "v0.29.0",
       "weights_at_run": 16381470720,
       "weights_measured": 8203387535,
       "weights_now": 8190735360
@@ -206,6 +220,7 @@
       "profiled_tokens": 8192,
       "record": "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
       "tensor_parallel": 1,
+      "vllm": "v0.30.0",
       "weights_at_run": 59553253376,
       "weights_measured": 59947006033,
       "weights_now": 59553253376
@@ -220,6 +235,7 @@
       "profiled_tokens": 2048,
       "record": "1220ac02237cee071400d8ff6a286d8975f85c8f18558aa041bdeaaac5f6a578a165",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 14496047104,
       "weights_measured": 14506252042,
       "weights_now": 14496047104
@@ -234,6 +250,7 @@
       "profiled_tokens": 2048,
       "record": "1220b9e409435a57a94ec162cf8e0d401bf53a8967bbb168a213dbeb6482f7596ca6",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 6103787520,
       "weights_measured": 6098853560,
       "weights_now": 6103787520
@@ -248,6 +265,7 @@
       "profiled_tokens": 2048,
       "record": "1220c078c3a7d11e65be0f1d182e4a5ee4bb2541d40445ea8477e0d5e47c5325dae4",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 31412968448,
       "weights_measured": 31482110279,
       "weights_now": 31412968448
@@ -262,6 +280,7 @@
       "profiled_tokens": 2048,
       "record": "1220c6220073e29214264a963891ea6b80eef4c94d99856874270159411ceb31e476",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 1192099840,
       "weights_measured": 1202590842,
       "weights_now": 1192099840
@@ -276,6 +295,7 @@
       "profiled_tokens": 8192,
       "record": "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 65248815744,
       "weights_measured": 65959960248,
       "weights_now": 65248815744
@@ -290,6 +310,7 @@
       "profiled_tokens": 8192,
       "record": "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 6098479104,
       "weights_measured": 6249177415,
       "weights_now": 6098479104
@@ -304,6 +325,7 @@
       "profiled_tokens": 2048,
       "record": "1220e319388876e8d22bc59a7cd1235262ecd2a9ccae4df7b3fe259b4fd45a260f90",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 751751680,
       "weights_measured": 794568949,
       "weights_now": 751751680
@@ -318,6 +340,7 @@
       "profiled_tokens": 8192,
       "record": "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 62766378712,
       "weights_measured": 63340030197,
       "weights_now": 62546177752
@@ -332,6 +355,7 @@
       "profiled_tokens": 8192,
       "record": "1220eef514a1a275cd13bd98c041db9bda93e42c9df0b5126d4f6ede6c0811582fca",
       "tensor_parallel": 1,
+      "vllm": "v0.29.0",
       "weights_at_run": 65524246528,
       "weights_measured": 65530463518,
       "weights_now": 65524246528
@@ -346,9 +370,9 @@
     "ledger_probe": 1.397938,
     "ledger_reconciled": 0.650187,
     "ledger_settled": 14.352689,
-    "ledger_spent": 20.00122,
-    "ledger_staging": 1.360568,
-    "ledger_storage": 1.988475,
+    "ledger_spent": 23.570848,
+    "ledger_staging": 1.848901,
+    "ledger_storage": 5.06977,
     "per_solution": [
       {
         "cost": 1.392902,
@@ -360,7 +384,8 @@
         "model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
         "records": [
           "1220e2bb9d9e3077ec36a3b1996d3fa982eb9268665a8054c69a161934461b3fd41d"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.606296,
@@ -372,7 +397,8 @@
         "model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
         "records": [
           "12202f6bb99809123f803dde4504f383ea73441de5a21ea108c9ea39271cbd4c5eb0"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.309909,
@@ -384,7 +410,8 @@
         "model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
         "records": [
           "12206934f05d600271723a5ac029b87c9b0ad51380cc5a1f7f47beb8cf7b333f8392"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.762062,
@@ -396,7 +423,8 @@
         "model": "ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4",
         "records": [
           "1220e27e21b0a24a5a66f510257931c98cdb3579c1fa9857e8205238875d6652a415"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.118071,
@@ -415,7 +443,8 @@
           "1220b9e409435a57a94ec162cf8e0d401bf53a8967bbb168a213dbeb6482f7596ca6",
           "1220c78063be278806620433e9a2430eb978a597e0307d3dc8e62fc935c061e15949",
           "1220c820cfbd67b7b000b8f64cc08045b19029896d326e424ea24d8c521c0e7fff77"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.023107,
@@ -431,7 +460,8 @@
           "12205f7089d8d35b4b6792d749297c82819a5db98ae0c53c4c2b25b25db8cda7e93b",
           "122073704f443d09a59e2629b7c98e10f0a960f310906fa1cc9cb63ef6711c2eea41",
           "1220c6220073e29214264a963891ea6b80eef4c94d99856874270159411ceb31e476"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.119781,
@@ -447,7 +477,8 @@
           "12205e8684024f7f2cfbc92eab09dc40a515b2755e3efe5e9ca4293c9fbe82a4168a",
           "12208467642286e1052a5146bf5d41793c42e24dce98de29893cf12d96b67a798878",
           "1220e319388876e8d22bc59a7cd1235262ecd2a9ccae4df7b3fe259b4fd45a260f90"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.717092,
@@ -466,7 +497,8 @@
           "1220ccdc860fbb33e65fd3b3bd39a1c85549ef5be878ad8b4cc4f848a397d98dcec1",
           "1220d68023d988ed26d2da0f12b44c0f0668814246c872041db4af6f541484017149",
           "1220dfabcbad7ac066c195aa7e4ae19c449205ea856d5f3038fe1678c861739c8eba"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.691819,
@@ -496,7 +528,8 @@
           "1220d50f1d7cd237f0dcc7326728546cbc0fb44e7f2ed0e564b3960b3d0502c5225f",
           "1220d5ab1a05171b74ab54c30edb7d2264e62fa7244b7a6a6288d82f1d0a12c54b3d",
           "1220df2ce6e23fc836a75e0623ff0b72ab9e301c43cca97af775c0545e74cf8d4aa4"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.084976,
@@ -515,7 +548,8 @@
           "1220b6c72d0711a14d46ad8c6f6fcd9e4113fa34870da93effe6b2c0d3faaaeb32be",
           "1220c6fe521bb6009e712c2956eb12b468bf330b01bbbb6d06d524507b273dfff3b8",
           "1220dad9155b4119fb6b58cebe264353221af8a88c01d6cb890ab1269ba49ad734eb"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.109297,
@@ -527,7 +561,8 @@
         "model": "Qwen/Qwen3-14B",
         "records": [
           "1220233b18004d3c4d2a902d85f4579746fedf5a357d5e9f60e7c7228f49127f3aa3"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.105809,
@@ -546,7 +581,8 @@
           "12209e6ada5f704d16f56d47009ef82d61665502aa4e74bdc530d321750c37af4113",
           "1220a6d5efc7eef1c50f14eb585086d079c7fd7b3ed3c5fc300ec30f4e0b321ddcab",
           "1220b1e8f62c3c8ac3c49b51b6fdccba3857f645069b04111bfc478d27adf2a11a9e"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.39219,
@@ -566,7 +602,8 @@
           "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321",
           "1220f1131bc8654cc757b0fa4f2c8ba6ff8b8577fec1181d394cbe7acd612a363b90",
           "1220feb7179d87e1a4a32c0fc2d620681501189ce5bfd4741d91e5ac5b2d8815ce6f"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 1.648881,
@@ -586,7 +623,8 @@
           "1220b4918863630e2f43ecc3cf55d19816369f57531ec0d8adcb433cae00cbc83c24",
           "1220eef514a1a275cd13bd98c041db9bda93e42c9df0b5126d4f6ede6c0811582fca",
           "1220fb605b7701961be4094f4bafcf421549d3d2899e99ee41667b086b74b7a34b38"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.519583,
@@ -598,7 +636,8 @@
         "model": "Qwen/Qwen3-8B",
         "records": [
           "122003cbc66ff472bb0cb1d9c953851df1267de80f9d2e736ea1c1d21a5038bccd00"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.848029,
@@ -617,7 +656,8 @@
           "12208f850372f5f6d4c386f56003b38ebc1a8cebd05963d9bf7ad89e43a12fa8f6cb",
           "12209ac3de7807d51809acd76e127d26d804a5ec59e024150da7d0c9536599571ea5",
           "1220f1afa7d19d18820b69802a295db5dcabb783b192a14add004f93115478352bc4"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.149849,
@@ -637,7 +677,8 @@
           "1220b2b957d0c51dcc2fd27866f7603c13dd1f3b3693ab73fd7565c647f522c5878b",
           "1220e7b5dd47f7e19991401373a6c39f3493a5cd1839aafa1ccb4f3d03ba366abded",
           "1220e8a2173c51d34ea08474d5f6a1d0e7b79f5203e40b720b1f2608c987fc2f1584"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.027297,
@@ -649,7 +690,8 @@
         "model": "Qwen/Qwen3-8B",
         "records": [
           "1220736506a57c471f0412bcf80b35a1cabdd9a438f6e3ff2be500091464afad874d"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.19304,
@@ -665,7 +707,8 @@
           "1220b46348fea4110a4cabe521364177394ba6f6f63df98cc9ba4e53ec9cb49c99b6",
           "1220d1e7d878276754f6f114d9c62da1a8178e991dea0130c6f4d138d8d7610ab24d",
           "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.758739,
@@ -681,7 +724,8 @@
           "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
           "1220bef520489a0b824bb0fb0d0fddbf4b494639a3bec75d6722d2fd01ddafcd1334",
           "1220fe7f6e1e6e0d9ad1f920688576c1e97098dd3fdea64dd4f1ce27a5895e679ece"
-        ]
+        ],
+        "vllm": "v0.30.0"
       },
       {
         "cost": 1.075595,
@@ -693,7 +737,8 @@
         "model": "Qwen/Qwen3.6-35B-A3B-FP8",
         "records": [
           "12208be5e9e11a3ef0bf29d251d223ce5b2cefe1b94b7046c5a9bcbce383217d2491"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.374655,
@@ -705,7 +750,8 @@
         "model": "Qwen/Qwen3.8-27B",
         "records": [
           "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.249715,
@@ -724,7 +770,8 @@
           "122091e1cf984bc6c153ae71bcbb84d5373554407d6fd49d08c6cee0c632fda74f05",
           "12209e38a5f726490e019088aa99a69d9fdd008b78a93b70eee1a6355aeecc9d5c95",
           "1220f138d03196999a62cc2d28ca642bd2342ffa34cb8d18878b7e7d3ec6f311cb38"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.328948,
@@ -740,7 +787,8 @@
           "1220c078c3a7d11e65be0f1d182e4a5ee4bb2541d40445ea8477e0d5e47c5325dae4",
           "1220cda28d70f6b5f81c66927bfdcc078679dc12661d23853d05979a48c52debdd77",
           "1220efe15209d5809ad7c80efe05089ef9e894289326eb8ab981882eb2931d9146c0"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.025271,
@@ -759,7 +807,8 @@
           "12207c8d129ea3d8b84f6f681aa518de8ff36ddd793832fda2c1bc1c1d2eff988550",
           "1220842b830a3d56f32e36d4d42e93d1cf6cb6c5573281b06b4bd46b85e83e099bda",
           "1220f632d009e2822edc74336a3823c95018d460072adc642a812d48111bd7e68f62"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.025296,
@@ -778,7 +827,8 @@
           "1220c4d576ed9039deda716406e476c385664811f6064b36ee3fbb67dc433d168d24",
           "1220d5f817756715525f4148bbf7d53b56dd3a2f73e47c49e494bb31295f3a56d283",
           "1220e4d272d2856d239be6b47fe65e9fd1a48ccaedc2d9f4b3a9a999d152d4a4dcb5"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.068333,
@@ -790,7 +840,8 @@
         "model": "google/gemma-2-2b-it",
         "records": [
           "12209c87b885bbbdfdd0f97817b184ea0ce5d6b287c0e2c5317ab981af67a5a1c881"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.323474,
@@ -806,7 +857,8 @@
           "1220b22a2a0c23ede05a672102199f0692c7f7472b9766b0a91aa0f80c0f5cc2d7b0",
           "1220d0d5e01ab2396cb6acff431adfba3d2985d10d3fb5f6addf158352aa12593f02",
           "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.03038,
@@ -825,7 +877,8 @@
           "1220b871596474c6147fd47a73849565c4864919debdf7d64c4865163609b583760d",
           "1220c62d62ae67ec438ebca7e7facc6f53eb71e65853a9e6b29aee797a3e470e5948",
           "1220f4995e57ae2c4bc182084b0f54feaa9e8d99307987f54422a56bee1155a2c806"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.211968,
@@ -841,7 +894,8 @@
           "12206d543bd95f7e97eb237181e5edd75c3e9ab42be7274b32f2e45a2121911faa53",
           "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
           "1220abba11b486e2ce47648e40f5db2b35545f5312e9b60f2c9917e70f171080a3db"
-        ]
+        ],
+        "vllm": "v0.30.0"
       },
       {
         "cost": 0.142191,
@@ -862,7 +916,8 @@
           "1220c4ad8130d1bb5d01e086aa11b4155e57e820ff67e02fed5be6c2b1111bc090bb",
           "1220e2ff97b499fe579c4c72b9b6d8ddd2b5b2f58f40762cebccef770f5c419cd4af",
           "1220f6faeded20231f76a1d34060c3af7f47d0e5f754f7d0fb302d7c102ee404e8a2"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.031313,
@@ -881,7 +936,8 @@
           "1220a6224c34845b72053479b0ae0c2c8ea77977f58c09c225906774734ac21c8509",
           "1220dcda4554108a677ca6f2ec1c9f90512c74bbbae40cf7f24f29b0f583c563d383",
           "1220f4cdf74d42208d6a32e1ca691e2694379191b3b9d51fcf7be445d90eb9689126"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.015737,
@@ -893,7 +949,8 @@
         "model": "mistralai/Mistral-7B-Instruct-v0.3",
         "records": [
           "122082b8cebddc87b2ccaca644d351f8eef4f52c4526bbae1df2b3603c549a32b710"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.035833,
@@ -912,7 +969,8 @@
           "12206313935a53ff7c3a43322ef5041ecd093915cba793babb263f21c785c370d492",
           "1220ac02237cee071400d8ff6a286d8975f85c8f18558aa041bdeaaac5f6a578a165",
           "1220f42f4f523a5a979b719998a96fd13d31b7233f1655e1b759518a699d6957d500"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.12278,
@@ -924,7 +982,8 @@
         "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
         "records": [
           "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
-        ]
+        ],
+        "vllm": "v0.30.0"
       },
       {
         "cost": 0.586517,
@@ -940,7 +999,8 @@
           "1220ae1058c874e50f368003b8b84f7d49d665d76c637812efc968651847b1c250b6",
           "1220b219fc84bdd8adaeb3f6548db80b2798df43b71e9798858cb50d72bac3aa43be",
           "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.09866,
@@ -956,7 +1016,8 @@
           "12206810a074c3de321e4b0f9b559394be33816d5161d21d68bdd6b58d995db0779b",
           "1220702bec40e8376a660f8936e90a73313eab1cd52d143343e24f7a9e390e6cabaf",
           "1220c040c502ab1285aebca3aaad3ce9db9e8202f8e8049cb6e4d6c4cdbd6a7bca1a"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.031378,
@@ -975,7 +1036,8 @@
           "12207908cf181f7736db40a0044571ce545de1de6bd6f3e1b16564a072fbac8e3493",
           "12208be4514014b93e1df25668c0ed3ebb2d327105bde0b618f14305b15bfe77b6cb",
           "1220b91ed705392b8d73e427d49b02bb78d16873551c543c67b8e478371077062acc"
-        ]
+        ],
+        "vllm": "v0.29.0"
       },
       {
         "cost": 0.131137,
@@ -991,7 +1053,8 @@
           "122082aeafa81c543998b6759da7d2b90574b9bdcb41b9d79d7713b519681af92845",
           "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
           "12208edaefdd8c44dd1726e94205cc21cb5b95c239141db16df098135762e773a168"
-        ]
+        ],
+        "vllm": "v0.29.0"
       }
     ],
     "provider_billed": 11.174188,
@@ -1025,7 +1088,7 @@
     },
     {
       "boots": 1,
-      "cause": "the harness: harness:exception:RemoteCommandTimeout",
+      "cause": "the harness: a command on the pod did not answer in time",
       "cost": 1.075595,
       "records": [
         "12208be5e9e11a3ef0bf29d251d223ce5b2cefe1b94b7046c5a9bcbce383217d2491"
@@ -1120,7 +1183,8 @@
       "request_outcome": "satisfied",
       "status": "run",
       "strategy": "retarget_memory",
-      "violated_constraints": []
+      "violated_constraints": [],
+      "vllm": "v0.29.0"
     },
     {
       "attempts": 1,
@@ -1148,7 +1212,8 @@
       "request_outcome": "satisfied",
       "status": "run",
       "strategy": "reduce_memory_pressure",
-      "violated_constraints": []
+      "violated_constraints": [],
+      "vllm": "v0.29.0"
     },
     {
       "attempts": 2,
@@ -1176,7 +1241,8 @@
       "request_outcome": "satisfied",
       "status": "run",
       "strategy": "clamp_max_model_len",
-      "violated_constraints": []
+      "violated_constraints": [],
+      "vllm": "v0.29.0"
     },
     {
       "attempts": 1,
@@ -1204,7 +1270,8 @@
       "request_outcome": "satisfied",
       "status": "run",
       "strategy": "fallback_dtype",
-      "violated_constraints": []
+      "violated_constraints": [],
+      "vllm": "v0.29.0"
     },
     {
       "attempts": 1,
@@ -1232,7 +1299,8 @@
       "request_outcome": "satisfied",
       "status": "run",
       "strategy": "reduce_tensor_parallel",
-      "violated_constraints": []
+      "violated_constraints": [],
+      "vllm": "v0.29.0"
     },
     {
       "attempts": 3,
@@ -1260,7 +1328,8 @@
       "request_outcome": "satisfied",
       "status": "run",
       "strategy": "substitute_artifact",
-      "violated_constraints": []
+      "violated_constraints": [],
+      "vllm": "v0.29.0"
     }
   ],
   "memory": [
@@ -1277,6 +1346,7 @@
       "predicted_weight_bytes": 6103787520,
       "record": "1220b9e409435a57a94ec162cf8e0d401bf53a8967bbb168a213dbeb6482f7596ca6",
       "total_delta_bytes": 1981414943,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": 4933960
     },
     {
@@ -1292,6 +1362,7 @@
       "predicted_weight_bytes": 1192099840,
       "record": "1220c6220073e29214264a963891ea6b80eef4c94d99856874270159411ceb31e476",
       "total_delta_bytes": 1247681301,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -10491002
     },
     {
@@ -1307,6 +1378,7 @@
       "predicted_weight_bytes": 751751680,
       "record": "1220e319388876e8d22bc59a7cd1235262ecd2a9ccae4df7b3fe259b4fd45a260f90",
       "total_delta_bytes": 1569689836,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -42817269
     },
     {
@@ -1322,6 +1394,7 @@
       "predicted_weight_bytes": 622514688,
       "record": "12200078d8e3999ec13fe5d4ac6bfa6d2fdd69b297b01e1763a3ed34dcbee1c96dd0",
       "total_delta_bytes": 227520553,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -172054261
     },
     {
@@ -1337,6 +1410,7 @@
       "predicted_weight_bytes": 4063479808,
       "record": "1220066392da9480498cd4d467896ce42d89d66605a5a0ad783a12c4615fddb32493",
       "total_delta_bytes": 1650350172,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": 606031135
     },
     {
@@ -1352,6 +1426,7 @@
       "predicted_weight_bytes": 4063479808,
       "record": "122056e563edf84b102233abdb30ce90733de29eaa8ba8e23b06bbf302188c3ca8e6",
       "total_delta_bytes": 1650350172,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": 606031135
     },
     {
@@ -1367,6 +1442,7 @@
       "predicted_weight_bytes": 4063479808,
       "record": "1220205b397c672ee4ad674fc589d167da7dda4c181ee1603eafcd7c66235184198f",
       "total_delta_bytes": 1682562427,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": 606031135
     },
     {
@@ -1382,6 +1458,7 @@
       "predicted_weight_bytes": 29536614400,
       "record": "12203903ded913c699483a8f5a7902faf7cb5059209d1455fdfbe17c5ec95f0895b3",
       "total_delta_bytes": 4391895788,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -12760596
     },
     {
@@ -1397,6 +1474,7 @@
       "predicted_weight_bytes": 65524246528,
       "record": "1220374d2a3c7d3a33d8fe3102211051c5dc5185751d49fbd620a90eb1d34897a479",
       "total_delta_bytes": 8216648591,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -6216990
     },
     {
@@ -1412,6 +1490,7 @@
       "predicted_weight_bytes": 65524246528,
       "record": "1220eef514a1a275cd13bd98c041db9bda93e42c9df0b5126d4f6ede6c0811582fca",
       "total_delta_bytes": 6026215270,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -6216990
     },
     {
@@ -1427,6 +1506,7 @@
       "predicted_weight_bytes": 16381470720,
       "record": "12209ac3de7807d51809acd76e127d26d804a5ec59e024150da7d0c9536599571ea5",
       "total_delta_bytes": 11268231834,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": 8178083185
     },
     {
@@ -1442,6 +1522,7 @@
       "predicted_weight_bytes": 16381470720,
       "record": "122046447ffc1d89490228e1a78bf46bfc0f154518d1ee3fc69b76ea755703418513",
       "total_delta_bytes": 3011157208,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -14566932
     },
     {
@@ -1457,6 +1538,7 @@
       "predicted_weight_bytes": 6098479104,
       "record": "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269",
       "total_delta_bytes": 1885611756,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -150698311
     },
     {
@@ -1472,6 +1554,7 @@
       "predicted_weight_bytes": 37454789472,
       "record": "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
       "total_delta_bytes": 1564378249,
+      "vllm": "v0.30.0",
       "weight_delta_bytes": 700606837
     },
     {
@@ -1487,6 +1570,7 @@
       "predicted_weight_bytes": 31412968448,
       "record": "1220697d834da838ea2b058265f8dc1159098f8868d943b13b0f887b05fbb10162b9",
       "total_delta_bytes": 874836547,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -69141831
     },
     {
@@ -1502,6 +1586,7 @@
       "predicted_weight_bytes": 31412968448,
       "record": "1220c078c3a7d11e65be0f1d182e4a5ee4bb2541d40445ea8477e0d5e47c5325dae4",
       "total_delta_bytes": 864099129,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -69141831
     },
     {
@@ -1517,6 +1602,7 @@
       "predicted_weight_bytes": 5228683776,
       "record": "12206b393c533d0ae1e2e4c644df0af93e2bcc91115d04a0693e0f7494013333b586",
       "total_delta_bytes": 1568925737,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -75600834
     },
     {
@@ -1532,6 +1618,7 @@
       "predicted_weight_bytes": 5228683776,
       "record": "12207b314f3982aa828ce37adf4c6fb200cb9fe744a48dda8b483cd7e494d95bfec4",
       "total_delta_bytes": 1568925737,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -75600834
     },
     {
@@ -1547,6 +1634,7 @@
       "predicted_weight_bytes": 62766378712,
       "record": "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd",
       "total_delta_bytes": 4501977089,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -573651485
     },
     {
@@ -1562,6 +1650,7 @@
       "predicted_weight_bytes": 16060522496,
       "record": "1220636ca167b3f0c240df5c80fa2aec588bd2bec55f7a763fb5acc33fe1bcfb5cec",
       "total_delta_bytes": 2927556249,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -45604864
     },
     {
@@ -1577,6 +1666,7 @@
       "predicted_weight_bytes": 59553253376,
       "record": "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
       "total_delta_bytes": 2546283121,
+      "vllm": "v0.30.0",
       "weight_delta_bytes": -393752657
     },
     {
@@ -1592,6 +1682,7 @@
       "predicted_weight_bytes": 14496047104,
       "record": "1220c4ad8130d1bb5d01e086aa11b4155e57e820ff67e02fed5be6c2b1111bc090bb",
       "total_delta_bytes": 2924620237,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -10204938
     },
     {
@@ -1607,6 +1698,7 @@
       "predicted_weight_bytes": 14496047104,
       "record": "122075e500841efea613add26e52f3a827c8b87c32ddca193ffdf8fd23c0867db745",
       "total_delta_bytes": 2924620237,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -10204938
     },
     {
@@ -1622,6 +1714,7 @@
       "predicted_weight_bytes": 14496047104,
       "record": "1220ac02237cee071400d8ff6a286d8975f85c8f18558aa041bdeaaac5f6a578a165",
       "total_delta_bytes": 2956832492,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -10204938
     },
     {
@@ -1637,6 +1730,7 @@
       "predicted_weight_bytes": 65248815744,
       "record": "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef",
       "total_delta_bytes": -482989061,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -711144504
     },
     {
@@ -1652,6 +1746,7 @@
       "predicted_weight_bytes": 5536691200,
       "record": "12206810a074c3de321e4b0f9b559394be33816d5161d21d68bdd6b58d995db0779b",
       "total_delta_bytes": 1109122673,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -78978539
     },
     {
@@ -1667,6 +1762,7 @@
       "predicted_weight_bytes": 5536691200,
       "record": "12200ac02bfdf76a32406e83fc4d9de4a191dd9e7ed394552fcd7ce148df5f5fd64a",
       "total_delta_bytes": -4624781547,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": -5533587005
     },
     {
@@ -1682,6 +1778,7 @@
       "predicted_weight_bytes": 62442977152,
       "record": "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
       "total_delta_bytes": 2531543128,
+      "vllm": "v0.29.0",
       "weight_delta_bytes": 2453021446
     }
   ],
@@ -1706,7 +1803,8 @@
       "params_b": 20.9,
       "predicted_weight_bytes": null,
       "records": [],
-      "status": "not run yet"
+      "status": "not run yet",
+      "vllm": null
     },
     {
       "accepted": 3,
@@ -1730,7 +1828,8 @@
       "records": [
         "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef"
       ],
-      "status": "booted"
+      "status": "booted",
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -1754,7 +1853,8 @@
       "records": [
         "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd"
       ],
-      "status": "booted"
+      "status": "booted",
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 0,
@@ -1778,7 +1878,8 @@
       "records": [
         "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c"
       ],
-      "status": "booted"
+      "status": "booted",
+      "vllm": "v0.30.0"
     },
     {
       "accepted": 3,
@@ -1802,7 +1903,8 @@
       "records": [
         "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb"
       ],
-      "status": "booted"
+      "status": "booted",
+      "vllm": "v0.29.0"
     },
     {
       "accepted": null,
@@ -1826,7 +1928,8 @@
       "records": [
         "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc"
       ],
-      "status": "failed"
+      "status": "failed",
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -1851,7 +1954,8 @@
         "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
         "12208be5e9e11a3ef0bf29d251d223ce5b2cefe1b94b7046c5a9bcbce383217d2491"
       ],
-      "status": "booted"
+      "status": "booted",
+      "vllm": "v0.30.0"
     },
     {
       "accepted": null,
@@ -1875,7 +1979,8 @@
       "records": [
         "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
       ],
-      "status": "failed"
+      "status": "failed",
+      "vllm": "v0.30.0"
     },
     {
       "accepted": null,
@@ -1897,7 +2002,8 @@
       "params_b": 321,
       "predicted_weight_bytes": null,
       "records": [],
-      "status": "not run yet"
+      "status": "not run yet",
+      "vllm": "v0.30.0"
     },
     {
       "accepted": null,
@@ -1919,7 +2025,8 @@
       "params_b": 763,
       "predicted_weight_bytes": null,
       "records": [],
-      "status": "not run yet"
+      "status": "not run yet",
+      "vllm": "v0.30.0"
     },
     {
       "accepted": null,
@@ -1941,7 +2048,8 @@
       "params_b": 180,
       "predicted_weight_bytes": null,
       "records": [],
-      "status": "not run yet"
+      "status": "not run yet",
+      "vllm": null
     },
     {
       "accepted": null,
@@ -1963,7 +2071,8 @@
       "params_b": 304.2,
       "predicted_weight_bytes": null,
       "records": [],
-      "status": "not run yet"
+      "status": "not run yet",
+      "vllm": null
     },
     {
       "accepted": null,
@@ -1985,7 +2094,8 @@
       "params_b": 753.3,
       "predicted_weight_bytes": null,
       "records": [],
-      "status": "not run yet"
+      "status": "not run yet",
+      "vllm": null
     },
     {
       "accepted": null,
@@ -2007,7 +2117,8 @@
       "params_b": 1650,
       "predicted_weight_bytes": null,
       "records": [],
-      "status": "not run yet"
+      "status": "not run yet",
+      "vllm": null
     },
     {
       "accepted": null,
@@ -2029,7 +2140,8 @@
       "params_b": 427,
       "predicted_weight_bytes": null,
       "records": [],
-      "status": "not run yet"
+      "status": "not run yet",
+      "vllm": null
     }
   ],
   "prediction_errors": [
@@ -2039,7 +2151,8 @@
       "model": "Qwen/Qwen3-32B",
       "predicted_total_bytes": 74047759820,
       "record": "12206215ba48b5b8445dae19fdcca11e4598b15d6be30961a4956c78bc6b04b885e0",
-      "status": "infeasible"
+      "status": "infeasible",
+      "vllm": "v0.29.0"
     },
     {
       "gpu": "NVIDIA GeForce RTX 4090",
@@ -2047,10 +2160,1071 @@
       "model": "state-spaces/mamba-2.8b-hf",
       "predicted_total_bytes": null,
       "record": "1220f74c726d3633edebd22d7fafe9a656a41ec8a6f01cfc7265de06729206206d3c",
-      "status": "unknown"
+      "status": "unknown",
+      "vllm": "v0.29.0"
     }
   ],
   "record_count": 266,
+  "records_table": {
+    "broken_on_purpose": {
+      "boots": 8,
+      "cost": 2.418514,
+      "records": [
+        "122003cbc66ff472bb0cb1d9c953851df1267de80f9d2e736ea1c1d21a5038bccd00",
+        "1220233b18004d3c4d2a902d85f4579746fedf5a357d5e9f60e7c7228f49127f3aa3",
+        "12202f6bb99809123f803dde4504f383ea73441de5a21ea108c9ea39271cbd4c5eb0",
+        "12206934f05d600271723a5ac029b87c9b0ad51380cc5a1f7f47beb8cf7b333f8392",
+        "1220736506a57c471f0412bcf80b35a1cabdd9a438f6e3ff2be500091464afad874d",
+        "122082b8cebddc87b2ccaca644d351f8eef4f52c4526bbae1df2b3603c549a32b710",
+        "12209c87b885bbbdfdd0f97817b184ea0ce5d6b287c0e2c5317ab981af67a5a1c881",
+        "1220e27e21b0a24a5a66f510257931c98cdb3579c1fa9857e8205238875d6652a415"
+      ]
+    },
+    "not_rendered": [],
+    "planned": [
+      {
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "model": "openai/gpt-oss-20b",
+        "predicted": {
+          "mechanism": "autoregressive_decode",
+          "status": "planned",
+          "tensor_parallel": 1,
+          "total_gib_per_gpu": 14.55,
+          "weight_gib_per_gpu": 12.82
+        },
+        "vllm": null
+      },
+      {
+        "gpu": "NVIDIA H200",
+        "gpu_count": 4,
+        "model": "zai-org/GLM-5.3-Flash",
+        "predicted": {
+          "mechanism": "layered_decode",
+          "status": "planned",
+          "tensor_parallel": 4,
+          "total_gib_per_gpu": 80.19,
+          "weight_gib_per_gpu": 74.7
+        },
+        "vllm": "v0.30.0"
+      },
+      {
+        "gpu": "NVIDIA H200",
+        "gpu_count": 4,
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "predicted": {
+          "mechanism": "layered_decode",
+          "status": "planned",
+          "tensor_parallel": 4,
+          "total_gib_per_gpu": 81.29,
+          "weight_gib_per_gpu": 77.98
+        },
+        "vllm": "v0.30.0"
+      },
+      {
+        "gpu": "NVIDIA H200",
+        "gpu_count": 4,
+        "model": "Qwen/Qwen3.8-Flash-Next",
+        "predicted": {
+          "mechanism": "layered_decode",
+          "status": "planned",
+          "tensor_parallel": 4,
+          "total_gib_per_gpu": 62.85,
+          "weight_gib_per_gpu": 58.76
+        },
+        "vllm": null
+      },
+      {
+        "gpu": "NVIDIA H200",
+        "gpu_count": 4,
+        "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "predicted": {
+          "mechanism": "layered_decode",
+          "status": "planned",
+          "tensor_parallel": 4,
+          "total_gib_per_gpu": 41.19,
+          "weight_gib_per_gpu": 37.25
+        },
+        "vllm": null
+      },
+      {
+        "gpu": "NVIDIA H200",
+        "gpu_count": 8,
+        "model": "zai-org/GLM-5.3",
+        "predicted": {
+          "mechanism": "layered_decode",
+          "status": "planned",
+          "tensor_parallel": 8,
+          "total_gib_per_gpu": 94.15,
+          "weight_gib_per_gpu": 88.2
+        },
+        "vllm": null
+      },
+      {
+        "gpu": "NVIDIA H200",
+        "gpu_count": 8,
+        "model": "deepseek-ai/DeepSeek-V4-Pro-0813",
+        "predicted": {
+          "mechanism": "layered_decode",
+          "status": "planned",
+          "tensor_parallel": 8,
+          "total_gib_per_gpu": 107.44,
+          "weight_gib_per_gpu": 101.94
+        },
+        "vllm": null
+      },
+      {
+        "gpu": "NVIDIA H200",
+        "gpu_count": 8,
+        "model": "MiniMaxAI/MiniMax-M3",
+        "predicted": {
+          "mechanism": "layered_decode",
+          "status": "planned",
+          "tensor_parallel": 8,
+          "total_gib_per_gpu": 103.72,
+          "weight_gib_per_gpu": 99.79
+        },
+        "vllm": null
+      }
+    ],
+    "record_count": 266,
+    "rows": [
+      {
+        "accepted": 0,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.249715,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA A100 80GB PCIe",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 440234147,
+        "measured_weight_bytes": 31482110279,
+        "model": "deepseek-ai/DeepSeek-V2-Lite",
+        "p99_ttft_ms": 930.2557383896783,
+        "predicted_peak_bytes": 294496579,
+        "predicted_weight_bytes": 31412968448,
+        "record": "1220697d834da838ea2b058265f8dc1159098f8868d943b13b0f887b05fbb10162b9",
+        "records": [
+          "12200ac2fd197bfb3739f5b145510feed8256e6b3f90df263688d362e3138ce9097a",
+          "12201ea5c57fb7eb446b52cf439bd0d1feaa72337c235c961d863a91be86014d75f0",
+          "122061f72e5d7004a287bada68fc73c6d61a02140a24be883c82d676d48a02f0a518",
+          "1220697d834da838ea2b058265f8dc1159098f8868d943b13b0f887b05fbb10162b9",
+          "122076d6d81dbe1e05ad8f11a742b52fc7333168d4fa3f42b1d6b1dc167c19c3a1a4",
+          "122091e1cf984bc6c153ae71bcbb84d5373554407d6fd49d08c6cee0c632fda74f05",
+          "12209e38a5f726490e019088aa99a69d9fdd008b78a93b70eee1a6355aeecc9d5c95",
+          "1220f138d03196999a62cc2d28ca642bd2342ffa34cb8d18878b7e7d3ec6f311cb38"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": false,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.328948,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA A100 80GB PCIe",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 440234147,
+        "measured_weight_bytes": 31482110279,
+        "model": "deepseek-ai/DeepSeek-V2-Lite-Chat",
+        "p99_ttft_ms": 924.8701306246221,
+        "predicted_peak_bytes": 294496579,
+        "predicted_weight_bytes": 31412968448,
+        "record": "1220c078c3a7d11e65be0f1d182e4a5ee4bb2541d40445ea8477e0d5e47c5325dae4",
+        "records": [
+          "1220010e0d05fce8ecf8ab6e09173243eb1e1ace796997e4140118b3e812d55f614e",
+          "1220a13f9a306cc5de46693eb4140b05bc6cf792cd6bce5e4e40b7fd581a5311152f",
+          "1220c078c3a7d11e65be0f1d182e4a5ee4bb2541d40445ea8477e0d5e47c5325dae4",
+          "1220cda28d70f6b5f81c66927bfdcc078679dc12661d23853d05979a48c52debdd77",
+          "1220efe15209d5809ad7c80efe05089ef9e894289326eb8ab981882eb2931d9146c0"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.050567,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 1202590842,
+        "measured_weight_bytes": 5304284610,
+        "model": "google/gemma-2-2b-it",
+        "p99_ttft_ms": 77.9357244016137,
+        "predicted_peak_bytes": 522868377,
+        "predicted_weight_bytes": 5228683776,
+        "record": "12206b393c533d0ae1e2e4c644df0af93e2bcc91115d04a0693e0f7494013333b586",
+        "records": [
+          "1220044754a6eab083cd3a633fd55fbeca23abb78eb006a66fe68118ce21f1f85d4b",
+          "122010775bd1c04f22c2713405eafc0e4a8b5e6647afa2f9ee4a214b23e0905a3f3c",
+          "1220393369faa4951bab95ef3db6d012aff217b3dca65ab1b7534d2cd608d9ac95ed",
+          "12203ec9f9ea5b2117b8c85fd07962e4e303cca3524c8d71219340d8a96221198ac1",
+          "12205a99eed24ad06e68bbec2c4dbe9df15aff9015d54bfd330ac4104b19addf409d",
+          "12206b393c533d0ae1e2e4c644df0af93e2bcc91115d04a0693e0f7494013333b586",
+          "12207b314f3982aa828ce37adf4c6fb200cb9fe744a48dda8b483cd7e494d95bfec4",
+          "12207c8d129ea3d8b84f6f681aa518de8ff36ddd793832fda2c1bc1c1d2eff988550",
+          "1220842b830a3d56f32e36d4d42e93d1cf6cb6c5573281b06b4bd46b85e83e099bda",
+          "122087059bf088251ced232bc1eede74f3bad6a04ddba278187c83a2578ad0d5b85c",
+          "12209177ed2710257b4ca4477aadaafb1dbec5dadf658569b3d5faba61b94f1cee27",
+          "1220a2a3bd4fa82fed0d0e0177bf19884a3f37fd12f94bafc85812bf05ee147e11ac",
+          "1220c4d576ed9039deda716406e476c385664811f6064b36ee3fbb67dc433d168d24",
+          "1220d5f817756715525f4148bbf7d53b56dd3a2f73e47c49e494bb31295f3a56d283",
+          "1220e4d272d2856d239be6b47fe65e9fd1a48ccaedc2d9f4b3a9a999d152d4a4dcb5",
+          "1220f632d009e2822edc74336a3823c95018d460072adc642a812d48111bd7e68f62"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": 269.2,
+        "cost": 0.323474,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": 9986,
+        "measured_peak_bytes": 1599875317,
+        "measured_weight_bytes": 63340030197,
+        "model": "google/gemma-4-31B-it",
+        "p99_ttft_ms": 204.17094931006432,
+        "predicted_peak_bytes": 2994733056,
+        "predicted_weight_bytes": 62766378712,
+        "record": "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd",
+        "records": [
+          "1220620ad832acce780556de652ac6ad3871eb350506187a512a344dfc2611a429eb",
+          "1220a8806dc9c88fcb09d9c0729e5837b54876a1e6a7641a8ea56fa2c9bec280b14e",
+          "1220b22a2a0c23ede05a672102199f0692c7f7472b9766b0a91aa0f80c0f5cc2d7b0",
+          "1220d0d5e01ab2396cb6acff431adfba3d2985d10d3fb5f6addf158352aa12593f02",
+          "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": null,
+        "boot": "failed",
+        "cases": null,
+        "cold_start_seconds": null,
+        "cost": 1.392902,
+        "error": "ValueError: There is no module or parameter named 'layers.0.mlp.down_proj.backward_hadamard_matrix' in Qwen3M…",
+        "failed_boots": 1,
+        "failure": "a fix that did not work",
+        "gpu": "NVIDIA B200",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": null,
+        "measured_weight_bytes": null,
+        "model": "ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4",
+        "p99_ttft_ms": null,
+        "predicted_peak_bytes": 156,
+        "predicted_weight_bytes": 1568,
+        "record": "1220e2bb9d9e3077ec36a3b1996d3fa982eb9268665a8054c69a161934461b3fd41d",
+        "records": [
+          "1220e2bb9d9e3077ec36a3b1996d3fa982eb9268665a8054c69a161934461b3fd41d"
+        ],
+        "slo_p99_ttft_ms": null,
+        "slo_verdict": null,
+        "tasks_passed": null,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.118071,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 1277752770,
+        "measured_weight_bytes": 6098853560,
+        "model": "JunHowie/Qwen3-8B-GPTQ-Int4",
+        "p99_ttft_ms": 208.82394800661132,
+        "predicted_peak_bytes": 610378752,
+        "predicted_weight_bytes": 6103787520,
+        "record": "1220b9e409435a57a94ec162cf8e0d401bf53a8967bbb168a213dbeb6482f7596ca6",
+        "records": [
+          "122018669b0bb312a3d13f38b7b5541917e71162ae989226b1d68dbfc0c140151478",
+          "12202ba1862b57d281ccded626d60c67f831a7bc96c7831e199a0f9a75ad3410fd3f",
+          "12206a93cab1c283344ad2039ba5a3a9415c64850bc54372523f112e33225a34c82c",
+          "1220750ac695032ee7818f2ba8e6e06bad0c7f3153e1555f0231474ff6622b53d0b0",
+          "1220a7877dd7e888e743fd90a99cff2d93777ecbdf332e3e23ccd635525fb63ddd45",
+          "1220b9e409435a57a94ec162cf8e0d401bf53a8967bbb168a213dbeb6482f7596ca6",
+          "1220c78063be278806620433e9a2430eb978a597e0307d3dc8e62fc935c061e15949",
+          "1220c820cfbd67b7b000b8f64cc08045b19029896d326e424ea24d8c521c0e7fff77"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.03038,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 1084479242,
+        "measured_weight_bytes": 16106127360,
+        "model": "meta-llama/Llama-3.1-8B-Instruct",
+        "p99_ttft_ms": 221.69030246324837,
+        "predicted_peak_bytes": 1606052249,
+        "predicted_weight_bytes": 16060522496,
+        "record": "1220636ca167b3f0c240df5c80fa2aec588bd2bec55f7a763fb5acc33fe1bcfb5cec",
+        "records": [
+          "12203eb26d453a280cad801d9dca9ea0cfcb8322945188df31f3517f7ad775519fa6",
+          "1220636ca167b3f0c240df5c80fa2aec588bd2bec55f7a763fb5acc33fe1bcfb5cec",
+          "12207d816078edb4ff45879a7de1e85cbe18fa44aebabd7406e8475c76d9664eab47",
+          "122084195d84d5675e8cbcf0b9afbca0b5bf292dc6b280ddbc11c1c1e5b2d4891751",
+          "12208c23032bd47caf2ff2ce057e1a5e98c528a12336204280ce26bafb1a40f60d01",
+          "1220b871596474c6147fd47a73849565c4864919debdf7d64c4865163609b583760d",
+          "1220c62d62ae67ec438ebca7e7facc6f53eb71e65853a9e6b29aee797a3e470e5948",
+          "1220f4995e57ae2c4bc182084b0f54feaa9e8d99307987f54422a56bee1155a2c806"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 0,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": 156.4,
+        "cost": 0.211968,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": 217478,
+        "measured_peak_bytes": 1964947537,
+        "measured_weight_bytes": 59947006033,
+        "model": "meta-models/Muse-Glimmer-30B",
+        "p99_ttft_ms": 185.09713247418404,
+        "predicted_peak_bytes": 2907766784,
+        "predicted_weight_bytes": 59553253376,
+        "record": "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
+        "records": [
+          "12200349a8c7fb9e7d09c507d10be75323fb9bec456b6dbea00e44e2371d0bfbbaed",
+          "122019a9e31626f29a4c1d4525c324a4a6a4c809a0f5c3b095c38323f2e9b161428b",
+          "12206d543bd95f7e97eb237181e5edd75c3e9ab42be7274b32f2e45a2121911faa53",
+          "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
+          "1220abba11b486e2ce47648e40f5db2b35545f5312e9b60f2c9917e70f171080a3db"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": false,
+        "vllm": "v0.30.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.173504,
+        "error": null,
+        "failed_boots": 2,
+        "failure": null,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 300647710,
+        "measured_weight_bytes": 14506252042,
+        "model": "mistralai/Mistral-7B-Instruct-v0.3",
+        "p99_ttft_ms": 202.98205516766757,
+        "predicted_peak_bytes": 1449604710,
+        "predicted_weight_bytes": 14496047104,
+        "record": "1220c4ad8130d1bb5d01e086aa11b4155e57e820ff67e02fed5be6c2b1111bc090bb",
+        "records": [
+          "1220142903598f2e8a505848cac3411524028f315adb9bc372d16fe0fe53bce7d2e5",
+          "12201d4d83eb617dea2cbddab96a17b4d713307a431fa3bcc3905d8d3b186aa1967e",
+          "12201d7657881dda5ce067c186a2bcee89a68fcfe41cc159dd3445f477813377f0e2",
+          "12201d81b4264e0ae66e0331be18190df340b4a57952d24ce893302f1ebd5e8493c0",
+          "122034dfa2e9c03677808f89b0ebed13b13be5f6747776a04f301ecd5c6b29925dda",
+          "1220533c7088dda6eb4272dc3aec8e9c820e7f526a5bb24b8921223bdb51da8c4b63",
+          "12205bb62283c6e9fc64f7fda42c7386bd3162c34479ddd9a2b2cb157dd8db93ad53",
+          "122075e500841efea613add26e52f3a827c8b87c32ddca193ffdf8fd23c0867db745",
+          "122091f6f5a9e45cad0db1dd91456df93505820ac021bead078855e9af14312ac084",
+          "1220a6224c34845b72053479b0ae0c2c8ea77977f58c09c225906774734ac21c8509",
+          "1220bffbae5f2817e9418b1a8ad049348340235fd050c8e9a6df5dd48c0841ed5a06",
+          "1220c29b418403035748d2d55fcecdee03deaa643650f50268c2baea28f817e08973",
+          "1220c4ab40df7487bbb966eef1140379a46a0868a9ca7b7f330353c03b8dbf3438eb",
+          "1220c4ad8130d1bb5d01e086aa11b4155e57e820ff67e02fed5be6c2b1111bc090bb",
+          "1220dcda4554108a677ca6f2ec1c9f90512c74bbbae40cf7f24f29b0f583c563d383",
+          "1220e2ff97b499fe579c4c72b9b6d8ddd2b5b2f58f40762cebccef770f5c419cd4af",
+          "1220f4cdf74d42208d6a32e1ca691e2694379191b3b9d51fcf7be445d90eb9689126",
+          "1220f6faeded20231f76a1d34060c3af7f47d0e5f754f7d0fb302d7c102ee404e8a2"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.035833,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA L4",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 300647710,
+        "measured_weight_bytes": 14506252042,
+        "model": "mistralai/Mistral-7B-Instruct-v0.3",
+        "p99_ttft_ms": 718.1487227231264,
+        "predicted_peak_bytes": 1449604710,
+        "predicted_weight_bytes": 14496047104,
+        "record": "1220ac02237cee071400d8ff6a286d8975f85c8f18558aa041bdeaaac5f6a578a165",
+        "records": [
+          "12200500f99862dc571327b408ef350213b450ad50c8e49bbc0696fbac1939610f40",
+          "122007e5661a0fb4156bf8ebfaaf8f032b0a1524d6d623a80351e6ae2622c70c50d9",
+          "12200b886612e9838f059ca5f7f0a6aee2635cffca9de380c2404e6ab4039079e0a0",
+          "12202eb1f574cca49e5c7804b02b7561f6466229e3580f5781a9eb73245bcb7a1404",
+          "12203758d37c241f2c591f6e08945ab2f7b11cf5a89bf19c91f08269223f7f3057b3",
+          "12206313935a53ff7c3a43322ef5041ecd093915cba793babb263f21c785c370d492",
+          "1220ac02237cee071400d8ff6a286d8975f85c8f18558aa041bdeaaac5f6a578a165",
+          "1220f42f4f523a5a979b719998a96fd13d31b7233f1655e1b759518a699d6957d500"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": null,
+        "boot": "failed",
+        "cases": null,
+        "cold_start_seconds": null,
+        "cost": 0.12278,
+        "error": "ValueError: max_num_seqs (1024) exceeds available Mamba cache blocks (733). Each decode sequence requires one…",
+        "failed_boots": 1,
+        "failure": "the model",
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": null,
+        "measured_weight_bytes": null,
+        "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+        "p99_ttft_ms": null,
+        "predicted_peak_bytes": 792723456,
+        "predicted_weight_bytes": 65826532480,
+        "record": "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6",
+        "records": [
+          "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
+        ],
+        "slo_p99_ttft_ms": null,
+        "slo_verdict": null,
+        "tasks_passed": null,
+        "vllm": "v0.30.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": 228.4,
+        "cost": 0.586517,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": 81951,
+        "measured_peak_bytes": 1256277934,
+        "measured_weight_bytes": 65959960248,
+        "model": "openai/gpt-oss-120b",
+        "p99_ttft_ms": 2292.4148860946298,
+        "predicted_peak_bytes": 1252638720,
+        "predicted_weight_bytes": 65248815744,
+        "record": "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef",
+        "records": [
+          "1220719de8bb1ea7c739fd651d2ed8915425ef7c6797d7a1dc2a3afd2af987c15da3",
+          "1220a3bfd7722e5e755212e9c74d8356053c860573fdb17ced6c9f79d77434ab6c79",
+          "1220ae1058c874e50f368003b8b84f7d49d665d76c637812efc968651847b1c250b6",
+          "1220b219fc84bdd8adaeb3f6548db80b2798df43b71e9798858cb50d72bac3aa43be",
+          "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "fail",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 1,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.023107,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 322122547,
+        "measured_weight_bytes": 1202590842,
+        "model": "Qwen/Qwen3-0.6B",
+        "p99_ttft_ms": 62.41232644475531,
+        "predicted_peak_bytes": 319553536,
+        "predicted_weight_bytes": 1192099840,
+        "record": "1220c6220073e29214264a963891ea6b80eef4c94d99856874270159411ceb31e476",
+        "records": [
+          "12200b951d26eb947f778757ff4e8c80f2af62cc71de9936bc252ed514b12394699c",
+          "12202dd6a657ddcfb5ce4eaedcfccc44771facef4ac35909f8858a83210cf3b52921",
+          "12205f7089d8d35b4b6792d749297c82819a5db98ae0c53c4c2b25b25db8cda7e93b",
+          "122073704f443d09a59e2629b7c98e10f0a960f310906fa1cc9cb63ef6711c2eea41",
+          "1220c6220073e29214264a963891ea6b80eef4c94d99856874270159411ceb31e476"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": false,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 1,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.119781,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 322122547,
+        "measured_weight_bytes": 794568949,
+        "model": "Qwen/Qwen3-0.6B-FP8",
+        "p99_ttft_ms": 65.42120541504117,
+        "predicted_peak_bytes": 319553536,
+        "predicted_weight_bytes": 751751680,
+        "record": "1220e319388876e8d22bc59a7cd1235262ecd2a9ccae4df7b3fe259b4fd45a260f90",
+        "records": [
+          "12203c9ef26656349c098cd5f93de72b025452d2e8d03f92b84882bdf6da79c983d6",
+          "1220497e76e9b381f9fb518d9038b1e9e2560a9d9840516a568cde915a543af430ea",
+          "12205e8684024f7f2cfbc92eab09dc40a515b2755e3efe5e9ca4293c9fbe82a4168a",
+          "12208467642286e1052a5146bf5d41793c42e24dce98de29893cf12d96b67a798878",
+          "1220e319388876e8d22bc59a7cd1235262ecd2a9ccae4df7b3fe259b4fd45a260f90"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": false,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 1,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.717092,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 365072220,
+        "measured_weight_bytes": 794568949,
+        "model": "Qwen/Qwen3-0.6B-FP8",
+        "p99_ttft_ms": 68.69404505938292,
+        "predicted_peak_bytes": 62251468,
+        "predicted_weight_bytes": 622514688,
+        "record": "12200078d8e3999ec13fe5d4ac6bfa6d2fdd69b297b01e1763a3ed34dcbee1c96dd0",
+        "records": [
+          "12200078d8e3999ec13fe5d4ac6bfa6d2fdd69b297b01e1763a3ed34dcbee1c96dd0",
+          "122011a190eca425456476e755d019196a6e0bfa02ad6f9ba5d3c6365df95f6da9f5",
+          "12201ad35d22493d4527295361b04604a84000c91afafd3ca717fbbbf565fd93825a",
+          "122051f417605488cf9e0fa6373cc80257ecf2b06a91c3f03f145460c33b829bb393",
+          "1220bd1150135b6d7ea7850aab9ce368be8f0e2c5c212b75ce3cbcbe0536fca54ef9",
+          "1220ccdc860fbb33e65fd3b3bd39a1c85549ef5be878ad8b4cc4f848a397d98dcec1",
+          "1220d68023d988ed26d2da0f12b44c0f0668814246c872041db4af6f541484017149",
+          "1220dfabcbad7ac066c195aa7e4ae19c449205ea856d5f3038fe1678c861739c8eba"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": false,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.691819,
+        "error": null,
+        "failed_boots": 3,
+        "failure": null,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 644245094,
+        "measured_weight_bytes": 3457448673,
+        "model": "Qwen/Qwen3-1.7B",
+        "p99_ttft_ms": 52.7041057869792,
+        "predicted_peak_bytes": 406347980,
+        "predicted_weight_bytes": 4063479808,
+        "record": "122056e563edf84b102233abdb30ce90733de29eaa8ba8e23b06bbf302188c3ca8e6",
+        "records": [
+          "1220066392da9480498cd4d467896ce42d89d66605a5a0ad783a12c4615fddb32493",
+          "1220073713910e21ee0e8c1831e6ccf77ee83beba42832b3f7dc14613f14064c3787",
+          "12201194f88627ec3f28664da1633d7276714619827ed2956bec26c3fb52e1e8b2a5",
+          "122016a2683145411b02d0b4db83379a2ef5c446c8727b73edd254490dbcd9fb0003",
+          "12203417638dd813ee4bff84d64273024a3f58b41e2eeca73bbf1af06858795532bf",
+          "1220348ef02b049d4a023353f2614899f8df69eb5f5c12b9005401d3cdc9e6c56200",
+          "12203c209639fd97819f0af88d0eaa1e4dc3a9ecd6cda2cc6a6170fee9ff253a01ff",
+          "1220446e6ae26da2fba4d4f4d2d2c4bfd1e574a4ea4997891665ca19985684c52633",
+          "122056e563edf84b102233abdb30ce90733de29eaa8ba8e23b06bbf302188c3ca8e6",
+          "12205becbda646ab0c9d7b5145fa5dcbc6e0ddc7618c842073400f70b082efb9d262",
+          "122068c372c3fa7a65ee0920a0032b6ae05306d9db9249115614c92826b199b47553",
+          "1220805d46a1bfc0cf068b7cb3ee1b80853defa0a8eeed341867f5a0b877cf7d01d0",
+          "1220ad1ca2d5b5859a355981e9acc833e733a04583a7c8326dee786db9a98fc64686",
+          "1220c46de8fbebe1bf7dd46e19f5961747e49a3ae3a2c3ec67447d138c7f98e30c8a",
+          "1220c680fcc992ddaed4a2fe12932d260df60e27ac18a4aaa1aa6aa86176dad01242",
+          "1220d3339409290661dc36d71cf93f39545ad8e9fd7757a0496bfd80b62acacfc7e7",
+          "1220d50f1d7cd237f0dcc7326728546cbc0fb44e7f2ed0e564b3960b3d0502c5225f",
+          "1220d5ab1a05171b74ab54c30edb7d2264e62fa7244b7a6a6288d82f1d0a12c54b3d",
+          "1220df2ce6e23fc836a75e0623ff0b72ab9e301c43cca97af775c0545e74cf8d4aa4"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.084976,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA L4",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 644245094,
+        "measured_weight_bytes": 3457448673,
+        "model": "Qwen/Qwen3-1.7B",
+        "p99_ttft_ms": 173.1801080331206,
+        "predicted_peak_bytes": 406347980,
+        "predicted_weight_bytes": 4063479808,
+        "record": "1220205b397c672ee4ad674fc589d167da7dda4c181ee1603eafcd7c66235184198f",
+        "records": [
+          "1220205b397c672ee4ad674fc589d167da7dda4c181ee1603eafcd7c66235184198f",
+          "122052ddb3ca62378b8a6da3ffecb34fb468f0e2e1fb4077f6e6b323ea7edfcf4d24",
+          "12206e7f486d722945d30e1ff359de152154c14c669e62221fa88dd9b28098226c9e",
+          "1220715f23ad9671aebdd9a57e50d3b214b31148738cc267163365f9d9be3b166d46",
+          "12208fec12077b14527e4387145c220b9810335f4ac4075c4b72b08f68ce72cf9d9e",
+          "1220b6c72d0711a14d46ad8c6f6fcd9e4113fa34870da93effe6b2c0d3faaaeb32be",
+          "1220c6fe521bb6009e712c2956eb12b468bf330b01bbbb6d06d524507b273dfff3b8",
+          "1220dad9155b4119fb6b58cebe264353221af8a88c01d6cb890ab1269ba49ad734eb"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.105809,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA RTX A6000",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 1599875317,
+        "measured_weight_bytes": 29549374996,
+        "model": "Qwen/Qwen3-14B",
+        "p99_ttft_ms": 585.0732687860727,
+        "predicted_peak_bytes": 2953661440,
+        "predicted_weight_bytes": 29536614400,
+        "record": "12203903ded913c699483a8f5a7902faf7cb5059209d1455fdfbe17c5ec95f0895b3",
+        "records": [
+          "12201548c6dde18fda68f3d3116a4cdcd479f6e65096f60dea9a119885f865d401f8",
+          "122024b91041129db3bb9efb0d14dfe51a17fd4af023b38d021c0ebb5e80c67e0287",
+          "12203903ded913c699483a8f5a7902faf7cb5059209d1455fdfbe17c5ec95f0895b3",
+          "1220581b5941758755eb3fab1351a12e6b43ca7e0f97a782c5c2a8a59da756912c1e",
+          "1220872ab145fda6e16da28017f6980003d0947fde746a55975dc1b9af7c7e9f01e9",
+          "12209e6ada5f704d16f56d47009ef82d61665502aa4e74bdc530d321750c37af4113",
+          "1220a6d5efc7eef1c50f14eb585086d079c7fd7b3ed3c5fc300ec30f4e0b321ddcab",
+          "1220b1e8f62c3c8ac3c49b51b6fdccba3857f645069b04111bfc478d27adf2a11a9e"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.39219,
+        "error": null,
+        "failed_boots": 1,
+        "failure": null,
+        "gpu": "NVIDIA A100 80GB PCIe",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 1599875317,
+        "measured_weight_bytes": 65530463518,
+        "model": "Qwen/Qwen3-32B",
+        "p99_ttft_ms": 716.3692039158195,
+        "predicted_peak_bytes": 6552424652,
+        "predicted_weight_bytes": 65524246528,
+        "record": "1220374d2a3c7d3a33d8fe3102211051c5dc5185751d49fbd620a90eb1d34897a479",
+        "records": [
+          "12202d20ff104d816482633444ae312d3ff526f89d08da42bb1042535b8d1861e80c",
+          "122031e0061b860a1c6248f2f842f9c2c37bd6c4355e99ccf426f768addd8e207518",
+          "1220374d2a3c7d3a33d8fe3102211051c5dc5185751d49fbd620a90eb1d34897a479",
+          "12204b987acc6061352ec60e95dd8ac0ba60541e6df312fd9df29a605826368f7097",
+          "12205c57d8f03197ff5fa2f0dd68ee24bf1b653744bdcba9c19ae920b482959ccc4a",
+          "1220af8eeb74909ff10d6aaf75cd997eeff629ea101a03594e2362668982ba470a5d",
+          "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321",
+          "1220f1131bc8654cc757b0fa4f2c8ba6ff8b8577fec1181d394cbe7acd612a363b90",
+          "1220feb7179d87e1a4a32c0fc2d620681501189ce5bfd4741d91e5ac5b2d8815ce6f"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 1.648881,
+        "error": null,
+        "failed_boots": 1,
+        "failure": null,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 1728724336,
+        "measured_weight_bytes": 65530463518,
+        "model": "Qwen/Qwen3-32B",
+        "p99_ttft_ms": 223.411506395787,
+        "predicted_peak_bytes": 6552424652,
+        "predicted_weight_bytes": 65524246528,
+        "record": "1220eef514a1a275cd13bd98c041db9bda93e42c9df0b5126d4f6ede6c0811582fca",
+        "records": [
+          "12200e1c9bcb2f03ace90f778169bcb65a59fb09057157787ee289714fe6baef0e51",
+          "12202aec7f802585999a697d2cfa6fa10feafb407883f1af46548a8aff895d745a0e",
+          "122034355d8bd254e7771292c080e7cd1e286845c49c0c4f5ae2246a0208e25d4e18",
+          "122076c27e44225ebf05c45d63ba6ed34a6211f7aabfe2d24e94b6c46e042ff71399",
+          "12208ed8e15b1aa9bb219b41e8579aee84188cb050cd874a30bc310432311e5368f4",
+          "12209e8cec8c7ab2440062c0c7aeec00f48b3739d1df76134f82f34ed091762c6543",
+          "1220b4918863630e2f43ecc3cf55d19816369f57531ec0d8adcb433cae00cbc83c24",
+          "1220eef514a1a275cd13bd98c041db9bda93e42c9df0b5126d4f6ede6c0811582fca",
+          "1220fb605b7701961be4094f4bafcf421549d3d2899e99ee41667b086b74b7a34b38"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.848029,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA A100-SXM4-80GB",
+        "gpu_count": 4,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 225485783,
+        "measured_weight_bytes": 8203387535,
+        "model": "Qwen/Qwen3-8B",
+        "p99_ttft_ms": 91.891596945934,
+        "predicted_peak_bytes": 1638147072,
+        "predicted_weight_bytes": 16381470720,
+        "record": "12209ac3de7807d51809acd76e127d26d804a5ec59e024150da7d0c9536599571ea5",
+        "records": [
+          "12204b0b6a60d45a87848e0f9d53a6900f57344f09d682202001450ba736bc4a632c",
+          "12205150496f5ad05a58990c16e4a86a1c3645294b3a905fe4ef982acfe9df2c1efe",
+          "12208b3fd4889b2313235e2ad4106546eb056956cde364f5b10fbff906c04e862bf5",
+          "12208e0b44a2622cdde84df6c1924b4068ffa97b5f5c2fe48f8c4b14f738a4960744",
+          "12208e62684da57990e16a8ae38a628367cd44f3ed8bc065d673b3ab220810ece591",
+          "12208f850372f5f6d4c386f56003b38ebc1a8cebd05963d9bf7ad89e43a12fa8f6cb",
+          "12209ac3de7807d51809acd76e127d26d804a5ec59e024150da7d0c9536599571ea5",
+          "1220f1afa7d19d18820b69802a295db5dcabb783b192a14add004f93115478352bc4"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.149849,
+        "error": null,
+        "failed_boots": 1,
+        "failure": null,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": 1277752770,
+        "measured_weight_bytes": 16396037652,
+        "model": "Qwen/Qwen3-8B",
+        "p99_ttft_ms": 211.5916694374755,
+        "predicted_peak_bytes": 1638147072,
+        "predicted_weight_bytes": 16381470720,
+        "record": "122046447ffc1d89490228e1a78bf46bfc0f154518d1ee3fc69b76ea755703418513",
+        "records": [
+          "1220386d8f27a3644985be66a52cf4ea118d298fe11a3f99ec5e694f7bdb68ab5e19",
+          "122046447ffc1d89490228e1a78bf46bfc0f154518d1ee3fc69b76ea755703418513",
+          "122054a949c8a23e079d73840f5b90d1506357ed23d413546979adefd9ca01d5acf7",
+          "12206418a88a7d927c5049c6936ccee3cc729d8ce1e2373fca2c428cb560ff473383",
+          "1220763a9b91627f8634f8a16f911359ad08e5d8782695ddc29c57219d096b0bf31f",
+          "12208dd7f62650340f45172ad09029bcbcc5208a4fee37bd192b9655be088b199134",
+          "1220b2b957d0c51dcc2fd27866f7603c13dd1f3b3693ab73fd7565c647f522c5878b",
+          "1220e7b5dd47f7e19991401373a6c39f3493a5cd1839aafa1ccb4f3d03ba366abded",
+          "1220e8a2173c51d34ea08474d5f6a1d0e7b79f5203e40b720b1f2608c987fc2f1584"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.19304,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": 464992,
+        "measured_peak_bytes": 1385126952,
+        "measured_weight_bytes": 6249177415,
+        "model": "Qwen/Qwen3-8B-AWQ",
+        "p99_ttft_ms": 86.07545791193841,
+        "predicted_peak_bytes": 1378877440,
+        "predicted_weight_bytes": 6098479104,
+        "record": "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269",
+        "records": [
+          "1220057f4eb955c328fbbc574f4a2274a3c394eb9df9191794a17737fde2a8a2db55",
+          "12204c8a90c33970ebc53a73f8d36cce8912c3468e84072a9f56723c1b4749d78f39",
+          "1220b46348fea4110a4cabe521364177394ba6f6f63df98cc9ba4e53ec9cb49c99b6",
+          "1220d1e7d878276754f6f114d9c62da1a8178e991dea0130c6f4d138d8d7610ab24d",
+          "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": null,
+        "boot": "failed",
+        "cases": null,
+        "cold_start_seconds": null,
+        "cost": 1.075595,
+        "error": null,
+        "failed_boots": 1,
+        "failure": "the harness: a command on the pod did not answer in time",
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": null,
+        "measured_weight_bytes": null,
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "p99_ttft_ms": null,
+        "predicted_peak_bytes": 1084227584,
+        "predicted_weight_bytes": 37454789472,
+        "record": "12208be5e9e11a3ef0bf29d251d223ce5b2cefe1b94b7046c5a9bcbce383217d2491",
+        "records": [
+          "12208be5e9e11a3ef0bf29d251d223ce5b2cefe1b94b7046c5a9bcbce383217d2491"
+        ],
+        "slo_p99_ttft_ms": null,
+        "slo_verdict": null,
+        "tasks_passed": null,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": 508.6,
+        "cost": 0.758739,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": 147108,
+        "measured_peak_bytes": 2061584302,
+        "measured_weight_bytes": 36754182635,
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "p99_ttft_ms": 140.94415191560984,
+        "predicted_peak_bytes": 1084227584,
+        "predicted_weight_bytes": 37454789472,
+        "record": "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
+        "records": [
+          "12203d42d9edd72738db48d8a2921852c2b4355b8f4f1e2364074184a8b99ac107bc",
+          "1220424b31bb9320ded8dd35ea51494e053c7573624d88f7cfa068a7143b0cfab493",
+          "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
+          "1220bef520489a0b824bb0fb0d0fddbf4b494639a3bec75d6722d2fd01ddafcd1334",
+          "1220fe7f6e1e6e0d9ad1f920688576c1e97098dd3fdea64dd4f1ce27a5895e679ece"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.30.0"
+      },
+      {
+        "accepted": null,
+        "boot": "failed",
+        "cases": null,
+        "cold_start_seconds": null,
+        "cost": 0.374655,
+        "error": "RuntimeError: torch_call_dispatcher( \"aten::new_empty\", \"\", stack.data(), ( ((0ULL + 2) << 56) | ((0ULL + 13)…",
+        "failed_boots": 1,
+        "failure": "the model",
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": null,
+        "measured_weight_bytes": null,
+        "model": "Qwen/Qwen3.8-27B",
+        "p99_ttft_ms": null,
+        "predicted_peak_bytes": 2710568960,
+        "predicted_weight_bytes": 55562855904,
+        "record": "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc",
+        "records": [
+          "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc"
+        ],
+        "slo_p99_ttft_ms": null,
+        "slo_verdict": null,
+        "tasks_passed": null,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 0,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": null,
+        "cost": 0.130038,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "kv_cache_tokens": 818560,
+        "measured_peak_bytes": 279172874,
+        "measured_weight_bytes": 5615669739,
+        "model": "state-spaces/mamba-2.8b-hf",
+        "p99_ttft_ms": 195.20911917090416,
+        "predicted_peak_bytes": 278528000,
+        "predicted_weight_bytes": 5536691200,
+        "record": "12206810a074c3de321e4b0f9b559394be33816d5161d21d68bdd6b58d995db0779b",
+        "records": [
+          "1220092662ec5a9549bc0d829a5b85cd655fe1b95b13244722782d4b7b551aff4711",
+          "12200ac02bfdf76a32406e83fc4d9de4a191dd9e7ed394552fcd7ce148df5f5fd64a",
+          "12200b7ac1f694999b48cf6eda1de42a47c0261dffbd3f7514455fb8209a35d59e2b",
+          "12201769160e39c8b1fea1ba2da67fd909a90f23f29059b2e13f28517bd62a8eee1a",
+          "12202690db823962650ac716bb12dbe0dfea6307992460e48969cf76a42cdb4c27c9",
+          "1220388c2bc7a58d1a6ef9be877af572e7250db36bb825ad459f419dd7e7cb537da1",
+          "1220575d3bf15c6ad449feaed03df15290bfd8a30a305d2e3101efce0409b144542a",
+          "12206810a074c3de321e4b0f9b559394be33816d5161d21d68bdd6b58d995db0779b",
+          "1220702bec40e8376a660f8936e90a73313eab1cd52d143343e24f7a9e390e6cabaf",
+          "12207908cf181f7736db40a0044571ce545de1de6bd6f3e1b16564a072fbac8e3493",
+          "12208be4514014b93e1df25668c0ed3ebb2d327105bde0b618f14305b15bfe77b6cb",
+          "1220b91ed705392b8d73e427d49b02bb78d16873551c543c67b8e478371077062acc",
+          "1220c040c502ab1285aebca3aaad3ce9db9e8202f8e8049cb6e4d6c4cdbd6a7bca1a"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": false,
+        "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": 104.6,
+        "cost": 0.131137,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 1,
+        "kv_cache_tokens": 169216,
+        "measured_peak_bytes": 2190433320,
+        "measured_weight_bytes": 59989955706,
+        "model": "zai-org/GLM-4.7-Flash",
+        "p99_ttft_ms": 1324.051704928279,
+        "predicted_peak_bytes": 701497344,
+        "predicted_weight_bytes": 62442977152,
+        "record": "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
+        "records": [
+          "122005193f21e06cd4ba493c44b08a268fa97e28e66b6becf2d8b962407c39b7f636",
+          "12208087085572ae72f624dfd25a5c8cbcdaf6fc271e34e84cd6bdcd4b6bc49bede6",
+          "122082aeafa81c543998b6759da7d2b90574b9bdcb41b9d79d7713b519681af92845",
+          "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
+          "12208edaefdd8c44dd1726e94205cc21cb5b95c239141db16df098135762e773a168"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.29.0"
+      }
+    ]
+  },
   "repeat_measurements": [
     {
       "activation_spread_pct": 0.0,
@@ -2062,6 +3236,7 @@
         "1220066392da9480498cd4d467896ce42d89d66605a5a0ad783a12c4615fddb32493",
         "122056e563edf84b102233abdb30ce90733de29eaa8ba8e23b06bbf302188c3ca8e6"
       ],
+      "vllm": "v0.29.0",
       "weight_spread_pct": 0.0
     }
   ],
@@ -2078,7 +3253,8 @@
       "record": "12206a93cab1c283344ad2039ba5a3a9415c64850bc54372523f112e33225a34c82c",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2092,7 +3268,8 @@
       "record": "12205f7089d8d35b4b6792d749297c82819a5db98ae0c53c4c2b25b25db8cda7e93b",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2106,7 +3283,8 @@
       "record": "12205e8684024f7f2cfbc92eab09dc40a515b2755e3efe5e9ca4293c9fbe82a4168a",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2120,7 +3298,8 @@
       "record": "1220dfabcbad7ac066c195aa7e4ae19c449205ea856d5f3038fe1678c861739c8eba",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2134,7 +3313,8 @@
       "record": "1220073713910e21ee0e8c1831e6ccf77ee83beba42832b3f7dc14613f14064c3787",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2148,7 +3328,8 @@
       "record": "1220d3339409290661dc36d71cf93f39545ad8e9fd7757a0496bfd80b62acacfc7e7",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2162,7 +3343,8 @@
       "record": "1220715f23ad9671aebdd9a57e50d3b214b31148738cc267163365f9d9be3b166d46",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2176,7 +3358,8 @@
       "record": "12201548c6dde18fda68f3d3116a4cdcd479f6e65096f60dea9a119885f865d401f8",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2190,7 +3373,8 @@
       "record": "122031e0061b860a1c6248f2f842f9c2c37bd6c4355e99ccf426f768addd8e207518",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2204,7 +3388,8 @@
       "record": "1220b4918863630e2f43ecc3cf55d19816369f57531ec0d8adcb433cae00cbc83c24",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2218,7 +3403,8 @@
       "record": "12208e0b44a2622cdde84df6c1924b4068ffa97b5f5c2fe48f8c4b14f738a4960744",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2232,7 +3418,8 @@
       "record": "1220386d8f27a3644985be66a52cf4ea118d298fe11a3f99ec5e694f7bdb68ab5e19",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2246,7 +3433,8 @@
       "record": "1220d1e7d878276754f6f114d9c62da1a8178e991dea0130c6f4d138d8d7610ab24d",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2260,7 +3448,8 @@
       "record": "1220bef520489a0b824bb0fb0d0fddbf4b494639a3bec75d6722d2fd01ddafcd1334",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.30.0"
     },
     {
       "completed": 50,
@@ -2274,7 +3463,8 @@
       "record": "122061f72e5d7004a287bada68fc73c6d61a02140a24be883c82d676d48a02f0a518",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2288,7 +3478,8 @@
       "record": "1220cda28d70f6b5f81c66927bfdcc078679dc12661d23853d05979a48c52debdd77",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2302,7 +3493,8 @@
       "record": "1220c4d576ed9039deda716406e476c385664811f6064b36ee3fbb67dc433d168d24",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2316,7 +3508,8 @@
       "record": "12203ec9f9ea5b2117b8c85fd07962e4e303cca3524c8d71219340d8a96221198ac1",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2330,7 +3523,8 @@
       "record": "1220b22a2a0c23ede05a672102199f0692c7f7472b9766b0a91aa0f80c0f5cc2d7b0",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2344,7 +3538,8 @@
       "record": "1220c62d62ae67ec438ebca7e7facc6f53eb71e65853a9e6b29aee797a3e470e5948",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2358,7 +3553,8 @@
       "record": "12206d543bd95f7e97eb237181e5edd75c3e9ab42be7274b32f2e45a2121911faa53",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.30.0"
     },
     {
       "completed": 50,
@@ -2372,7 +3568,8 @@
       "record": "12201d81b4264e0ae66e0331be18190df340b4a57952d24ce893302f1ebd5e8493c0",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2386,7 +3583,8 @@
       "record": "1220dcda4554108a677ca6f2ec1c9f90512c74bbbae40cf7f24f29b0f583c563d383",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2400,7 +3598,8 @@
       "record": "12203758d37c241f2c591f6e08945ab2f7b11cf5a89bf19c91f08269223f7f3057b3",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2414,7 +3613,8 @@
       "record": "1220719de8bb1ea7c739fd651d2ed8915425ef7c6797d7a1dc2a3afd2af987c15da3",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "fail"
+      "verdict": "fail",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2428,7 +3628,8 @@
       "record": "1220092662ec5a9549bc0d829a5b85cd655fe1b95b13244722782d4b7b551aff4711",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2442,7 +3643,8 @@
       "record": "12208be4514014b93e1df25668c0ed3ebb2d327105bde0b618f14305b15bfe77b6cb",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     },
     {
       "completed": 50,
@@ -2456,7 +3658,8 @@
       "record": "12208087085572ae72f624dfd25a5c8cbcdaf6fc271e34e84cd6bdcd4b6bc49bede6",
       "slo_p99_tpot_ms": 100.0,
       "slo_p99_ttft_ms": 2000.0,
-      "verdict": "pass"
+      "verdict": "pass",
+      "vllm": "v0.29.0"
     }
   ],
   "setup": {
@@ -2477,7 +3680,7 @@
       "sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-28T03:53:27.979899+00:00",
+    "last_event": "2026-09-28T08:33:14.321924+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B",
@@ -2532,7 +3735,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2551,7 +3755,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 1,
@@ -2570,7 +3775,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 1
+      "truncated": 1,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 1,
@@ -2589,7 +3795,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 1
+      "truncated": 1,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 1,
@@ -2607,7 +3814,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 1
+      "truncated": 1,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 1,
@@ -2626,7 +3834,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 1
+      "truncated": 1,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2647,7 +3856,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2669,7 +3879,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2687,7 +3898,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2706,7 +3918,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2724,7 +3937,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2743,7 +3957,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2761,7 +3976,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2780,7 +3996,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2798,7 +4015,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2817,7 +4035,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2835,7 +4054,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2854,7 +4074,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2872,7 +4093,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2891,7 +4113,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2910,7 +4133,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2929,7 +4153,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.30.0"
     },
     {
       "accepted": 0,
@@ -2947,7 +4172,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 3
+      "truncated": 3,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 0,
@@ -2966,7 +4192,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 3
+      "truncated": 3,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -2985,7 +4212,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3003,7 +4231,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3022,7 +4251,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3040,7 +4270,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3059,7 +4290,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3078,7 +4310,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 2,
@@ -3096,7 +4329,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3115,7 +4349,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 0,
@@ -3134,7 +4369,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.30.0"
     },
     {
       "accepted": 3,
@@ -3152,7 +4388,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3171,7 +4408,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3189,7 +4427,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3208,7 +4447,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3226,7 +4466,8 @@
       "scoring": [
         "whitespace_normalized_exact_match"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3245,7 +4486,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3264,7 +4506,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 0,
@@ -3283,7 +4526,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 0,
@@ -3305,7 +4549,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     },
     {
       "accepted": 3,
@@ -3324,7 +4569,8 @@
         "whitespace_normalized_exact_match",
         "strip_terminal_punctuation"
       ],
-      "truncated": 0
+      "truncated": 0,
+      "vllm": "v0.29.0"
     }
   ],
   "weights_time": [
@@ -3335,6 +4581,7 @@
       "model": "Qwen/Qwen3.6-35B-A3B-FP8",
       "pod_seconds": 782.6538469791412,
       "record": "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
+      "vllm": "v0.30.0",
       "weights_seconds": 1.4,
       "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
     },
@@ -3345,6 +4592,7 @@
       "model": "google/gemma-4-31B-it",
       "pod_seconds": 333.67055010795593,
       "record": "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd",
+      "vllm": "v0.29.0",
       "weights_seconds": 0.8,
       "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
     },
@@ -3355,6 +4603,7 @@
       "model": "meta-models/Muse-Glimmer-30B",
       "pod_seconds": 218.64953088760376,
       "record": "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
+      "vllm": "v0.30.0",
       "weights_seconds": 0.8,
       "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
     },
@@ -3365,6 +4614,7 @@
       "model": "openai/gpt-oss-120b",
       "pod_seconds": 605.0021140575409,
       "record": "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef",
+      "vllm": "v0.29.0",
       "weights_seconds": 1.3,
       "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
     },
@@ -3375,6 +4625,7 @@
       "model": "zai-org/GLM-4.7-Flash",
       "pod_seconds": 135.26904797554016,
       "record": "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
+      "vllm": "v0.29.0",
       "weights_seconds": 1.1,
       "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
     }

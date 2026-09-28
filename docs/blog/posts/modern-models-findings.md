@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 19 on 6 GPU types
 - Failure classes fixed and re-verified: 6 of 6
-- Total cost: $20.00 of the $100 cap (failed boots included: $6.66)
+- Total cost: $23.57 of the $100 cap (failed boots included: $6.66)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -24,48 +24,48 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 ## The models
 
 <!-- findings:modern_models -->
-| Group | Model | Size (B params) | Downloads / 30 days | GPU | Before any GPU | Status | Weights GiB: predicted / measured | Questions answered | Cost $ | Records |
-|---|---|---|---|---|---|---|---|---|---|---|
-| A | openai/gpt-oss-20b | 20.9 | 6,759,761 | NVIDIA GeForce RTX 4090 x1 | fits: 14.55 GiB per GPU | not run yet | — | — | — | — |
-| A | openai/gpt-oss-120b | 116.8 | 4,484,728 | NVIDIA H100 80GB HBM3 x1 | fits: 64.02 GiB per GPU | booted | 60.77 / 61.43 | 3 / 3 | 0.5865 | `1220ded0ff281432` |
-| A | google/gemma-4-31B-it | 31.3 | 9,460,570 | NVIDIA H100 80GB HBM3 x1 | fits: 65.14 GiB per GPU | booted | 58.46 / 58.99 | 3 / 3 | 0.3235 | `1220ea39d74241fc` |
-| A | meta-models/Muse-Glimmer-30B | 29.6 | 286,662 | NVIDIA H100 80GB HBM3 x1 | fits: 59.95 GiB per GPU | booted | 55.46 / 55.83 | 0 / 3 | 0.2120 | `1220ab41dd7bf8bd` |
-| A | zai-org/GLM-4.7-Flash | 31.2 | 1,854,281 | NVIDIA H100 80GB HBM3 x1 | fits: 60.09 GiB per GPU | booted | 58.15 / 55.87 | 3 / 3 | 0.1311 | `122089055d7f1339` |
-| B | Qwen/Qwen3.8-27B | 27.8 | 6,727,629 | NVIDIA H100 80GB HBM3 x1 | fits: 56.0 GiB per GPU | failed | — | — | 0.3747 | `122001a0c3f97733` |
-| B | Qwen/Qwen3.6-35B-A3B-FP8 | 36 | 7,638,786 | NVIDIA H100 80GB HBM3 x1 | fits: 38.91 GiB per GPU | booted | 34.88 / 34.23 | 3 / 3 | 1.8343 | `12208654b66bdeae` +1 |
-| B | nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16 | 31.6 | 462,733 | NVIDIA H100 80GB HBM3 x1 | fits: 61.93 GiB per GPU | failed | — | — | 0.1228 | `1220be1b1f6ceab3` |
-| C | zai-org/GLM-5.3-Flash | 321 | 4,332,082 | NVIDIA H200 x4 | fits: 80.19 GiB per GPU | not run yet | — | — | — | — |
-| C | deepseek-ai/DeepSeek-V4.1-Flash | 763 | 651,078 | NVIDIA H200 x4 | fits: 81.29 GiB per GPU | not run yet | — | — | — | — |
-| C | Qwen/Qwen3.8-Flash-Next | 180 | 1,226,891 | NVIDIA H200 x4 | fits: 62.85 GiB per GPU | not run yet | — | — | — | — |
-| C | deepseek-ai/DeepSeek-V4-Flash-0731 | 304.2 | 3,959,727 | NVIDIA H200 x4 | fits: 41.19 GiB per GPU | not run yet | — | — | — | — |
-| D | zai-org/GLM-5.3 | 753.3 | 1,351,716 | NVIDIA H200 x8 | fits: 94.15 GiB per GPU | not run yet | — | — | — | — |
-| D | deepseek-ai/DeepSeek-V4-Pro-0813 | 1650 | 116,119 | NVIDIA H200 x8 | fits: 107.44 GiB per GPU | not run yet | — | — | — | — |
-| D | MiniMaxAI/MiniMax-M3 | 427 | 164,729 | NVIDIA H200 x8 | fits: 103.72 GiB per GPU | not run yet | — | — | — | — |
+| Group | Model | Size (B params) | Downloads / 30 days | GPU | vLLM | Before any GPU | Status | Weights GiB: predicted / measured | Questions answered | Cost $ | Records |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| A | openai/gpt-oss-20b | 20.9 | 6,759,761 | NVIDIA GeForce RTX 4090 x1 | — | fits: 14.55 GiB per GPU | not run yet | — | — | — | — |
+| A | openai/gpt-oss-120b | 116.8 | 4,484,728 | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | fits: 64.02 GiB per GPU | booted | 60.77 / 61.43 | 3 / 3 | 0.5865 | `1220ded0ff281432` |
+| A | google/gemma-4-31B-it | 31.3 | 9,460,570 | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | fits: 65.14 GiB per GPU | booted | 58.46 / 58.99 | 3 / 3 | 0.3235 | `1220ea39d74241fc` |
+| A | meta-models/Muse-Glimmer-30B | 29.6 | 286,662 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 59.95 GiB per GPU | booted | 55.46 / 55.83 | 0 / 3 | 0.2120 | `1220ab41dd7bf8bd` |
+| A | zai-org/GLM-4.7-Flash | 31.2 | 1,854,281 | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | fits: 60.09 GiB per GPU | booted | 58.15 / 55.87 | 3 / 3 | 0.1311 | `122089055d7f1339` |
+| B | Qwen/Qwen3.8-27B | 27.8 | 6,727,629 | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | fits: 56.0 GiB per GPU | failed | — | — | 0.3747 | `122001a0c3f97733` |
+| B | Qwen/Qwen3.6-35B-A3B-FP8 | 36 | 7,638,786 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 38.91 GiB per GPU | booted | 34.88 / 34.23 | 3 / 3 | 1.8343 | `12208654b66bdeae` +1 |
+| B | nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16 | 31.6 | 462,733 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 61.93 GiB per GPU | failed | — | — | 0.1228 | `1220be1b1f6ceab3` |
+| C | zai-org/GLM-5.3-Flash | 321 | 4,332,082 | NVIDIA H200 x4 | v0.30.0 | fits: 80.19 GiB per GPU | not run yet | — | — | — | — |
+| C | deepseek-ai/DeepSeek-V4.1-Flash | 763 | 651,078 | NVIDIA H200 x4 | v0.30.0 | fits: 81.29 GiB per GPU | not run yet | — | — | — | — |
+| C | Qwen/Qwen3.8-Flash-Next | 180 | 1,226,891 | NVIDIA H200 x4 | — | fits: 62.85 GiB per GPU | not run yet | — | — | — | — |
+| C | deepseek-ai/DeepSeek-V4-Flash-0731 | 304.2 | 3,959,727 | NVIDIA H200 x4 | — | fits: 41.19 GiB per GPU | not run yet | — | — | — | — |
+| D | zai-org/GLM-5.3 | 753.3 | 1,351,716 | NVIDIA H200 x8 | — | fits: 94.15 GiB per GPU | not run yet | — | — | — | — |
+| D | deepseek-ai/DeepSeek-V4-Pro-0813 | 1650 | 116,119 | NVIDIA H200 x8 | — | fits: 107.44 GiB per GPU | not run yet | — | — | — | — |
+| D | MiniMaxAI/MiniMax-M3 | 427 | 164,729 | NVIDIA H200 x8 | — | fits: 103.72 GiB per GPU | not run yet | — | — | — | — |
 <!-- /findings:modern_models -->
 
 ## Not paying a GPU to download
 
 <!-- findings:weights_time -->
-| Model | GPU | Weights | Weights s | Engine start s | Pod s | GPU $/h | Record |
-|---|---|---|---|---|---|---|---|
-| Qwen/Qwen3.6-35B-A3B-FP8 | NVIDIA H100 80GB HBM3 | staged on a network volume (US-CA-2) | 1.4 | 507.2 | 783 | 3.49 | `12208654b66bdeae` |
-| google/gemma-4-31B-it | NVIDIA H100 80GB HBM3 | staged on a network volume (US-CA-2) | 0.8 | 268.4 | 334 | 3.49 | `1220ea39d74241fc` |
-| meta-models/Muse-Glimmer-30B | NVIDIA H100 80GB HBM3 | staged on a network volume (US-CA-2) | 0.8 | 155.6 | 219 | 3.49 | `1220ab41dd7bf8bd` |
-| openai/gpt-oss-120b | NVIDIA H100 80GB HBM3 | staged on a network volume (US-CA-2) | 1.3 | 227.1 | 605 | 3.49 | `1220ded0ff281432` |
-| zai-org/GLM-4.7-Flash | NVIDIA H100 80GB HBM3 | staged on a network volume (US-CA-2) | 1.1 | 103.5 | 135 | 3.49 | `122089055d7f1339` |
+| Model | GPU | vLLM | Weights | Weights s | Engine start s | Pod s | GPU $/h | Record |
+|---|---|---|---|---|---|---|---|---|
+| Qwen/Qwen3.6-35B-A3B-FP8 | NVIDIA H100 80GB HBM3 | v0.30.0 | staged on a network volume (US-CA-2) | 1.4 | 507.2 | 783 | 3.49 | `12208654b66bdeae` |
+| google/gemma-4-31B-it | NVIDIA H100 80GB HBM3 | v0.29.0 | staged on a network volume (US-CA-2) | 0.8 | 268.4 | 334 | 3.49 | `1220ea39d74241fc` |
+| meta-models/Muse-Glimmer-30B | NVIDIA H100 80GB HBM3 | v0.30.0 | staged on a network volume (US-CA-2) | 0.8 | 155.6 | 219 | 3.49 | `1220ab41dd7bf8bd` |
+| openai/gpt-oss-120b | NVIDIA H100 80GB HBM3 | v0.29.0 | staged on a network volume (US-CA-2) | 1.3 | 227.1 | 605 | 3.49 | `1220ded0ff281432` |
+| zai-org/GLM-4.7-Flash | NVIDIA H100 80GB HBM3 | v0.29.0 | staged on a network volume (US-CA-2) | 1.1 | 103.5 | 135 | 3.49 | `122089055d7f1339` |
 <!-- /findings:weights_time -->
 
 ## When it broke
 
 <!-- findings:fixes -->
-| Failure | Broken plan | vLLM error from | What Apron changed | Fixed plan booted | Tasks passed | SLO passed | Result | Record |
-|---|---|---|---|---|---|---|---|---|
-| 1. Weights do not fit the GPU | Qwen/Qwen3-14B on NVIDIA GeForce RTX 4090 | `model_executor/layers/linear.py:192` | GPU: NVIDIA GeForce RTX 4090 → NVIDIA RTX A6000 | yes | yes | yes | Fixed | `1220f4b5d596eaa3` |
-| 2. No room for the KV cache | Qwen/Qwen3-8B on NVIDIA GeForce RTX 4090 | `v1/core/kv_cache_utils.py:879` | max_model_len: 40960 → 32640 | yes | yes | yes | Fixed | `1220e8f6ea8e7da0` |
-| 3. Context length above the model's limit | mistralai/Mistral-7B-Instruct-v0.3 on NVIDIA GeForce RTX 4090 | `config/model.py:2502` | max_model_len: 999999 → 32768 | yes | yes | yes | Fixed | `12207f1e236c341a` |
-| 4. float16 not supported by the model | google/gemma-2-2b-it on NVIDIA GeForce RTX 4090 | `config/model.py:2262` | dtype: float16 → bfloat16 | yes | yes | yes | Fixed | `122038df2ccafa66` |
-| 5. Tensor parallelism does not divide the heads | Qwen/Qwen3-8B on NVIDIA A100-SXM4-80GB | `config/model.py:1414` | tensor parallel: 3 → 2 | yes | yes | yes | Fixed | `12208faa3f0af819` |
-| 6. Quantization needs a newer GPU | ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4 on NVIDIA H100 80GB HBM3 | `config/vllm.py:791` | model: ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4 → Qwen/Qwen3-8B-AWQ | yes | yes | yes | Fixed | `12201e071813c808` |
+| Failure | Broken plan | vLLM error from | What Apron changed | Fixed plan booted | vLLM | Tasks passed | SLO passed | Result | Record |
+|---|---|---|---|---|---|---|---|---|---|
+| 1. Weights do not fit the GPU | Qwen/Qwen3-14B on NVIDIA GeForce RTX 4090 | `model_executor/layers/linear.py:192` | GPU: NVIDIA GeForce RTX 4090 → NVIDIA RTX A6000 | yes | v0.29.0 | yes | yes | Fixed | `1220f4b5d596eaa3` |
+| 2. No room for the KV cache | Qwen/Qwen3-8B on NVIDIA GeForce RTX 4090 | `v1/core/kv_cache_utils.py:879` | max_model_len: 40960 → 32640 | yes | v0.29.0 | yes | yes | Fixed | `1220e8f6ea8e7da0` |
+| 3. Context length above the model's limit | mistralai/Mistral-7B-Instruct-v0.3 on NVIDIA GeForce RTX 4090 | `config/model.py:2502` | max_model_len: 999999 → 32768 | yes | v0.29.0 | yes | yes | Fixed | `12207f1e236c341a` |
+| 4. float16 not supported by the model | google/gemma-2-2b-it on NVIDIA GeForce RTX 4090 | `config/model.py:2262` | dtype: float16 → bfloat16 | yes | v0.29.0 | yes | yes | Fixed | `122038df2ccafa66` |
+| 5. Tensor parallelism does not divide the heads | Qwen/Qwen3-8B on NVIDIA A100-SXM4-80GB | `config/model.py:1414` | tensor parallel: 3 → 2 | yes | v0.29.0 | yes | yes | Fixed | `12208faa3f0af819` |
+| 6. Quantization needs a newer GPU | ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4 on NVIDIA H100 80GB HBM3 | `config/vllm.py:791` | model: ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4 → Qwen/Qwen3-8B-AWQ | yes | v0.29.0 | yes | yes | Fixed | `12201e071813c808` |
 <!-- /findings:fixes -->
 
 ## What it cost
@@ -75,7 +75,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 |---|---|---|---|
 | a broken plan, failing as its class names (on purpose) | 6 | 1.5023 | `122003cbc66ff472`, `1220233b18004d3c`, `1220736506a57c47`, `122082b8cebddc87`, `12209c87b885bbbd`, `1220e27e21b0a24a` |
 | a fix that did not work | 1 | 1.3929 | `1220e2bb9d9e3077` |
-| the harness: harness:exception:RemoteCommandTimeout | 1 | 1.0756 | `12208be5e9e11a3e` |
+| the harness: a command on the pod did not answer in time | 1 | 1.0756 | `12208be5e9e11a3e` |
 | an earlier broken plan, since replaced | 2 | 0.9162 | `12202f6bb9980912`, `12206934f05d6002` |
 | the harness: a full disk cut the download short (a tokenizer error) (classified from the log) | 2 | 0.7782 | `122076c27e44225e`, `1220efb427f64eff` |
 | the model | 2 | 0.4974 | `122001a0c3f97733`, `1220be1b1f6ceab3` |

@@ -360,3 +360,11 @@
 {"amount": 1.6766, "at": "2026-09-28T08:14:44.652088+00:00", "label": "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3", "op": "hold"}
 {"amount": 0.0, "at": "2026-09-28T08:20:03.541322+00:00", "label": "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3", "op": "annotate", "pod_id": "ia4lxog3zt7yvq"}
 {"amount": 0.03, "at": "2026-09-28T08:22:30+00:00", "estimate": 1.6766, "flag": "stopped_to_fix_download_hang:ia4lxog3zt7yvq:~450s_at_0.24_per_h", "label": "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3", "op": "settle"}
+{"amount": 0.127157, "at": "2026-09-28T08:26:34.191353+00:00", "label": "storage:7jiuum2nk6:3358GB:0.197h", "op": "spend"}
+{"amount": 0.01077, "at": "2026-09-28T08:27:34.397720+00:00", "label": "storage:7jiuum2nk6:3358GB:0.017h", "op": "spend"}
+{"amount": 1.4383, "at": "2026-09-28T08:27:35.346236+00:00", "label": "stage:zai-org/GLM-5.3-Flash,deepseek-ai/DeepSeek-V4.1-Flash,Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-28T08:32:43.903006+00:00", "label": "stage:zai-org/GLM-5.3-Flash,deepseek-ai/DeepSeek-V4.1-Flash,Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3", "op": "annotate", "pod_id": "j0vmcky4srjtuf"}
+{"amount": 0.488333, "at": "2026-09-28T12:31:48.688927+00:00", "estimate": 1.4383, "label": "stage:zai-org/GLM-5.3-Flash,deepseek-ai/DeepSeek-V4.1-Flash,Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3", "op": "settle"}
+{"amount": 2.943368, "at": "2026-09-28T13:01:48.007497+00:00", "label": "storage:7jiuum2nk6:3358GB:4.57h", "op": "spend"}
+{"amount": 1.2331, "at": "2026-09-28T13:01:48.809159+00:00", "label": "stage:deepseek-ai/DeepSeek-V4.1-Flash,Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-28T13:06:58.052406+00:00", "label": "stage:deepseek-ai/DeepSeek-V4.1-Flash,Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3", "op": "annotate", "pod_id": "c4ueqolx1ngxc4"}
