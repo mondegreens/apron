@@ -107,7 +107,10 @@ def main() -> int:
     if "--configs" in sys.argv[1:]:
         return record_configs()
     table = rows()
-    head = "| record | model | GPU | TP | stored | now | req | weights | peak | non-torch | graphs | segment |"
+    head = (
+        "| record | model | GPU | TP | stored | now | req | weights | peak | non-torch"
+        " | graphs | segment |"
+    )
     print(head)
     print("|" + "---|" * (head.count("|") - 1))
     for r in table:

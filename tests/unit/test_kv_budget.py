@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
 
@@ -190,7 +190,9 @@ def test_cuda_graph_estimate_is_layers_x_full_decode_graphs(seqs: int, graphs: i
 
 def test_cuda_graph_ceiling_is_1024_on_sm100() -> None:
     # config/vllm.py:2006-2008: default_max_graph_size 1024 on the SM100 family.
-    b200 = HardwareSpec(gpu_sku="NVIDIA B200", total_memory_bytes=1 << 37, compute_capability="10.0")
+    b200 = HardwareSpec(
+        gpu_sku="NVIDIA B200", total_memory_bytes=1 << 37, compute_capability="10.0"
+    )
     metadata = {"num_hidden_layers": 1}
     assert cuda_graph_estimate_bytes(metadata, _inputs(b200, max_num_seqs=1024)) == (
         (51 + 32) * (537 << 10)  # 528..1024 by 16 on top of the 51 up to 512
@@ -223,7 +225,7 @@ def test_nemotron_h_mtp_layers_are_not_loaded() -> None:
 def test_safety_buffer_is_named_and_measured() -> None:
     # 2.18 GiB measured (GLM-4.7-Flash on an H100) + 0.005 GiB log rounding,
     # rounded up to 0.01 GiB; test_calculator_vs_cohort re-derives it.
-    assert KV_BUDGET_SAFETY_BUFFER_BYTES == round(2.19 * (1 << 30))
+    assert round(2.19 * (1 << 30)) == KV_BUDGET_SAFETY_BUFFER_BYTES
     assert state_block_capacity(KV_BUDGET_SAFETY_BUFFER_BYTES + 10, 5) == 2
 
 
@@ -255,7 +257,7 @@ class _Clock:
 class _Resolver(HFHubResolver):
     """One float32 Mamba-1 checkpoint (state-spaces/mamba-2.8b-hf's shape)."""
 
-    CONFIG = {
+    CONFIG: ClassVar[dict[str, Any]] = {
         "architectures": ["MambaForCausalLM"],
         "model_type": "mamba",
         "torch_dtype": "float32",
