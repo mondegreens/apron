@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="t d">
+  <title id="t">I know you run models</title>
+  <desc id="d">Parody of a 1917 recruiting poster: an engineer in a hoodie points at the viewer; a red OOM warning light glows on the hood.</desc>
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ff5a4e" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ff5a4e" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="paper" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#f3ead8"/>
+      <circle cx="1" cy="1" r="0.6" fill="#e6dcc6"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#paper)"/>
+  <rect x="18" y="18" width="1164" height="594" fill="none" stroke="#1d2b3a" stroke-width="6"/>
+
+  <!-- the engineer -->
+  <g transform="translate(250 90)">
+    <!-- hoodie body -->
+    <path d="M-150 540 C-150 380 -110 300 0 290 C110 300 150 380 150 540 Z" fill="#1d2b3a"/>
+    <!-- hood -->
+    <path d="M-105 190 C-110 60 -40 0 0 0 C40 0 110 60 105 190 C100 250 60 300 0 305 C-60 300 -100 250 -105 190 Z" fill="#2b3e52"/>
+    <!-- face -->
+    <ellipse cx="0" cy="190" rx="66" ry="84" fill="#e9c9a6"/>
+    <!-- brows, eyes: the stare -->
+    <path d="M-44 158 L-14 166 M44 158 L14 166" stroke="#1d2b3a" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="-26" cy="180" r="7" fill="#1d2b3a"/>
+    <circle cx="26" cy="180" r="7" fill="#1d2b3a"/>
+    <path d="M-22 232 Q0 224 22 232" stroke="#1d2b3a" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <!-- OOM light on the hood -->
+    <circle cx="0" cy="40" r="46" fill="url(#glow)"/>
+    <rect x="-30" y="22" width="60" height="36" rx="8" fill="#c7271d" stroke="#1d2b3a" stroke-width="4"/>
+    <text x="0" y="48" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="20" fill="#fff" text-anchor="middle">OOM</text>
+    <!-- pointing arm, foreshortened toward the viewer -->
+    <path d="M60 360 C120 340 170 330 205 318" stroke="#1d2b3a" stroke-width="64" stroke-linecap="round" fill="none"/>
+    <circle cx="225" cy="312" r="40" fill="#e9c9a6" stroke="#1d2b3a" stroke-width="4"/>
+    <path d="M232 300 L292 286" stroke="#e9c9a6" stroke-width="22" stroke-linecap="round"/>
+    <path d="M232 300 L292 286" stroke="#1d2b3a" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.35"/>
+  </g>
+
+  <!-- the words -->
+  <g font-family="Georgia, 'Times New Roman', serif" fill="#1d2b3a">
+    <text x="640" y="200" font-size="92" font-weight="700" letter-spacing="2">I KNOW</text>
+    <text x="640" y="300" font-size="92" font-weight="700" letter-spacing="2">YOU RUN</text>
+    <text x="640" y="400" font-size="92" font-weight="700" letter-spacing="2" fill="#c7271d">MODELS</text>
+    <text x="642" y="462" font-size="34" font-style="italic">On rented GPUs. At 2 a.m.</text>
+  </g>
+  <g font-family="Helvetica, Arial, sans-serif" fill="#1d2b3a">
+    <rect x="640" y="500" width="470" height="56" fill="#1d2b3a"/>
+    <text x="875" y="537" font-size="24" font-weight="700" fill="#f3ead8" text-anchor="middle" letter-spacing="3">APRON NEEDS YOU</text>
+  </g>
+</svg>
