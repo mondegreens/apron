@@ -120,27 +120,92 @@ from inputs), *proven constraint* (the pinned engine's source enforces it),
 *predicted* (the calculator modelled it) or *measured* (the exact execution
 observed it). A prediction is never presented as a vLLM test.
 
-## What we ran this week
+## The models, one card each
 
 We picked models by what people actually use and talk about in September 2026
 (OpenRouter rankings, provider counts, Hacker News and r/LocalLLaMA threads),
-not by download counts. All on one H100 80GB per model, RunPod Secure Cloud,
-US datacenters.
+not by download counts. Each card answers what you would ask before deploying
+it yourself: what hardware, does it fit, how much room is left for the KV cache,
+how long a cold start takes, how fast the first token comes back, and what you
+have to set or it breaks.
 
-| Model | Layout | vLLM | Boot | Tasks | p99 TTFT (SLO 2 s) | Weights, predicted → measured |
-|---|---|---|---|---|---|---|
-| gpt-oss-120b | MoE, sliding + full attention | v0.29 | ok | 3/3 | 2.29 s, **miss** | 60.77 → 61.43 GiB |
-| GLM-4.7-Flash | MoE, MLA | v0.29 | ok | 3/3 | 1.32 s | 55.77 → 55.87 GiB |
-| Gemma 4 31B | dense, sliding + global, vision | v0.29 | ok | 3/3 | 0.20 s | 58.46 → 58.99 GiB |
-| Qwen3.6-35B-A3B FP8 | MoE, gated delta-net hybrid, vision | v0.30 | ok | 3/3 | 0.14 s | 34.09 → 34.23 GiB |
-| Muse-Glimmer-30B | dense, sliding + full, vision | v0.30 | ok | 0/3 → [pending] | 0.19 s | 55.46 → 55.83 GiB |
-| Nemotron-3.5-Lightning | MoE, Mamba hybrid | v0.30 | **failed** → [pending] | — | — | — |
-| Qwen3.8-27B | dense, gated delta-net hybrid, vision | v0.29 | **failed** → [pending] | — | — | — |
+Two caveats that apply to every card. These boots used `--max-model-len 640`
+(short test prompts), so the KV room is shown as the size of the token pool
+vLLM allocated, which does not depend on that limit for these models; the
+number of concurrent long-context requests it supports is the pool divided by
+your context length. And "cold start" is a first boot on a fresh pod,
+including `torch.compile`; a warm compile cache is faster.
 
-The tasks are deliberately tiny (three questions with exact answers). They are
-there to prove the endpoint answers correctly, not to rank models. The full
-predicted-versus-measured table for every boot, old and new models, is in the
-repository and updates with every run.
+### Run this week
+
+**gpt-oss-120b** (OpenAI; MoE, alternating sliding and full attention; vLLM v0.29)
+- Hardware: one H100 80GB. Weights predicted 60.77 GiB, measured 61.43 GiB.
+- KV room: 5.7 GiB, a pool of 81,951 tokens.
+- Cold start: 227 s. Time to first token, p99: 2.29 s, which misses a 2 s SLO
+  at this concurrency; everything else passed, tasks 3/3.
+- Needs: `reasoning_effort: low` in the request to keep answers short.
+
+**GLM-4.7-Flash** (Z.ai, previous generation; MoE, multi-head latent attention; v0.29)
+- Hardware: one H100. Weights predicted 55.77 GiB, measured 55.87 GiB (after
+  we stopped counting the multi-token-prediction layer vLLM does not load).
+- KV room: 8.5 GiB, 169,216 tokens; MLA's compressed cache is why so many
+  tokens fit in so little memory.
+- Cold start: 104 s. p99 TTFT 1.32 s. Tasks 3/3.
+- Startup peak was our biggest miss (predicted 0.65 GiB, measured 2.04 GiB);
+  the next section is about it.
+
+**Gemma 4 31B** (Google; dense, sliding plus global attention, vision; v0.29)
+- Hardware: one H100. Weights predicted 58.46 GiB, measured 58.99 GiB.
+- KV room: 8.6 GiB but only 9,986 tokens: its global layers use 512-wide heads,
+  so each token is expensive. At long context this model is KV-bound on one
+  H100.
+- Cold start: 268 s. p99 TTFT 0.20 s. Tasks 3/3.
+
+**Qwen3.6-35B-A3B FP8** (Alibaba; MoE, gated delta-net linear attention plus full
+attention, vision; v0.30)
+- Hardware: one H100. Weights predicted 34.09 GiB, measured 34.23 GiB.
+- KV room: 32.4 GiB, 147,108 tokens: only one layer in four keeps a KV cache.
+- Cold start: 507 s, the longest here. p99 TTFT 0.14 s. Tasks 3/3.
+- Its startup memory peak is the vision encoder encoding a dummy batch of
+  65,536 image patches, not the language model.
+
+**Muse-Glimmer-30B** (Meta; dense, sliding plus full attention, vision; v0.30)
+- Hardware: one H100. Weights predicted 55.46 GiB, measured 55.83 GiB.
+- KV room: 11.0 GiB, 217,478 tokens.
+- Cold start: 156 s. p99 TTFT 0.19 s.
+- Tasks 0/3, while every answer was right: it replies in a reasoning channel
+  and an answer channel, and without `--reasoning-parser muse_glimmer` vLLM
+  returns both as one string. [pending: re-run with the parser]
+
+**Nemotron-3.5-Lightning 30B** (NVIDIA; MoE, Mamba plus attention; v0.30)
+- Hardware: one H100. Failed to boot with vLLM's defaults: 1,024 concurrent
+  sequences need 1,024 Mamba state blocks and only 733 fit.
+- Needs: `--max-num-seqs` at or below the block count; Apron now picks 556
+  before renting. [pending: proof boot]
+
+**Qwen3.8-27B** (Alibaba; dense, gated delta-net hybrid, vision; v0.29)
+- Hardware: one H100. Failed to boot: before measuring CUDA graphs vLLM
+  allocates a KV cache for 512 sequences, 24.5 GiB for this model, more than was
+  left; the out-of-memory surfaced as an opaque FlashAttention error.
+- Needs: a lower `--max-num-seqs`; Apron now picks 275. [pending: proof boot]
+
+### Running now: the models everyone is using this month
+
+GLM-5.3-Flash and DeepSeek-V4.1-Flash are the two most-used open models on
+OpenRouter this month. With Qwen3.8-Flash-Next and DeepSeek-V4-Flash they are
+running on four H200s (141 GB each) on vLLM v0.30 as this is written. Neither
+GLM-5.3-Flash nor DeepSeek-V4.1-Flash loads on vLLM v0.29. What Apron predicts
+before the run, per GPU at tensor parallel 4:
+
+| Model | Weights per GPU | Also needs | Predicted before the run |
+|---|---|---|---|
+| GLM-5.3-Flash | 74.7 GiB | — | fits; vision encoder peak not modelled yet |
+| DeepSeek-V4.1-Flash | 78.0 GiB | 189 GiB of pinned host RAM (Engram tables) | fits; FP8 KV forced |
+| Qwen3.8-Flash-Next | 58.8 GiB | 95 GiB of pinned host RAM (n-gram tables) | fits |
+| DeepSeek-V4-Flash | 37.3 GiB | — | fits |
+
+[pending: cards with measurements for these four, and for group D on eight
+H200s: GLM-5.3, DeepSeek-V4-Pro and MiniMax-M3]
 
 ## The bug we are proudest of finding: the startup peak
 
