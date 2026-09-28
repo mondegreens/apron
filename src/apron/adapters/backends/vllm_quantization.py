@@ -23,9 +23,30 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-# Generated from the pinned vLLM source by scripts/generate_vllm_facts.py; a
-# test ties its version to the runner image's pin (docker/requirements.txt).
-FACTS: dict[str, Any] = json.loads(Path(__file__).with_name("vllm_facts.json").read_text())
+# Generated from each pinned vLLM source by scripts/generate_vllm_facts.py, one
+# file per version (vllm_facts/<tag>.json); a test ties each to the runner
+# image's pin for that version (docker/requirements*.txt).
+FACTS_DIR = Path(__file__).with_name("vllm_facts")
+# The version these module-level facts describe; per-plan engine selection
+# reads other versions with ``load_facts``.
+DEFAULT_ENGINE = "v0.29.0"
+
+
+def _version_key(tag: str) -> tuple[int, ...]:
+    return tuple(int(x) for x in tag.lstrip("v").split("."))
+
+
+def engine_versions() -> tuple[str, ...]:
+    """Every vLLM version Apron has facts for, oldest first."""
+    return tuple(sorted((p.stem for p in FACTS_DIR.glob("v*.json")), key=_version_key))
+
+
+@cache
+def load_facts(version: str) -> dict[str, Any]:
+    return json.loads((FACTS_DIR / f"{version}.json").read_text())
+
+
+FACTS: dict[str, Any] = load_facts(DEFAULT_ENGINE)
 ENGINE_VERSION: str = FACTS["engine_version"]
 # Model classes the pinned vLLM marks IsHybrid (attention plus Mamba/linear
 # attention state), generated from its source with the line of each class.
@@ -177,13 +198,18 @@ def _nvfp4_w4a4(quant: dict[str, Any]) -> bool:
 
 
 @cache
-def engine_names() -> frozenset[str]:
-    """Every identifier-like name the pinned vLLM source mentions (generated)."""
-    entry = FACTS["source_names"]
-    blob = Path(__file__).with_name(entry["file"]).read_bytes()
+def engine_names(version: str = DEFAULT_ENGINE) -> frozenset[str]:
+    """Every identifier-like name that version's source mentions (generated)."""
+    entry = load_facts(version)["source_names"]
+    blob = (FACTS_DIR / entry["file"]).read_bytes()
     if hashlib.sha256(blob).hexdigest() != entry["sha256"]:
-        raise RuntimeError(f"{entry['file']} does not match vllm_facts.json — regenerate")
+        raise RuntimeError(f"{entry['file']} does not match {version}.json — regenerate")
     return frozenset(gzip.decompress(blob).decode().split())
+
+
+def registered_architectures(version: str = DEFAULT_ENGINE) -> frozenset[str]:
+    """Architectures that version's model registry serves."""
+    return frozenset(load_facts(version)["architectures"]["names"])
 
 
 def load_problems(

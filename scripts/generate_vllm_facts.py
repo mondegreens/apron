@@ -30,12 +30,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
-OUT = Path(__file__).resolve().parents[1] / "src/apron/adapters/backends/vllm_facts.json"
+# One facts file per vLLM version: vllm_facts/<tag>.json (+ <tag>-names.txt.gz).
+FACTS_DIR = Path(__file__).resolve().parents[1] / "src/apron/adapters/backends/vllm_facts"
 # Every identifier-like name the engine's source mentions (identifiers, attributes,
 # arguments, words in string constants).  A checkpoint tensor named nowhere in
 # it cannot be loaded by any model class of this vLLM (the class 6 FPQuant
 # tensor, backward_hadamard_matrix, is in no v0.29.0 file).
-NAMES_OUT = OUT.with_name("vllm_source_names.txt.gz")
 # Any identifier: parameter names are not all lower case (Mamba's A_log, dt_bias).
 _SNAKE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 _WORD = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
@@ -104,19 +104,36 @@ def _min_capability(fn: ast.FunctionDef, path: str) -> tuple[int, int]:
     raise SystemExit(f"{path}:{fn.lineno}: get_min_capability is not a literal return")
 
 
-def _registered(fn: ast.FunctionDef) -> list[str]:
+def _registered(fn: ast.AST) -> list[str]:
+    """Parameter names registered under *fn*: ``register_parameter("x", ...)``
+    and, from v0.30.0's ModelOpt schemes, ``register_params(layer, "x", ...)``."""
     names = set()
     for node in ast.walk(fn):
-        if (
-            isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Attribute)
-            and node.func.attr == "register_parameter"
-            and node.args
-            and isinstance(node.args[0], ast.Constant)
-            and isinstance(node.args[0].value, str)
-        ):
-            names.add(node.args[0].value)
+        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)):
+            continue
+        index = {"register_parameter": 0, "register_params": 1}.get(node.func.attr)
+        if index is None or len(node.args) <= index:
+            continue
+        arg = node.args[index]
+        if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+            names.add(arg.value)
     return sorted(names)
+
+
+def _linear_schemes(tree: ast.Module) -> list[ast.ClassDef]:
+    """v0.30.0 serves every ModelOpt linear format with one generic linear
+    method composed of per-key schemes (``QuantKeyScheme`` subclasses)."""
+    bases = {"QuantKeyScheme"}
+    found: list[ast.ClassDef] = []
+    grew = True
+    while grew:
+        grew = False
+        for node in tree.body:
+            if isinstance(node, ast.ClassDef) and node not in found and _base_names(node) & bases:
+                found.append(node)
+                bases.add(node.name)
+                grew = True
+    return found
 
 
 def _assigned_parameters(fn: ast.FunctionDef) -> list[str]:
@@ -236,11 +253,26 @@ def generate(source: Path) -> dict[str, Any]:
             "min_capability": minimum,
             "min_capability_source": f"{path.removeprefix('vllm/')}:{line}",
         }
-        if linear_cls:
-            create = _method(_class(tree(path), linear_cls, path), "create_weights", path)
+        linear = next(
+            (n for n in tree(path).body if isinstance(n, ast.ClassDef) and n.name == linear_cls),
+            None,
+        )
+        if linear_cls and linear is not None:
+            create = _method(linear, "create_weights", path)
             entry["parameters"] = _registered(create)
             entry["parameters_source"] = (
                 f"{path.removeprefix('vllm/')}:{create.lineno} ({linear_cls}.create_weights)"
+            )
+        elif linear_cls:
+            schemes = _linear_schemes(tree(path))
+            if not schemes:
+                raise SystemExit(f"{path}: class {linear_cls} not found — update the index")
+            names = sorted({n for cls in schemes for n in _registered(cls)})
+            entry["parameters"] = names
+            entry["parameters_source"] = (
+                f"{path.removeprefix('vllm/')} ("
+                + ", ".join(f"{c.name}:{c.lineno}" for c in schemes)
+                + ")"
             )
         entry["kv_cache_scales"] = _has_kv_cache_method(tree(path))
         methods[method] = entry
@@ -275,7 +307,8 @@ def generate(source: Path) -> dict[str, Any]:
         "aliases": ALIASES,
         "kv_cache": kv_cache,
         "hybrid_architectures": _hybrid_classes(source),
-        "source_names": _names_entry(source_names(source)),
+        "source_names": _names_entry(version, source_names(source)),
+        "architectures": registered_architectures(source),
         "tokenizer_modes": _tokenizer_modes(source),
         "compressed_tensors": {
             "kv_cache_scales": _has_kv_cache_method(tree(ct_path)),
@@ -306,9 +339,46 @@ def _tokenizer_modes(source: Path) -> dict[str, Any]:
     raise SystemExit(f"{path}: {name} not found — update the index")
 
 
-def _names_entry(names: list[str]) -> dict[str, Any]:
+REGISTRY = "vllm/model_executor/models/registry.py"
+# Registry tables of architectures this version can serve (not the lists of
+# previously supported or out-of-tree ones).
+_NOT_SERVED = {"_PREVIOUSLY_SUPPORTED_MODELS", "_OOT_SUPPORTED_MODELS"}
+
+
+def registered_architectures(source: Path) -> dict[str, Any]:
+    """Architecture names the version's model registry maps to a model class."""
+    names: set[str] = set()
+    for node in ast.parse((source / REGISTRY).read_text()).body:
+        if isinstance(node, ast.AnnAssign):
+            target, value = node.target, node.value
+        elif isinstance(node, ast.Assign):
+            target, value = node.targets[0], node.value
+        else:
+            continue
+        if (
+            isinstance(target, ast.Name)
+            and target.id.startswith("_")
+            and target.id.endswith("_MODELS")
+            and target.id not in _NOT_SERVED
+            and isinstance(value, ast.Dict)
+        ):
+            names.update(str(k.value) for k in value.keys if isinstance(k, ast.Constant))
+    if not names:
+        raise SystemExit(f"{REGISTRY}: no architecture tables found — update")
+    return {"names": sorted(names), "source": REGISTRY.removeprefix("vllm/")}
+
+
+def names_file(version: str) -> Path:
+    return FACTS_DIR / f"{version}-names.txt.gz"
+
+
+def facts_file(version: str) -> Path:
+    return FACTS_DIR / f"{version}.json"
+
+
+def _names_entry(version: str, names: list[str]) -> dict[str, Any]:
     return {
-        "file": NAMES_OUT.name,
+        "file": names_file(version).name,
         "count": len(names),
         "sha256": hashlib.sha256(names_blob(names)).hexdigest(),
     }
@@ -320,9 +390,11 @@ def main() -> int:
         return 1
     source = Path(sys.argv[1])
     facts = generate(source)
-    NAMES_OUT.write_bytes(names_blob(source_names(source)))
-    OUT.write_text(json.dumps(facts, indent=2, sort_keys=True) + "\n")
-    print(f"{facts['engine_version']} ({facts['source_commit'][:10]}) -> {OUT}")
+    version = facts["engine_version"]
+    FACTS_DIR.mkdir(parents=True, exist_ok=True)
+    names_file(version).write_bytes(names_blob(source_names(source)))
+    facts_file(version).write_text(json.dumps(facts, indent=2, sort_keys=True) + "\n")
+    print(f"{version} ({facts['source_commit'][:10]}) -> {facts_file(version)}")
     return 0
 
 

@@ -1,23 +1,196 @@
 {
-  "_provenance": "Owner decision 2026-09-27: Phase 1b adds current open models in four groups, cap $500 with a stop and report after groups A-C. Sizes and architectures read from each repo's config.json and safetensors metadata on 2026-09-27; every architecture is in the pinned vLLM v0.29.0 registry. The GPU is a proposal: the planner checks the fit and the run uses the GPU a storage datacenter has in stock. Downloads are Hugging Face 30-day counts on 2026-09-27.",
+  "_provenance": "Owner decision 2026-09-27: Phase 1b adds current open models in four groups, cap $500 with a stop and report after groups A-C. Revised the same day after checking real use, not only Hub downloads: OpenRouter rankings and provider counts, Artificial Analysis, Hacker News and r/LocalLLaMA (research notes: _dev_notes/cohort-run/model-choice-research.md). Outdated picks were replaced (Kimi-K2 -> dropped, MiniMax-M2.7 -> M3, DeepSeek-V3.2 -> V4-Pro-0813, Nemotron-3-Nano -> 3.5-Lightning, GLM-4.7-Flash -> Meta Muse-Glimmer-30B; GLM-4.7-Flash was already staged for group A and is measured once). 'engine' names the vLLM version a model needs when the pinned v0.29.0 lacks it. The GPU is a proposal: the planner checks the fit and the run uses the GPU a storage datacenter has in stock. Downloads are Hugging Face 30-day counts on 2026-09-27.",
   "groups": {
-    "A": "one GPU; the calculator has a memory model for the architecture",
-    "B": "one GPU; hybrid or linear attention the calculator does not model yet",
+    "A": "one GPU; ordinary or mixed attention",
+    "B": "one GPU; hybrid attention (per-layer caches: linear attention or Mamba beside attention)",
     "C": "2-4 GPUs",
     "D": "8 GPUs; frontier size"
   },
   "models": [
-    {"group": "A", "model_id": "openai/gpt-oss-20b", "params_b": 20.9, "architecture": "GptOssForCausalLM", "format": "mxfp4", "downloads_30d": 6759761, "gpu": "NVIDIA GeForce RTX 4090", "gpu_count": 1},
-    {"group": "A", "model_id": "openai/gpt-oss-120b", "params_b": 116.8, "architecture": "GptOssForCausalLM", "format": "mxfp4", "downloads_30d": 4484728, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
-    {"group": "A", "model_id": "zai-org/GLM-4.7-Flash", "params_b": 31.2, "architecture": "Glm4MoeLiteForCausalLM", "format": "bf16", "downloads_30d": 1854281, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
-    {"group": "A", "model_id": "google/gemma-4-31B-it", "params_b": 31.3, "architecture": "Gemma4ForConditionalGeneration", "format": "bf16", "downloads_30d": 9460570, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
-    {"group": "B", "model_id": "Qwen/Qwen3.8-27B", "params_b": 27.8, "architecture": "Qwen3_5ForConditionalGeneration", "format": "bf16", "downloads_30d": 6727629, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
-    {"group": "B", "model_id": "Qwen/Qwen3.6-35B-A3B-FP8", "params_b": 36.0, "architecture": "Qwen3_5MoeForConditionalGeneration", "format": "fp8", "downloads_30d": 7638786, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
-    {"group": "B", "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4", "params_b": 18.2, "architecture": "NemotronHForCausalLM", "format": "nvfp4", "downloads_30d": 1048456, "gpu": "NVIDIA H100 80GB HBM3", "gpu_count": 1},
-    {"group": "C", "model_id": "MiniMaxAI/MiniMax-M2.7", "params_b": 228.7, "architecture": "MiniMaxM2ForCausalLM", "format": "fp8", "downloads_30d": 1191260, "gpu": "NVIDIA H200", "gpu_count": 2},
-    {"group": "C", "model_id": "deepseek-ai/DeepSeek-V4-Flash-0731", "params_b": 304.2, "architecture": "DeepseekV4ForCausalLM", "format": "fp8", "downloads_30d": 3959727, "gpu": "NVIDIA H200", "gpu_count": 4},
-    {"group": "D", "model_id": "zai-org/GLM-5.3", "params_b": 753.3, "architecture": "GlmMoeDsaForCausalLM", "format": "fp8", "downloads_30d": 1351716, "gpu": "NVIDIA H200", "gpu_count": 8},
-    {"group": "D", "model_id": "deepseek-ai/DeepSeek-V3.2", "params_b": 685.4, "architecture": "DeepseekV32ForCausalLM", "format": "fp8", "downloads_30d": 2979489, "gpu": "NVIDIA H200", "gpu_count": 8},
-    {"group": "D", "model_id": "moonshotai/Kimi-K2-Instruct-0905", "params_b": 1026.5, "architecture": "DeepseekV3ForCausalLM", "format": "fp8", "downloads_30d": 60539, "gpu": "NVIDIA B200", "gpu_count": 8}
+    {
+      "group": "A",
+      "model_id": "openai/gpt-oss-20b",
+      "params_b": 20.9,
+      "architecture": "GptOssForCausalLM",
+      "format": "mxfp4",
+      "downloads_30d": 6759761,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "gpu_count": 1,
+      "why": "the reference model for consumer cards; still praised a year on; 12 OpenRouter providers"
+    },
+    {
+      "group": "A",
+      "model_id": "openai/gpt-oss-120b",
+      "params_b": 116.8,
+      "architecture": "GptOssForCausalLM",
+      "format": "mxfp4",
+      "downloads_30d": 4484728,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "why": "24 OpenRouter providers; no newer OpenAI open-weight model"
+    },
+    {
+      "group": "A",
+      "model_id": "google/gemma-4-31B-it",
+      "params_b": 31.3,
+      "architecture": "Gemma4ForConditionalGeneration",
+      "format": "bf16",
+      "downloads_30d": 9460570,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "why": "best general and vision model at its size; 15 providers"
+    },
+    {
+      "group": "A",
+      "model_id": "meta-models/Muse-Glimmer-30B",
+      "params_b": 29.6,
+      "architecture": "MuseGlimmerForConditionalGeneration",
+      "format": "bf16",
+      "downloads_30d": 286662,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "why": "Meta's return (Aug 9), Apache-2.0, Hacker News thread, vLLM recipe"
+    },
+    {
+      "group": "A",
+      "model_id": "zai-org/GLM-4.7-Flash",
+      "params_b": 31.2,
+      "architecture": "Glm4MoeLiteForCausalLM",
+      "format": "bf16",
+      "downloads_30d": 1854281,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "why": "measured once (already staged); replaced: 3 OpenRouter providers"
+    },
+    {
+      "group": "B",
+      "model_id": "Qwen/Qwen3.8-27B",
+      "params_b": 27.8,
+      "architecture": "Qwen3_5ForConditionalGeneration",
+      "format": "bf16",
+      "downloads_30d": 6727629,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "why": "the most-discussed local model now; 16 providers"
+    },
+    {
+      "group": "B",
+      "model_id": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "params_b": 36.0,
+      "architecture": "Qwen3_5MoeForConditionalGeneration",
+      "format": "fp8",
+      "downloads_30d": 7638786,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "why": "newest official small Qwen MoE; 10 providers"
+    },
+    {
+      "group": "B",
+      "model_id": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+      "params_b": 31.6,
+      "architecture": "NemotronHForCausalLM",
+      "format": "bf16",
+      "downloads_30d": 462733,
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 1,
+      "why": "replaces Nemotron-3-Nano (Aug 2026); Mamba-2 + attention hybrid; BF16 build for Hopper"
+    },
+    {
+      "group": "C",
+      "model_id": "zai-org/GLM-5.3-Flash",
+      "params_b": 321,
+      "architecture": "Glm5NextForConditionalGeneration",
+      "format": "fp8",
+      "downloads_30d": 4332082,
+      "gpu": "NVIDIA H200",
+      "gpu_count": 4,
+      "engine": "v0.30.0",
+      "why": "#1 on OpenRouter for the month; hybrid sparse + linear attention"
+    },
+    {
+      "group": "C",
+      "model_id": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "params_b": 763,
+      "architecture": "DeepseekV41ForCausalLM",
+      "format": "fp8",
+      "downloads_30d": 651078,
+      "gpu": "NVIDIA H200",
+      "gpu_count": 4,
+      "engine": "v0.30.0",
+      "why": "#1 on OpenRouter this week; engram memory can be offloaded to CPU"
+    },
+    {
+      "group": "C",
+      "model_id": "Qwen/Qwen3.8-Flash-Next",
+      "params_b": 180,
+      "architecture": "Qwen4ExpForConditionalGeneration",
+      "format": "bf16",
+      "downloads_30d": 1226891,
+      "gpu": "NVIDIA H200",
+      "gpu_count": 4,
+      "why": "Qwen's newest large model (Aug 24); mixed reception"
+    },
+    {
+      "group": "C",
+      "model_id": "deepseek-ai/DeepSeek-V4-Flash-0731",
+      "params_b": 304.2,
+      "architecture": "DeepseekV4ForCausalLM",
+      "format": "fp8",
+      "downloads_30d": 3959727,
+      "gpu": "NVIDIA H200",
+      "gpu_count": 4,
+      "why": "fallback if the engine stays at v0.29.0: #6 on OpenRouter this week"
+    },
+    {
+      "group": "D",
+      "model_id": "zai-org/GLM-5.3",
+      "params_b": 753.3,
+      "architecture": "GlmMoeDsaForCausalLM",
+      "format": "fp8",
+      "downloads_30d": 1351716,
+      "gpu": "NVIDIA H200",
+      "gpu_count": 8,
+      "why": "open-weight leader; 40 OpenRouter providers"
+    },
+    {
+      "group": "D",
+      "model_id": "deepseek-ai/DeepSeek-V4-Pro-0813",
+      "params_b": 1650,
+      "architecture": "DeepseekV4ForCausalLM",
+      "format": "fp8",
+      "downloads_30d": 116119,
+      "gpu": "NVIDIA H200",
+      "gpu_count": 8,
+      "why": "replaces DeepSeek-V3.2; 22 providers; 893 GB, a tight fit on 8x H200"
+    },
+    {
+      "group": "D",
+      "model_id": "MiniMaxAI/MiniMax-M3",
+      "params_b": 427,
+      "architecture": "MiniMaxM3SparseForConditionalGeneration",
+      "format": "bf16",
+      "downloads_30d": 164729,
+      "gpu": "NVIDIA H200",
+      "gpu_count": 8,
+      "why": "replaces MiniMax-M2.7; 13 providers; mixed reception"
+    }
+  ],
+  "dropped": [
+    {
+      "model_id": "moonshotai/Kimi-K2-Instruct-0905",
+      "why": "outdated: 1 OpenRouter provider; its successor Kimi-K3 (2.8T parameters) needs 8x GB300, out of reach on RunPod"
+    },
+    {
+      "model_id": "MiniMaxAI/MiniMax-M2.7",
+      "why": "superseded by MiniMax-M3"
+    },
+    {
+      "model_id": "deepseek-ai/DeepSeek-V3.2",
+      "why": "superseded by DeepSeek V4 releases; absent from OpenRouter top lists"
+    },
+    {
+      "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4",
+      "why": "superseded by Nemotron-3.5-Lightning"
+    }
   ]
 }
