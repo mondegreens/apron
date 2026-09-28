@@ -804,6 +804,7 @@ def _cost(run: CohortRun, authorized: float, versions: Mapping[str, str]) -> dic
 HARNESS_NAMES: dict[str, str] = {
     "harness:tokenizer_files_missing": "a full disk cut the download short (a tokenizer error)",
     "harness:boot_deadline": "engine still starting when the harness gave up",
+    "harness:boot_stalled": "vLLM stopped writing to its log while starting (hung)",
     "harness:toolchain": "compiler missing from the engine's environment",
     "harness:download_incomplete": "download check flagged a complete file",
     "harness:exception:QueryError": "GPU provider API error",

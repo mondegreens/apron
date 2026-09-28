@@ -341,6 +341,9 @@ class FakeEngine:
     def evict_models(self, target: Any, *, keep: str) -> None:
         self.evicted.append(keep)
 
+    def log_tail(self, target: Any, lines: int = 400) -> str:
+        return "EngineDeadError: the engine died while serving a request"
+
     def download_weights(self, target: Any, model_id: str) -> dict[str, Any]:
         return {"ok": True, "seconds": 60.0, "output_tail": ""}
 

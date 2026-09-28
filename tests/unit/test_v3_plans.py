@@ -246,9 +246,7 @@ def test_the_checkpoint_recipe_is_the_last_reasoning_source() -> None:
         == "qwen3"
     )
     # The architecture's own still comes first.
-    assert (
-        served_parser("x", ["A"], parsers, {"A": "glm45"}, checkpoint_parser="qwen3") == "glm45"
-    )
+    assert served_parser("x", ["A"], parsers, {"A": "glm45"}, checkpoint_parser="qwen3") == "glm45"
     assert served_parser("x", [], parsers, {}, checkpoint_parser="no_such") is None
 
 
@@ -351,7 +349,7 @@ class _Ctx:
     evaluation_protocol_fingerprint = FP
     solution_fingerprint = FP
 
-    class protocol:  # noqa: N801 — the attribute the builder reads
+    class protocol:  # the attribute the builder reads
         scorer = "deployment_checks"
 
 

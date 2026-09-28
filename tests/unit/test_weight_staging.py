@@ -717,3 +717,30 @@ def test_the_download_log_says_what_the_memory_limit_did() -> None:
     assert "/sys/fs/cgroup/memory.max" in command
     assert "oom_kill /sys/fs/cgroup/memory.events" in command
     assert command.index("memory: max=") < command.index("tail -20")
+
+
+def test_with_no_stock_the_run_waits_where_the_weights_are(tmp_path: Path) -> None:
+    """No 2xB200 anywhere at launch (2026-09-28): the datacenter whose volume
+    holds every model is chosen and the run's stock waiter waits there; a
+    datacenter without the weights is never chosen without stock."""
+    from apron.interfaces import cohort_root
+
+    (tmp_path / "events.jsonl").write_text(
+        json.dumps({"event": "staged", "location": "US-CA-2", "model_id": "a", "ok": True}) + "\n"
+    )
+    storage = RunPodStorage("k")
+    execution = SimpleNamespace(gpu_sku="NVIDIA B200", gpu_count=2)
+    volume = {"id": "v1", "dataCenterId": "US-CA-2", "size": 500}
+    with (
+        patch.object(storage, "list_volumes", return_value=[volume]),
+        patch.object(storage, "storage_datacenters", return_value=["US-CA-2", "US-GA-2"]),
+        patch.object(storage, "stock_in", return_value=None),
+        patch.object(storage, "cpu_stock", return_value=["cpu3c"]),
+        patch.object(storage, "ensure_volume", return_value=volume),
+        patch.object(cohort_root, "staged_bytes", side_effect=lambda m: 100_000_000_000),
+        patch.object(cohort_root, "RUN_DIR", tmp_path),
+    ):
+        site = cohort_root.weights_site(storage, [execution], ["a"])  # type: ignore[list-item]
+        missing = cohort_root.weights_site(storage, [execution], ["a", "b"])  # type: ignore[list-item]
+    assert site is not None and site.data_center_id == "US-CA-2"
+    assert missing is None  # b is not staged anywhere and nothing is in stock

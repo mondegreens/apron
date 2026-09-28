@@ -75,6 +75,8 @@ if TYPE_CHECKING:
 # ---------------------------------------------------------------------------
 
 _HARNESS_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    # The engine adapter gave up on a boot whose log stopped growing.
+    ("harness:boot_stalled", re.compile(r"apron: boot stalled")),
     ("harness:port_in_use", re.compile(r"Address already in use|Errno 98", re.IGNORECASE)),
     ("harness:disk_full", re.compile(r"No space left on device|Errno 28", re.IGNORECASE)),
     (
@@ -181,6 +183,8 @@ class ExecutionEngine(Protocol):
 
     def evict_models(self, target: Any, *, keep: str) -> None: ...
 
+    def log_tail(self, target: Any, lines: int = 400) -> str: ...
+
     def boot(self, plan: DeploymentPlan, target: Any, *, health_timeout: int = 600) -> Any: ...
 
     def verify(
@@ -219,10 +223,16 @@ class CohortPorts:
     # A cold first boot on a fresh pod JIT-compiles FlashInfer kernels after
     # the CUDA graphs are captured; L0-A3 (2026-09-26) was still compiling at
     # 15 min.  The deadline covers a cold boot; a broken plan fails far sooner.
-    boot_timeout: int = 1800
+    # Not a limit on the boot: seconds without new vLLM log output before a
+    # boot counts as hung (``VllmEngineAdapter.boot``).
+    boot_timeout: int = 1200
     # A pod that is not RUNNING by then (no Secure capacity, a stuck image
     # pull) is torn down and recorded as a failed attempt: it may be billing.
-    provision_timeout: int = 1800
+    # The runner image pulled in about 6 minutes on every host measured (H100
+    # and CPU pods, US-CA-2); a 2xB200 host sat 20 minutes without starting
+    # the container, billed from the rental (2026-09-28).  Past 15 minutes the
+    # host is stuck, not slow.
+    provision_timeout: int = 900
     # One live pod per requested execution for the run (None: a pod per solution).
     pool: TargetPool | None = None
     # Wait for provider stock before a new pod; False when the wait gave up.
@@ -369,6 +379,8 @@ class ExecutionOutcome:
     attempt_digests: list[str] = field(default_factory=list)
     serving_digest: str | None = None
     log_tail: str = ""
+    # The engine log after a task request failed on a healthy boot.
+    serving_log: str = ""
     harness_failures: list[str] = field(default_factory=list)
     cost: float = 0.0
     provider_reported_cost: float | None = None
@@ -428,7 +440,7 @@ def execute_solution(
     failed_boots: list[tuple[str, str]] = []  # (log tail, failure tag)
     scored: list[tuple[dict[str, Any], int]] = []
     bench: dict[str, Any] | None = None
-    error: Exception | None = None
+    error: BaseException | None = None
     leaked: PodLeakError | None = None
     try:
         timing.provision_start = _seconds(clock)
@@ -477,6 +489,12 @@ def execute_solution(
             timing.task_eval_start = _seconds(clock)
             if scope.task_evaluation:
                 scored = _run_task_suite(ctx, sp, ports, model_id, endpoint)
+                if any(a.get("status") == "failed" for a, _ in scored):
+                    # A request the server failed (5xx, connection refused):
+                    # keep the engine log before the pod is reused or torn
+                    # down (2026-09-28: GLM-5.3-Flash died on the 32k needle
+                    # and the next model's boot overwrote the only log).
+                    outcome.serving_log = mask_secrets(engine.log_tail(target))
             timing.task_eval_end = _seconds(clock)
             if scope.serving and _declares_workload(inputs.serving_workload):
                 timing.serving_start = _seconds(clock)
@@ -491,7 +509,11 @@ def execute_solution(
                 timing.serving_end = _seconds(clock)
         elif boot is not None:
             outcome.log_tail = mask_secrets(boot.log_tail)
-    except Exception as exc:  # every failure is settled and recorded
+    except (Exception, KeyboardInterrupt) as exc:  # every failure is settled and recorded
+        # An operator's Ctrl-C too: the pod is torn down (never parked in the
+        # pool), the hold settled and the attempt recorded, then the run stops
+        # (2026-09-28: an interrupted B200 start left its hold open and the
+        # pod parked as healthy).
         error = exc
         failed_boots.append((f"{type(exc).__name__}: {exc}", _failure_tag(exc)))
         if isinstance(exc, TokenLeakError):
@@ -519,7 +541,7 @@ def execute_solution(
         ports.budget.hold_open_ended(rate, f"leak:{leaked.pod_id}", leaked.pod_id)
     outcome.cost = costs.total
     outcome.harness_failures = [tag for _, tag in failed_boots]
-    return _store_outcome(
+    stored = _store_outcome(
         sp,
         inputs,
         ports,
@@ -537,6 +559,9 @@ def execute_solution(
         leaked,
         error,
     )
+    if isinstance(error, KeyboardInterrupt):
+        raise error
+    return stored
 
 
 # A pod is not reused after these: the next solution gets a fresh one.
@@ -551,8 +576,8 @@ def _teardown(
     target: Any,
     outcome: ExecutionOutcome,
     failed_boots: list[tuple[str, str]],
-    error: Exception | None,
-) -> tuple[PodLeakError | None, Exception | None]:
+    error: BaseException | None,
+) -> tuple[PodLeakError | None, BaseException | None]:
     """Tear the pod down; a pod that cannot be terminated is reported, not raised."""
     leaked: PodLeakError | None = None
     try:
@@ -588,7 +613,7 @@ def _store_outcome(
     scored: list[tuple[dict[str, Any], int]],
     bench: dict[str, Any] | None,
     leaked: PodLeakError | None,
-    error: Exception | None,
+    error: BaseException | None,
 ) -> ExecutionOutcome:
     engine = ports.engine_for(sp)
     base = _report_base(sp, target, timing, rate)
@@ -631,6 +656,7 @@ def _store_outcome(
                     "boot_outcome": "healthy",
                     "predicted_minus_measured": prediction_delta(sp.claim, report_fields),
                     "prediction_notes": sp.notes,
+                    **({"log_tail": outcome.serving_log[-8000:]} if outcome.serving_log else {}),
                     "reason": reason,
                 }
             ),

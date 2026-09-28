@@ -305,3 +305,22 @@ def test_a_given_plan_is_predicted_at_its_dtype_and_utilization() -> None:
     )
     assert bf16["weight_memory_bytes"] == 11_073_382_400 // 2
     assert bf16["gpu_available_bytes"] == -(-RTX_4090.total_memory_bytes * 9 // 10)
+
+
+def test_a_given_plan_runs_on_the_vllm_its_architecture_needs() -> None:
+    """A fix proof of a v0.30-only model was rebuilt on v0.29's image: another
+    solution than the one that failed, so its stored failure was not found
+    (Qwen3.8-Flash-Next on 2xB200, 2026-09-28).  The given plan's engine is
+    chosen by architecture, as for a seed."""
+    from unittest.mock import patch
+
+    from apron.adapters.runner_image import runner_image
+    from apron.interfaces.cohort_root import CohortPlanner
+
+    planner = CohortPlanner(rates={}, clock=_Clock(), resolver=_Resolver())
+    alloc = {"model_id": "state-spaces/mamba-2.8b-hf", "gpu_sku": RTX_4090.gpu_sku}
+    plan = DeploymentPlan(dtype="bfloat16", resource_allocation=alloc)
+    with patch.object(CohortPlanner, "engine", return_value="v0.30.0"):
+        given = planner.plan_for(plan, "given")
+    assert given.engine_version == "v0.30.0"
+    assert given.requested.image_digest == runner_image("v0.30.0").digest

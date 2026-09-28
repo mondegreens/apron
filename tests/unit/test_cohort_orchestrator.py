@@ -250,6 +250,31 @@ def test_transport_failures_are_retried_and_both_attempts_stored(tmp_path: Path)
     assert fact[0].failures == ("evaluation:ReadTimeout",) and fact[1].accepted is True
 
 
+def test_a_failed_request_keeps_the_engine_log_on_the_boot_report(tmp_path: Path) -> None:
+    """A healthy boot whose server then fails a request keeps its log: the
+    next model on the pod overwrites it (GLM-5.3-Flash, 2026-09-28)."""
+    cohort_ports, *_ = ports(
+        tmp_path, _healthy, evaluator=FakeEvaluator(transport_fail_once=frozenset({"fact-1"}))
+    )
+    sp = solution("Qwen/Qwen3-1.7B", "NVIDIA GeForce RTX 4090")
+    outcome = run_cohort([sp], accepted_inputs(), cohort_ports).executed[sp.label]
+    report = load_record(
+        VerificationReport, cohort_ports.store.retrieve(outcome.boot_report_digest or "") or {}
+    )
+    assert report.boot_outcome == "healthy"
+    assert report.log_tail is not None and "EngineDeadError" in report.log_tail
+
+
+def test_every_request_answered_keeps_no_log(tmp_path: Path) -> None:
+    cohort_ports, *_ = ports(tmp_path, _healthy)
+    sp = solution("Qwen/Qwen3-1.7B", "NVIDIA GeForce RTX 4090")
+    outcome = run_cohort([sp], accepted_inputs(), cohort_ports).executed[sp.label]
+    report = load_record(
+        VerificationReport, cohort_ports.store.retrieve(outcome.boot_report_digest or "") or {}
+    )
+    assert report.log_tail is None
+
+
 def test_resume_skips_complete_and_reruns_only_missing_steps(tmp_path: Path) -> None:
     cohort_ports, engine, *_ = ports(tmp_path, _healthy)
     sp = solution("Qwen/Qwen3-1.7B", "NVIDIA GeForce RTX 4090")
@@ -516,6 +541,38 @@ def test_provision_error_is_settled_and_recorded(tmp_path: Path) -> None:
     assert "ConnectionError" in result.skipped[sp.label]
     assert targets[0].torn_down
     assert cohort_ports.budget.holds == {}
+    assert _cost_on_records(cohort_ports.store) == pytest.approx(
+        cohort_ports.budget.spent, abs=1e-4
+    )
+
+
+def test_an_interrupted_start_is_torn_down_settled_and_recorded(tmp_path: Path) -> None:
+    """Ctrl-C while the pod starts: torn down (not parked in the pool), the
+    hold settled, the attempt recorded, and only then the interrupt goes on."""
+    cohort_ports, _, targets, _ = ports(tmp_path, _healthy)
+    sp = solution("Qwen/Qwen3-1.7B", "NVIDIA GeForce RTX 4090")
+    original = cohort_ports.target_factory
+
+    def interrupted_factory(requested: Any) -> Any:
+        target = original(requested)
+
+        def interrupt(env: Any = None, wait_timeout: int = 0) -> Any:
+            target.pod_id = "pod-interrupted"
+            raise KeyboardInterrupt
+
+        target.provision = interrupt  # type: ignore[method-assign]
+        return target
+
+    object.__setattr__(cohort_ports, "target_factory", interrupted_factory)
+    with pytest.raises(KeyboardInterrupt):
+        run_cohort([sp], accepted_inputs(), cohort_ports)
+    assert targets[0].torn_down
+    assert cohort_ports.budget.holds == {}
+    failed = [
+        load_record(VerificationReport, cohort_ports.store.retrieve(d) or {})
+        for d in recorded_evidence(cohort_ports.store, sp.solution_fp).failed_boots
+    ]
+    assert [r.failures for r in failed] == [("harness:exception:KeyboardInterrupt",)]
     assert _cost_on_records(cohort_ports.store) == pytest.approx(
         cohort_ports.budget.spent, abs=1e-4
     )

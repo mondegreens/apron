@@ -111,6 +111,28 @@ def test_replay_after_simulated_crash_settles_open_hold_at_pod_cost(tmp_path: Pa
     assert again.spent == pytest.approx(replayed.spent)  # replay settlements are durable
 
 
+def test_the_owners_settle_replaces_a_replay_of_its_live_hold(tmp_path: Path) -> None:
+    """A run that starts while the stager still downloads settles the
+    stager's open hold provisionally; the stager's own settle, at the real
+    cost, replaces it: counted once, and the next replay does not fail."""
+    path = tmp_path / "ledger.jsonl"
+    stager = _tracker(20.0, JsonlLedger(path))
+    stager.hold(0.9, "stage:m")
+    stager.annotate_hold("stage:m", "pod-cpu")
+    run = BudgetTracker.replay(  # the run starts mid-staging
+        authorized=20.0,
+        ledger=JsonlLedger(path),
+        clock=_Clock(),
+        pod_cost=lambda pod: 0.089,
+    )
+    assert run.spent == pytest.approx(0.089)
+    stager.settle(0.156, "stage:m")  # the stager finishes
+    again = BudgetTracker.replay(authorized=20.0, ledger=JsonlLedger(path), clock=_Clock())
+    assert again.holds == {}
+    assert again.spent == pytest.approx(0.156)
+    assert "stage:m:settled_by_owner" in again.flags
+
+
 def test_torn_final_line_is_skipped_but_corruption_elsewhere_fails(tmp_path: Path) -> None:
     path = tmp_path / "ledger.jsonl"
     ledger = JsonlLedger(path)

@@ -168,15 +168,27 @@ class BudgetTracker:
         then flagged ``over_authorized``; it can afford nothing more.
         """
         tracker = cls(authorized=authorized, ledger=ledger, clock=clock)
+        # Holds a replay settled while their owner was still running: another
+        # process's pod (the stager) is billing on, and when its owner settles
+        # the hold at the real cost, that settle replaces the provisional one
+        # (2026-09-28: a run started mid-staging settled the stager's hold at
+        # $0.089; the stager then settled it at $0.156 and the next replay
+        # found a settle without a hold).
+        provisional: dict[str, float] = {}
         for entry in ledger.read_all():
             op, label, amount = entry["op"], entry["label"], float(entry["amount"])
             if op == "hold":
                 tracker.holds[label] = _Hold(label, amount)
             elif op == "annotate":
                 tracker.holds[label].pod_id = entry.get("pod_id")
+            elif op == "settle" and label not in tracker.holds and label in provisional:
+                delta = amount - provisional.pop(label)
+                tracker._spend(delta, label, None, "settled_by_owner", replaying=True)
             elif op == "settle":
                 hold = tracker.holds.pop(label)
                 tracker._spend(amount, label, hold.estimate, entry.get("flag"), replaying=True)
+                if str(entry.get("flag") or "").startswith("replayed:"):
+                    provisional[label] = amount
             elif op == "release":
                 tracker.holds.pop(label)
             elif op in ("spend", "correct"):

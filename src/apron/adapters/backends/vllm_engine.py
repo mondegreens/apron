@@ -68,6 +68,8 @@ GIB = 1 << 30
 # filled that disk and left a partial download (L5, Qwen3-32B, 2026-09-27).
 MODELS_DIR = "/runpod-volume/models"
 VLLM_LOG = "/var/log/vllm.log"
+# Appended to a boot's log tail when vLLM stopped writing to its log (``boot``).
+BOOT_STALLED = "apron: boot stalled"
 TOKEN_VARS = ("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN")
 # vLLM API server and its engine-core children.  The bracket keeps the
 # pattern from matching the shell that runs pgrep/pkill with it.
@@ -565,6 +567,14 @@ class VllmEngineAdapter:
         result = target.execute("test -x /usr/local/bin/apron-download && echo yes || echo no")
         return "yes" in str(result.get("stdout", ""))
 
+    def log_tail(self, target: Any, lines: int = 400) -> str:
+        """The last *lines* of the engine log, repeats collapsed ('' when unreadable)."""
+        try:
+            got = target.execute(f"tail -{int(lines)} {VLLM_LOG}")
+        except Exception:
+            return ""
+        return collapse_repeats(str(got.get("stdout", "")))
+
     def evict_models(self, target: Any, *, keep: str) -> None:
         """Remove every downloaded model except *keep* (a reused pod's disk).
 
@@ -645,8 +655,15 @@ class VllmEngineAdapter:
     def boot(self, plan: DeploymentPlan, target: Any, *, health_timeout: int = 600) -> BootResult:
         """Boot vLLM from the rendered plan with no token in its environment.
 
-        Returns when ``/health`` passes or the process exits.  A failed boot
-        returns the log tail — the evidence diagnosis reads.
+        Returns when ``/health`` passes or the process exits.  There is no
+        limit on how long a boot may take: loading 150-500 GB of weights from
+        a network volume took 8 to 35 minutes (2026-09-28), and a fixed 30
+        minutes cut a loading DeepSeek-V4-Flash off at shard 42 of 48.  The
+        wait ends only when vLLM stops writing to its log for
+        ``health_timeout`` seconds (a hung engine; loading prints each shard,
+        compilation and warmup print progress), and the log tail then says so
+        (``BOOT_STALLED``).  A failed boot returns the log tail — the
+        evidence diagnosis reads.
         """
         model_id = plan.resource_allocation.get("model_id", "")
         serve = self._build_serve_command(plan, target, model_path=self.model_dir(model_id))
@@ -656,8 +673,8 @@ class VllmEngineAdapter:
         command = launch_command(serve)
         start = time.monotonic()
         target.execute(command)
-        deadline = start + health_timeout
-        while time.monotonic() < deadline:
+        last_size, last_change, stalled = None, start, False
+        while True:
             if target.execute("curl -sf http://localhost:8000/health").get("exit_code") == 0:
                 return BootResult(True, "", serve, round(time.monotonic() - start, 1))
             alive = target.execute(
@@ -665,14 +682,21 @@ class VllmEngineAdapter:
             )
             if "down" in str(alive.get("stdout", "")):
                 break
+            size = str(target.execute(f"stat -c %s {VLLM_LOG}").get("stdout", "")).strip()
+            now = time.monotonic()
+            if size != last_size:
+                last_size, last_change = size, now
+            elif now - last_change >= health_timeout:
+                stalled = True
+                break
             time.sleep(10)
-        tail = target.execute(f"tail -400 {VLLM_LOG}")
-        return BootResult(
-            False,
-            collapse_repeats(str(tail.get("stdout", ""))),
-            serve,
-            round(time.monotonic() - start, 1),
-        )
+        tail = collapse_repeats(str(target.execute(f"tail -400 {VLLM_LOG}").get("stdout", "")))
+        if stalled:
+            tail += (
+                f"\n{BOOT_STALLED}: no new vLLM log output for {health_timeout} s after "
+                f"{round(time.monotonic() - start)} s; boot abandoned\n"
+            )
+        return BootResult(False, tail, serve, round(time.monotonic() - start, 1))
 
     # ------------------------------------------------------------------
     # Serving measurement (§9.1 step 5; measurement only, D2)

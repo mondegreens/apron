@@ -388,6 +388,71 @@ def test_fix_proofs() -> None:
     _write("fix-proofs.json", [merged[k] for k in sorted(merged)])
 
 
+def test_recorded_failure_fix_proof() -> None:
+    """``APRON_COHORT_STEP=recordedfix APRON_FIX_SOLUTION=<failed solution fp>
+    APRON_FIX_FAMILY=<expected error family> APRON_FIX_ERROR=<text the log holds>``:
+    §10.2 on a failure the cohort already recorded.  The broken plan is the
+    recorded one (same solution, so its stored log is reused and nothing is
+    re-booted broken), diagnosed against the rules of the vLLM it ran on;
+    the corrected plan boots on the volume that holds its weights and runs
+    the same task suite."""
+    _step("recordedfix")
+    from apron.adapters.backends.runpod_storage import RunPodStorage
+    from apron.application.orchestration.cohort import close_pool
+    from apron.application.orchestration.remediation import BrokenCase, prove_fix
+    from apron.domain.schemas.solutions import DeploymentPlan
+    from apron.interfaces.cohort_root import (
+        CohortPlanner,
+        accrue_storage,
+        build_fix_ports,
+        build_ports,
+        live_rates,
+        v3_evaluator,
+        weights_site,
+    )
+
+    assert os.environ.get("ANTHROPIC_API_KEY"), "the classifier needs ANTHROPIC_API_KEY"
+    fp = os.environ["APRON_FIX_SOLUTION"]
+    row = next(
+        json.loads(line)
+        for line in (RUN_DIR / "solutions.jsonl").read_text().splitlines()
+        if fp in line
+    )
+    broken_plan = DeploymentPlan.model_validate(row["deployment_plan"])
+    rates = live_rates(os.environ["RUNPOD_API_KEY"])
+    planner = CohortPlanner(rates=rates, deployment_checks=SUITE == "v3")
+    broken = planner.plan_for(broken_plan, "recorded-broken")
+    assert broken.solution_fp == fp, "the rebuilt plan is not the recorded solution"
+    storage = RunPodStorage(os.environ["RUNPOD_API_KEY"])
+    site = weights_site(storage, [broken.requested], [broken.model_id])
+    assert site is not None, "no volume holds the weights"
+    ports = build_ports(
+        rates=rates,
+        site=site,
+        # The corrected plan serves the same checks: the facts are the broken
+        # plan's (the correction changes max_num_seqs, not what it serves).
+        evaluator=v3_evaluator([broken]) if SUITE == "v3" else None,
+    )
+    fix = build_fix_ports(
+        planner, rates, ports.budget.record_spend, engine_version=broken.engine_version or ""
+    )
+    case = BrokenCase(
+        failure_class=0,
+        expected_family=os.environ["APRON_FIX_FAMILY"],
+        broken_plan=broken_plan,
+        call_site="recorded",
+        expected_error=os.environ["APRON_FIX_ERROR"],
+    )
+    try:
+        proof = prove_fix(case, _inputs(), ports, fix)
+    finally:
+        close_pool(ports)
+        accrue_storage(site, ports.budget)
+    tag = os.environ.get("APRON_RUN_TAG", fp[:16])
+    _write(f"recorded-fix-{tag}.json", proof.__dict__)
+    assert proof.broken_failed, proof.notes
+
+
 # ---------------------------------------------------------------------------
 # Staged weights (owner go 2026-09-27): a CPU pod downloads onto a network
 # volume, then the GPU pods attach it and only load

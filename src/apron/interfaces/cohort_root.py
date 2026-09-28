@@ -204,8 +204,9 @@ def recorded_prediction(
     *entry* is the boot's solution (``solutions.jsonl``), *config* the
     checkpoint's ``config.json`` at the recorded revision
     (``tests/fixtures/cohort/configs.json``) and *weights* its row of
-    ``weight-bytes.json`` (stored bytes, and the processor fields of the
-    activation estimate).  Predicted as the plan booted: its GPU, tensor
+    ``weight-bytes.json`` (stored bytes, the load widths and replicated bytes
+    the planner resolves, and the processor fields of the activation
+    estimate).  Predicted as the plan booted: its GPU, tensor
     parallelism, dtype, utilization (vLLM's default when it set none) and
     max_num_seqs, and the engine version's batch defaults on that GPU.
     """
@@ -229,7 +230,11 @@ def recorded_prediction(
     dtype = plan.dtype or runtime_dtype(config)
     spec = build_model_spec(config, repository=entry.model_id)
     metadata = calculator_metadata(
-        config, spec, total_weight_bytes=recorded_loaded_bytes(weights, dtype), dtype=dtype
+        config,
+        spec,
+        total_weight_bytes=recorded_loaded_bytes(weights, dtype),
+        replicated_weight_bytes=int(weights.get("replicated_bytes") or 0),
+        dtype=dtype,
     )
     # The processor-derived fields the encoder moment reads (config fields agree).
     metadata.update(
@@ -246,6 +251,9 @@ def recorded_prediction(
         ),
         "max_num_batched_tokens": facts.default_max_num_batched_tokens(memory, gpu),
         "max_num_seqs": int(engine.get("max_num_seqs") or facts.default_max_num_seqs(memory, gpu)),
+        # vLLM sizes MLA's prefill dummy and GLM5Next's indexer workspace by
+        # the context the plan served (``_forward_live_bytes``).
+        **({"max_model_len": int(engine["max_model_len"])} if engine.get("max_model_len") else {}),
         **({"enforce_eager": True} if engine.get("enforce_eager") in ("true", True) else {}),
     }
     claim = CalculatorPlanningSource(clock=WallClock()).predict(metadata, hardware, shape)
@@ -324,11 +332,16 @@ class CohortPlanner:
         and a predicted-infeasible broken plan is booted on purpose."""
         alloc = plan.resource_allocation
         engine = plan.engine_configuration
+        # The vLLM the plan runs on, chosen as for a seed (by architecture): a
+        # fix proof of a v0.30-only model was rebuilt on v0.29's image, a
+        # different solution from the one that failed (2026-09-28).
+        version = self.engine(alloc["model_id"])
         _, pipeline = self._pipeline_plan(
             alloc["model_id"],
             alloc["gpu_sku"],
             int(alloc.get("gpu_count", "1")),
             tensor_parallel=plan.tensor_parallel,
+            engine=version or newest_runner_image().version,
             # The given plan boots as it is: no max_num_seqs of the planner's own.
             state_block_guard=False,
             # ... and is predicted as it boots: its utilization (vLLM's default
@@ -345,7 +358,9 @@ class CohortPlanner:
         count = int(alloc.get("gpu_count", "1"))
         minutes = 25.0
         estimate = round(minutes / 60 * self.rates.get(gpu, 0.0) * count, 4)
-        return self._solution(plan, pipeline, label, check_feasibility=False, estimate=estimate)
+        return self._solution(
+            plan, pipeline, label, check_feasibility=False, estimate=estimate, engine=version
+        )
 
     # ------------------------------------------------------------------
 
@@ -624,8 +639,10 @@ def weights_site(
 ) -> WeightsSite | None:
     """Choose a datacenter with stock for every execution and size its volume.
 
-    ``None`` when no storage datacenter has stock for all of them right now.
     An existing Apron volume's datacenter is preferred (its weights stay).
+    With no stock anywhere, a datacenter whose volume already holds every
+    model is chosen and the run waits there for stock; ``None`` only when
+    there is neither.
     """
     from apron.adapters.backends.runpod_storage import region_rank
 
@@ -653,6 +670,11 @@ def weights_site(
         ):
             chosen = dc
             break
+    if chosen is None:
+        # No GPU stock anywhere right now: where every model is already staged
+        # the run waits for stock there (``stock_waiter``) instead of giving
+        # up before renting anything (2026-09-28: no 2xB200 at launch).
+        chosen = next((dc for dc in candidates if staged_already(dc)), None)
     if chosen is None:
         return None
 
@@ -954,8 +976,12 @@ def build_fix_ports(
     planner: CohortPlanner,
     rates: dict[str, float],
     record_spend: Callable[[float, str], None] | None = None,
+    engine_version: str = "v0.29.0",
 ) -> FixProofPorts:
-    rules = load_rules(RULES_DIR, "vllm", "v0.29.0")
+    """Fix-proof ports whose diagnosis reads *engine_version*'s rules (the
+    vLLM the broken plan ran on: a v0.30.0 failure is diagnosed against
+    v0.30.0's rules, e.g. ``mamba_cache_blocks``)."""
+    rules = load_rules(RULES_DIR, "vllm", engine_version)
 
     def correction_context(sp: SolutionPlan) -> CorrectionContext:
         return CorrectionContext(
@@ -966,9 +992,11 @@ def build_fix_ports(
 
     return FixProofPorts(
         plan_solution=planner.plan_for,
-        diagnosis_engine=VllmEngineAdapter(rules=rules),
+        diagnosis_engine=VllmEngineAdapter(engine_version=engine_version, rules=rules),
         rules=rules,
-        rule_repository=FileRuleRepository(RULES_DIR / "vllm-v0.29"),
+        rule_repository=FileRuleRepository(
+            RULES_DIR / ("vllm-" + ".".join(engine_version.split(".")[:2]))
+        ),
         correction_context=correction_context,
         hardware_for=hardware_for,
     )
