@@ -54,11 +54,19 @@ HOURS_PER_MONTH = 730.0
 # 8 vCPUs and took 4 (AP-JP-1, 2026-09-27).
 STAGER_CPU_FLAVORS = ("cpu3c", "cpu5c", "cpu3g", "cpu5g")
 STAGER_VCPUS = (8, 4, 2)
+# RAM a stager pod needs: the download (huggingface_hub over hf_xet, 8 files
+# at once) was OOM-killed 11 times in a 4 GB pod (cpu3c x 2, memory.max
+# 3999997952, US-CA-2, 2026-09-28) and never finished Qwen3.8-Flash-Next or
+# DeepSeek-V4-Flash-0731.  The pods that staged 840 GB before were asked for
+# cpu3c x 8 first, 16 GB.  A size below this is never requested; RAM per vCPU
+# is the flavor's ``ramMultiplier`` (RunPod ``cpuFlavors``).
+STAGER_MIN_RAM_GB = 16
 STAGER_CONTAINER_GB = 20
 NO_CAPACITY = "no longer any instances available"
 
 _DATACENTERS_QUERY = "query { dataCenters { id storageSupport } }"
 _CPU_STOCK_QUERY = "query { dataCenters { id cpuAvailability { cpuFlavorId stockStatus } } }"
+_CPU_FLAVORS_QUERY = "query { cpuFlavors { id ramMultiplier } }"
 _DC_STOCK_QUERY = """query Stock {{
   gpuTypes(input: {{id: "{gpu}"}}) {{
     lowestPrice(input: {{
@@ -194,6 +202,11 @@ class RunPodStorage:
         ]
         return [flavor for _, flavor in sorted(stocked, key=lambda x: -x[0])]
 
+    def cpu_flavor_ram(self) -> dict[str, int]:
+        """GB of RAM per vCPU of each CPU flavor (its ``ramMultiplier``)."""
+        rows = self._gql(_CPU_FLAVORS_QUERY).get("cpuFlavors") or []
+        return {str(r["id"]): int(r["ramMultiplier"]) for r in rows if r.get("ramMultiplier")}
+
     def stock_in(self, data_center_id: str, gpu_type: str, gpu_count: int) -> str | None:
         """Secure stock for *gpu_type* x *gpu_count* in one datacenter, on hosts
         that can run the runner image; ``None`` means none."""
@@ -239,6 +252,7 @@ class RunPodStagerPod(RunPodTarget):
         super().__init__(
             network_volume_id=network_volume_id, data_center_id=data_center_id, **kwargs
         )
+        self.size: str | None = None  # the CPU flavor, vCPUs and RAM it was created with
 
     @property
     def execution_fingerprint(self) -> str:
@@ -257,10 +271,14 @@ class RunPodStagerPod(RunPodTarget):
             self.teardown()
         storage = RunPodStorage(str(self._api_key))
         flavors = storage.cpu_stock(str(self._data_center_id)) or list(STAGER_CPU_FLAVORS)
+        ram_per_vcpu = storage.cpu_flavor_ram()
         pod: dict[str, Any] | None = None
         refusals: list[str] = []
         for flavor in flavors:
             for vcpus in STAGER_VCPUS:
+                ram = ram_per_vcpu.get(flavor, 0) * vcpus
+                if ram < STAGER_MIN_RAM_GB:
+                    continue  # the download would be OOM-killed (STAGER_MIN_RAM_GB)
                 body = {
                     "name": f"{POD_NAME_PREFIX}-stager",
                     "imageName": self._image,
@@ -277,6 +295,7 @@ class RunPodStagerPod(RunPodTarget):
                 }
                 try:
                     pod = storage._rest("POST", "/pods", body)
+                    self.size = f"{flavor} x {vcpus} vCPU, {ram} GB RAM"
                     break
                 except RuntimeError as exc:
                     if NO_CAPACITY not in str(exc):
@@ -286,7 +305,8 @@ class RunPodStagerPod(RunPodTarget):
                 break
         if pod is None:
             raise RuntimeError(
-                f"{NO_CAPACITY} for a CPU stager in {self._data_center_id}: {refusals}"
+                f"{NO_CAPACITY} for a CPU stager with {STAGER_MIN_RAM_GB} GB RAM or more "
+                f"in {self._data_center_id}: {refusals}"
             )
         self._pod_id = pod["id"]
         logger.info("stager pod %s created in %s", self._pod_id, self._data_center_id)

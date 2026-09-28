@@ -219,11 +219,19 @@ def download_command(
         "kill $pid 2>/dev/null; sleep 5; kill -9 $pid 2>/dev/null; break; fi; done; "
         "wait $pid; rc=$?"
     )
+    # What the pod's memory limit did (cgroup v2): a download the kernel
+    # OOM-killed ended in a bare "Killed" and read as a failed download
+    # (2026-09-28, 11 kills in a 4 GB stager); the log now says so.
+    memory = (
+        'echo "memory: max=$(cat /sys/fs/cgroup/memory.max 2>/dev/null) '
+        "peak=$(cat /sys/fs/cgroup/memory.peak 2>/dev/null) "
+        f'$(grep oom_kill /sys/fs/cgroup/memory.events 2>/dev/null)" >> {q(log)}; '
+    )
     return (
         f"mkdir -p {q(dest)} && : > {q(log)}; rc=1; "
         f"for a in $(seq 1 {attempts}); do {run} {watchdog}; "
         '[ "$rc" -eq 0 ] && break; done; '
-        f"tail -20 {q(log)}; exit $rc"
+        f"{memory}tail -20 {q(log)}; exit $rc"
     )
 
 

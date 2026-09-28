@@ -28,6 +28,9 @@ from apron.adapters.backends.vllm_engine import MODELS_DIR, VllmEngineAdapter
 from apron.application.orchestration.budget import BudgetTracker, PhaseTiming
 from apron.application.orchestration.staging import stage_weights
 
+# GB of RAM per vCPU, as RunPod's cpuFlavors list them (ramMultiplier, 2026-09-28).
+RAM = {"cpu3c": 2, "cpu3g": 4, "cpu3m": 8, "cpu5c": 2, "cpu5g": 4, "cpu5m": 8}
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -136,6 +139,7 @@ def test_stager_is_a_cpu_pod_on_the_volume() -> None:
     with (
         patch.object(RunPodStorage, "_rest", rest),
         patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
         patch.object(stager, "_register_teardown_guard"),
         patch.object(stager, "_wait_for_running", side_effect=RuntimeError("stop")),
         pytest.raises(RuntimeError),
@@ -388,13 +392,16 @@ def test_stager_steps_down_until_a_cpu_pod_is_free() -> None:
     with (
         patch.object(RunPodStorage, "_rest", rest),
         patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c", "cpu3g"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
         patch.object(stager, "_register_teardown_guard"),
         patch.object(stager, "_wait_for_running", side_effect=RuntimeError("stop")),
         pytest.raises(RuntimeError, match="stop"),
     ):
         stager.provision()
-    assert tried == [("cpu3c", 8), ("cpu3c", 4), ("cpu3c", 2), ("cpu3g", 8), ("cpu3g", 4)]
+    # Only sizes with STAGER_MIN_RAM_GB: cpu3c (2 GB/vCPU) x 4 or x 2 is never asked for.
+    assert tried == [("cpu3c", 8), ("cpu3g", 8), ("cpu3g", 4)]
     assert stager.pod_id == "stager2"
+    assert stager.size == "cpu3g x 4 vCPU, 16 GB RAM"
 
 
 def test_stager_reports_every_refusal_and_other_errors_stop() -> None:
@@ -406,8 +413,9 @@ def test_stager_reports_every_refusal_and_other_errors_stop() -> None:
     )
     with (
         patch.object(RunPodStorage, "_rest", full),
-        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c"]),
-        pytest.raises(RuntimeError, match=r"cpu3cx8.*cpu3cx2"),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c", "cpu3m"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
+        pytest.raises(RuntimeError, match=r"16 GB RAM or more.*cpu3cx8.*cpu3mx2"),
     ):
         stager.provision()
 
@@ -417,6 +425,7 @@ def test_stager_reports_every_refusal_and_other_errors_stop() -> None:
     with (
         patch.object(RunPodStorage, "_rest", bad),
         patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c", "cpu5c"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
         pytest.raises(RuntimeError, match="401"),
     ):
         stager.provision()
@@ -641,3 +650,70 @@ def test_the_detached_command_records_the_exit_code_of_a_command_that_exits(
         time.sleep(0.05)
     assert rc.read_text().strip() == str(code)
     assert not (tmp_path / "rc.tmp").exists()
+
+
+def test_models_already_staged_need_no_cpu_pod(tmp_path: Path) -> None:
+    """2026-09-28: no CPU pod in US-CA-2 held back a GPU run whose weights were
+    all on the volume.  Verified models neither need CPU stock nor a stager."""
+    from apron.interfaces import cohort_root
+
+    (tmp_path / "events.jsonl").write_text(
+        "\n".join(
+            json.dumps({"event": "staged", "location": dc, "model_id": m, "ok": ok})
+            for dc, m, ok in [
+                ("US-CA-2", "a", True),
+                ("US-CA-2", "b", False),
+                ("EU-RO-1", "c", True),
+            ]
+        )
+        + "\n"
+    )
+    assert cohort_root.staged_ok_on("US-CA-2", tmp_path) == {"a"}
+    site = cohort_root.WeightsSite("v1", "US-CA-2", 100)
+    result = cohort_root.stage_site(site, ["a"], SimpleNamespace(), tmp_path)  # type: ignore[arg-type]
+    assert result.ok and result.pod_id is None and result.cost == 0.0
+
+
+def test_a_stager_below_the_ram_floor_is_never_requested() -> None:
+    """A 4 GB stager OOM-killed the download 11 times (2026-09-28): with only
+    cpu3c (2 GB per vCPU) in stock, 8 vCPUs is the one size asked for."""
+    from apron.adapters.backends.runpod_storage import STAGER_MIN_RAM_GB
+
+    asked: list[int] = []
+
+    def full(self: RunPodStorage, method: str, path: str, body: Any = None) -> Any:
+        asked.append(RAM[body["cpuFlavorIds"][0]] * body["vcpuCount"])
+        raise RuntimeError("There are no longer any instances available")
+
+    stager = RunPodStagerPod(
+        api_key="k", ssh_key_path="/tmp/k", network_volume_id="vol1", data_center_id="US-CA-2"
+    )
+    with (
+        patch.object(RunPodStorage, "_rest", full),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c", "cpu3g", "cpu3m"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
+        pytest.raises(RuntimeError, match="16 GB RAM or more"),
+    ):
+        stager.provision()
+    assert asked and min(asked) >= STAGER_MIN_RAM_GB
+    # A flavor whose RAM RunPod does not report is not guessed at.
+    asked.clear()
+    with (
+        patch.object(RunPodStorage, "_rest", full),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu9x"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
+        pytest.raises(RuntimeError),
+    ):
+        stager.provision()
+    assert asked == []
+
+
+def test_the_download_log_says_what_the_memory_limit_did() -> None:
+    """The command ends with the cgroup's limit, peak and OOM kills in the log
+    it tails, so an OOM-killed download is named, not a bare "Killed"."""
+    from apron.adapters.backends.vllm_engine import download_command
+
+    command = download_command("org/m", "/dest")
+    assert "/sys/fs/cgroup/memory.max" in command
+    assert "oom_kill /sys/fs/cgroup/memory.events" in command
+    assert command.index("memory: max=") < command.index("tail -20")

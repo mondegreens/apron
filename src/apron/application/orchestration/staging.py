@@ -94,6 +94,8 @@ def stage_weights(
                         "pod_id": stager.pod_id,
                         # Where it ran: the speed per datacenter is measured here.
                         "location": getattr(stager, "location", None),
+                        # On what: CPU flavor, vCPUs and RAM (optional capability).
+                        "stager": getattr(stager, "size", None),
                     }
                 )
     except Exception as exc:  # reported in the result; the pod is still torn down
