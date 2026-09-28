@@ -74,7 +74,15 @@ ACTIVATION_FIELDS: tuple[str, ...] = (
     "n_groups",
     "ssm_state_size",
     "mlp_hidden_act",
+    # MoE routing: vLLM refuses FlashInfer TRTLLM's routing without it.
+    "norm_topk_prob",
+    # GLM5Next's kpool sparse indexer (its profile-run workspace).
+    "index_head_dim",
+    "index_kpool",
 )
+#: Fields ``activation_config`` derives from config.json rather than copies.
+#: ``fp8_block_experts``: a block-FP8 checkpoint (``fp8_block_quant``).
+DERIVED_ACTIVATION_FIELDS: tuple[str, ...] = ("fp8_block_experts",)
 _TOWER_FIELDS = ("vision_config", "audio_config")
 
 # The MLA prefill workspace is capped at 64k tokens (mla_attention.py:2163-2178)
@@ -128,6 +136,8 @@ def activation_config(
     merged = {**config, **text} if isinstance(text, dict) else dict(config)
     fields = {k: merged[k] for k in ACTIVATION_FIELDS if merged.get(k) is not None}
     fields.update({k: True for k in _TOWER_FIELDS if config.get(k)})
+    if fp8_block_quant(config):
+        fields["fp8_block_experts"] = True
     family = _VISION_FAMILIES.get(str(config.get("model_type")))
     vision = config.get("vision_config")
     if family is None or not isinstance(vision, dict) or processor is None:
@@ -395,8 +405,102 @@ def _mamba2_piece_bytes(metadata: dict[str, Any], tp: int, tokens: int, dtype_by
     return held + t_h + projected + max(t_h, ssm_out)
 
 
+def fp8_block_quant(config: dict[str, Any]) -> bool:
+    """A block-FP8 checkpoint: ``quant_method`` fp8 with 128 x 128 weight
+    blocks and dynamic activations.  Its MoE layers take Fp8MoEMethod with the
+    128-block weight key and the dynamic per-128 activation key
+    (layers/quantization/fp8.py:509-541, vLLM v0.30.0).  *config* is
+    config.json (``text_config`` read too) or the calculator's merged metadata."""
+    text = config.get("text_config")
+    nested = text if isinstance(text, dict) else {}
+    quant = config.get("quantization_config") or nested.get("quantization_config") or {}
+    return (
+        isinstance(quant, dict)
+        and quant.get("quant_method") == "fp8"
+        and list(quant.get("weight_block_size") or []) == [128, 128]
+        and quant.get("activation_scheme", "dynamic") == "dynamic"
+    )
+
+
+def _trtllm_fp8_experts(metadata: dict[str, Any], inputs: CalculatorInput, tp: int) -> bool:
+    """Whether vLLM v0.30.0 runs the MoE on FlashInfer's monolithic TRTLLM FP8
+    kernel, which takes the router logits and allocates its own scratch: no
+    fused-MoE workspace (modular_kernel.py:1549-1612 calls the experts without
+    ``_allocate_buffers``, the only user of the workspace manager there,
+    1117-1196; trtllm_fp8_moe.py:425-509).
+
+    - ``--moe-backend`` auto (config/kernel.py:248) tries FLASHINFER_TRTLLM
+      first on CUDA once AITER is out, TRITON only moved ahead on SM 9.0
+      (oracle/fp8.py:81-123, 423-441), monolithic before modular
+      (oracle/fp8.py:140-146); ``flashinfer_trtllm`` asks for it (366-390);
+    - the kernel runs on the SM 10.x family with FlashInfer's TRTLLM fused MoE
+      (trtllm_fp8_moe.py:161-169; assumed installed, as for the 16-bit TRTLLM
+      experts the 2x B200 Qwen3.8 log showed);
+    - block FP8 (``fp8_block_quant``) whose per-rank intermediate size is a
+      multiple of 128, else the scales are refined and only Triton takes the
+      refined key (oracle/fp8.py:272-302; fp8.py:509-541);
+    - routing: renormalized top-k or grouped top-k (trtllm_fp8_moe.py:387-409;
+      without ``norm_topk_prob`` the router is Default, refused); at most 512
+      experts, a multiple of 4, top-k at most 32 (453-470); a SwiGLU clamp is
+      accepted with block FP8 and SiLU (84-102).
+    """
+    sm = _compute_capability(inputs)
+    if sm is None or sm // 10 != 10:
+        return False
+    backend = str(inputs.execution_spec_data.get("moe_backend") or "auto")
+    if backend not in ("auto", "flashinfer_trtllm"):
+        return False
+    if not (metadata.get("fp8_block_experts") or fp8_block_quant(metadata)):
+        return False
+    if metadata.get("norm_topk_prob") is False:
+        return False
+    experts = int(
+        metadata.get("n_routed_experts")
+        or metadata.get("num_experts")
+        or metadata.get("num_local_experts")
+        or 0
+    )
+    top_k = int(metadata.get("num_experts_per_tok") or metadata.get("experts_per_token") or 0)
+    width = int(metadata.get("moe_intermediate_size") or 0) // tp
+    return 0 < experts <= 512 and experts % 4 == 0 and 0 < top_k <= 32 and width % 128 == 0
+
+
+# GLM5Next's kpool indexer, vLLM v0.30.0: the prefill K-gather workspace holds
+# 40 x max_model_len rows (v1/attention/backends/mla/indexer.py:721-731), each
+# ``index_head_dim`` fp8 bytes plus a 4-byte scale, next to a 1 MiB radix top-k
+# workspace (layers/sparse_attn_indexer_kpool.py:44, 218-236, 295-304); the
+# workspace manager aligns each part to 256 bytes (v1/worker/workspace.py:116-137).
+_INDEXER_ROWS_PER_TOKEN = 40
+_RADIX_TOPK_WORKSPACE_BYTES = 1 << 20
+_WORKSPACE_ALIGN = 256
+
+
+def _aligned(size: int, alignment: int) -> int:
+    return -(-size // alignment) * alignment
+
+
+def _kpool_indexer_workspace_bytes(metadata: dict[str, Any], seq_len: int) -> int:
+    """The workspace the kpool indexer reserves in the profile run (above);
+    0 without the indexer's fields."""
+    index_dim = int(metadata.get("index_head_dim") or 0)
+    if not (index_dim and metadata.get("index_kpool")):
+        return 0
+    rows = _INDEXER_ROWS_PER_TOKEN * seq_len
+    return (
+        _aligned(rows * index_dim, _WORKSPACE_ALIGN)
+        + _aligned(rows * 4, _WORKSPACE_ALIGN)
+        + _aligned(_RADIX_TOPK_WORKSPACE_BYTES, _WORKSPACE_ALIGN)
+    )
+
+
 def _forward_live_bytes(
-    metadata: dict[str, Any], inputs: CalculatorInput, tp: int, tokens: int, dtype_bytes: int
+    metadata: dict[str, Any],
+    inputs: CalculatorInput,
+    tp: int,
+    tokens: int,
+    dtype_bytes: int,
+    *,
+    mla_block: int = _MLA_BLOCK,
 ) -> int:
     """Bytes live at the peak of the profile run's forward (vLLM v0.29.0).
 
@@ -417,7 +521,10 @@ def _forward_live_bytes(
     top_k = metadata.get("num_experts_per_tok") or metadata.get("experts_per_token")
     moe_intermediate = metadata.get("moe_intermediate_size") or metadata.get("intermediate_size")
     workspace = 0
-    if experts and top_k and moe_intermediate:
+    if experts and top_k and moe_intermediate and not _trtllm_fp8_experts(metadata, inputs, tp):
+        # (On FlashInfer's monolithic TRTLLM FP8 kernel there is none:
+        # ``_trtllm_fp8_experts``.  Its own scratch is not traced -- FlashInfer's
+        # source is not in the pinned vLLM tree.)
         # Fused-MoE workspace (traced, workspace.py:207 via modular_kernel.py:
         # 1160-1180; Triton experts' shapes, experts/triton_moe.py:218-233):
         # [tokens, top_k, max(I, H)] shared with the output, plus
@@ -454,10 +561,18 @@ def _forward_live_bytes(
                 else 2048
             )
         )
+        # The block is the KV cache's (v0.30.0: mla_attention.py:903-916,
+        # 2286-2311, 1983-1995): 16 unless a hybrid layout aligns it (the
+        # caller's *mla_block*; GLM5Next at TP 2: 2176, so W = 67,456).
         seqs = int(inputs.execution_spec_data.get("max_num_seqs", 256))
-        width = min(max(8 * seq_len, 4 * seqs * _MLA_BLOCK), _MLA_WORKSPACE_CAP)
-        width = -(-width // _MLA_BLOCK) * _MLA_BLOCK
+        width = min(max(8 * seq_len, 4 * seqs * mla_block), _MLA_WORKSPACE_CAP)
+        width = -(-max(width, mla_block) // mla_block) * mla_block
         prefill_context = width * heads_tp * (int(qk_nope) + int(v_head)) * dtype_bytes
+        # GLM5Next's kpool indexer reserves its prefill workspace before the
+        # layer's MLA runs; the workspace manager keeps one buffer, the larger
+        # of the indexer's and the fused-MoE request (workspace.py:116-137,
+        # 139-209), live at every later layer's peak.
+        workspace = max(workspace, _kpool_indexer_workspace_bytes(metadata, seq_len))
         # The compiled graph's buffers live at that moment -- observed (peak
         # probe 2026-09-28, GLM-4.7-Flash, inductor code around
         # mla_attention.py:732): five [tokens, heads x head width] (query /
@@ -495,7 +610,9 @@ def _forward_live_bytes(
     return attention_out + 2 * t_h + tokens * 3 * width * dtype_bytes
 
 
-def _activation_estimate(metadata: dict[str, Any], inputs: CalculatorInput, tp: int) -> int | None:
+def _activation_estimate(
+    metadata: dict[str, Any], inputs: CalculatorInput, tp: int, *, mla_block: int = _MLA_BLOCK
+) -> int | None:
     """Peak activation vLLM measures in its startup profiling run (cold compile).
 
     The profile run's torch peak is the largest of four moments; T is
@@ -524,7 +641,13 @@ def _activation_estimate(metadata: dict[str, Any], inputs: CalculatorInput, tp: 
        Peak probe 2026-09-28: GLM-4.7-Flash 2,181,038,080 predicted,
        2,190,433,320 logged; Gemma 4 31B multimodal 1,589,641,216 predicted,
        1,599,875,317 logged (the probe also shows a 32 MiB buffer left by the
-       vision tower, modeling_gemma4.py:619, not modelled).
+       vision tower, modeling_gemma4.py:619, not modelled).  No fused-MoE
+       workspace on FlashInfer's TRTLLM FP8 kernel (``_trtllm_fp8_experts``);
+       GLM5Next's kpool indexer workspace shares the workspace buffer.
+       GLM-5.3-Flash on 2x B200 (v0.30.0, no probe): 4,833,935,360 predicted
+       at the boot's shape (the MLA dummy at W = 67,456, the indexer's
+       174,063,616 B), 4,702,989,189 logged; its compiled-graph buffer count
+       is GLM-4.7-Flash's, not probed for GLM5Next's mHC / KDA graph.
     3. Sampler: the logits for min(T, max_num_seqs) rows -- a second copy
        while a final soft-cap is applied (logits_processor.py:113-116) -- and
        the hidden states; with tensor parallelism the local shard, the
@@ -557,7 +680,7 @@ def _activation_estimate(metadata: dict[str, Any], inputs: CalculatorInput, tp: 
         padded * int(hidden) * dtype_bytes + 2 * t_h if tp == 1 and not multimodal else 0
     )
 
-    forward = _forward_live_bytes(metadata, inputs, tp, tokens, dtype_bytes)
+    forward = _forward_live_bytes(metadata, inputs, tp, tokens, dtype_bytes, mla_block=mla_block)
     if multimodal:
         forward += t_h  # the dummy encoder outputs, bounded by the budget
 
@@ -760,7 +883,12 @@ def cuda_graph_estimate_bytes(metadata: dict[str, Any], inputs: CalculatorInput)
     real capture then takes (the logged "actual"); vLLM subtracts the
     estimate.  Not modelled: MLA (GLM-4.7-Flash 1.39 MiB per layer-graph on
     sm90, DeepSeek-V2-Lite 0.63 on A100 -- one point per class) and Mamba-1
-    (0.20).  0 with ``enforce_eager``."""
+    (0.20).  0 with ``enforce_eager``.
+
+    The estimate also holds what the model allocates and keeps on its first
+    forward with attention metadata, the warmup before the first graph
+    (``layered.first_capture_bytes``, added by the caller): GLM-5.3-Flash on
+    2x B200 logged 0.09 GiB actual, 1.68 GiB estimated (this rule: 0.09)."""
     if inputs.execution_spec_data.get("enforce_eager", False):
         return 0
     layers = int(metadata.get("num_hidden_layers") or 0)
@@ -775,10 +903,19 @@ def _common_overhead(
     activation_estimate: int,
     inputs: CalculatorInput,
     metadata: dict[str, Any],
+    *,
+    first_capture_bytes: int = 0,
 ) -> dict[str, int]:
-    """The KV budget and its terms, shared across mechanism branches."""
+    """The KV budget and its terms, shared across mechanism branches.
+
+    *first_capture_bytes*: what the model allocates and keeps on its first
+    forward with attention metadata, which falls inside vLLM's CUDA-graph
+    memory estimate (``layered.first_capture_bytes``); none with
+    ``enforce_eager``, where vLLM estimates nothing."""
     non_pytorch_overhead = non_torch_bytes(metadata, inputs)
     cuda_graph_estimate = cuda_graph_estimate_bytes(metadata, inputs)
+    if not inputs.execution_spec_data.get("enforce_eager", False):
+        cuda_graph_estimate += first_capture_bytes
 
     total_required = (
         weight_bytes + kv_cache + activation_estimate + non_pytorch_overhead + cuda_graph_estimate
@@ -983,14 +1120,21 @@ def calculate_layered_decode(
     ``kv_head_weight_bytes`` weights split by KV head, which ranks share when
     there are fewer KV heads than ranks; vLLM also allocates weights the
     checkpoint does not store (``duplicated_weight_bytes``) and pads some
-    (``padded_weight_bytes``).
+    (``padded_weight_bytes``: MXFP4 experts on every arch, 16-bit experts on
+    FlashInfer TRTLLM on SM 10.x).  Its "model weights" figure also holds the
+    buffers the model builds at load (``startup_buffer_bytes``: GLM5Next's
+    top-k index buffers), and its CUDA-graph estimate what the first forward
+    with attention metadata allocates and keeps (``first_capture_bytes``).
+    MLA's profile-run prefill dummy is aligned to the layout's block.
     """
     from apron.domain.mechanisms.layered import (
         block_accounting,
         duplicated_weight_bytes,
+        first_capture_bytes,
         kv_layout,
         layer_kinds,
         padded_weight_bytes,
+        startup_buffer_bytes,
     )
 
     metadata = inputs.artifact_metadata
@@ -1032,13 +1176,34 @@ def calculate_layered_decode(
         + replicated
         + _per_gpu(by_kv_head, kv_ranks)
         + duplicated_weight_bytes(metadata, tp=tp, dtype_bytes=model_dtype_bytes)
-        + padded_weight_bytes(metadata, tp=tp)
+        + padded_weight_bytes(
+            metadata,
+            tp=tp,
+            sm=_compute_capability(inputs),
+            moe_backend=str(inputs.execution_spec_data.get("moe_backend") or "auto"),
+        )
+        + startup_buffer_bytes(metadata, max_num_batched_tokens=batched)
     )
-    activation_estimate = _activation_estimate(metadata, inputs, tp)
+    # The KV cache block (the full-attention layers'), to which vLLM aligns
+    # MLA's profile-run prefill dummy (mla_attention.py:1983-1995, 2286-2311).
+    mla_block = next((k.block_size for k in kinds if k.kind == "full"), _MLA_BLOCK)
+    activation_estimate = _activation_estimate(metadata, inputs, tp, mla_block=mla_block)
     if activation_estimate is None:
         return None
     kv_cache = per_sequence * max_batch_size
-    overhead = _common_overhead(weight_bytes, kv_cache, activation_estimate, inputs, metadata)
+    overhead = _common_overhead(
+        weight_bytes,
+        kv_cache,
+        activation_estimate,
+        inputs,
+        metadata,
+        first_capture_bytes=first_capture_bytes(
+            metadata,
+            tp=tp,
+            sm=_compute_capability(inputs),
+            kv_cache_dtype=str(inputs.execution_spec_data.get("kv_cache_dtype", "auto")),
+        ),
+    )
     return {
         "weight_memory_bytes": weight_bytes,
         "kv_cache_bytes": kv_cache,

@@ -10,12 +10,14 @@ The table in ``_dev_notes/cohort-run/kv-budget-residuals.md`` is this output.
 
     uv run python scripts/kv_budget_residuals.py            # the table
     uv run python scripts/kv_budget_residuals.py --configs  # re-record the configs
+    uv run python scripts/kv_budget_residuals.py --configs --model zai-org/GLM-5.3-Flash
 
 ``--configs`` downloads each checkpoint's config.json at the recorded revision
 into ``tests/fixtures/cohort/configs.json`` and, for a multimodal wrapper (a
 ``vision_config`` / ``audio_config``), the processor files the planner reads
 (``plan_pipeline.PROCESSOR_FILES``, null where the revision has none) into
-``tests/fixtures/cohort/processors.json`` (the Hub; no weights).
+``tests/fixtures/cohort/processors.json`` (the Hub; no weights); with
+``--model`` only that model's, the other rows kept as they are.
 """
 
 from __future__ import annotations
@@ -29,7 +31,7 @@ FIXTURES = REPO / "tests" / "fixtures" / "cohort"
 GIB = 1 << 30
 
 
-def record_configs() -> int:
+def record_configs(only: str | None = None) -> int:
     from apron.adapters.evidence.hf_hub import HFHubResolver
     from apron.application.orchestration.plan_pipeline import PROCESSOR_FILES
     from apron.domain.mechanisms.calculator import declares_towers
@@ -37,6 +39,13 @@ def record_configs() -> int:
     weights = json.loads((FIXTURES / "weight-bytes.json").read_text())
     resolver = HFHubResolver()
     configs, processors = {}, {}
+    if only is not None:
+        if only not in weights:
+            print(f"{only}: not in weight-bytes.json", file=sys.stderr)
+            return 1
+        configs = json.loads((FIXTURES / "configs.json").read_text())
+        processors = json.loads((FIXTURES / "processors.json").read_text())
+        weights = {only: weights[only]}
     for model_id, row in sorted(weights.items()):
         raw = resolver._download_file(model_id, "config.json", row["revision"])
         if raw is None:
@@ -104,8 +113,9 @@ def rows() -> list[dict[str, object]]:
 
 
 def main() -> int:
-    if "--configs" in sys.argv[1:]:
-        return record_configs()
+    argv = sys.argv[1:]
+    if "--configs" in argv:
+        return record_configs(argv[argv.index("--model") + 1] if "--model" in argv else None)
     table = rows()
     head = (
         "| record | model | GPU | TP | stored | now | req | weights | peak | non-torch"

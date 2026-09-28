@@ -132,15 +132,30 @@ class RecordedWeightBytes(_Strict):
     # The config fields the activation estimate reads (calculator.activation_config).
     activation: dict[str, int | float | bool | str]
     ssm: dict[str, int] | None = None
+    # Loaded bytes beyond the generic width rule (plan_pipeline.widened_tensor_bytes)
+    # and loaded bytes every tensor-parallel rank holds whole
+    # (plan_pipeline.replicated_tensor_bytes); 0 for the families not traced.
+    widened_bytes: int = 0
+    replicated_bytes: int = 0
 
     @field_validator("activation")
     @classmethod
     def _known_activation_fields(
         cls, value: dict[str, int | float | bool | str]
     ) -> dict[str, int | float | bool | str]:
-        from apron.domain.mechanisms.calculator import ACTIVATION_FIELDS, ENCODER_FIELDS
+        from apron.domain.mechanisms.calculator import (
+            ACTIVATION_FIELDS,
+            DERIVED_ACTIVATION_FIELDS,
+            ENCODER_FIELDS,
+        )
 
-        known = {*ACTIVATION_FIELDS, *ENCODER_FIELDS, "vision_config", "audio_config"}
+        known = {
+            *ACTIVATION_FIELDS,
+            *DERIVED_ACTIVATION_FIELDS,
+            *ENCODER_FIELDS,
+            "vision_config",
+            "audio_config",
+        }
         unknown = set(value) - known
         if unknown:
             raise ValueError(f"unknown activation fields: {sorted(unknown)}")

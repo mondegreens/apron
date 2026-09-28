@@ -901,6 +901,24 @@ def loaded_tensor_bytes(
 _DSA_INDEXER_WK = re.compile(r"\.indexer\.wk\.weight$")
 _DSA_INDEXER_WK_SCALE = re.compile(r"\.indexer\.wk\.weight_scale_inv$")
 _MINIMAX_M3_FP32 = re.compile(r"\.block_sparse_moe\.(?:gate\.weight|e_score_correction_bias)$")
+# GLM5Next (GLM-5.3-Flash), vLLM v0.30.0.  The MLA layers are built without the
+# fp8 quant config (models/glm5next/nvidia/model.py:318-334, quant_config=None),
+# so their fp8 q_a / kv_a / q_b / o projections are dequantized to bf16 on load
+# and their scales not kept (model.py:829-839, 1224-1299).  Parameters created
+# in float32 that the checkpoint stores in bf16: the hyper-connection mixes
+# (model.py:389-400), the indexer's kpool APE (models/glm5next/nvidia/
+# attention.py:240-242) and the KDA short convolutions (glm5next/nvidia/
+# kda.py:247-268, params_dtype float32).
+_GLM5_NEXT_MLA_FP8 = re.compile(
+    r"\.self_attn\.(?:q_a_proj|kv_a_proj_with_mqa|q_b_proj|o_proj)\.weight$"
+)
+_GLM5_NEXT_MLA_FP8_SCALE = re.compile(
+    r"\.self_attn\.(?:q_a_proj|kv_a_proj_with_mqa|q_b_proj|o_proj)\.weight_scale_inv$"
+)
+_GLM5_NEXT_FP32 = re.compile(
+    r"\.(?:hc_(?:attn|ffn)_fn|self_attn\.indexer\.index_kpool_compress_ape"
+    r"|self_attn\.[qkv]_conv1d\.weight)$"
+)
 
 
 def _loaded_size(name: str, dtype: str, size: int, model_type: str, quantized: bool) -> int:
@@ -909,11 +927,38 @@ def _loaded_size(name: str, dtype: str, size: int, model_type: str, quantized: b
             return 2 * size
         if _DSA_INDEXER_WK_SCALE.search(name):
             return 0
+    if model_type == "glm5_next":
+        # The KDA layers' o_proj is stored bf16 and loaded as stored; only the
+        # MLA layers store these projections in fp8.
+        if dtype == "F8_E4M3" and _GLM5_NEXT_MLA_FP8.search(name):
+            return 2 * size
+        if _GLM5_NEXT_MLA_FP8_SCALE.search(name):
+            return 0
+        if dtype in ("BF16", "F16") and _GLM5_NEXT_FP32.search(name):
+            return 2 * size
     if model_type == "minimax_m3_vl" and dtype == "F32" and _MINIMAX_M3_FP32.search(name):
         return size
     if quantized or dtype != "F32":
         return size
     return size // 2
+
+
+def widened_tensor_bytes(meta: dict[str, tuple[str, int]], config: dict[str, Any]) -> int:
+    """Bytes ``loaded_tensor_bytes`` gives beyond the generic width rule (stored
+    size; float32 halved in an unquantized checkpoint): the model-specific
+    widths of ``_loaded_size`` (e.g. GLM5Next's dequantized MLA projections),
+    MTP layers left out.  A recorded row's totals cannot carry them
+    (``recorded_loaded_bytes``); ``scripts/record_weight_bytes.py`` records
+    this sum next to them."""
+    quantized = bool(config.get("quantization_config"))
+    model_type = str(config.get("model_type") or "")
+    is_mtp = _mtp_names(config)
+    return sum(
+        _loaded_size(name, dtype, size, model_type, quantized)
+        - _loaded_size(name, dtype, size, "", quantized)
+        for name, (dtype, size) in meta.items()
+        if not is_mtp(name)
+    )
 
 
 def runtime_dtype(config: dict[str, Any]) -> str:
@@ -1084,10 +1129,39 @@ _MINIMAX_M3_REPLICATED = re.compile(
     r"|(?:multi_modal_projector|patch_merge_mlp)\.linear_2\.bias)"
 )
 
+# GLM5Next (GLM-5.3-Flash), vLLM v0.30.0, checkpoint names.  MLA layers: the
+# fused q_a + kv_a projection (DeepSeekV2FusedQkvAProjLinear, disable_tp:
+# model_executor/models/deepseek_v2.py:948-963; models/glm5next/nvidia/
+# attention.py:446-452), the whole indexer (wq_b ReplicatedLinear, wk_weights_proj
+# disable_tp, k_norm, the kpool APE and gate parameters: attention.py:239-267)
+# and the q_a / kv_a norms (463, 479).  KDA layers: the f_a and g_a shards of
+# the merged input projection, which every rank loads whole (kda.py:55-80,
+# 217-235), and the gated output norm (kda.py:291).  Every layer: the router
+# gate and its bias (GateLinear is a ReplicatedLinear: layers/fused_moe/router/
+# gate_linear.py:13-14; model.py:181-192), the hyper-connection parameters
+# (model.py:389-400) and the RMSNorms (361, 370-372, 684).  The vision tower
+# with ``--mm-encoder-tp-mode weights`` (the default, config/multimodal.py:170):
+# the patch embedding and the downsample convolutions (nn modules without TP:
+# glm5next/nvidia/multimodal.py:62-68, 420-425), its norms (142-143, 246-247,
+# 306, 426-428) and the biases of its row-parallel layers.  MTP layers are left out
+# (``mtp_tensor_bytes``).
+_GLM5_NEXT_REPLICATED = re.compile(
+    r"^model\.(?:language_model\.(?:layers\.\d+\.(?:"
+    r"self_attn\.(?:q_a_proj|kv_a_proj_with_mqa|indexer|q_a_layernorm|kv_a_layernorm"
+    r"|f_a_proj|g_a_proj|o_norm)\."
+    r"|mlp\.gate\."
+    r"|hc_"
+    r"|(?:input|post_attention)_layernorm\."
+    r")|norm\.)"
+    r"|visual\.(?:patch_embed\.|downsample\.|post_layernorm\.|merger\.post_projection_norm\."
+    r"|blocks\.\d+\.(?:norm[12]\.|attn\.[qk]_norm\.|attn\.proj\.bias|mlp\.down_proj\.bias)))"
+)
+
 _REPLICATED: dict[str, re.Pattern[str]] = {
     "deepseek_v4": _DEEPSEEK_REPLICATED,
     "deepseek_v41": _DEEPSEEK_REPLICATED,
     "glm_moe_dsa": _GLM_DSA_REPLICATED,
+    "glm5_next": _GLM5_NEXT_REPLICATED,
     "minimax_m3_vl": _MINIMAX_M3_REPLICATED,
 }
 
@@ -1095,8 +1169,8 @@ _REPLICATED: dict[str, re.Pattern[str]] = {
 def replicated_tensor_bytes(tensors: dict[str, int], config: dict[str, Any]) -> int:
     """Bytes of loaded weights vLLM keeps whole on every tensor-parallel rank.
 
-    Only DeepSeek V4 / V4.1, GLM-5.x DSA and MiniMax-M3 are traced; every
-    other model's weights are divided by TP (the calculator's ``_per_gpu``).
+    Only DeepSeek V4 / V4.1, GLM-5.x DSA, GLM5Next and MiniMax-M3 are traced;
+    every other model's weights are divided by TP (the calculator's ``_per_gpu``).
     """
     names = _REPLICATED.get(str(config.get("model_type") or ""))
     if names is None:
@@ -1188,11 +1262,12 @@ def recorded_loaded_bytes(entry: dict[str, Any], plan_dtype: str | None) -> int:
     config: dict[str, Any] = {"tie_word_embeddings": entry["tie_word_embeddings"]}
     if entry["quantized"]:
         config["quantization_config"] = {"quant_method": "recorded"}
-    tensors = (
-        {name: size for name, (_, size) in meta.items()}
-        if plan_dtype == "float32"
-        else loaded_tensor_bytes(meta, config)
-    )
+    if plan_dtype == "float32":
+        tensors = {name: size for name, (_, size) in meta.items()}
+    else:
+        # The model-specific widths the row recorded (``widened_tensor_bytes``).
+        tensors = loaded_tensor_bytes(meta, config)
+        tensors["widened"] = int(entry.get("widened_bytes") or 0)
     return _resolve_weight_bytes(None, "recorded", _RecordedObservation(), config, tensors=tensors)
 
 

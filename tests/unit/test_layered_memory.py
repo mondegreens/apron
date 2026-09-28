@@ -246,6 +246,50 @@ def test_deepseek_v41_pages_as_flashmla_packs_them_on_sm90() -> None:
     assert _bytes(V41, K_256, in_flight_tokens=4_096) == 587_913_984
 
 
+def _pages(config: dict[str, Any], *, sm: int, tp: int = 2) -> list[tuple[str, int, int, int]]:
+    kinds = layer_kinds(config, tp=tp, kv_dtype_bytes=2, model_dtype_bytes=2, sm=sm)
+    assert kinds is not None
+    return [(k.kind, k.count, k.block_size, k.page_bytes) for k in kinds]
+
+
+def test_deepseek_v41_pages_the_mxfp8_record_on_128_token_blocks_on_sm100() -> None:
+    """SM 10.x keeps FlashMLA (nvidia/model.py:117-152) but writes the V4.1
+    record, 512 fp8 + 16 scale bytes = 528 in 512-byte pages (attention.py:
+    113-120, 459-461, 1023-1027), and the block is the FlashMLA / indexer
+    backends' 128 (sparse_mla.py:88-90, indexer.py:261-263).  Bytes from vLLM's
+    own _get_packed_kv_cache_groups and accounting run on these specs."""
+    assert _pages(V41, sm=100) == [
+        ("sliding", 40, 32, 16_896),  # 32 x 528
+        ("full", 3, 128, 33_792),  # ratio 2: 64 x 528
+        ("compressed", 3, 128, 8_704),  # 64 x 132 = 8448 -> 17 x 512
+        ("ring", 3, 8, 32_768),  # 8 x 2 x 512 x fp32, as on SM 9.x
+        ("full", 1, 128, 67_584),  # ratio 1: 128 x 528
+        ("compressed", 1, 128, 16_896),  # 128 x 132
+    ]
+    for tp in (1, 2, 8):
+        assert _blocks(V41, MIB_1, tp=tp, sm=100) == Blocks(211_968, 10_261, 6)
+    assert _bytes(V41, MIB_1, sm=100, in_flight_tokens=16_384) == 2_175_003_648
+    assert _bytes(V41, K_256, sm=100, in_flight_tokens=16_384) == 872_672_256
+    assert _bytes(V41, MIB_1, sm=100, in_flight_tokens=4_096) == 1_849_420_800
+    assert _bytes(V41, K_256, sm=100, in_flight_tokens=4_096) == 547_089_408
+    assert _bytes(V41, 32_768, tp=2, sm=100, in_flight_tokens=16_384) == 492_825_600
+    assert _bytes(V41, 32_768, tp=2, sm=100, in_flight_tokens=4_096) == 167_242_752
+    # SM 10.3 (B300) is the same family (platforms/interface.py:481-493).
+    assert _pages(V41, sm=103) == _pages(V41, sm=100)
+
+
+def test_deepseek_v41_sm90_pages_are_unchanged() -> None:
+    assert _pages(V41, sm=90) == [
+        ("sliding", 40, 32, 19_008),
+        ("full", 3, 64, 19_008),
+        ("compressed", 3, 64, 4_608),
+        ("ring", 3, 8, 32_768),
+        ("full", 1, 64, 37_440),
+        ("compressed", 1, 64, 8_640),
+    ]
+    assert _bytes(V41, 32_768, tp=2, sm=90, in_flight_tokens=16_384) == 483_146_496
+
+
 def test_qwen4_exp_packs_qsa_side_caches_beside_attention() -> None:
     """Boot-log check: "attention block size to 784" at TP 4."""
     assert _blocks(QWEN4, K_256) == Blocks(10_235_904, 344, 6)
@@ -280,7 +324,8 @@ def test_glm5_next_groups_kda_with_the_mla_block() -> None:
         (V4, 120, "auto"),  # SM 12.x: FlashInfer pages
         (V4, None, "auto"),  # GPU unknown
         (V4, 90, "bfloat16"),  # vLLM refuses a non-fp8 cache for fp8_ds_mla
-        (V41, 100, "auto"),  # SM 10.x: 528-byte record, 128-token blocks
+        (V41, 120, "auto"),  # SM 12.x: FlashInfer's SM120 class
+        (V41, 100, "bfloat16"),  # fp8_ds_mla refuses a non-fp8 cache on SM 10.x too
         (QWEN4, 90, "fp8"),  # QSA refuses a non-bf16 KV cache
         (GLM5, 120, "auto"),  # SM120 switches to fp8_ds_mla
         (GLM5, 90, "fp8"),  # fp8_ds_mla or plain fp8 by backend
@@ -315,6 +360,55 @@ def test_deepseek_v41_mxfp4_experts_are_padded_per_rank() -> None:
     assert padded_weight_bytes(V41, tp=1) == 0  # 2304 is a multiple of 128
     assert padded_weight_bytes(V4, tp=4) == 0  # 2048 / 4 = 512
     assert padded_weight_bytes(QWEN4, tp=4) == 0
+    assert padded_weight_bytes(V41, tp=4, sm=100) == 8_021_606_400  # every arch
+
+
+def test_qwen4exp_bf16_experts_are_padded_to_128_on_trtllm() -> None:
+    """oracle/unquantized.py:347-355, flashinfer_utils.py:309-351: the rank's
+    intermediate size rounds up to 128; w13 grows by 2 x extra rows, w2 by
+    extra columns, per expert and MoE layer, in bfloat16."""
+    per_row = 48 * 512 * 3 * 2560 * 2  # MoE layers x experts x (w13 2 + w2 1) x H x bytes
+    assert padded_weight_bytes(QWEN4, tp=2, sm=100) == per_row * (384 - 320)  # 22.5 GiB
+    assert padded_weight_bytes(QWEN4, tp=2, sm=100) == 24_159_191_040
+    assert padded_weight_bytes(QWEN4, tp=4, sm=100) == per_row * (256 - 160)
+    assert padded_weight_bytes(QWEN4, tp=8, sm=100) == per_row * (128 - 80)
+    assert padded_weight_bytes(QWEN4, tp=1, sm=100) == 0  # 640 = 5 x 128
+    assert padded_weight_bytes(QWEN4, tp=2, sm=103) == per_row * 64  # SM 10.x family
+
+
+@pytest.mark.parametrize("sm", [None, 80, 89, 90, 120])
+def test_qwen4exp_experts_are_not_padded_off_sm100(sm: int | None) -> None:
+    """TRTLLM BF16 MoE runs on the SM 10.x family only (trtllm_bf16_moe.py:
+    87-93); SM 9.x takes Triton (oracle/unquantized.py:77-79), no padding."""
+    assert padded_weight_bytes(QWEN4, tp=2, sm=sm) == 0
+
+
+def test_trtllm_padding_follows_the_backend_gates() -> None:
+    text = QWEN4["text_config"]
+
+    def pad(backend: str = "auto", **changes: Any) -> int:
+        config = {**QWEN4, "text_config": {**text, **changes}}
+        return padded_weight_bytes(config, tp=2, sm=100, moe_backend=backend)
+
+    assert pad() == 24_159_191_040
+    assert pad("flashinfer_trtllm") == 24_159_191_040  # requested explicitly
+    assert pad("humming") == 24_159_191_040  # falls through to auto
+    assert pad("triton") == pad("flashinfer_cutlass") == 0  # no padding there
+    # A quantization config takes a quantized MoE method (routed_experts.py:196-199).
+    assert pad(quantization_config={"quant_method": "fp8"}) == 0
+    # Softmax without renormalization is Default routing, which TRTLLM refuses.
+    assert pad(norm_topk_prob=False) == 0
+    assert pad(norm_topk_prob=True) == 24_159_191_040
+    # The TRTLLM layout takes bfloat16 only (flashinfer_utils.py:118-121).
+    assert pad(dtype="float16") == 0
+    # More than 2048 experts: TRTLLM routing refuses (trtllm_bf16_moe.py:55-60).
+    assert pad(num_experts=4096) == 0
+    # Dense layers carry no experts (qwen4_exp/nvidia/model.py:239-244).
+    assert pad(decoder_sparse_step=2) == 24_159_191_040 // 2
+    assert pad(mlp_only_layers=[0, 1, 2]) == 24_159_191_040 // 48 * 45
+    # Other families are not traced.
+    assert padded_weight_bytes(M3, tp=2, sm=100) == 0
+    assert padded_weight_bytes(GLM53, tp=4, sm=100) == 0
 
 
 # ---------------------------------------------------------------------------
@@ -370,15 +464,49 @@ def test_minimax_m3_needs_128_token_blocks_to_boot() -> None:
     assert required_block_size(GLM5) is None
 
 
+def test_glm53_pages_the_same_on_sm100() -> None:
+    """SM 10.x runs FLASHINFER_MLA_SPARSE at up to 16 heads per rank (TP 4, 8)
+    and FLASHMLA_SPARSE above (TP 2) (platforms/cuda.py:96-130); neither
+    rewrites a bf16 cache (mla_attention.py:359-376), and the block is still
+    64, from layer 0's indexer cache (indexer.py:202-204)."""
+    for tp in (2, 4, 8):
+        assert _pages(GLM53, sm=100, tp=tp) == _pages(GLM53, sm=90, tp=tp)
+        assert _blocks(GLM53, MIB_1, tp=tp, sm=100) == Blocks(5_928_192, 16_384, 1)
+        assert _bytes(GLM53, 32_768, tp=tp, sm=100, in_flight_tokens=16_384) == 3_035_234_304
+    assert _pages(GLM53, sm=90, tp=8) == [("full", 78, 64, 73_728), ("compressed", 21, 64, 8_448)]
+
+
+def test_glm53_on_sm100_needs_an_indexer_on_layer_0() -> None:
+    """Without one the MLA backend sets the block (FlashInfer: 32), which the
+    indexer's 64-token kernel cannot serve: not modelled.  SM 9.x is 64 either way."""
+    skip_first = {**GLM53, "index_topk_pattern": "S" + "F" * 77}
+    assert 0 not in dsa_indexer_layers(skip_first)
+    assert layer_kinds(skip_first, tp=8, kv_dtype_bytes=2, model_dtype_bytes=2, sm=100) is None
+    assert layer_kinds(skip_first, tp=8, kv_dtype_bytes=2, model_dtype_bytes=2, sm=90) is not None
+
+
+def test_minimax_m3_pages_the_same_on_sm100() -> None:
+    """The MSA backends only swap metadata builders (sparse_attention_msa.py:
+    46-51, indexer_msa.py:65-70); the pages are the layers' own specs."""
+    for tp in (2, 4, 8):
+        assert _pages(M3, sm=100, tp=tp) == _pages(M3, sm=90, tp=tp)
+    for tp in (4, 8):
+        assert _blocks(M3, MIB_1, tp=tp, sm=100) == Blocks(5_799_936, 8_192, 1)
+        assert _bytes(M3, 32_768, tp=tp, sm=100, in_flight_tokens=16_384) == 1_484_783_616
+    assert _pages(M3, sm=90, tp=8) == [("full", 60, 128, 65_536), ("compressed", 57, 128, 32_768)]
+    assert required_block_size(M3) == 128
+
+
 @pytest.mark.parametrize(
     ("config", "sm", "kv_cache_dtype"),
     [
-        (GLM53, 100, "auto"),  # SM 10.x: other sparse MLA backends
         (GLM53, 120, "auto"),  # SM 12.x: fp8_ds_mla
         (GLM53, None, "auto"),  # GPU unknown
         (GLM53, 90, "fp8"),  # fp8_ds_mla, 656 B per token
-        (M3, 100, "auto"),  # SM 10.x: MSA kernels
+        (GLM53, 100, "fp8"),  # FlashInfer's plain fp8 or FlashMLA's fp8_ds_mla
+        (M3, 120, "auto"),
         (M3, 90, "fp8"),
+        (M3, 100, "fp8"),
     ],
 )
 def test_glm53_and_minimax_m3_are_unknown_where_they_were_not_traced(

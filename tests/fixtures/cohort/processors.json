@@ -224,5 +224,53 @@
    }
   },
   "video_preprocessor_config.json": null
+ },
+ "zai-org/GLM-5.3-Flash": {
+  "preprocessor_config.json": null,
+  "processor_config.json": {
+   "image_processor": {
+    "do_rescale": true,
+    "image_mean": [
+     0.48145466,
+     0.4578275,
+     0.40821073
+    ],
+    "image_processor_type": "Glm5NextImageProcessor",
+    "image_std": [
+     0.26862954,
+     0.26130258,
+     0.27577711
+    ],
+    "max_image_tokens": 8000,
+    "merge_size": 2,
+    "min_image_tokens": 16,
+    "patch_expand_factor": 1,
+    "patch_size": 14,
+    "temporal_patch_size": 2
+   },
+   "processor_class": "Glm5NextProcessor",
+   "video_processor": {
+    "do_rescale": true,
+    "fps": 2,
+    "image_mean": [
+     0.48145466,
+     0.4578275,
+     0.40821073
+    ],
+    "image_std": [
+     0.26862954,
+     0.26130258,
+     0.27577711
+    ],
+    "max_image_tokens": 240000,
+    "merge_size": 2,
+    "min_image_tokens": 16,
+    "patch_expand_factor": 1,
+    "patch_size": 14,
+    "temporal_patch_size": 2,
+    "video_processor_type": "Glm5NextVideoProcessor"
+   }
+  },
+  "video_preprocessor_config.json": null
  }
 }

@@ -45,7 +45,9 @@ def main() -> int:
         seen.add(key)
         fixture = recorded[entry.model_id]
         dtype = entry.deployment_plan.dtype or "bfloat16"
-        weights_now = _per_gpu(recorded_loaded_bytes(fixture, dtype), tp)
+        # Weights every rank holds whole stay whole (as test_calculator_vs_cohort).
+        replicated = int(fixture.get("replicated_bytes") or 0)
+        weights_now = _per_gpu(recorded_loaded_bytes(fixture, dtype) - replicated, tp) + replicated
         hardware = hardware_for(gpu)
         tokens = default_max_num_batched_tokens(hardware.total_memory_bytes, gpu)
         inputs = CalculatorInput(

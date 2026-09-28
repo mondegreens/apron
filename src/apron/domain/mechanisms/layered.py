@@ -446,23 +446,37 @@ def _deepseek_v4_kinds(
 def _deepseek_v41_kinds(
     text: dict[str, Any], *, sm: int | None, kv_cache_dtype: str
 ) -> list[LayerKind] | None:
-    """DeepSeek V4.1 on FlashMLA, SM 9.x: compressed caches only on
+    """DeepSeek V4.1 on FlashMLA, SM 9.x and 10.x: compressed caches only on
     ``kv_source_layer_ids``, indexer keys on those that are also index sources
     (models/deepseek_v41/attention.py:255-303, 380-400).
 
-    SM 10.x writes a 528-byte record in 512-byte pages on 128-token blocks
-    (attention.py:115-117, sparse_mla.py:88-90): not traced.  Blocks: 64 for
-    the compressed caches (sparse_mla.py:88-90, indexer.py:261-263), 32 for
-    the sliding-window cache (attention.py:463-473), 8 for the compressor's ring
-    (compressor.py:132-163).
+    Without ``--attention-backend`` every CUDA arch but SM 12.x takes the
+    FlashMLA class (models/deepseek_v41/nvidia/model.py:117-152), fp8_ds_mla
+    (``use_fp8_ds_mla_layout``, attention.py:176-181, 454-457).  The record
+    is per arch (attention.py:113-120, 459-461): SM 9.x the V4 one, 584 bytes
+    in 576-byte pages; SM 10.x the V4.1 MXFP8 one, 512 fp8 + 16 UE8M0 scale
+    bytes = 528 bytes in 512-byte pages, for the MLA caches (947-972), the
+    sliding-window cache (463-473; sparse_swa.py:111-130) and the indexer keys
+    (1009-1027: 576 only off SM 10.x).
+
+    Blocks: the compressed caches take vLLM's block size, set by the first
+    registered layer, layer 0's attention (attention.py:369-376;
+    platforms/interface.py:629-640; attention/backend.py:150-158), whose
+    backend runs 64 on SM 9.x and 128 elsewhere (sparse_mla.py:88-90), as the
+    indexer does (v1/attention/backends/mla/indexer.py:261-263); 32 for the
+    sliding-window cache (attention.py:463-473), 8 for the compressor's ring
+    (compressor.py:132-163), on either arch.
     """
-    if sm is None or sm // 10 != 9 or not _deepseek_fp8_kv(kv_cache_dtype):
+    if sm is None or sm // 10 not in (9, 10) or not _deepseek_fp8_kv(kv_cache_dtype):
         return None
+    if sm // 10 == 10:
+        record, align, block = 528, 512, 128
+    else:
+        record, align, block = _DS_MLA_RECORD, _DS_MLA_ALIGN, 64
     n = int(text["num_hidden_layers"])
     ratios = list(text["compress_ratios"])
     index_sources = {int(i) for i in text["index_source_layer_ids"]}
     hd = int(text["head_dim"])
-    block = 64
     pages: Counter[tuple[str, int, int]] = Counter()
     for i in (int(i) for i in text["kv_source_layer_ids"]):
         if i >= n:
@@ -471,10 +485,10 @@ def _deepseek_v41_kinds(
             return None
         r = int(ratios[i])
         # Compressed MLA (attention.py:947-972) and indexer keys (1009-1026).
-        pages["full", block, _aligned(block // r * _DS_MLA_RECORD, _DS_MLA_ALIGN)] += 1
+        pages["full", block, _aligned(block // r * record, align)] += 1
         if i in index_sources:
             row = _deepseek_indexer_row(text)
-            pages["compressed", block, _aligned(block // r * row, _DS_MLA_ALIGN)] += 1
+            pages["compressed", block, _aligned(block // r * row, align)] += 1
         if r > 1:
             # One ring of fp32 [kv, score] rows per request, no alignment
             # (compressor.py:132-163, 230-238).
@@ -485,7 +499,7 @@ def _deepseek_v41_kinds(
             n,
             window=int(text["sliding_window"]),
             block_size=32,
-            page_bytes=_aligned(32 * _DS_MLA_RECORD, _DS_MLA_ALIGN),
+            page_bytes=_aligned(32 * record, align),
         ),
         *(
             LayerKind(kind, count, block_size=size, page_bytes=page)
@@ -645,8 +659,9 @@ def dsa_indexer_layers(text: dict[str, Any]) -> list[int]:
 def _glm_moe_dsa_kinds(
     text: dict[str, Any], *, kv_dtype_bytes: int, sm: int | None, kv_cache_dtype: str
 ) -> list[LayerKind] | None:
-    """GLM-5.x DSA on SM 9.x: the MLA latent (kv_lora_rank + rope, one head on
-    every rank) on every layer, the lightning indexer's fp8 keys on its layers.
+    """GLM-5.x DSA on SM 9.x and 10.x: the MLA latent (kv_lora_rank + rope,
+    one head on every rank) on every layer, the lightning indexer's fp8 keys on
+    its layers.
 
     SM 9.x tries FLASH_ATTN_MLA_SPARSE (FA3 builds), FLASHMLA_SPARSE and
     FLASHINFER_MLA_SPARSE_SM90 in that order (platforms/cuda.py:137-153); with
@@ -655,11 +670,29 @@ def _glm_moe_dsa_kinds(
     1347-1374) on 64-token pages (flashattn_mla_sparse.py:43-44, flashmla_sparse.py:141-142,
     flashinfer_mla_sparse_sm90.py:77-78), and the indexer backend takes 64 too
     (v1/attention/backends/mla/indexer.py:202-204), so vLLM sets the block to
-    64 (platforms/interface.py:629-640; attention/backend.py:150-158).  An fp8
-    cache turns into fp8_ds_mla (656 B per token) on FlashMLA: not traced.
-    SM 10.x / 12.x pick other backends: not traced.
+    64 (platforms/interface.py:629-640; attention/backend.py:150-158).
+
+    SM 10.x, 16-bit cache: FLASHINFER_MLA_SPARSE at up to 16 heads per rank,
+    else FLASHMLA_SPARSE, the non-sparse MLA backends refused (cuda.py:96-130;
+    attention/backend.py:316-320; the heads are per rank, deepseek_v32/
+    attention.py:144-148, 202-203).  Neither rewrites a 16-bit cache
+    (mla_attention.py:359-376) or pads the page, so the latent is the SM 9.x
+    one.  The block is the first registered layer's: layer 0's indexer key
+    cache, built before its MLA layer (deepseek_v32/attention.py:95-100, 189-202;
+    model_executor/models/deepseek_v2.py:647-650; mla_attention.py:597), whose
+    backend runs 64 on every CUDA arch (indexer.py:202-204); both MLA
+    backends run 64 (flashinfer_mla_sparse.py:85-86, flashmla_sparse.py:141-142).
+    Without an indexer on layer 0 the MLA backend would set it: FlashInfer's
+    32, which the indexer's 64 cannot serve (backend.py:150-158;
+    v1/worker/utils.py:330-386): not modelled.
+
+    An fp8 cache turns into fp8_ds_mla (656 B per token) on FlashMLA and stays
+    plain fp8 on FlashInfer (mla_attention.py:359-376, 1361-1363): not traced.
+    SM 12.x picks FlashInfer's SM120 backend and fp8_ds_mla: not traced.
     """
-    if sm is None or sm // 10 != 9 or kv_cache_dtype not in ("auto", "bfloat16"):
+    if sm is None or sm // 10 not in (9, 10) or kv_cache_dtype not in ("auto", "bfloat16"):
+        return None
+    if sm // 10 == 10 and 0 not in dsa_indexer_layers(text):
         return None
     block = 64
     per_token = (int(text["kv_lora_rank"]) + int(text["qk_rope_head_dim"])) * kv_dtype_bytes
@@ -695,10 +728,20 @@ def _minimax_m3_kinds(
     bf16, model.py:501-503, config/attention.py:83, 137-141).
 
     With fewer KV heads than ranks each rank holds one (model.py:420-425).
-    SM 10.x selects the MSA kernels (sparse_attention.py:542-547): not traced;
-    an fp8 KV cache is not traced either.
+
+    SM 10.x pages the same.  The sparse layers pick the MSA kernels
+    (common/sparse_attention.py:542-547, 564-570), whose backend only swaps
+    the metadata builder and keeps the 128-token kernel block
+    (nvidia/sparse_attention_msa.py:46-51; sparse_attention.py:161-164); the
+    MSA indexer likewise (nvidia/indexer_msa.py:65-70, 259-262) over the same
+    key cache (common/indexer.py:145-153, 387-393).  The page is the layer's
+    own spec, whatever the kernel (model.py:489-495, 556-565).  The dense
+    layers' FullAttentionSpec does not depend on their backend either
+    (model_executor/layers/attention/attention.py:663-670; FlashInfer, first
+    on SM 10.x, cuda.py:158-166, repacks only NVFP4, flashinfer.py:399-403).
+    An fp8 KV cache is not traced.
     """
-    if sm is None or sm // 10 != 9 or kv_cache_dtype not in ("auto", "bfloat16"):
+    if sm is None or sm // 10 not in (9, 10) or kv_cache_dtype not in ("auto", "bfloat16"):
         return None
     heads = int(text["num_key_value_heads"])
     if (heads >= tp and heads % tp) or (heads < tp and tp % heads):
@@ -1023,10 +1066,213 @@ def duplicated_weight_bytes(config: dict[str, Any], *, tp: int, dtype_bytes: int
     return full * kv * hd * int(text["hidden_size"]) * dtype_bytes
 
 
-def padded_weight_bytes(config: dict[str, Any], *, tp: int) -> int:
+def _glm5_next_topk_width(text: dict[str, Any]) -> int:
+    """Columns of GLM5Next's top-k index buffers: ``index_topk`` plus the
+    incomplete pool tail, in 128-column tiles (models/glm5next/nvidia/
+    model.py:634-644)."""
+    kpool = int(text.get("index_kpool") or 1)
+    width = int(text["index_topk"]) + (kpool - 1 if kpool > 1 else 0)
+    return -(-width // 128) * 128
+
+
+def startup_buffer_bytes(config: dict[str, Any], *, max_num_batched_tokens: int) -> int:
+    """Per-GPU bytes vLLM v0.30.0 allocates while it builds the model, which its
+    "Model loading took" figure counts with the weights (torch's allocated
+    bytes around ``load_model``: v1/worker/gpu/model_runner.py:393-433;
+    platforms/cuda.py:379-384).
+
+    GLM5Next with a sparse indexer (``index_topk`` set): the shared top-k
+    buffer, [max_num_batched_tokens, W] int32 (models/glm5next/nvidia/
+    model.py:632-650), and on every MLA layer a top-k index group of its own --
+    the layers pass no group builder (glm5next/nvidia/attention.py:549-567;
+    layers/mla.py:39, 138), so each impl builds one over that buffer and, the
+    layer producing its own indices, allocates [T + 1, W] int32 physical
+    indices, [T + 1] int32 valid counts and arange(T) int32 request ids
+    (layers/attention/sparse_mla_attention.py:684-697; v1/attention/backends/
+    mla/index_group.py:436-487).  W = ``_glm5_next_topk_width``.  At 16,384
+    tokens: 142,606,336 B + 11 x 142,746,116 B = 1.60 GiB for GLM-5.3-Flash
+    (W = 2,176), on every rank (no TP split).  2x B200 at TP 2: the planner's
+    151.87 GiB with these against 152.10 GiB measured (2026-09-28); 0.23 GiB
+    not traced.  0 for other families (not traced).
+    """
+    text = text_config(config)
+    if family(config) != "glm5_next" or not text.get("index_topk"):
+        return 0
+    tokens = int(max_num_batched_tokens)
+    width = _glm5_next_topk_width(text)
+    mla_layers = sum(1 for t in text.get("layer_types") or () if t == "deepseek_sparse_attention")
+    shared = tokens * width * 4
+    per_layer = (tokens + 1) * width * 4 + (tokens + 1) * 4 + tokens * 4
+    return shared + mla_layers * per_layer
+
+
+# FlashInfer's workspace for the sparse MLA decode kernel: one per process,
+# allocated at the first decode forward (v1/attention/backends/mla/
+# flashinfer_mla_sparse.py:310-311, 391-408, 606-612), of
+# VLLM_FLASHINFER_WORKSPACE_BUFFER_SIZE bytes (envs.py:220, 1727-1729) without
+# decode context parallelism (flashinfer_mla_sparse.py:329-355).
+FLASHINFER_MLA_SPARSE_WORKSPACE_BYTES = 394 * 1024 * 1024
+
+
+def first_capture_bytes(
+    config: dict[str, Any], *, tp: int, sm: int | None, kv_cache_dtype: str = "auto"
+) -> int:
+    """Per-GPU bytes vLLM v0.30.0 allocates on the first forward that carries
+    attention metadata, and keeps.
+
+    The profile run has none (v1/worker/gpu/model_runner.py:955-957), so that
+    forward is the eager warmup before the first CUDA graph of the memory
+    estimate (v1/worker/gpu/cudagraph_utils.py:398-441), inside the window the
+    estimate measures by free memory (model_runner.py:1015-1071;
+    cudagraph_utils.py:847-926).  vLLM subtracts the estimate from the KV
+    budget; the real capture later finds these allocated.
+
+    GLM5Next:
+    - the sparse MLA backend's workspace (``FLASHINFER_MLA_SPARSE_WORKSPACE_BYTES``)
+      on SM 10.x, where FLASHINFER_MLA_SPARSE runs unless the cache is 16-bit,
+      the heads per rank over 16 and the head size 576 (platforms/cuda.py:
+      96-130): FLASHMLA_SPARSE takes only 576 (flashmla_sparse.py:156-159),
+      GLM5Next's is kv_lora_rank + 0 rope = 512 (flashinfer_mla_sparse.py:
+      56-61);
+    - the KDA layers' merged q/k/v convolution weights, built lazily
+      (models/glm5next/nvidia/kda.py:505-513) from the float32 conv
+      parameters (kda.py:247-268): 3 x heads x head_dim / tp x kernel x 4 B.
+
+    Not traced: what FlashInfer, DeepGEMM and the mHC TileLang kernels load or
+    allocate on their first call (their sources are not in the pinned vLLM
+    tree).  0 for other families.
+    """
+    text = text_config(config)
+    if family(config) != "glm5_next":
+        return 0
+    linear = text.get("linear_attn_config") or {}
+    heads = int(linear.get("num_heads") or text.get("linear_num_heads") or 64)
+    head_dim = int(linear.get("head_dim") or text.get("linear_head_dim") or 128)
+    kernel = int(linear.get("short_conv_kernel_size") or text.get("linear_conv_kernel_dim") or 4)
+    kda_layers = sum(1 for t in text.get("layer_types") or () if t == "linear_attention")
+    conv = kda_layers * 3 * (heads * head_dim // tp) * kernel * 4
+    head_size = int(text["kv_lora_rank"]) + int(text.get("qk_rope_head_dim") or 0)
+    heads_per_rank = int(text.get("num_attention_heads") or 0) // tp
+    flashmla = kv_cache_dtype in ("auto", "bfloat16") and heads_per_rank > 16 and head_size == 576
+    sparse_on_flashinfer = sm is not None and sm // 10 == 10 and bool(text.get("index_topk"))
+    flashinfer = (
+        FLASHINFER_MLA_SPARSE_WORKSPACE_BYTES if sparse_on_flashinfer and not flashmla else 0
+    )
+    return flashinfer + conv
+
+
+def padded_weight_bytes(
+    config: dict[str, Any], *, tp: int, sm: int | None = None, moe_backend: str = "auto"
+) -> int:
     """Per-GPU bytes vLLM allocates beyond the checkpoint's shard: DeepSeek V4 /
-    V4.1's MXFP4 experts, whose per-rank intermediate size every CUDA backend
-    rounds up to a multiple of 128.
+    V4.1's MXFP4 experts (``_mxfp4_expert_padding``) and 16-bit experts on
+    FlashInfer's TRTLLM kernel (``trtllm_bf16_expert_padding``, SM 10.x only).
+    *sm* is the GPU's compute capability (major * 10 + minor), None when
+    unknown; *moe_backend* vLLM's ``--moe-backend`` (default ``auto``)."""
+    return _mxfp4_expert_padding(config, tp=tp) + trtllm_bf16_expert_padding(
+        config, tp=tp, sm=sm, moe_backend=moe_backend
+    )
+
+
+# Models whose MoE layers are Qwen3NextSparseMoeBlock: Qwen3.5-MoE
+# (model_executor/models/qwen3_5.py:165-169, text model_type qwen3_5_moe_text)
+# and Qwen4Exp (models/qwen4_exp/nvidia/model.py:161-172, 239-248).
+_QWEN3_NEXT_MOE_FAMILIES = ("qwen3_5", "qwen4_exp")
+
+
+def _qwen3_next_moe_layers(text: dict[str, Any]) -> int:
+    """Layers holding a Qwen3NextSparseMoeBlock, 0 for a dense model."""
+    experts = int(text.get("num_experts") or 0)
+    if experts <= 0:
+        return 0
+    n = int(text["num_hidden_layers"])
+    if str(text.get("model_type") or "").startswith("qwen3_5"):
+        # Qwen3.5-MoE: every layer (qwen3_5.py:165-169); dense Qwen3.5 none.
+        return n if text.get("model_type") == "qwen3_5_moe_text" else 0
+    # Qwen4Exp: not in mlp_only_layers and (index + 1) % decoder_sparse_step == 0
+    # (qwen4_exp/nvidia/model.py:239-244; Qwen3NextConfig defaults 1 and [],
+    # transformers_utils/configs/qwen3_next.py:209-222).
+    step = int(text.get("decoder_sparse_step") or 1)
+    dense = {int(i) for i in text.get("mlp_only_layers") or ()}
+    return sum(1 for i in range(n) if i not in dense and (i + 1) % step == 0)
+
+
+def trtllm_bf16_expert_padding(
+    config: dict[str, Any], *, tp: int, sm: int | None, moe_backend: str = "auto"
+) -> int:
+    """Per-GPU bytes vLLM v0.30.0 adds to 16-bit experts on FlashInfer's TRTLLM
+    kernel, which pads the per-rank intermediate size to a multiple of 128.
+
+    Where the MoE layer is unquantized and the backend is FlashInfer TRTLLM:
+
+    - no quantization config: the layer takes UnquantizedFusedMoEMethod
+      (layers/fused_moe/routed_experts.py:196-199), which selects its backend
+      at construction (unquantized_fused_moe_method.py:54).  A quantized
+      checkpoint whose config leaves the experts out is not traced (0);
+    - ``--moe-backend`` ``auto`` (the default, config/kernel.py:248) or
+      ``flashinfer_trtllm`` (oracle/unquantized.py:166-180, 286-297); no LoRA
+      (222-236);
+    - on CUDA the priority list starts with FlashInfer TRTLLM, moved to the back
+      only on SM 9.x and for SWIGLUOAI (oracle/unquantized.py:66-93, 239, 313-320); its
+      kernels run only on the SM 10.x family (experts/trtllm_bf16_moe.py:
+      87-93; platforms/interface.py:481-493) with FlashInfer's TRTLLM fused MoE
+      installed (assumed: the vLLM image ships it);
+    - TrtLlmBf16ExpertsMonolithic accepts it (oracle/unquantized.py:102-110,
+      313-320; modular_kernel.py:547-593): SiLU (trtllm_bf16_moe.py:110-112) --
+      Qwen3NextSparseMoeBlock passes no activation, FusedMoEFactory's default
+      is "silu" (layers/fused_moe/layer.py:115; models/qwen3_next.py:217-237);
+      routing Renormalize / RenormalizeNaive / ... (trtllm_bf16_moe.py:242-254)
+      -- the block routes through FusedTopKRouter (router/router_factory.py:
+      257-263, no grouped top-k, bias or custom function) with softmax, which
+      is RenormalizeNaive when ``norm_topk_prob`` (default True,
+      qwen3_next.py:226) and Default, refused, when not
+      (fused_moe/config.py:165-169; router/fused_topk_router.py:146-154); at
+      most 2048 experts (trtllm_bf16_moe.py:55-60); no all2all, no EPLB
+      (trtllm_bf16_moe.py:232-240) -- the calculator plans TP only; no
+      VLLM_BATCH_INVARIANT (modular_kernel.py:589-590);
+    - bfloat16 weights: the TRTLLM layout refuses others
+      (quantization/utils/flashinfer_utils.py:118-121).
+
+    The rule (oracle/unquantized.py:347-355; flashinfer_utils.py:309-351):
+    the rank's intermediate size ``I = moe_intermediate_size // tp``
+    (fused_moe/config.py:1349-1351) becomes ``P = round_up(I, 128)``; w13 is
+    reallocated as ``E x 2P x H`` and w2 as ``E x H x P``, the originals
+    released (unquantized_fused_moe_method.py:139-154).  The block layout that
+    follows keeps the byte count (flashinfer_utils.py:150-161).  Extra per GPU:
+    ``moe_layers x E x 3 x H x (P - I) x 2``.  Qwen3.8-Flash-Next at TP 2:
+    320 -> 384 per rank ("Padding intermediate size from 320 to 384" in the
+    2x B200 log), 22.5 GiB.  SM 9.x picks Triton, which does not pad.
+
+    Only the Qwen3NextSparseMoeBlock families are traced; other models 0.
+    """
+    text = text_config(config)
+    if family(config) not in _QWEN3_NEXT_MOE_FAMILIES:
+        return 0
+    if sm is None or sm // 10 != 10:
+        return 0
+    if moe_backend not in ("auto", "humming", "flashinfer_trtllm"):
+        return 0
+    if config.get("quantization_config") or text.get("quantization_config"):
+        return 0
+    dtype = config.get("torch_dtype") or text.get("torch_dtype") or text.get("dtype")
+    if (dtype or config.get("dtype")) != "bfloat16":
+        return 0
+    if text.get("norm_topk_prob", True) is False:
+        return 0
+    experts = int(text.get("num_experts") or 0)
+    if not 0 < experts <= 2048:
+        return 0
+    layers = _qwen3_next_moe_layers(text)
+    per_rank = int(text["moe_intermediate_size"]) // tp
+    extra = -(-per_rank // 128) * 128 - per_rank
+    hidden = int(text["hidden_size"])
+    return layers * experts * 3 * hidden * extra * 2
+
+
+def _mxfp4_expert_padding(config: dict[str, Any], *, tp: int) -> int:
+    """Per-GPU bytes vLLM allocates beyond the checkpoint's shard for DeepSeek
+    V4 / V4.1's MXFP4 experts, whose per-rank intermediate size every CUDA
+    backend rounds up to a multiple of 128.
 
     fp4 experts take ``Mxfp4MoEMethod`` (models/deepseek_v4/quant_config.py:
     173-191), whose backend is one of TRTLLM MXFP8, DeepGEMM or Marlin

@@ -106,8 +106,9 @@ GPU_SPECS: dict[str, dict[str, Any]] = {
         "compute_capability": "9.0",
     },
     "NVIDIA B200": {
-        # class 6 retarget target: SM100 (compute capability 10.0)
-        "total_memory_bytes": 192_265_846_784,
+        # class 6 retarget target: SM100 (compute capability 10.0).  Detected
+        # (182,624.3125 MiB) on the 2x B200 GLM-5.3-Flash boot, 2026-09-28.
+        "total_memory_bytes": 191_495_471_104,
         "compute_capability": "10.0",
     },
 }

@@ -24,6 +24,9 @@ FIXTURE = REPO / "tests" / "fixtures" / "cohort" / "weight-bytes.json"
 RUN = REPO / "_dev_notes" / "cohort-run"
 # The FP8 checkpoint lands 5.4% under (0.70 vs 0.74 GiB); every other point
 # within 1.5%.  Before the L5 fixes: +17% (tied lm_head), -22% (FP8), +100% (TP 2).
+# GLM-5.3-Flash on 2x B200: 150.28 GiB against 152.10 measured (-1.2%), the
+# rest being the top-k index buffers vLLM builds at load (1.60 GiB at the
+# boot's 16,384 tokens, layered.startup_buffer_bytes) and 0.23 GiB not traced.
 TOLERANCE = 0.06
 
 
@@ -59,7 +62,12 @@ def test_weight_prediction_matches_the_measurement(
 ) -> None:
     recorded = json.loads(FIXTURE.read_text())
     assert model_id in recorded, "run scripts/record_weight_bytes.py"
-    predicted = _per_gpu(recorded_loaded_bytes(recorded[model_id], dtype), tp)
+    loaded = recorded_loaded_bytes(recorded[model_id], dtype)
+    # Weights every rank holds whole (plan_pipeline.replicated_tensor_bytes);
+    # the buffers vLLM builds at load (layered.startup_buffer_bytes) depend on
+    # the plan's batch and are checked with the KV budget below.
+    replicated = int(recorded[model_id].get("replicated_bytes") or 0)
+    predicted = _per_gpu(loaded - replicated, tp) + replicated
     assert abs(predicted - measured) / measured <= TOLERANCE, (
         f"{model_id} ({dtype}) TP {tp}: predicted {predicted / 2**30:.2f} GiB, "
         f"measured {measured / 2**30:.2f} GiB"

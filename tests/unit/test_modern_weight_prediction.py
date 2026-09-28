@@ -38,6 +38,7 @@ HEADERS = Path(__file__).parents[1] / "fixtures" / "cohort" / "headers"
 H200 = HardwareSpec(
     gpu_sku="NVIDIA H200", total_memory_bytes=150_754_820_096, compute_capability="9.0"
 )
+B200 = HardwareSpec(gpu_sku="NVIDIA B200", total_memory_bytes=179 << 30, compute_capability="10.0")
 GIB = 1 << 30
 
 
@@ -76,12 +77,12 @@ def _record(model_id: str) -> dict[str, Any]:
     return record
 
 
-def _plan(model_id: str, tp: int = 4) -> PlanPipelineResult:
+def _plan(model_id: str, tp: int = 4, hardware: HardwareSpec = H200) -> PlanPipelineResult:
     return run_plan_pipeline(
         _RecordedResolver(_record(model_id)),
         CalculatorPlanningSource(clock=_Clock()),
         model_id,
-        H200,
+        hardware,
         clock=_Clock(),
         id_gen=_Ids(),
         tensor_parallel=tp,
@@ -103,8 +104,14 @@ EXPECTED = {
     ),
     # (total - PLE n-gram table - mtp) / 4 = 58.76 GiB
     "Qwen/Qwen3.8-Flash-Next": (63_096_292_478, 5_214_301_696, 102_400_491_520, 0),
-    # (total - MTP layer 45) / 4 = 74.70 GiB
-    "zai-org/GLM-5.3-Flash": (80_208_343_102, 7_493_399_168, 0, 0),
+    # (loaded - MTP layer 45 - replicated) / 4 + replicated + the top-k index
+    # buffers vLLM builds at load (8192 tokens: 0.80 GiB) = 76.26 GiB.  Loaded:
+    # the MLA layers' fp8 projections in bf16, the hyper-connection mixes, the
+    # kpool APE and the KDA convolutions in float32 (the MTP layer's included,
+    # 7,493,399,168 B stored).  Replicated: fused q_a + kv_a, the indexer, KDA
+    # f_a / g_a, router gates, hyper-connections, norms, the vision convs.
+    # Measured on 2x B200 at TP 2: 152.10 GiB (the plan: 151.87).
+    "zai-org/GLM-5.3-Flash": (81_884_381_604, 7_594_038_912, 0, 697_944_824),
 }
 
 
@@ -250,3 +257,36 @@ def test_minimax_m3_plan_sets_the_block_size_vllm_needs() -> None:
     assert engines["MiniMaxAI/MiniMax-M3"]["block_size"] == "128"
     assert "block_size" not in engines["zai-org/GLM-5.3"]
     assert "block_size" not in engines["zai-org/GLM-5.3-Flash"]
+
+
+def test_qwen4exp_bf16_experts_are_padded_on_b200() -> None:
+    """2x B200, TP 2 (vLLM v0.30.0 log, 2026-09-28): "Padding intermediate size
+    from 320 to 384", TrtLlmBf16ExpertsMonolithic, "Model loading took 142.6
+    GiB".  The H200 plan (SM 9.x, Triton) keeps the checkpoint's shard."""
+    h200 = _plan("Qwen/Qwen3.8-Flash-Next", tp=2).claim.proposed_configuration
+    b200 = _plan("Qwen/Qwen3.8-Flash-Next", tp=2, hardware=B200).claim.proposed_configuration
+    assert h200["weight_memory_bytes"] == 126_192_584_956  # 117.53 GiB
+    # + 48 layers x 512 experts x 3 x 2560 x 64 rows x 2 bytes = 22.5 GiB
+    assert b200["weight_memory_bytes"] == 126_192_584_956 + 24_159_191_040  # 140.03 GiB
+
+
+@pytest.mark.parametrize(
+    ("model_id", "tp"),
+    [
+        ("deepseek-ai/DeepSeek-V4-Flash-0731", 2),
+        ("deepseek-ai/DeepSeek-V4.1-Flash", 2),
+        ("deepseek-ai/DeepSeek-V4.1-Flash", 4),
+        ("zai-org/GLM-5.3-Flash", 2),
+        ("zai-org/GLM-5.3", 4),
+        ("zai-org/GLM-5.3", 8),
+        ("MiniMaxAI/MiniMax-M3", 4),
+        ("MiniMaxAI/MiniMax-M3", 8),
+    ],
+)
+def test_other_group_c_d_models_weigh_the_same_on_b200(model_id: str, tp: int) -> None:
+    """FP8 (GLM-5.3, GLM-5.3-Flash) and MXFP4 (DeepSeek) experts take other
+    backends; MiniMax-M3's 16-bit experts are not a Qwen3Next MoE block and
+    3072 / TP is a multiple of 128 anyway."""
+    h200 = _plan(model_id, tp=tp).claim.proposed_configuration
+    b200 = _plan(model_id, tp=tp, hardware=B200).claim.proposed_configuration
+    assert b200["weight_memory_bytes"] == h200["weight_memory_bytes"]
