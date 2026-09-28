@@ -67,6 +67,13 @@ ACTIVATION_FIELDS: tuple[str, ...] = (
     "qk_nope_head_dim",
     "qk_rope_head_dim",
     "v_head_dim",
+    # NemotronH: the Mamba-2 mixer, and the experts' activation -- the field
+    # only NemotronH declares; vLLM builds those experts without a gate.
+    "mamba_num_heads",
+    "mamba_head_dim",
+    "n_groups",
+    "ssm_state_size",
+    "mlp_hidden_act",
 )
 _TOWER_FIELDS = ("vision_config", "audio_config")
 
@@ -347,6 +354,47 @@ def _multimodal_wrapper(metadata: dict[str, Any], inputs: CalculatorInput) -> bo
     return any(metadata.get(k) for k in _TOWER_FIELDS)
 
 
+def _mamba2_piece_bytes(metadata: dict[str, Any], tp: int, tokens: int, dtype_bytes: int) -> int:
+    """A Mamba-2 hybrid's live activations at the end of the compiled piece
+    between two Mamba-2 mixers (vLLM v0.30.0), without the fused-MoE workspace.
+
+    The mixer is a splitting op (config/compilation.py:775), so each compiled
+    piece runs from one mixer to the next.  Its inputs stay live for the whole
+    piece -- observed: in the Gemma 4 probe (2026-09-28) the attention output
+    and the residual allocated by the previous piece were live at the MLP peak
+    of the next one; the split graph's caller holds them until the piece
+    returns.  Named tensors, all [tokens, width] in the model dtype:
+    - held from the previous mixer: its in_proj output, width 2 x d_inner +
+      2 x groups x state + heads (mamba_mixer2.py:348-360, 573), its SSM output,
+      width d_inner (mamba_mixer2.py:578-585; the gate is a view of the
+      in_proj output, :600), and the residual, width H;
+    - made by the piece for the next mixer: the new residual (H), then its
+      in_proj output, then its SSM output (d_inner) -- the normed input (H)
+      is freed after the projection, so the larger of the two counts.
+    d_inner = mamba_num_heads x mamba_head_dim (models/nemotron_h.py:381);
+    heads, groups and d_inner are split by the tensor-parallel size.  The
+    profile run passes no attention metadata (v1/worker/gpu/model_runner.py:
+    955-957, 1748-1770), so the mixer itself only copies its conv input once
+    (mamba_mixer2.py:765-773), below this moment.  Not modelled: the MLP
+    moment inside the piece (NemotronH-3.5's shared expert, [tokens, 3712]
+    twice, stays under the piece's end).  0 without the Mamba-2 fields.
+    """
+    heads = int(metadata.get("mamba_num_heads") or 0)
+    head_dim = int(metadata.get("mamba_head_dim") or 0)
+    groups = int(metadata.get("n_groups") or 0)
+    state = int(metadata.get("ssm_state_size") or 0)
+    if not (heads and head_dim and groups and state):
+        return 0
+    heads_tp = -(-heads // tp)
+    inner = heads_tp * head_dim
+    in_proj = 2 * inner + 2 * -(-groups // tp) * state + heads_tp
+    t_h = tokens * int(metadata["hidden_size"]) * dtype_bytes
+    projected = tokens * in_proj * dtype_bytes
+    ssm_out = tokens * inner * dtype_bytes
+    held = projected + ssm_out + t_h
+    return held + t_h + projected + max(t_h, ssm_out)
+
+
 def _forward_live_bytes(
     metadata: dict[str, Any], inputs: CalculatorInput, tp: int, tokens: int, dtype_bytes: int
 ) -> int:
@@ -373,15 +421,21 @@ def _forward_live_bytes(
         # Fused-MoE workspace (traced, workspace.py:207 via modular_kernel.py:
         # 1160-1180; Triton experts' shapes, experts/triton_moe.py:218-233):
         # [tokens, top_k, max(I, H)] shared with the output, plus
-        # [tokens, top_k, max(2I, H)], in the activation dtype, I the expert
-        # width per rank.  It persists across layers (workspace manager), so
-        # it is live at every later layer's peak.  GLM-4.7-Flash probe:
-        # 335,544,320 B, exact.  Quantized experts (FP8 block, MXFP4) may pick
-        # another kernel with other shapes -- not checked against a probe.
+        # [tokens, top_k, max(N, H)], in the activation dtype, I the expert
+        # width per rank and N = w13's width, 2I gated, I for NemotronH's
+        # experts (no gate: models/nemotron_h.py:238; w13 [E, I, H],
+        # unquantized_fused_moe_method.py:71-74; modular_kernel.py:810,
+        # 875-890).  It persists across layers (workspace manager), so it is
+        # live at every later layer's peak.  GLM-4.7-Flash probe: 335,544,320 B,
+        # exact; Qwen3.6-35B-A3B-FP8 (v0.30.0) left 536,870,912 B, exact.  Other
+        # quantized kernels (MXFP4) may have other shapes -- not probed.
         width = -(-int(moe_intermediate) // tp)
-        workspace = (
-            tokens * int(top_k) * (max(width, hidden) + max(2 * width, hidden)) * dtype_bytes
-        )
+        w13 = width if metadata.get("mlp_hidden_act") else 2 * width
+        workspace = tokens * int(top_k) * (max(width, hidden) + max(w13, hidden)) * dtype_bytes
+
+    mamba = _mamba2_piece_bytes(metadata, tp, tokens, dtype_bytes)
+    if mamba:
+        return mamba + workspace
 
     kv_lora = metadata.get("kv_lora_rank")
     qk_nope = metadata.get("qk_nope_head_dim")
@@ -461,7 +515,9 @@ def _activation_estimate(metadata: dict[str, Any], inputs: CalculatorInput, tp: 
        this transient does not occur; the cohort's boots were cold.
     2. Forward (``_forward_live_bytes``): the compiled graph's live buffers
        plus, for MLA, the per-layer prefill-context dummy and, for MoE, the
-       persistent fused-MoE workspace; a multimodal wrapper also still holds
+       persistent fused-MoE workspace; for a Mamba-2 hybrid (NemotronH), the
+       piece between two mixers with its held inputs
+       (``_mamba2_piece_bytes``); a multimodal wrapper also still holds
        the dummy encoder outputs (encoder_runner.py:139-147), at most the
        encoder budget, max(T, tokens per item) (encoder_cache_manager.py:
        333-338; encoder_budget.py:160-185) x H x b -- counted as T x H x b.

@@ -166,6 +166,57 @@ def test_dense_text_model_keeps_the_compile_rule() -> None:
     assert _activation_estimate(_metadata(config), _inputs(), 1) == compile_peak
 
 
+# NemotronH (Nemotron-3.5-Lightning-30B-A3B), config.json fields.
+NEMOTRON_35: dict[str, Any] = {
+    "model_type": "nemotron_h",
+    "hidden_size": 2688,
+    "vocab_size": 131072,
+    "intermediate_size": 1856,
+    "moe_intermediate_size": 1856,
+    "n_routed_experts": 128,
+    "num_experts_per_tok": 6,
+    "num_attention_heads": 32,
+    "head_dim": 128,
+    "mamba_num_heads": 64,
+    "mamba_head_dim": 64,
+    "n_groups": 8,
+    "ssm_state_size": 128,
+    "mlp_hidden_act": "relu2",
+}
+
+
+def test_nemotron_h_peak_is_the_piece_between_two_mixers() -> None:
+    """vLLM v0.30.0, one H100: the ungated experts' workspace, the previous
+    mixer's in_proj output, SSM output and residual held through the piece,
+    and the next mixer's residual, in_proj output and SSM output.  Above the
+    compile transient (0.74 GiB); the log says 1.09 GiB -- 0.076 GiB (7%) is
+    not accounted for from source."""
+    workspace = T * 6 * (max(1856, 2688) + max(1856, 2688)) * 2  # no gate: w13 is [E, I, H]
+    in_proj = T * (2 * 4096 + 2 * 8 * 128 + 64) * 2
+    ssm_out = T * 4096 * 2
+    residual = T * 2688 * 2
+    expected = workspace + 2 * (in_proj + ssm_out + residual)
+    assert expected == 1_088_421_888
+    metadata = _metadata(NEMOTRON_35)
+    assert _forward_live_bytes(metadata, _inputs(), 1, T, 2) == expected
+    compile_peak = 131072 * 2688 * 2 + 2 * residual
+    assert compile_peak < expected
+    assert _activation_estimate(metadata, _inputs(seqs=556), 1) == expected
+    logged = 1_170_378_588  # 1.09 GiB
+    assert abs(expected - logged) / logged < 0.10
+
+
+def test_gated_moe_workspace_is_unchanged_without_the_nemotron_fields() -> None:
+    config = {
+        key: value
+        for key, value in NEMOTRON_35.items()
+        if not key.startswith(("mamba", "n_g", "ssm", "mlp"))
+    }
+    workspace = T * 6 * (max(1856, 2688) + max(2 * 1856, 2688)) * 2
+    forward = _forward_live_bytes(_metadata(config), _inputs(), 1, T, 2)
+    assert forward == T * 32 * 128 * 2 + 2 * T * 2688 * 2 + workspace
+
+
 def test_sampler_keeps_a_second_logits_copy_under_a_soft_cap() -> None:
     """A text-free wrapper with a tiny forward: the sampler decides.  The soft
     cap (logits / cap, tanh, * cap) holds two logits tensors at once."""

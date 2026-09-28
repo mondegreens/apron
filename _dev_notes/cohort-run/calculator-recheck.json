@@ -155,6 +155,20 @@
       "weights_now": 14496047104
     },
     {
+      "activation_at_run": 792723456,
+      "activation_measured": 1170378588,
+      "activation_now": 1088421888,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+      "profiled_tokens": 8192,
+      "record": "12208228a1874270fa2f9bdb214d951c18ce192291b5a384edc2fb7dc73a3f325225",
+      "tensor_parallel": 1,
+      "weights_at_run": 63155880576,
+      "weights_measured": 63264868270,
+      "weights_now": 63155880320
+    },
+    {
       "activation_at_run": 1084227584,
       "activation_measured": 2061584302,
       "activation_now": 2013265920,
@@ -335,6 +349,20 @@
       "weights_at_run": 65524246528,
       "weights_measured": 65530463518,
       "weights_now": 65524246528
+    },
+    {
+      "activation_at_run": 2013265920,
+      "activation_measured": 2061584302,
+      "activation_now": 2013265920,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "model": "Qwen/Qwen3.8-27B",
+      "profiled_tokens": 8192,
+      "record": "1220f20079fa79b1a0a51f6320c035b4a744f80896d23157ac9754195fac1dd1df30",
+      "tensor_parallel": 1,
+      "weights_at_run": 54713457120,
+      "weights_measured": 54868207206,
+      "weights_now": 54713457120
     }
   ]
 }
