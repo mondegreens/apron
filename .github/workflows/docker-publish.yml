@@ -46,11 +46,26 @@ jobs:
             echo "tag=${GITHUB_REF_NAME#runner-}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Pick the requirements pinned for this vLLM version
+        id: reqs
+        run: |
+          # v0.30.0-rc1 -> v0.30.0; a version with its own pinned file uses it,
+          # the first pinned version (v0.29.0) keeps requirements.txt.
+          version="${{ steps.version.outputs.tag }}"
+          version="${version%%-*}"
+          if [ -f "docker/requirements-${version}.txt" ]; then
+            echo "file=requirements-${version}.txt" >> $GITHUB_OUTPUT
+          else
+            echo "file=requirements.txt" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: docker
           file: docker/Dockerfile
+          build-args: |
+            REQUIREMENTS=${{ steps.reqs.outputs.file }}
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.tag }}

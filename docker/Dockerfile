@@ -48,7 +48,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+# One image per vLLM version: the build passes that version's pinned file
+# (docker/requirements-vX.Y.Z.txt); the default is the first pinned version.
+ARG REQUIREMENTS=requirements.txt
+COPY ${REQUIREMENTS} requirements.txt
 RUN --mount=type=cache,target=/tmp/uv-cache \
     python3 -m venv /opt/venv \
     && . /opt/venv/bin/activate \
