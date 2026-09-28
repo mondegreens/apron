@@ -75,6 +75,7 @@ GPU = "NVIDIA H100 80GB HBM3"  # H100 SXM
 # The volume the group A weights were staged on (volumes.json, prestage-groupA.json).
 SITE = WeightsSite(volume_id="7jiuum2nk6", data_center_id="US-CA-2", size_gb=228)
 LABEL_PREFIX = PROBE_PREFIX
+LOG_TAIL_CHARS = 20_000
 
 REMOTE_DIR = "/workspace/peak_probe"
 BIN = "/opt/venv/bin/"
@@ -269,7 +270,10 @@ def wait_and_collect(
         outcome.probe = json.loads(raw)
     log = str(target.execute(f"cat {VLLM_LOG} 2>/dev/null || true").get("stdout", ""))
     outcome.parsed_log = engine.parse_profiling_logs(log)
-    outcome.log_tail = mask_secrets(collapse_repeats("\n".join(log.splitlines()[-200:])))
+    # Last 200 lines, and at most LOG_TAIL_CHARS: a progress bar redrawn with
+    # carriage returns is one "line" of tens of MB (Muse-Glimmer, 2026-09-28).
+    tail = collapse_repeats("\n".join(log.replace("\r", "\n").splitlines()[-200:]))
+    outcome.log_tail = mask_secrets(tail[-LOG_TAIL_CHARS:])
     return outcome
 
 

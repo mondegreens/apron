@@ -593,7 +593,9 @@ def test_each_model_keeps_the_image_it_was_recorded_on(
 
     real = next(
         json.loads(line)
-        for line in (REPO / "_dev_notes" / "cohort-run" / "solutions.jsonl").read_text().splitlines()
+        for line in (REPO / "_dev_notes" / "cohort-run" / "solutions.jsonl")
+        .read_text()
+        .splitlines()
         if line.strip()
         and json.loads(line).get("model_id") == "zai-org/GLM-4.7-Flash"
         and json.loads(line)["requested_execution"]["gpu_sku"] == driver.GPU
@@ -623,3 +625,8 @@ def test_each_model_keeps_the_image_it_was_recorded_on(
 
 def _refuse_pod(*_a: Any, **_k: Any) -> Any:
     raise AssertionError("a pod was created for models recorded on different images")
+
+
+def test_the_stored_log_tail_is_bounded(driver: Any) -> None:
+    """A carriage-return progress bar is one 70 MB "line"; the record keeps a bounded tail."""
+    assert driver.LOG_TAIL_CHARS <= 20_000
