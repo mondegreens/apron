@@ -686,7 +686,7 @@ def accrue_storage(site: WeightsSite, budget: BudgetTracker, run_dir: Path = RUN
     now = budget.clock.now().timestamp()
     entry = state.setdefault(site.volume_id, {"since": now, "size_gb": site.size_gb})
     hours = max(0.0, now - float(entry["since"])) / 3600
-    amount = storage_cost(site.size_gb, hours)
+    amount = storage_cost(site.size_gb, hours, site.data_center_id)
     if amount > 0:
         budget.record_spend(
             amount, f"{STORAGE_PREFIX}{site.volume_id}:{site.size_gb}GB:{round(hours, 3)}h"

@@ -212,6 +212,13 @@ def test_storage_cost_is_the_standard_tier_rate() -> None:
     assert storage_cost(100, 1.0) == pytest.approx(100 * 0.07 / 730, abs=1e-6)  # micro-dollars
 
 
+def test_high_performance_datacenters_bill_their_own_rate() -> None:
+    """US-CA-2 volumes are high-performance by default: 480 GB = $67.20/mo
+    in the console (2026-09-28), not the $33.60 the standard rate gives."""
+    assert storage_cost(480, 730.0, "US-CA-2") == pytest.approx(67.20)
+    assert storage_cost(480, 730.0, "EU-RO-1") == pytest.approx(480 * 0.07)
+
+
 # ---------------------------------------------------------------------------
 # The engine on staged weights
 # ---------------------------------------------------------------------------

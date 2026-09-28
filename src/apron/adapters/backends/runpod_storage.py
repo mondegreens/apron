@@ -79,9 +79,23 @@ def region_rank(data_center_id: str) -> int:
     )
 
 
-def storage_cost(size_gb: int, hours: float) -> float:
-    """What a standard volume of *size_gb* costs for *hours* (under 1 TB)."""
-    return round(size_gb * VOLUME_USD_PER_GB_MONTH * hours / HOURS_PER_MONTH, 6)
+# High-performance storage is the default for a volume created in a datacenter
+# that offers it (docs.runpod.io/storage/high-performance-storage: "enabled by
+# default"; "Exact pricing varies by data center").  Rates as the console bills
+# them: US-CA-2's 480 GB volume shows $67.20/mo (owner's screenshot,
+# 2026-09-28), $0.14 per GB-month, twice the standard rate the ledger had used.
+HIGH_PERFORMANCE_USD_PER_GB_MONTH: dict[str, float] = {"US-CA-2": 0.14}
+
+
+def volume_usd_per_gb_month(data_center_id: str | None) -> float:
+    """The per-GB monthly rate a new volume in *data_center_id* is billed at."""
+    return HIGH_PERFORMANCE_USD_PER_GB_MONTH.get(data_center_id or "", VOLUME_USD_PER_GB_MONTH)
+
+
+def storage_cost(size_gb: int, hours: float, data_center_id: str | None = None) -> float:
+    """What a volume of *size_gb* in *data_center_id* costs for *hours*."""
+    rate = volume_usd_per_gb_month(data_center_id)
+    return round(size_gb * rate * hours / HOURS_PER_MONTH, 6)
 
 
 class RunPodStorage:

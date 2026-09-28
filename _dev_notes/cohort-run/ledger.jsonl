@@ -341,3 +341,4 @@
 {"amount": 2.792, "at": "2026-09-28T02:39:12.378106+00:00", "label": "probe:peak:Qwen/Qwen3.6-35B-A3B-FP8,meta-models/Muse-Glimmer-30B", "op": "hold"}
 {"amount": 0.0, "at": "2026-09-28T02:43:19.881757+00:00", "label": "probe:peak:Qwen/Qwen3.6-35B-A3B-FP8,meta-models/Muse-Glimmer-30B", "op": "annotate", "pod_id": "b2cxgxzq5opvxj"}
 {"amount": 0.646619, "at": "2026-09-28T02:50:21.010121+00:00", "estimate": 2.792, "label": "probe:peak:Qwen/Qwen3.6-35B-A3B-FP8,meta-models/Muse-Glimmer-30B", "op": "settle"}
+{"amount": 0.064537, "at": "2026-09-28T03:37:44.726681+00:00", "label": "storage-rate:correct:7jiuum2nk6", "op": "correct", "source": "RunPod console 2026-09-28: US-CA-2 high-performance volume $67.20/mo for 480 GB ($0.14/GB-mo); earlier accruals used $0.07"}
