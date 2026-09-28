@@ -1,12 +1,13 @@
-"""GPU weights of the group C models as the planner predicts them for vLLM v0.30.0.
+"""GPU weights of the group C and D models as the planner predicts them for vLLM v0.30.0.
 
 Planned from recorded config.json and safetensors headers
 (tests/fixtures/cohort/headers, scripts/record_tensor_headers.py), no network.
-Per GPU at TP 4 on an H200, from _dev_notes/cohort-run/deepseek-v4-kv-trace.md
+Per GPU on an H200, group C at TP 4 from _dev_notes/cohort-run/deepseek-v4-kv-trace.md
 and qwen4exp-glm5next-kv-trace.md: the ``mtp.*`` layers the loaders drop are
 not weights, the n-gram tables vLLM keeps in pinned host memory are host RAM,
 DeepSeek's replicated projections sit whole on every rank, and V4.1's MXFP4
-experts are padded per rank.
+experts are padded per rank.  Group D (GLM-5.3, MiniMax-M3) at TP 8 from
+glm53-minimax-m3-kv-trace.md.
 """
 
 from __future__ import annotations
@@ -21,9 +22,11 @@ import pytest
 import apron.domain.mechanisms.calculator  # noqa: F401 — registers calculators
 from apron.adapters.evidence.hf_hub import HFHubResolver
 from apron.adapters.planning.calculator_source import CalculatorPlanningSource
+from apron.application.orchestration.cohort import predicted_feasible
 from apron.application.orchestration.plan_pipeline import (
     PlanPipelineResult,
     host_tensor_bytes,
+    kv_head_tensor_bytes,
     loaded_tensor_bytes,
     mtp_tensor_bytes,
     replicated_tensor_bytes,
@@ -172,3 +175,78 @@ def test_replicated_weights_are_whole_on_every_rank() -> None:
     shard8 = tp8["weight_memory_bytes"] - replicated
     assert abs(shard4 - 2 * shard8) <= 1
     assert tp8["weight_memory_bytes"] / GIB == pytest.approx(19.24, abs=0.01)
+
+
+# Group D at TP 8 on an H200 (_dev_notes/cohort-run/glm53-minimax-m3-kv-trace.md):
+# model -> (GPU weights per GPU, mtp bytes, replicated bytes, KV-head bytes)
+EXPECTED_D = {
+    # (loaded - MTP layer 78 - replicated) / 8 + replicated = 88.20 GiB.
+    # Replicated: fused q_a + kv_a, the indexer (its fp8 wk loads as bf16),
+    # router gates, norms.
+    "zai-org/GLM-5.3": (94_699_576_704, 10_033_419_200, 1_713_656_448, 0),
+    # (loaded - replicated - KV-head) / 8 + replicated + KV-head / 4 = 99.79 GiB.
+    # No mtp.* tensors stored; the float32 router gates stay float32.
+    "MiniMaxAI/MiniMax-M3": (107_150_251_008, 0, 274_067_456, 1_113_587_712),
+}
+
+
+@pytest.mark.parametrize("model_id", sorted(EXPECTED_D))
+def test_group_d_weights_per_gpu(model_id: str) -> None:
+    weights, mtp, replicated, by_kv_head = EXPECTED_D[model_id]
+    record = _record(model_id)
+    config = record["config"]
+    tensors = loaded_tensor_bytes(
+        {name: (dtype, size) for name, (dtype, size, _) in record["tensors"].items()}, config
+    )
+    assert mtp_tensor_bytes(tensors, config) == mtp
+    assert host_tensor_bytes(tensors, config) == 0
+    assert replicated_tensor_bytes(tensors, config) == replicated
+    assert kv_head_tensor_bytes(tensors, config) == by_kv_head
+
+    result = _plan(model_id, tp=8)
+    assert result.ok, result.error
+    assert result.model_spec is not None
+    assert result.model_spec.components[0].mechanism == "layered_decode"
+    claim = result.claim.proposed_configuration
+    assert claim["weight_memory_bytes"] == weights
+    assert result.host_memory_bytes == 0
+    # Both fit one H200 each at TP 8 (the planner's 0.90 of the GPU).
+    assert predicted_feasible(result.claim, H200.total_memory_bytes, 8)
+
+
+def test_group_d_tensors_loaded_at_vllms_width() -> None:
+    """GLM-5.3's fp8 indexer wk is dequantized to bf16 and its scale dropped;
+    MiniMax-M3's float32 router gate is not downcast (dtype=auto halves the
+    rest of an unquantized checkpoint's F32 tensors)."""
+    glm = _record("zai-org/GLM-5.3")
+    wk = "model.layers.0.self_attn.indexer.wk.weight"
+    loaded = loaded_tensor_bytes(
+        {name: (dtype, size) for name, (dtype, size, _) in glm["tensors"].items()}, glm["config"]
+    )
+    assert glm["tensors"][wk][:2] == ["F8_E4M3", 786_432]
+    assert loaded[wk] == 1_572_864
+    assert loaded[wk + "_scale_inv"] == 0
+    m3 = _record("MiniMaxAI/MiniMax-M3")
+    meta = {name: (dtype, size) for name, (dtype, size, _) in m3["tensors"].items()}
+    loaded = loaded_tensor_bytes(meta, m3["config"])
+    gate = "language_model.model.layers.3.block_sparse_moe.gate.weight"
+    patch = "vision_tower.vision_model.embeddings.patch_embedding.weight"
+    assert meta[gate] == ("F32", 3_145_728) and loaded[gate] == 3_145_728
+    assert meta[patch] == ("F32", 6_021_120) and loaded[patch] == 3_010_560
+
+
+def test_minimax_m3_plan_sets_the_block_size_vllm_needs() -> None:
+    """With vLLM's own block size (16) MiniMax-M3 does not boot."""
+    plans = {
+        model_id: _plan(model_id, tp=tp).plan
+        for model_id, tp in (
+            ("MiniMaxAI/MiniMax-M3", 8),
+            ("zai-org/GLM-5.3", 8),
+            ("zai-org/GLM-5.3-Flash", 4),
+        )
+    }
+    engines = {model_id: plan.engine_configuration for model_id, plan in plans.items() if plan}
+    assert len(engines) == 3
+    assert engines["MiniMaxAI/MiniMax-M3"]["block_size"] == "128"
+    assert "block_size" not in engines["zai-org/GLM-5.3"]
+    assert "block_size" not in engines["zai-org/GLM-5.3-Flash"]

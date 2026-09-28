@@ -19,13 +19,16 @@ and ``gemma4-memory-trace.md``; paths under ``.sources/vllm/vllm/``):
   group with prefix caching on, the default for hybrids (1 without)
   (``kv_cache_interface.py:883-895``).
 
-vLLM v0.30.0 pages four more layouts its own way (``kv_layout``; traced in
-``_dev_notes/cohort-run/deepseek-v4-kv-trace.md`` and
-``qwen4exp-glm5next-kv-trace.md``, paths under ``.sources/vllm-v0.30.0/vllm/``):
-DeepSeek V4 / V4.1 and Qwen4Exp through the block-outermost *packed* grouping
-(``v1/core/kv_cache_utils.py:1978-2112``), GLM5Next through its own grouping
-(``kv_cache_utils.py:1195-1275``).  Their layer kinds carry the page vLLM
-builds (``block_size``, ``page_bytes``), alignment padding included.
+vLLM v0.30.0 pages six more layouts its own way (``kv_layout``; traced in
+``_dev_notes/cohort-run/deepseek-v4-kv-trace.md``,
+``qwen4exp-glm5next-kv-trace.md`` and ``glm53-minimax-m3-kv-trace.md``, paths
+under ``.sources/vllm-v0.30.0/vllm/``): DeepSeek V4 / V4.1 and Qwen4Exp
+through the block-outermost *packed* grouping (``v1/core/kv_cache_utils.py:
+1978-2112``), GLM5Next through its own grouping (``kv_cache_utils.py:
+1195-1275``), GLM-5.3 (DSA) and MiniMax-M3 as one group of full-attention
+pages of different sizes (``UniformTypeKVCacheSpecs``, kv_cache_utils.py:
+2282-2286).  Their layer kinds carry the page vLLM builds (``block_size``,
+``page_bytes``), alignment padding included.
 
 Pure arithmetic on config values; no I/O.  Predictions until a boot checks them.
 """
@@ -103,6 +106,17 @@ def family(config: dict[str, Any]) -> str | None:
         and text.get("kv_lora_rank")
     ):
         return "glm5_next"
+    # GLM-5.x DSA (GlmMoeDsaForCausalLM runs models/deepseek_v32): MLA latent on
+    # every layer, lightning-indexer keys on the layers that pick their own top-k
+    # (models/deepseek_v32/attention.py:166-200).
+    if model_type == "glm_moe_dsa" and all(
+        text.get(k) for k in ("kv_lora_rank", "qk_rope_head_dim", "index_head_dim", "index_topk")
+    ):
+        return "glm_moe_dsa"
+    # MiniMax-M3: GQA on every layer, an index-key cache on the sparse layers
+    # (models/minimax_m3/nvidia/model.py:95-104, 698-716).
+    if model_type.startswith("minimax_m3") and _minimax_m3_sparse_layers(text) is not None:
+        return "minimax_m3"
     if model_type.startswith("qwen3_5") and text.get("linear_num_value_heads"):
         return "qwen3_5"
     if model_type == "nemotron_h" and nemotron_pattern(text):
@@ -126,15 +140,58 @@ def kv_layout(config: dict[str, Any]) -> str:
     (v1/attention/backends/utils.py:204-236): the DeepSeek V4 indexer
     (v1/attention/backends/mla/indexer.py:245-248) and QSA's state cache
     (models/qwen4_exp/common/qsa_cache.py:753-756).  "glm5_next": GLM-5.3's own
-    grouping, tried before it (kv_cache_utils.py:2287, 1195-1275).  "grouped":
-    the v0.29 rule of the module docstring.
+    grouping, tried before it (kv_cache_utils.py:2287, 1195-1275).  "uniform":
+    every layer a full-attention spec on one block size, so one group of all
+    of them, tried first (kv_cache_utils.py:2282-2286; kv_cache_interface.py:
+    1233-1257).  "grouped": the v0.29 rule of the module docstring.
     """
     name = family(config)
     if name in ("deepseek_v4", "deepseek_v41", "qwen4_exp"):
         return "packed"
     if name == "glm5_next":
         return "glm5_next"
+    if name in ("glm_moe_dsa", "minimax_m3"):
+        return "uniform"
     return "grouped"
+
+
+def _minimax_m3_sparse_layers(text: dict[str, Any]) -> int | None:
+    """How many MiniMax-M3 layers run the sparse index branch, or None when the
+    config does not say it the way vLLM reads it (a nonzero entry of
+    ``sparse_attention_freq`` per layer, models/minimax_m3/nvidia/model.py:95-104)."""
+    sparse = text.get("sparse_attention_config")
+    n = int(text.get("num_hidden_layers") or 0)
+    if not isinstance(sparse, dict) or not n:
+        return None
+    freq = sparse.get("sparse_attention_freq")
+    if not isinstance(freq, list) or len(freq) != n:
+        return None
+    if not all(sparse.get(k) for k in ("sparse_index_dim", "sparse_block_size")):
+        return None
+    if not all(text.get(k) for k in ("num_key_value_heads", "head_dim")):
+        return None
+    return sum(1 for f in freq if f)
+
+
+def required_block_size(config: dict[str, Any]) -> int | None:
+    """The ``--block-size`` a plan must set for vLLM v0.30.0 to boot the model,
+    or None when vLLM's own choice works.
+
+    MiniMax-M3: vLLM takes the block size from the first attention layer it
+    registers (platforms/interface.py:609-640), a dense GQA layer on
+    FLASH_ATTN, which keeps the default 16 (backend.py:150-158; flash_attn.py:
+    314-328).  Its sparse layers' attention and index-key backends only run on
+    128-token pages (models/minimax_m3/common/sparse_attention.py:161-164,
+    common/indexer.py:93-95), and all three backends share one KV cache group,
+    so the worker finds no common kernel block for 16 and refuses to start
+    (v1/worker/utils.py:330-386, 488-493: "No common block size for 16").
+    The sparse block (``sparse_block_size``, 128) is the page vLLM's recipe
+    makes mandatory (recipes/models/MiniMaxAI/MiniMax-M3.yaml: "--block-size
+    128 is mandatory on every platform").
+    """
+    if family(config) != "minimax_m3":
+        return None
+    return int(text_config(config)["sparse_attention_config"]["sparse_block_size"])
 
 
 # transformers' NemotronHConfig reads ``layers_block_type`` (newer checkpoints,
@@ -201,6 +258,14 @@ def layer_kinds(
     if name == "glm5_next":
         return _glm5_next_kinds(
             text, tp=tp, model_dtype_bytes=model_dtype_bytes, sm=sm, kv_cache_dtype=kv_cache_dtype
+        )
+    if name == "glm_moe_dsa":
+        return _glm_moe_dsa_kinds(
+            text, kv_dtype_bytes=kv_dtype_bytes, sm=sm, kv_cache_dtype=kv_cache_dtype
+        )
+    if name == "minimax_m3":
+        return _minimax_m3_kinds(
+            text, tp=tp, kv_dtype_bytes=kv_dtype_bytes, sm=sm, kv_cache_dtype=kv_cache_dtype
         )
     if name == "gemma4":
         if int(text.get("num_kv_shared_layers") or 0):
@@ -562,6 +627,104 @@ def _glm5_next_kinds(
     ]
 
 
+def dsa_indexer_layers(text: dict[str, Any]) -> list[int]:
+    """The GLM-5.x DSA layers that hold an indexer (and its key cache): those
+    that pick their own top-k, ``index_topk_pattern`` ("S" skips) when given,
+    else every ``index_topk_freq``-th layer from ``index_skip_topk_offset - 1``
+    (models/deepseek_v32/attention.py:166-200; the checkpoint's own
+    ``indexer_types`` is not read)."""
+    n = int(text["num_hidden_layers"])
+    pattern = text.get("index_topk_pattern")
+    freq = int(text.get("index_topk_freq") or 1)
+    offset = int(text["index_skip_topk_offset"]) if "index_skip_topk_offset" in text else 2
+    if pattern is None:
+        return [i for i in range(n) if max(i - offset + 1, 0) % freq == 0]
+    return [i for i in range(n) if not (i < len(pattern) and pattern[i] == "S")]
+
+
+def _glm_moe_dsa_kinds(
+    text: dict[str, Any], *, kv_dtype_bytes: int, sm: int | None, kv_cache_dtype: str
+) -> list[LayerKind] | None:
+    """GLM-5.x DSA on SM 9.x: the MLA latent (kv_lora_rank + rope, one head on
+    every rank) on every layer, the lightning indexer's fp8 keys on its layers.
+
+    SM 9.x tries FLASH_ATTN_MLA_SPARSE (FA3 builds), FLASHMLA_SPARSE and
+    FLASHINFER_MLA_SPARSE_SM90 in that order (platforms/cuda.py:137-153); with
+    a 16-bit (``auto``) cache all three keep the plain latent, head 576, no
+    alignment (model_executor/layers/attention/mla_attention.py:359-376,
+    1347-1374) on 64-token pages (flashattn_mla_sparse.py:43-44, flashmla_sparse.py:141-142,
+    flashinfer_mla_sparse_sm90.py:77-78), and the indexer backend takes 64 too
+    (v1/attention/backends/mla/indexer.py:202-204), so vLLM sets the block to
+    64 (platforms/interface.py:629-640; attention/backend.py:150-158).  An fp8
+    cache turns into fp8_ds_mla (656 B per token) on FlashMLA: not traced.
+    SM 10.x / 12.x pick other backends: not traced.
+    """
+    if sm is None or sm // 10 != 9 or kv_cache_dtype not in ("auto", "bfloat16"):
+        return None
+    block = 64
+    per_token = (int(text["kv_lora_rank"]) + int(text["qk_rope_head_dim"])) * kv_dtype_bytes
+    index_dim = int(text["index_head_dim"])
+    return [
+        LayerKind(
+            "full",
+            int(text["num_hidden_layers"]),
+            bytes_per_token=per_token,
+            block_size=block,
+            page_bytes=block * per_token,
+        ),
+        # fp8 key + one fp32 scale per 128, one uint8 row per token
+        # (models/deepseek_v32/attention.py:95-100; deepseek_v2.py:657-664).
+        LayerKind(
+            "compressed",
+            len(dsa_indexer_layers(text)),
+            block_size=block,
+            page_bytes=block * (index_dim + index_dim // 128 * 4),
+        ),
+    ]
+
+
+def _minimax_m3_kinds(
+    text: dict[str, Any], *, tp: int, kv_dtype_bytes: int, sm: int | None, kv_cache_dtype: str
+) -> list[LayerKind] | None:
+    """MiniMax-M3 on SM 9.x with ``--block-size 128`` (``required_block_size``):
+    K and V of the KV heads on every layer, dense and sparse alike
+    (models/minimax_m3/nvidia/model.py:556-565, generic Attention on the dense
+    layers), and on the sparse layers one bf16 index key per token, a single
+    head every rank keeps whole (common/indexer.py:145-153, 387-393;
+    model_executor/layers/linear.py:1362-1367; ``indexer_kv_dtype`` "auto" is
+    bf16, model.py:501-503, config/attention.py:83, 137-141).
+
+    With fewer KV heads than ranks each rank holds one (model.py:420-425).
+    SM 10.x selects the MSA kernels (sparse_attention.py:542-547): not traced;
+    an fp8 KV cache is not traced either.
+    """
+    if sm is None or sm // 10 != 9 or kv_cache_dtype not in ("auto", "bfloat16"):
+        return None
+    heads = int(text["num_key_value_heads"])
+    if (heads >= tp and heads % tp) or (heads < tp and tp % heads):
+        return None  # vLLM asserts (model.py:420-424)
+    sparse = text["sparse_attention_config"]
+    block = int(sparse["sparse_block_size"])
+    if block != 128:
+        return None  # the sparse kernels' only page (sparse_attention.py:161-164)
+    per_token = _heads_per_gpu(heads, tp) * 2 * int(text["head_dim"]) * kv_dtype_bytes
+    return [
+        LayerKind(
+            "full",
+            int(text["num_hidden_layers"]),
+            bytes_per_token=per_token,
+            block_size=block,
+            page_bytes=block * per_token,
+        ),
+        LayerKind(
+            "compressed",
+            _minimax_m3_sparse_layers(text) or 0,
+            block_size=block,
+            page_bytes=block * int(sparse["sparse_index_dim"]) * 2,
+        ),
+    ]
+
+
 def _approximate_gcd(values: list[int], lower_bound: int) -> int:
     """The repeat count with the least padding, ties to the larger
     (kv_cache_utils.py:1943-1975)."""
@@ -701,6 +864,21 @@ def _glm5_next_blocks(
     return Blocks(per_block, blocks + 1, 2 + state_groups)
 
 
+def _uniform_blocks(kinds: list[LayerKind], max_model_len: int) -> Blocks | None:
+    """One group of every layer (``UniformTypeKVCacheSpecs``): full-attention
+    specs on one block size, pages of any size (kv_cache_interface.py:1233-1257).
+    A block is every layer's page (1204-1206; kv_cache_utils.py:1588-1611); a
+    request takes ``ceil(L / block)`` of them (kv_cache_interface.py:564-569,
+    1267-1271; kv_cache_utils.py:2448-2461)."""
+    if any(k.kind not in ("full", "compressed") for k in kinds):
+        return None
+    sizes = {k.block_size for k in kinds}
+    if len(sizes) != 1 or min(sizes) <= 0:
+        return None
+    (block,) = sizes
+    return Blocks(sum(k.count * k.page_bytes for k in kinds), ceil(max_model_len / block), 1)
+
+
 def _grouped_blocks(
     kinds: list[LayerKind], max_model_len: int, in_flight_tokens: int, prefix_caching: bool
 ) -> Blocks | None:
@@ -751,7 +929,7 @@ def block_accounting(
     layout: str,
 ) -> Blocks | None:
     """Bytes per block, blocks and groups of one request under ``layout``
-    (``kv_layout``: "grouped", "packed" or "glm5_next"); None when the layout
+    (``kv_layout``: "grouped", "packed", "glm5_next" or "uniform"); None when the layout
     or the kinds were not traced.  vLLM sizes the pool as
     ``available // bytes_per_block`` blocks (v0.29 kv_cache_utils.py:1440,
     v0.30 kv_cache_utils.py:1695, 1750)."""
@@ -764,6 +942,8 @@ def block_accounting(
         return _packed_blocks(kinds, max_model_len, in_flight_tokens, prefix_caching)
     if layout == "glm5_next":
         return _glm5_next_blocks(kinds, max_model_len, prefix_caching)
+    if layout == "uniform":
+        return _uniform_blocks(kinds, max_model_len)
     return None
 
 
@@ -777,8 +957,8 @@ def bytes_per_sequence(
 ) -> int | None:
     """What one request of ``max_model_len`` tokens reserves, as vLLM counts it.
 
-    ``layout`` is ``kv_layout(config)``: "packed" and "glm5_next" are vLLM
-    v0.30's groupings for the families whose kinds carry their pages.
+    ``layout`` is ``kv_layout(config)``: "packed", "glm5_next" and "uniform"
+    are vLLM v0.30's groupings for the families whose kinds carry their pages.
     """
     accounted = block_accounting(
         kinds,

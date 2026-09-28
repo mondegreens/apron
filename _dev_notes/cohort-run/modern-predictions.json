@@ -207,20 +207,20 @@
       "weight_gib_per_gpu": 37.25
     },
     {
-      "activation_gib": 0.0,
-      "dtype": null,
+      "activation_gib": 2.77,
+      "dtype": "bfloat16",
       "gpu": "NVIDIA H200",
       "gpu_count": 8,
       "group": "D",
-      "kv_gib_per_sequence": 0.0,
+      "kv_gib_per_sequence": 0.055,
       "load_problems": [],
-      "mechanism": "unknown",
+      "mechanism": "layered_decode",
       "model": "zai-org/GLM-5.3",
       "notes": [],
-      "status": "unknown",
+      "status": "planned",
       "tensor_parallel": 8,
-      "total_gib_per_gpu": 0.0,
-      "weight_gib_per_gpu": 0.0
+      "total_gib_per_gpu": 94.15,
+      "weight_gib_per_gpu": 88.2
     },
     {
       "activation_gib": 1.66,
@@ -239,22 +239,22 @@
       "weight_gib_per_gpu": 101.94
     },
     {
-      "activation_gib": 0.0,
-      "dtype": null,
+      "activation_gib": 1.05,
+      "dtype": "bfloat16",
       "gpu": "NVIDIA H200",
       "gpu_count": 8,
       "group": "D",
-      "kv_gib_per_sequence": 0.0,
+      "kv_gib_per_sequence": 0.027,
       "load_problems": [],
-      "mechanism": "encoder_decoder_generation",
+      "mechanism": "layered_decode",
       "model": "MiniMaxAI/MiniMax-M3",
       "notes": [
         "encoder startup peak not modelled for the minimax_m3_vl vision tower (not traced); activation may be under-predicted"
       ],
-      "status": "unknown",
+      "status": "planned",
       "tensor_parallel": 8,
-      "total_gib_per_gpu": 0.0,
-      "weight_gib_per_gpu": 0.0
+      "total_gib_per_gpu": 103.72,
+      "weight_gib_per_gpu": 99.79
     }
   ]
 }

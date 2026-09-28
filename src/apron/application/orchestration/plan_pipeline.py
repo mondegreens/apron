@@ -23,7 +23,11 @@ from apron.domain.mechanisms.calculator import (
     declares_towers,
     encoder_peak_note,
 )
-from apron.domain.mechanisms.layered import KV_BUDGET_SAFETY_BUFFER_BYTES, state_block_capacity
+from apron.domain.mechanisms.layered import (
+    KV_BUDGET_SAFETY_BUFFER_BYTES,
+    required_block_size,
+    state_block_capacity,
+)
 from apron.domain.mechanisms.model_spec_builder import build_model_spec
 from apron.domain.schemas.solutions import DeploymentPlan, RenderContext
 
@@ -205,6 +209,7 @@ def run_plan_pipeline(
         model_spec,
         total_weight_bytes=total_weight_bytes,
         replicated_weight_bytes=replicated_tensor_bytes(tensors, config) if tensors else 0,
+        kv_head_weight_bytes=kv_head_tensor_bytes(tensors, config) if tensors else 0,
         dtype=dtype,
         processor=processor,
     )
@@ -284,6 +289,19 @@ def run_plan_pipeline(
             }
         )
 
+    # A model vLLM cannot boot at its own block size: the plan names the one
+    # that works (MiniMax-M3's 128-token sparse pages, ``required_block_size``).
+    block_size = required_block_size(config)
+    if block_size is not None:
+        deployment_plan = deployment_plan.model_copy(
+            update={
+                "engine_configuration": {
+                    **deployment_plan.engine_configuration,
+                    "block_size": str(block_size),
+                }
+            }
+        )
+
     chat_template = _download_chat_template(
         resolver, model_id, result.observation.resolved_revision
     )
@@ -334,6 +352,7 @@ def calculator_metadata(
     *,
     total_weight_bytes: int,
     replicated_weight_bytes: int = 0,
+    kv_head_weight_bytes: int = 0,
     dtype: str | None = None,
     processor: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -352,6 +371,8 @@ def calculator_metadata(
     metadata["total_weight_bytes"] = total_weight_bytes
     if replicated_weight_bytes:
         metadata["replicated_weight_bytes"] = replicated_weight_bytes
+    if kv_head_weight_bytes:
+        metadata["kv_head_weight_bytes"] = kv_head_weight_bytes
     metadata["components"] = [c.model_dump(mode="json") for c in model_spec.components]
     return metadata
 
@@ -574,11 +595,40 @@ def loaded_tensor_bytes(
     bfloat16 from compute capability 8.0, else float16 — 2 bytes either way,
     platforms/cuda.py:237-243), so an unquantized checkpoint's F32 tensors
     load at half their stored size.  Quantized checkpoints keep their stored
-    sizes (their scales are created in float32 by the method).
+    sizes (their scales are created in float32 by the method).  A few tensors
+    load at another width than either rule gives (``_loaded_size``).
     """
-    if config.get("quantization_config"):
-        return {name: size for name, (_, size) in meta.items()}
-    return {name: size // 2 if dtype == "F32" else size for name, (dtype, size) in meta.items()}
+    quantized = bool(config.get("quantization_config"))
+    model_type = str(config.get("model_type") or "")
+    return {
+        name: _loaded_size(name, dtype, size, model_type, quantized)
+        for name, (dtype, size) in meta.items()
+    }
+
+
+# Tensors vLLM v0.30.0 loads at another width than the checkpoint stores.
+# GLM-5.x DSA: the indexer's fp8 ``wk`` is dequantized into the unquantized
+# bf16 ``wk_weights_proj`` and its scale is not kept
+# (models/deepseek_v32/attention.py:79-86; model_executor/models/
+# deepseek_v2.py:850-907).  MiniMax-M3: the router gate and its routing bias
+# are float32 parameters, not downcast with dtype=auto
+# (models/minimax_m3/nvidia/model.py:214-235).
+_DSA_INDEXER_WK = re.compile(r"\.indexer\.wk\.weight$")
+_DSA_INDEXER_WK_SCALE = re.compile(r"\.indexer\.wk\.weight_scale_inv$")
+_MINIMAX_M3_FP32 = re.compile(r"\.block_sparse_moe\.(?:gate\.weight|e_score_correction_bias)$")
+
+
+def _loaded_size(name: str, dtype: str, size: int, model_type: str, quantized: bool) -> int:
+    if model_type == "glm_moe_dsa":
+        if dtype == "F8_E4M3" and _DSA_INDEXER_WK.search(name):
+            return 2 * size
+        if _DSA_INDEXER_WK_SCALE.search(name):
+            return 0
+    if model_type == "minimax_m3_vl" and dtype == "F32" and _MINIMAX_M3_FP32.search(name):
+        return size
+    if quantized or dtype != "F32":
+        return size
+    return size // 2
 
 
 def runtime_dtype(config: dict[str, Any]) -> str:
@@ -608,7 +658,9 @@ _LAYER = re.compile(r"(?:^|\.)layers\.(\d+)\.")
 # ``mtp`` prefix to None (models/nemotron_h.py:711 in v0.29.0, :728 in v0.30.0):
 # Nemotron-3.5-Lightning-30B-A3B stores 2.49 GiB of ``mtp.layers.*`` the engine
 # never loads.  Qwen3-Next drops ``mtp.`` the same way (models/qwen3_next.py:808
-# in v0.29.0, :810 in v0.30.0).
+# in v0.29.0, :810 in v0.30.0), and MiniMax-M3's loader skips any name with
+# ``mtp.`` (models/minimax_m3/nvidia/model.py:942-944; the MiniMax-M3
+# checkpoint stores none).
 _MTP_NAMES_DROPPED = frozenset(
     {
         "deepseek_v4",
@@ -618,6 +670,7 @@ _MTP_NAMES_DROPPED = frozenset(
         "qwen3_5_moe",
         "nemotron_h",
         "qwen3_next",
+        "minimax_m3_vl",
     }
 )
 
@@ -638,18 +691,24 @@ def mtp_tensor_bytes(tensors: dict[str, int], config: dict[str, Any]) -> int:
     counted (2026-09-28).  DeepSeek V4 / V4.1 and Qwen4Exp name them ``mtp.*``
     instead, which their loaders drop (``_MTP_NAMES_DROPPED``).
     """
+    is_mtp = _mtp_names(config)
+    return sum(size for name, size in tensors.items() if is_mtp(name))
+
+
+def _mtp_names(config: dict[str, Any]) -> Callable[[str], bool]:
+    """Whether a tensor name belongs to the MTP layers the main model skips."""
     text = _text_config(config)
     extra = int(text.get("num_nextn_predict_layers") or 0)
     layers = int(text.get("num_hidden_layers") or 0)
     by_name = str(config.get("model_type") or "") in _MTP_NAMES_DROPPED
-    total = 0
-    for name, size in tensors.items():
+
+    def is_mtp(name: str) -> bool:
+        if by_name and "mtp." in name:
+            return True
         match = _LAYER.search(name)
-        if (by_name and "mtp." in name) or (
-            extra and layers and match and layers <= int(match.group(1)) < layers + extra
-        ):
-            total += size
-    return total
+        return bool(extra and layers and match and layers <= int(match.group(1)) < layers + extra)
+
+    return is_mtp
 
 
 # N-gram embedding tables vLLM v0.30.0 keeps in pinned host memory, split
@@ -709,15 +768,74 @@ _DEEPSEEK_REPLICATED = re.compile(
 )
 
 
+# GLM-5.x DSA (models/deepseek_v32): the fused q_a + kv_a projection
+# (DeepSeekV2FusedQkvAProjLinear, disable_tp: model_executor/models/
+# deepseek_v2.py:948-963), the whole indexer (wq_b ReplicatedLinear,
+# wk_weights_proj disable_tp, k_norm: models/deepseek_v32/attention.py:71-87),
+# the router gate and its bias (GateLinear: deepseek_v2.py:320-332) and the
+# RMSNorms.  MTP layers are left out (``mtp_tensor_bytes``).
+_GLM_DSA_REPLICATED = re.compile(
+    r"^model\.(?:layers\.\d+\.(?:"
+    r"self_attn\.(?:q_a_proj|kv_a_proj_with_mqa|indexer|q_a_layernorm|kv_a_layernorm)\."
+    r"|mlp\.gate\."
+    r"|(?:input|post_attention)_layernorm\."
+    r")|norm\.)"
+)
+
+# MiniMax-M3: the index key's single head (model_executor/layers/linear.py:
+# 1366-1367, 1407-1418), the float32 router gate and routing bias (GateLinear
+# is a ReplicatedLinear: layers/fused_moe/router/gate_linear.py:14;
+# models/minimax_m3/nvidia/model.py:214-235), the norms; in the vision tower
+# the patch embedding (nn.Conv3d: common/vision_tower.py:57-63), the
+# LayerNorms and the biases of row-parallel layers, which every rank adds whole.
+_MINIMAX_M3_REPLICATED = re.compile(
+    r"^(?:language_model\.model\.(?:layers\.\d+\.(?:"
+    r"self_attn\.(?:index_k_proj|q_norm|k_norm|index_q_norm|index_k_norm)\."
+    r"|block_sparse_moe\.(?:gate\.|e_score_correction_bias)"
+    r"|(?:input|post_attention)_layernorm\."
+    r")|norm\.)"
+    r"|vision_tower\.vision_model\.(?:embeddings\.patch_embedding\.|pre_layrnorm\."
+    r"|encoder\.layers\.\d+\.(?:layer_norm[12]\.|self_attn\.out_proj\.bias|mlp\.fc2\.bias))"
+    r"|(?:multi_modal_projector|patch_merge_mlp)\.linear_2\.bias)"
+)
+
+_REPLICATED: dict[str, re.Pattern[str]] = {
+    "deepseek_v4": _DEEPSEEK_REPLICATED,
+    "deepseek_v41": _DEEPSEEK_REPLICATED,
+    "glm_moe_dsa": _GLM_DSA_REPLICATED,
+    "minimax_m3_vl": _MINIMAX_M3_REPLICATED,
+}
+
+
 def replicated_tensor_bytes(tensors: dict[str, int], config: dict[str, Any]) -> int:
     """Bytes of loaded weights vLLM keeps whole on every tensor-parallel rank.
 
-    Only DeepSeek V4 / V4.1 are traced; every other model's weights are
-    divided by TP (the calculator's ``_per_gpu``).
+    Only DeepSeek V4 / V4.1, GLM-5.x DSA and MiniMax-M3 are traced; every
+    other model's weights are divided by TP (the calculator's ``_per_gpu``).
     """
-    if str(config.get("model_type") or "") not in ("deepseek_v4", "deepseek_v41"):
+    names = _REPLICATED.get(str(config.get("model_type") or ""))
+    if names is None:
         return 0
-    return sum(size for name, size in tensors.items() if _DEEPSEEK_REPLICATED.match(name))
+    is_mtp = _mtp_names(config)
+    return sum(size for name, size in tensors.items() if names.match(name) and not is_mtp(name))
+
+
+# MiniMax-M3's projections split by KV head: k and v, and the index query,
+# which shards like them (models/minimax_m3/nvidia/model.py:441-452;
+# model_executor/layers/linear.py:1396-1405).  At TP 8 its 4 KV heads leave
+# each rank one head, the same one on two ranks.
+_MINIMAX_M3_KV_HEAD = re.compile(
+    r"^language_model\.model\.layers\.\d+\.self_attn\.(?:k_proj|v_proj|index_q_proj)\.weight$"
+)
+
+
+def kv_head_tensor_bytes(tensors: dict[str, int], config: dict[str, Any]) -> int:
+    """Bytes of loaded weights vLLM splits by KV head (the calculator shares
+    them across ``min(TP, KV heads)`` ranks).  Only MiniMax-M3 is traced;
+    every other model's are divided by TP."""
+    if str(config.get("model_type") or "") != "minimax_m3_vl":
+        return 0
+    return sum(size for name, size in tensors.items() if _MINIMAX_M3_KV_HEAD.match(name))
 
 
 def _resolve_weight_bytes(

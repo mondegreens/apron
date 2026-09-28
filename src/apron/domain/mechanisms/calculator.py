@@ -916,16 +916,18 @@ def calculate_layered_decode(
     """Models whose layers hold different caches (``layered.py``): Qwen3.5
     gated delta net + attention, NemotronH Mamba2 + attention, Gemma 4 sliding +
     global attention, and the vLLM v0.30.0 layouts (DeepSeek V4 / V4.1,
-    Qwen4Exp, GLM5Next).  One request's reservation is counted the way vLLM
-    pages it, at the plan's context length.
+    Qwen4Exp, GLM5Next, GLM-5.x DSA, MiniMax-M3).  One request's reservation
+    is counted the way vLLM pages it, at the plan's context length.
 
     The KV part of the v0.30 layouts reads the GPU's compute capability (the
     DeepSeek record and block, GLM-5.3's backend) and the engine's KV dtype
     (DeepSeek forces fp8_ds_mla, QSA and GLM-5.3 are counted in bf16 only).
     ``replicated_weight_bytes`` (plan_pipeline) are weights every
-    tensor-parallel rank holds whole instead of a shard; vLLM also allocates
-    weights the checkpoint does not store (``duplicated_weight_bytes``) and
-    pads some (``padded_weight_bytes``).
+    tensor-parallel rank holds whole instead of a shard, and
+    ``kv_head_weight_bytes`` weights split by KV head, which ranks share when
+    there are fewer KV heads than ranks; vLLM also allocates weights the
+    checkpoint does not store (``duplicated_weight_bytes``) and pads some
+    (``padded_weight_bytes``).
     """
     from apron.domain.mechanisms.layered import (
         block_accounting,
@@ -963,9 +965,16 @@ def calculate_layered_decode(
         return None
     per_sequence = blocks.bytes_per_sequence
     replicated = min(int(metadata.get("replicated_weight_bytes") or 0), int(weight_bytes))
+    # Projections split by KV head: with fewer KV heads than ranks each rank
+    # holds one head, tp / heads ranks alike (linear.py:1397-1403).
+    by_kv_head = min(
+        int(metadata.get("kv_head_weight_bytes") or 0), int(weight_bytes) - replicated
+    )
+    kv_ranks = max(1, min(tp, int(metadata.get("num_key_value_heads") or tp)))
     weight_bytes = (
-        _per_gpu(int(weight_bytes) - replicated, tp)
+        _per_gpu(int(weight_bytes) - replicated - by_kv_head, tp)
         + replicated
+        + _per_gpu(by_kv_head, kv_ranks)
         + duplicated_weight_bytes(metadata, tp=tp, dtype_bytes=model_dtype_bytes)
         + padded_weight_bytes(metadata, tp=tp)
     )

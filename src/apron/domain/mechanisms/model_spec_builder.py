@@ -36,14 +36,15 @@ def _is_attention_free(config: dict[str, Any]) -> bool:
 
 
 # Attention shapes the calculator does not count: a sparse-attention indexer
-# (DeepSeek V3.2 / GLM-5 DSA: index_topk), compressed KV (DeepSeek V4:
-# compress_ratios), and per-layer kinds other than full or sliding attention
-# (linear attention, Mamba).  vLLM pages each with its own KV spec, so a plain
-# estimate would be confidently wrong.  Models whose layout layered.py reads
-# (``family``: DeepSeek V4 / V4.1, Qwen4Exp and GLM5Next among them, when their
-# configs carry every field it reads) are ``layered_decode`` before this check;
-# anything else with these fields stays unknown.
-_UNMODELLED_ATTENTION_FIELDS = ("index_topk", "compress_ratios")
+# (DeepSeek V3.2 / GLM-5 DSA: index_topk; MiniMax-M3: sparse_attention_config),
+# compressed KV (DeepSeek V4: compress_ratios), and per-layer kinds other than
+# full or sliding attention (linear attention, Mamba).  vLLM pages each with its
+# own KV spec, so a plain estimate would be confidently wrong.  Models whose
+# layout layered.py reads (``family``: DeepSeek V4 / V4.1, Qwen4Exp, GLM5Next,
+# GLM-5.x DSA and MiniMax-M3 among them, when their configs carry every field
+# it reads) are ``layered_decode`` before this check; anything else with these
+# fields stays unknown.
+_UNMODELLED_ATTENTION_FIELDS = ("index_topk", "compress_ratios", "sparse_attention_config")
 _MODELLED_LAYER_TYPES = frozenset({"full_attention", "sliding_attention"})
 
 

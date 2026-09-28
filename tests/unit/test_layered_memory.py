@@ -19,11 +19,13 @@ from apron.domain.mechanisms.layered import (
     Blocks,
     block_accounting,
     bytes_per_sequence,
+    dsa_indexer_layers,
     duplicated_weight_bytes,
     family,
     kv_layout,
     layer_kinds,
     padded_weight_bytes,
+    required_block_size,
 )
 from apron.domain.mechanisms.model_spec_builder import build_model_spec
 
@@ -313,3 +315,94 @@ def test_deepseek_v41_mxfp4_experts_are_padded_per_rank() -> None:
     assert padded_weight_bytes(V41, tp=1) == 0  # 2304 is a multiple of 128
     assert padded_weight_bytes(V4, tp=4) == 0  # 2048 / 4 = 512
     assert padded_weight_bytes(QWEN4, tp=4) == 0
+
+
+# ---------------------------------------------------------------------------
+# GLM-5.3 (glm_moe_dsa) and MiniMax-M3 on vLLM v0.30.0: every layer a
+# full-attention spec on one block size, one group of all of them
+# (UniformTypeKVCacheSpecs).  Expected numbers from vLLM's own get_kv_cache_groups
+# and accounting run on the specs the model code builds
+# (_dev_notes/cohort-run/glm53-minimax-m3-kv-trace.md).
+# ---------------------------------------------------------------------------
+
+
+GLM53 = _recorded("zai-org__GLM-5.3")
+M3 = _recorded("MiniMaxAI__MiniMax-M3")
+
+
+def test_glm53_pages_bf16_mla_latent_and_fp8_indexer_keys_on_64_token_blocks() -> None:
+    """78 MLA pages of 64 x 1152 B + 21 indexer pages of 64 x 132 B per block;
+    one KV head, so every rank keeps the whole cache whatever the TP."""
+    for tp in (1, 8):
+        assert _blocks(GLM53, MIB_1, tp=tp) == Blocks(5_928_192, 16_384, 1)
+    assert _bytes(GLM53, MIB_1, tp=8, in_flight_tokens=16_384) == 97_127_497_728  # 90.46 GiB
+    assert _bytes(GLM53, K_256, tp=8, in_flight_tokens=16_384) == 24_281_874_432  # 22.61 GiB
+    # Full attention only: the in-flight tokens do not matter.
+    assert _bytes(GLM53, K_256, tp=8, in_flight_tokens=4_096) == 24_281_874_432
+    assert _bytes(GLM53, 640, tp=8, in_flight_tokens=16_384) == 59_281_920
+
+
+def test_glm53_indexer_layers_follow_vllms_rule_not_the_config_list() -> None:
+    """vLLM reads index_topk_freq / index_skip_topk_offset; the checkpoint's own
+    indexer_types says the same 21 layers."""
+    layers = dsa_indexer_layers(GLM53)
+    assert layers == [0, 1, 2, *range(6, 78, 4)]
+    assert layers == [i for i, t in enumerate(GLM53["indexer_types"]) if t == "full"]
+
+
+def test_minimax_m3_pages_kv_heads_and_index_keys_on_128_token_blocks() -> None:
+    """60 GQA pages (dense and sparse layers alike) + 57 index-key pages.  At
+    TP 8 the 4 KV heads leave one per rank, as at TP 4."""
+    for tp in (4, 8):
+        assert _blocks(M3, MIB_1, tp=tp) == Blocks(5_799_936, 8_192, 1)
+    assert _bytes(M3, MIB_1, tp=8, in_flight_tokens=16_384) == 47_513_075_712  # 44.25 GiB
+    assert _bytes(M3, K_256, tp=8, in_flight_tokens=16_384) == 11_878_268_928  # 11.06 GiB
+    assert _bytes(M3, 640, tp=8, in_flight_tokens=16_384) == 28_999_680
+    assert _blocks(M3, MIB_1, tp=1) == Blocks(17_596_416, 8_192, 1)
+    assert _bytes(M3, K_256, tp=1, in_flight_tokens=16_384) == 36_037_459_968
+
+
+def test_minimax_m3_needs_128_token_blocks_to_boot() -> None:
+    """vLLM's own block size (16, from the dense first layer) has no common
+    kernel block with the sparse backends: the plan must set 128."""
+    assert required_block_size(M3) == 128
+    assert required_block_size(GLM53) is None
+    assert required_block_size(GLM5) is None
+
+
+@pytest.mark.parametrize(
+    ("config", "sm", "kv_cache_dtype"),
+    [
+        (GLM53, 100, "auto"),  # SM 10.x: other sparse MLA backends
+        (GLM53, 120, "auto"),  # SM 12.x: fp8_ds_mla
+        (GLM53, None, "auto"),  # GPU unknown
+        (GLM53, 90, "fp8"),  # fp8_ds_mla, 656 B per token
+        (M3, 100, "auto"),  # SM 10.x: MSA kernels
+        (M3, 90, "fp8"),
+    ],
+)
+def test_glm53_and_minimax_m3_are_unknown_where_they_were_not_traced(
+    config: dict[str, Any], sm: int | None, kv_cache_dtype: str
+) -> None:
+    kinds = layer_kinds(
+        config, tp=8, kv_dtype_bytes=2, model_dtype_bytes=2, sm=sm, kv_cache_dtype=kv_cache_dtype
+    )
+    assert kinds is None
+
+
+def test_glm53_and_minimax_m3_get_layered_decode() -> None:
+    """GLM-5.3 was unknown (index_topk); MiniMax-M3 was read as an
+    encoder-decoder from its ForConditionalGeneration suffix."""
+    for config in (GLM53, M3):
+        assert build_model_spec(config).components[0].mechanism == "layered_decode"
+        assert kv_layout(config) == "uniform"
+    # Without the fields layered.py reads they stay explicit unknowns.
+    text = {**M3["text_config"]}
+    text["sparse_attention_config"] = {
+        k: v for k, v in text["sparse_attention_config"].items() if k != "sparse_attention_freq"
+    }
+    no_freq = {**M3, "text_config": text}
+    no_index_dim = {k: v for k, v in GLM53.items() if k != "index_head_dim"}
+    for config in (no_freq, no_index_dim):
+        assert family(config) is None
+        assert build_model_spec(config).components[0].mechanism == "unknown"
