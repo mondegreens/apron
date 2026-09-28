@@ -36,6 +36,10 @@
     {"model_id": "deepseek-ai/DeepSeek-V4-Flash-0731", "gpu_sku": "NVIDIA H200", "gpu_count": 4, "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 166.9, "features": ["moe", "compressed_kv"]},
     {"model_id": "zai-org/GLM-5.3", "gpu_sku": "NVIDIA H200", "gpu_count": 8, "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 755.7, "features": ["moe", "sparse_mla"]},
     {"model_id": "deepseek-ai/DeepSeek-V4-Pro-0813", "gpu_sku": "NVIDIA H200", "gpu_count": 8, "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 892.8, "features": ["moe", "compressed_kv"]},
-    {"model_id": "MiniMaxAI/MiniMax-M3", "gpu_sku": "NVIDIA H200", "gpu_count": 8, "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 854.2, "features": ["moe", "sparse_attention", "vision"]}
+    {"model_id": "MiniMaxAI/MiniMax-M3", "gpu_sku": "NVIDIA H200", "gpu_count": 8, "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 854.2, "features": ["moe", "sparse_attention", "vision"]},
+    {"model_id": "zai-org/GLM-5.3-Flash", "gpu_sku": "NVIDIA B200", "gpu_count": 2, "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 328.4, "features": ["moe", "linear_attention", "sparse_mla", "vision"]},
+    {"model_id": "Qwen/Qwen3.8-Flash-Next", "gpu_sku": "NVIDIA B200", "gpu_count": 2, "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 360.0, "features": ["moe", "hybrid_linear_attention", "host_memory_tables", "vision"]},
+    {"model_id": "deepseek-ai/DeepSeek-V4-Flash-0731", "gpu_sku": "NVIDIA B200", "gpu_count": 2, "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 166.9, "features": ["moe", "compressed_kv"]},
+    {"model_id": "deepseek-ai/DeepSeek-V4.1-Flash", "gpu_sku": "NVIDIA B200", "gpu_count": 2, "size_class": "large", "hardware_class": "datacenter", "mechanism": "layered_decode", "weight_gb": 510.3, "features": ["moe", "compressed_kv", "host_memory_tables", "vision"]}
   ]
 }

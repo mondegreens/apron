@@ -211,6 +211,21 @@
       "weights_now": 59886787712
     },
     {
+      "activation_at_run": 6744440832,
+      "activation_measured": 4702989189,
+      "activation_now": 4601384960,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA B200",
+      "model": "zai-org/GLM-5.3-Flash",
+      "profiled_tokens": 16384,
+      "record": "12208ef6f21ef008c1cf64b94c292e15ca883f05d636ba7d857dfe8e1206ab28f395",
+      "tensor_parallel": 2,
+      "vllm": "v0.30.0",
+      "weights_at_run": 160416686204,
+      "weights_measured": 163316131430,
+      "weights_now": 161357908984
+    },
+    {
       "activation_at_run": 1638147072,
       "activation_measured": 225485783,
       "activation_now": 211255296,
@@ -393,16 +408,16 @@
   ],
   "cost": {
     "authorized": 100.0,
-    "failed_boot_total": 6.659765,
+    "failed_boot_total": 24.84358,
     "ledger_classifier": 0.193358,
     "ledger_corrected": -0.174899,
-    "ledger_pod_idle": 0.233777,
+    "ledger_pod_idle": 0.237597,
     "ledger_probe": 1.397938,
     "ledger_reconciled": 0.650187,
-    "ledger_settled": 15.336207,
-    "ledger_spent": 25.596287,
-    "ledger_staging": 1.908675,
-    "ledger_storage": 6.051044,
+    "ledger_settled": 44.964962,
+    "ledger_spent": 57.606215,
+    "ledger_staging": 2.153608,
+    "ledger_storage": 8.183464,
     "per_solution": [
       {
         "cost": 1.392902,
@@ -801,6 +816,19 @@
         "vllm": "v0.30.0"
       },
       {
+        "cost": 6.49569,
+        "failed_boot_cost": 6.49569,
+        "failed_boots": 1,
+        "gpu": "NVIDIA B200",
+        "gpu_count": 2,
+        "label": "Qwen/Qwen3.8-Flash-Next@NVIDIA B200x2",
+        "model": "Qwen/Qwen3.8-Flash-Next",
+        "records": [
+          "1220a2044547c634bd416353eb88f0273bdd28307fd3c5a237eb8d12a2c4c949eba3"
+        ],
+        "vllm": "v0.30.0"
+      },
+      {
         "cost": 0.249715,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -836,6 +864,32 @@
           "1220efe15209d5809ad7c80efe05089ef9e894289326eb8ab981882eb2931d9146c0"
         ],
         "vllm": "v0.29.0"
+      },
+      {
+        "cost": 6.912677,
+        "failed_boot_cost": 6.912677,
+        "failed_boots": 1,
+        "gpu": "NVIDIA B200",
+        "gpu_count": 2,
+        "label": "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA B200x2",
+        "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "records": [
+          "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4"
+        ],
+        "vllm": "v0.30.0"
+      },
+      {
+        "cost": 1.347116,
+        "failed_boot_cost": 1.347116,
+        "failed_boots": 1,
+        "gpu": "NVIDIA B200",
+        "gpu_count": 2,
+        "label": "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x2",
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "records": [
+          "1220719311f18b1a11547d5834455acb9dcb3b9b11a08ce597bb0f615c729f7fd58d"
+        ],
+        "vllm": "v0.30.0"
       },
       {
         "cost": 0.025271,
@@ -1136,6 +1190,31 @@
           "12208edaefdd8c44dd1726e94205cc21cb5b95c239141db16df098135762e773a168"
         ],
         "vllm": "v0.29.0"
+      },
+      {
+        "cost": 10.263575,
+        "failed_boot_cost": 3.428332,
+        "failed_boots": 1,
+        "gpu": "NVIDIA B200",
+        "gpu_count": 2,
+        "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x2",
+        "model": "zai-org/GLM-5.3-Flash",
+        "records": [
+          "12200e8e8d67653c4040940896d9f06a589fe60d398d8e919794266f4eccc1f90ade",
+          "12202df0a5c8ee4af9599c5136f19c9223a9f10b9c4f92a836df3a44f1b0a489539b",
+          "12203f280b42fc299198bd362828bb0d4919768b36035f172090cc1fc613f30221ae",
+          "12204cd5af539fb5d790705d592c5c7e52111a70831bd95425dfe0894985cee3853e",
+          "12204cef6ff0daae5478226e67cd88e8c2588af39ced7505bb2208026116b9eb8fec",
+          "12205bcd73a5944993204f4ebcc98f0d5329c0a7cf413fca332607b380391c5a2244",
+          "1220613e2adc17001591f1c63f0eb9e252e15cca0e571f443a72a4cc1b12eafebed2",
+          "1220662b32d29561df16d38c71c1db3fc745a62306c07aa32a366061cc64820cceda",
+          "122084c8f12369c8d427c43f664eb13872b4322d0c44e4e6d8927827a63c7abee60f",
+          "12208ef6f21ef008c1cf64b94c292e15ca883f05d636ba7d857dfe8e1206ab28f395",
+          "1220b8422e3b42905cfe84ee5481e02a17de57c8d64dacedae8dfd1ced37b575fa17",
+          "1220d731022d376bfe0766f489781618edd202875eb54d1a99f9196cc7ad6aea0702",
+          "1220f6dc0aaab80454907ed2a48ef7100d7ad719e4e237478e75d27e07c321b42a08"
+        ],
+        "vllm": "v0.30.0"
       }
     ],
     "provider_billed": 11.174188,
@@ -1143,9 +1222,28 @@
     "provider_not_yet_billed": [
       "f9vbojnauynvah"
     ],
-    "records_total": 14.471427
+    "records_total": 39.490485
   },
   "failed_spend": [
+    {
+      "boots": 4,
+      "cause": "the model",
+      "cost": 13.905802,
+      "records": [
+        "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc",
+        "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4",
+        "1220a2044547c634bd416353eb88f0273bdd28307fd3c5a237eb8d12a2c4c949eba3",
+        "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
+      ]
+    },
+    {
+      "boots": 1,
+      "cause": "the harness: harness:exception:TimeoutError",
+      "cost": 3.428332,
+      "records": [
+        "12205bcd73a5944993204f4ebcc98f0d5329c0a7cf413fca332607b380391c5a2244"
+      ]
+    },
     {
       "boots": 6,
       "cause": "a broken plan, failing as its class names (on purpose)",
@@ -1165,6 +1263,14 @@
       "cost": 1.392902,
       "records": [
         "1220e2bb9d9e3077ec36a3b1996d3fa982eb9268665a8054c69a161934461b3fd41d"
+      ]
+    },
+    {
+      "boots": 1,
+      "cause": "the harness: harness:exception:KeyboardInterrupt",
+      "cost": 1.347116,
+      "records": [
+        "1220719311f18b1a11547d5834455acb9dcb3b9b11a08ce597bb0f615c729f7fd58d"
       ]
     },
     {
@@ -1191,15 +1297,6 @@
       "records": [
         "122076c27e44225ebf05c45d63ba6ed34a6211f7aabfe2d24e94b6c46e042ff71399",
         "1220efb427f64eff5043dbefcd5983d8b2c3e8ac2ca8a648c60127d42ad4362a1321"
-      ]
-    },
-    {
-      "boots": 2,
-      "cause": "the model",
-      "cost": 0.497435,
-      "records": [
-        "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc",
-        "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
       ]
     },
     {
@@ -1913,6 +2010,25 @@
       "total_delta_bytes": 2531543128,
       "vllm": "v0.29.0",
       "weight_delta_bytes": 2453021446
+    },
+    {
+      "claim": "12207cebdfc7b476c0f2d5345a47fcb44fdb29e3fd459ec96b34d2d66983c9de00d7",
+      "gpu": "NVIDIA B200",
+      "gpu_count": 2,
+      "kv_consistency_bytes": 3950815434,
+      "measured_persistent_bytes": 164679783546,
+      "measured_weight_bytes": 163316131430,
+      "model": "zai-org/GLM-5.3-Flash",
+      "notes": [
+        "encoder startup peak not modelled for the glm5_next vision tower (not traced); activation may be under-predicted",
+        "max_num_seqs 13: vLLM v0.30.0 defaults to 1024 on this GPU, engine/arg_utils.py:2730, but a state (Mamba) cache serves one decode sequence per KV block and the predicted 2.51 GiB of KV memory holds 106 blocks of 25,300,352 bytes, 13 after a 2.19 GiB safety buffer (the largest KV-budget error measured over the cohort's healthy boots, 2.19 GiB); vLLM refuses more sequences than blocks with full CUDA graphs and allocates one block per sequence to profile them (config/compilation.py:1535, v1/worker/gpu_model_runner.py:6550, v1/worker/gpu/cudagraph_utils.py:974)"
+      ],
+      "predicted_total_bytes": 168357303356,
+      "predicted_weight_bytes": 160416686204,
+      "record": "12208ef6f21ef008c1cf64b94c292e15ca883f05d636ba7d857dfe8e1206ab28f395",
+      "total_delta_bytes": 3677519810,
+      "vllm": "v0.30.0",
+      "weight_delta_bytes": -2899445226
     }
   ],
   "modern_models": [
@@ -2118,7 +2234,7 @@
       "vllm": "v0.30.0"
     },
     {
-      "accepted": null,
+      "accepted": 0,
       "before_gpu": {
         "mechanism": "layered_decode",
         "status": "planned",
@@ -2126,18 +2242,21 @@
         "total_gib_per_gpu": 80.19,
         "weight_gib_per_gpu": 74.7
       },
-      "cases": null,
-      "cost": null,
+      "cases": 5,
+      "cost": 10.2636,
       "downloads_30d": 4332082,
-      "gpu": "NVIDIA H200",
-      "gpu_count": 4,
+      "gpu": "NVIDIA B200",
+      "gpu_count": 2,
       "group": "C",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 163316131430,
       "model": "zai-org/GLM-5.3-Flash",
       "params_b": 321,
-      "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet",
+      "predicted_weight_bytes": 160416686204,
+      "records": [
+        "12205bcd73a5944993204f4ebcc98f0d5329c0a7cf413fca332607b380391c5a2244",
+        "12208ef6f21ef008c1cf64b94c292e15ca883f05d636ba7d857dfe8e1206ab28f395"
+      ],
+      "status": "booted",
       "vllm": "v0.30.0"
     },
     {
@@ -2150,7 +2269,7 @@
         "weight_gib_per_gpu": 77.98
       },
       "cases": null,
-      "cost": null,
+      "cost": 1.3471,
       "downloads_30d": 651078,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
@@ -2159,8 +2278,10 @@
       "model": "deepseek-ai/DeepSeek-V4.1-Flash",
       "params_b": 763,
       "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet",
+      "records": [
+        "1220719311f18b1a11547d5834455acb9dcb3b9b11a08ce597bb0f615c729f7fd58d"
+      ],
+      "status": "failed",
       "vllm": "v0.30.0"
     },
     {
@@ -2173,7 +2294,7 @@
         "weight_gib_per_gpu": 58.76
       },
       "cases": null,
-      "cost": null,
+      "cost": 6.4957,
       "downloads_30d": 1226891,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
@@ -2182,9 +2303,11 @@
       "model": "Qwen/Qwen3.8-Flash-Next",
       "params_b": 180,
       "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet",
-      "vllm": null
+      "records": [
+        "1220a2044547c634bd416353eb88f0273bdd28307fd3c5a237eb8d12a2c4c949eba3"
+      ],
+      "status": "failed",
+      "vllm": "v0.30.0"
     },
     {
       "accepted": null,
@@ -2196,7 +2319,7 @@
         "weight_gib_per_gpu": 37.25
       },
       "cases": null,
-      "cost": null,
+      "cost": 6.9127,
       "downloads_30d": 3959727,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
@@ -2205,9 +2328,11 @@
       "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
       "params_b": 304.2,
       "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet",
-      "vllm": null
+      "records": [
+        "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4"
+      ],
+      "status": "failed",
+      "vllm": "v0.30.0"
     },
     {
       "accepted": null,
@@ -2299,7 +2424,7 @@
       "vllm": "v0.29.0"
     }
   ],
-  "record_count": 283,
+  "record_count": 303,
   "records_table": {
     "broken_on_purpose": {
       "boots": 8,
@@ -2327,58 +2452,6 @@
           "tensor_parallel": 1,
           "total_gib_per_gpu": 14.55,
           "weight_gib_per_gpu": 12.82
-        },
-        "vllm": null
-      },
-      {
-        "gpu": "NVIDIA H200",
-        "gpu_count": 4,
-        "model": "zai-org/GLM-5.3-Flash",
-        "predicted": {
-          "mechanism": "layered_decode",
-          "status": "planned",
-          "tensor_parallel": 4,
-          "total_gib_per_gpu": 80.19,
-          "weight_gib_per_gpu": 74.7
-        },
-        "vllm": "v0.30.0"
-      },
-      {
-        "gpu": "NVIDIA H200",
-        "gpu_count": 4,
-        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
-        "predicted": {
-          "mechanism": "layered_decode",
-          "status": "planned",
-          "tensor_parallel": 4,
-          "total_gib_per_gpu": 81.29,
-          "weight_gib_per_gpu": 77.98
-        },
-        "vllm": "v0.30.0"
-      },
-      {
-        "gpu": "NVIDIA H200",
-        "gpu_count": 4,
-        "model": "Qwen/Qwen3.8-Flash-Next",
-        "predicted": {
-          "mechanism": "layered_decode",
-          "status": "planned",
-          "tensor_parallel": 4,
-          "total_gib_per_gpu": 62.85,
-          "weight_gib_per_gpu": 58.76
-        },
-        "vllm": null
-      },
-      {
-        "gpu": "NVIDIA H200",
-        "gpu_count": 4,
-        "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
-        "predicted": {
-          "mechanism": "layered_decode",
-          "status": "planned",
-          "tensor_parallel": 4,
-          "total_gib_per_gpu": 41.19,
-          "weight_gib_per_gpu": 37.25
         },
         "vllm": null
       },
@@ -2422,7 +2495,7 @@
         "vllm": null
       }
     ],
-    "record_count": 283,
+    "record_count": 303,
     "rows": [
       {
         "accepted": 0,
@@ -2488,6 +2561,60 @@
         "slo_verdict": "pass",
         "tasks_passed": true,
         "vllm": "v0.29.0"
+      },
+      {
+        "accepted": null,
+        "boot": "failed",
+        "cases": null,
+        "cold_start_seconds": null,
+        "cost": 6.912677,
+        "error": null,
+        "failed_boots": 1,
+        "failure": "the model",
+        "gpu": "NVIDIA B200",
+        "gpu_count": 2,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": null,
+        "measured_weight_bytes": null,
+        "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "p99_ttft_ms": null,
+        "predicted_peak_bytes": 2415919104,
+        "predicted_weight_bytes": 78666270300,
+        "record": "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4",
+        "records": [
+          "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4"
+        ],
+        "slo_p99_ttft_ms": null,
+        "slo_verdict": null,
+        "tasks_passed": null,
+        "vllm": "v0.30.0"
+      },
+      {
+        "accepted": null,
+        "boot": "failed",
+        "cases": null,
+        "cold_start_seconds": null,
+        "cost": 1.347116,
+        "error": null,
+        "failed_boots": 1,
+        "failure": "the harness: harness:exception:KeyboardInterrupt",
+        "gpu": "NVIDIA B200",
+        "gpu_count": 2,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": null,
+        "measured_weight_bytes": null,
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "p99_ttft_ms": null,
+        "predicted_peak_bytes": 3053453312,
+        "predicted_weight_bytes": 150337515968,
+        "record": "1220719311f18b1a11547d5834455acb9dcb3b9b11a08ce597bb0f615c729f7fd58d",
+        "records": [
+          "1220719311f18b1a11547d5834455acb9dcb3b9b11a08ce597bb0f615c729f7fd58d"
+        ],
+        "slo_p99_ttft_ms": null,
+        "slo_verdict": null,
+        "tasks_passed": null,
+        "vllm": "v0.30.0"
       },
       {
         "accepted": 3,
@@ -3330,6 +3457,33 @@
         "vllm": "v0.30.0"
       },
       {
+        "accepted": null,
+        "boot": "failed",
+        "cases": null,
+        "cold_start_seconds": null,
+        "cost": 6.49569,
+        "error": "RuntimeError: Worker failed with error 'max_num_seqs (1024) exceeds available Mamba cache blocks (626). Each…",
+        "failed_boots": 1,
+        "failure": "the model",
+        "gpu": "NVIDIA B200",
+        "gpu_count": 2,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": null,
+        "measured_weight_bytes": null,
+        "model": "Qwen/Qwen3.8-Flash-Next",
+        "p99_ttft_ms": null,
+        "predicted_peak_bytes": 2030043136,
+        "predicted_weight_bytes": 126192584956,
+        "record": "1220a2044547c634bd416353eb88f0273bdd28307fd3c5a237eb8d12a2c4c949eba3",
+        "records": [
+          "1220a2044547c634bd416353eb88f0273bdd28307fd3c5a237eb8d12a2c4c949eba3"
+        ],
+        "slo_p99_ttft_ms": null,
+        "slo_verdict": null,
+        "tasks_passed": null,
+        "vllm": "v0.30.0"
+      },
+      {
         "accepted": 0,
         "boot": "booted",
         "cases": 3,
@@ -3398,6 +3552,45 @@
         "slo_verdict": "pass",
         "tasks_passed": true,
         "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 0,
+        "boot": "booted",
+        "cases": 5,
+        "cold_start_seconds": 1521.6,
+        "cost": 10.263575,
+        "error": null,
+        "failed_boots": 1,
+        "failure": null,
+        "gpu": "NVIDIA B200",
+        "gpu_count": 2,
+        "kv_cache_tokens": 70778,
+        "measured_peak_bytes": 4702989189,
+        "measured_weight_bytes": 163316131430,
+        "model": "zai-org/GLM-5.3-Flash",
+        "p99_ttft_ms": 0.0,
+        "predicted_peak_bytes": 6744440832,
+        "predicted_weight_bytes": 160416686204,
+        "record": "12208ef6f21ef008c1cf64b94c292e15ca883f05d636ba7d857dfe8e1206ab28f395",
+        "records": [
+          "12200e8e8d67653c4040940896d9f06a589fe60d398d8e919794266f4eccc1f90ade",
+          "12202df0a5c8ee4af9599c5136f19c9223a9f10b9c4f92a836df3a44f1b0a489539b",
+          "12203f280b42fc299198bd362828bb0d4919768b36035f172090cc1fc613f30221ae",
+          "12204cd5af539fb5d790705d592c5c7e52111a70831bd95425dfe0894985cee3853e",
+          "12204cef6ff0daae5478226e67cd88e8c2588af39ced7505bb2208026116b9eb8fec",
+          "12205bcd73a5944993204f4ebcc98f0d5329c0a7cf413fca332607b380391c5a2244",
+          "1220613e2adc17001591f1c63f0eb9e252e15cca0e571f443a72a4cc1b12eafebed2",
+          "1220662b32d29561df16d38c71c1db3fc745a62306c07aa32a366061cc64820cceda",
+          "122084c8f12369c8d427c43f664eb13872b4322d0c44e4e6d8927827a63c7abee60f",
+          "12208ef6f21ef008c1cf64b94c292e15ca883f05d636ba7d857dfe8e1206ab28f395",
+          "1220b8422e3b42905cfe84ee5481e02a17de57c8d64dacedae8dfd1ced37b575fa17",
+          "1220d731022d376bfe0766f489781618edd202875eb54d1a99f9196cc7ad6aea0702",
+          "1220f6dc0aaab80454907ed2a48ef7100d7ad719e4e237478e75d27e07c321b42a08"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "fail",
+        "tasks_passed": false,
+        "vllm": "v0.30.0"
       }
     ]
   },
@@ -3881,6 +4074,21 @@
       "slo_p99_ttft_ms": 2000.0,
       "verdict": "pass",
       "vllm": "v0.29.0"
+    },
+    {
+      "completed": 0,
+      "failed": 50,
+      "gpu": "NVIDIA B200",
+      "model": "zai-org/GLM-5.3-Flash",
+      "output_token_throughput": 0.0,
+      "p99_tpot_ms": 0.0,
+      "p99_ttft_ms": 0.0,
+      "recomputed_verdict": "fail",
+      "record": "12204cef6ff0daae5478226e67cd88e8c2588af39ced7505bb2208026116b9eb8fec",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "fail",
+      "vllm": "v0.30.0"
     }
   ],
   "setup": {
@@ -3892,6 +4100,7 @@
     "gpus_measured": [
       "NVIDIA A100 80GB PCIe",
       "NVIDIA A100-SXM4-80GB",
+      "NVIDIA B200",
       "NVIDIA GeForce RTX 4090",
       "NVIDIA H100 80GB HBM3",
       "NVIDIA L4",
@@ -3901,7 +4110,7 @@
       "sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-28T14:28:29.674655+00:00",
+    "last_event": "2026-09-28T18:29:49.574276+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B",
@@ -3923,7 +4132,8 @@
       "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
       "openai/gpt-oss-120b",
       "state-spaces/mamba-2.8b-hf",
-      "zai-org/GLM-4.7-Flash"
+      "zai-org/GLM-4.7-Flash",
+      "zai-org/GLM-5.3-Flash"
     ],
     "providers": [
       "runpod"
@@ -4900,6 +5110,34 @@
       "skipped": 0,
       "truncated": 0,
       "vllm": "v0.29.0"
+    },
+    {
+      "accepted": 0,
+      "attempts": 10,
+      "cases": 5,
+      "gpu": "NVIDIA B200",
+      "model": "zai-org/GLM-5.3-Flash",
+      "passed": false,
+      "records": [
+        "12200e8e8d67653c4040940896d9f06a589fe60d398d8e919794266f4eccc1f90ade",
+        "12202df0a5c8ee4af9599c5136f19c9223a9f10b9c4f92a836df3a44f1b0a489539b",
+        "12203f280b42fc299198bd362828bb0d4919768b36035f172090cc1fc613f30221ae",
+        "12204cd5af539fb5d790705d592c5c7e52111a70831bd95425dfe0894985cee3853e",
+        "1220613e2adc17001591f1c63f0eb9e252e15cca0e571f443a72a4cc1b12eafebed2",
+        "1220662b32d29561df16d38c71c1db3fc745a62306c07aa32a366061cc64820cceda",
+        "122084c8f12369c8d427c43f664eb13872b4322d0c44e4e6d8927827a63c7abee60f",
+        "1220b8422e3b42905cfe84ee5481e02a17de57c8d64dacedae8dfd1ced37b575fa17",
+        "1220d731022d376bfe0766f489781618edd202875eb54d1a99f9196cc7ad6aea0702",
+        "1220f6dc0aaab80454907ed2a48ef7100d7ad719e4e237478e75d27e07c321b42a08"
+      ],
+      "retries": 5,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "skipped": 0,
+      "truncated": 0,
+      "vllm": "v0.30.0"
     }
   ],
   "weights_time": [
@@ -4989,6 +5227,17 @@
       "record": "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
       "vllm": "v0.29.0",
       "weights_seconds": 1.1,
+      "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
+    },
+    {
+      "engine_start_seconds": 1490.9,
+      "gpu": "NVIDIA B200",
+      "hourly_rate": 13.58,
+      "model": "zai-org/GLM-5.3-Flash",
+      "pod_seconds": 1811.99298620224,
+      "record": "12208ef6f21ef008c1cf64b94c292e15ca883f05d636ba7d857dfe8e1206ab28f395",
+      "vllm": "v0.30.0",
+      "weights_seconds": 30.7,
       "weights_source": "runpod network volume 7jiuum2nk6 in US-CA-2"
     }
   ]

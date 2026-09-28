@@ -197,6 +197,20 @@
       "weights_now": 59886787712
     },
     {
+      "activation_at_run": 6744440832,
+      "activation_measured": 4702989189,
+      "activation_now": 4601384960,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA B200",
+      "model": "zai-org/GLM-5.3-Flash",
+      "profiled_tokens": 16384,
+      "record": "12208ef6f21ef008c1cf64b94c292e15ca883f05d636ba7d857dfe8e1206ab28f395",
+      "tensor_parallel": 2,
+      "weights_at_run": 160416686204,
+      "weights_measured": 163316131430,
+      "weights_now": 161357908984
+    },
+    {
       "activation_at_run": 1638147072,
       "activation_measured": 225485783,
       "activation_now": 211255296,

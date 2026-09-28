@@ -14,9 +14,9 @@ drafted from _dev_notes/cohort-run/notebook.md after the run, then the owner
 rewrites it. This post stays `draft: true` until the owner publishes it. -->
 
 <!-- findings:headline -->
-- Models measured: 21 on 6 GPU types
+- Models measured: 22 on 7 GPU types
 - Failure classes fixed and re-verified: 6 of 6
-- Total cost: $25.60 of the $100 cap (failed boots included: $6.66)
+- Total cost: $57.61 of the $100 cap (failed boots included: $24.84)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -37,9 +37,9 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 |---|---|
 | Provider / cloud | runpod / SECURE |
 | Runner image | `sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba`, `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
-| Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-0.6B, Qwen/Qwen3-0.6B-FP8, Qwen/Qwen3-1.7B, Qwen/Qwen3-14B, Qwen/Qwen3-32B, Qwen/Qwen3-8B, Qwen/Qwen3-8B-AWQ, Qwen/Qwen3.6-35B-A3B-FP8, Qwen/Qwen3.8-27B, deepseek-ai/DeepSeek-V2-Lite, deepseek-ai/DeepSeek-V2-Lite-Chat, google/gemma-2-2b-it, google/gemma-4-31B-it, meta-llama/Llama-3.1-8B-Instruct, meta-models/Muse-Glimmer-30B, mistralai/Mistral-7B-Instruct-v0.3, nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16, openai/gpt-oss-120b, state-spaces/mamba-2.8b-hf, zai-org/GLM-4.7-Flash |
-| GPUs measured | NVIDIA A100 80GB PCIe, NVIDIA A100-SXM4-80GB, NVIDIA GeForce RTX 4090, NVIDIA H100 80GB HBM3, NVIDIA L4, NVIDIA RTX A6000 |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-28T14:28:29.674655+00:00 |
+| Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-0.6B, Qwen/Qwen3-0.6B-FP8, Qwen/Qwen3-1.7B, Qwen/Qwen3-14B, Qwen/Qwen3-32B, Qwen/Qwen3-8B, Qwen/Qwen3-8B-AWQ, Qwen/Qwen3.6-35B-A3B-FP8, Qwen/Qwen3.8-27B, deepseek-ai/DeepSeek-V2-Lite, deepseek-ai/DeepSeek-V2-Lite-Chat, google/gemma-2-2b-it, google/gemma-4-31B-it, meta-llama/Llama-3.1-8B-Instruct, meta-models/Muse-Glimmer-30B, mistralai/Mistral-7B-Instruct-v0.3, nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16, openai/gpt-oss-120b, state-spaces/mamba-2.8b-hf, zai-org/GLM-4.7-Flash, zai-org/GLM-5.3-Flash |
+| GPUs measured | NVIDIA A100 80GB PCIe, NVIDIA A100-SXM4-80GB, NVIDIA B200, NVIDIA GeForce RTX 4090, NVIDIA H100 80GB HBM3, NVIDIA L4, NVIDIA RTX A6000 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-28T18:29:49.574276+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -80,6 +80,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 5.16 | 5.23 | -0.07 | 6.67 | 5.64 | +1.03 | `12206810a074c3de` |
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 5.16 | 10.31 | -5.15 | 6.67 | 10.98 | -4.31 | `12200ac02bfdf76a` |
 | zai-org/GLM-4.7-Flash | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | 58.15 | 55.87 | +2.28 | 60.15 | 57.79 | +2.36 | `122089055d7f1339` |
+| zai-org/GLM-5.3-Flash | NVIDIA B200 x2 | v0.30.0 | 149.40 | 152.10 | -2.70 | 156.79 | 153.37 | +3.42 | `12208ef6f21ef008` |
 <!-- /findings:memory -->
 
 Repeat boots of one solution bound the measurement noise:
@@ -167,6 +168,7 @@ measurement.
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | v0.29.0 | exact match, final full stop ignored | 0 / 3 | 3 (0) | 0 | False | `12201769160e39c8` +2 |
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | v0.29.0 | exact match, final full stop ignored | 0 / 3 | 6 (3) | 0 | False | `12200b7ac1f69499` +5 |
 | zai-org/GLM-4.7-Flash | NVIDIA H100 80GB HBM3 | v0.29.0 | exact match, final full stop ignored | 3 / 3 | 3 (0) | 0 | True | `122005193f21e06c` +2 |
+| zai-org/GLM-5.3-Flash | NVIDIA B200 | v0.30.0 | exact match, final full stop ignored | 0 / 5 | 10 (5) | 0 | False | `12200e8e8d67653c` +9 |
 <!-- /findings:tasks -->
 
 ## Serving against the declared SLO
@@ -205,6 +207,7 @@ measurement.
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | v0.29.0 | 195.209 | 8.79939 | 2000 / 100 | 50 / 0 | pass | `1220092662ec5a95` |
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 | v0.29.0 | 403.514 | 16.2317 | 2000 / 100 | 50 / 0 | pass | `12208be4514014b9` |
 | zai-org/GLM-4.7-Flash | NVIDIA H100 80GB HBM3 | v0.29.0 | 1324.05 | 8.50899 | 2000 / 100 | 50 / 0 | pass | `12208087085572ae` |
+| zai-org/GLM-5.3-Flash | NVIDIA B200 | v0.30.0 | 0 | 0 | 2000 / 100 | 0 / 50 | fail | `12204cef6ff0daae` |
 <!-- /findings:serving -->
 
 ## What it cost
@@ -237,8 +240,11 @@ Failed boots and retries are included.
 | Qwen/Qwen3.6-35B-A3B-FP8 | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | 1.0756 | 1 (1.0756) | `12208be5e9e11a3e` |
 | Qwen/Qwen3.8-27B | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | 0.3747 | 1 (0.3747) | `122001a0c3f97733` |
 | Qwen/Qwen3.8-27B | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | 0.5391 | 0 (0.0000) | `1220446b680c5d23` +4 |
+| Qwen/Qwen3.8-Flash-Next | NVIDIA B200 x2 | v0.30.0 | 6.4957 | 1 (6.4957) | `1220a2044547c634` |
 | deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe x1 | v0.29.0 | 0.2497 | 0 (0.0000) | `12200ac2fd197bfb` +7 |
 | deepseek-ai/DeepSeek-V2-Lite-Chat | NVIDIA A100 80GB PCIe x1 | v0.29.0 | 0.3289 | 0 (0.0000) | `1220010e0d05fce8` +4 |
+| deepseek-ai/DeepSeek-V4-Flash-0731 | NVIDIA B200 x2 | v0.30.0 | 6.9127 | 1 (6.9127) | `12200c5a8ae38b12` |
+| deepseek-ai/DeepSeek-V4.1-Flash | NVIDIA B200 x2 | v0.30.0 | 1.3471 | 1 (1.3471) | `1220719311f18b1a` |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 0.0253 | 0 (0.0000) | `1220044754a6eab0` +7 |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 0.0253 | 0 (0.0000) | `1220393369faa495` +7 |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 0.0683 | 1 (0.0683) | `12209c87b885bbbd` |
@@ -256,14 +262,15 @@ Failed boots and retries are included.
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 0.0987 | 0 (0.0000) | `1220092662ec5a95` +4 |
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 0.0314 | 0 (0.0000) | `12200ac02bfdf76a` +7 |
 | zai-org/GLM-4.7-Flash | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | 0.1311 | 0 (0.0000) | `122005193f21e06c` +4 |
-| **Records total** |  |  | **14.4714** |  |  |
+| zai-org/GLM-5.3-Flash | NVIDIA B200 x2 | v0.30.0 | 10.2636 | 1 (3.4283) | `12200e8e8d67653c` +12 |
+| **Records total** |  |  | **39.4905** |  |  |
 | Diagnosis model calls (Claude Haiku) |  |  | 0.1934 |  |  |
-| Idle time of reused pods |  |  | 0.2338 |  |  |
-| CPU pods that staged weights |  |  | 1.9087 |  |  |
-| Network volume storage for staged weights |  |  | 6.0510 |  |  |
+| Idle time of reused pods |  |  | 0.2376 |  |  |
+| CPU pods that staged weights |  |  | 2.1536 |  |  |
+| Network volume storage for staged weights |  |  | 8.1835 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  |  | 0.6502 |  |  |
 | Corrections to RunPod's bill (estimates, clock differences) |  |  | -0.1749 |  |  |
-| **Ledger spent** |  |  | **25.5963** |  | cap $100 |
+| **Ledger spent** |  |  | **57.6062** |  | cap $100 |
 | RunPod billed, same window |  |  | 11.1742 |  | not billed yet: 1 pod(s) |
 <!-- /findings:cost -->
 
