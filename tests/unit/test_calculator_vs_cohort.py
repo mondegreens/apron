@@ -71,7 +71,7 @@ def test_weight_prediction_matches_the_measurement(
 # ---------------------------------------------------------------------------
 
 # 10% of the measurement, or 0.03 GiB for the small ones (log values are
-# printed to 0.01 GiB).  Every point, TP 2 included, now fits within 0.02 GiB.
+# printed to 0.01 GiB).
 ACTIVATION_TOLERANCE = (0.10, int(0.03 * 2**30))
 
 
@@ -131,8 +131,8 @@ def test_activation_estimate_matches_the_profiled_peak(
             "max_num_seqs": default_max_num_seqs(hardware.total_memory_bytes, gpu),
         },
     )
-    metadata = {"vocab_size": entry["vocab_size"], "hidden_size": entry["hidden_size"]}
-    metadata["torch_dtype"] = dtype  # the plan's served dtype
+    # The config fields the rule reads (text_config merged, towers as flags).
+    metadata = {**entry["activation"], "torch_dtype": dtype}  # the plan's served dtype
     predicted = _activation_estimate(metadata, inputs, tp)
     assert predicted is not None
     relative, absolute = ACTIVATION_TOLERANCE
@@ -188,3 +188,120 @@ def test_mamba_state_matches_the_pool_vllm_reports(
     )
     measured = available / concurrency  # the log rounds GiB to 0.01: about 0.5%
     assert abs(predicted - measured) / measured <= 0.01, (predicted, measured)
+
+
+# ---------------------------------------------------------------------------
+# KV budget: the calculator's available KV memory against what vLLM left
+# ---------------------------------------------------------------------------
+#
+# vLLM: available = requested - weights - torch peak - non-torch - CUDA-graph
+# estimate (calculator.py, "The KV budget").  Each healthy memory record is
+# predicted as it booted (cohort_root.recorded_prediction; recorded configs in
+# tests/fixtures/cohort/configs.json).  Table and terms:
+# _dev_notes/cohort-run/kv-budget-residuals.md.
+
+CONFIGS = REPO / "tests" / "fixtures" / "cohort" / "configs.json"
+_GIB = 1 << 30
+# The startup log prints each term to 0.01 GiB: the five terms of the identity
+# (requested, weights, peak, non-torch, CUDA graphs) and the available memory.
+LOG_ROUNDING = int(0.005 * _GIB)
+# The largest measured under-prediction: google/gemma-4-31B-it on an H100,
+# -0.257 GiB (the per-layer CUDA-graph estimate 0.81 GiB over vLLM's, its
+# weights 0.53 GiB under the measurement), plus the log's rounding.
+KV_UNDER_PREDICTION = int(0.257 * _GIB) + LOG_ROUNDING
+
+
+def _kv_records() -> list[str]:
+    if not (RUN / "records").is_dir():
+        return []
+    records = load_cohort_run(RUN).records
+    return sorted(
+        digest
+        for digest, report in records.reports.items()
+        if report.claim_scope == "memory"
+        and report.boot_outcome == "healthy"
+        and records.solutions.get(report.solution_fingerprint or "") is not None
+    )
+
+
+def _kv_residual(digest: str) -> tuple[int, int]:
+    """(predicted - measured available KV bytes, the plan's compile segment)."""
+    from apron.interfaces.cohort_root import recorded_prediction
+
+    records = load_cohort_run(RUN).records
+    report = records.reports[digest]
+    entry = records.solutions[report.solution_fingerprint or ""]
+    configs = json.loads(CONFIGS.read_text())
+    weights = json.loads(FIXTURE.read_text())
+    predicted = recorded_prediction(entry, configs[entry.model_id], weights[entry.model_id])
+    measured = int(report.available_kv_cache_memory or 0)
+    return predicted["available_kv_cache_bytes"] - measured, predicted["compile_segment_bytes"]
+
+
+@pytest.mark.skipif(not (RUN / "records").is_dir(), reason="cohort records not present")
+@pytest.mark.parametrize("digest", _kv_records(), ids=lambda d: d[4:16])
+def test_records_satisfy_vllms_kv_budget_identity(digest: str) -> None:
+    """requested - weights - peak - non-torch - CUDA-graph estimate = available,
+    to the log's rounding: the formula the calculator follows is vLLM's
+    (v1/worker/gpu_worker.py:606-610; utils/mem_utils.py:317-326)."""
+    report = load_cohort_run(RUN).records.reports[digest]
+    left = (
+        int(report.requested_memory or 0)
+        - int(report.model_weight_memory or 0)
+        - int(report.transient_peak_headroom or 0)
+        - int(report.non_pytorch_increase or 0)
+        - int(report.cuda_graph_estimate or 0)
+    )
+    assert abs(left - int(report.available_kv_cache_memory or 0)) <= 6 * LOG_ROUNDING
+
+
+@pytest.mark.skipif(not (RUN / "records").is_dir(), reason="cohort records not present")
+@pytest.mark.parametrize("digest", _kv_records(), ids=lambda d: d[4:16])
+def test_kv_budget_prediction_matches_what_vllm_left(digest: str) -> None:
+    """Over: at most the safety buffer plus the compile segment the plan may
+    hold (``compile_segment_bytes``); under: at most the largest measured."""
+    from apron.domain.mechanisms.layered import KV_BUDGET_SAFETY_BUFFER_BYTES
+
+    residual, segment = _kv_residual(digest)
+    assert -KV_UNDER_PREDICTION <= residual <= KV_BUDGET_SAFETY_BUFFER_BYTES + segment, (
+        f"{digest[:12]}: predicted - measured {residual / _GIB:+.3f} GiB "
+        f"(segment {segment / _GIB:.2f} GiB)"
+    )
+
+
+@pytest.mark.skipif(not (RUN / "records").is_dir(), reason="cohort records not present")
+def test_the_safety_buffer_is_the_largest_measured_error() -> None:
+    """The guard's buffer equals the largest over-prediction measured (with the
+    plan's compile segment set apart), rounded up for the log's 0.005 GiB and to
+    0.01 GiB: not more, so it names the measured error, not a margin."""
+    from apron.domain.mechanisms.layered import KV_BUDGET_SAFETY_BUFFER_BYTES
+
+    worst = max(residual - segment for residual, segment in map(_kv_residual, _kv_records()))
+    assert worst + LOG_ROUNDING <= KV_BUDGET_SAFETY_BUFFER_BYTES
+    assert KV_BUDGET_SAFETY_BUFFER_BYTES - worst <= LOG_ROUNDING + int(0.01 * _GIB)
+
+
+@pytest.mark.skipif(not (RUN / "records").is_dir(), reason="cohort records not present")
+def test_gpu_specs_are_the_byte_counts_the_pods_detected() -> None:
+    """Every detected GPU SKU's GPU_SPECS total is a count some pod detected:
+    the report's ``detected_hardware_fingerprint`` hashes it."""
+    from apron.adapters.backends.runpod import GPU_SPECS
+    from apron.domain.fingerprints import fingerprint_hex
+    from apron.domain.schemas.primitives import HardwareSpec
+
+    records = load_cohort_run(RUN).records
+    detected: dict[str, set[str]] = {}
+    for report in records.reports.values():
+        entry = records.solutions.get(report.solution_fingerprint or "")
+        if entry is not None and report.detected_hardware_fingerprint:
+            sku = entry.requested_execution.gpu_sku
+            detected.setdefault(sku, set()).add(report.detected_hardware_fingerprint)
+    assert len(detected) >= 6
+    for sku, fingerprints in detected.items():
+        spec = GPU_SPECS[sku]
+        hardware = HardwareSpec(
+            gpu_sku=sku,
+            total_memory_bytes=spec["total_memory_bytes"],
+            compute_capability=spec["compute_capability"],
+        )
+        assert fingerprint_hex(hardware) in fingerprints, sku

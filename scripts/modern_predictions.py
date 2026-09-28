@@ -59,6 +59,8 @@ def main() -> int:
             activation_gib=round((claim.get("activation_estimate_bytes") or 0) / GIB, 2),
             total_gib_per_gpu=round((claim.get("total_required_bytes") or 0) / GIB, 2),
             load_problems=list(sp.load_problems or []),
+            kv_gib_per_sequence=round((claim.get("state_per_sequence_bytes") or 0) / GIB, 3),
+            notes=list(sp.notes),
         )
         rows.append(row)
         print(

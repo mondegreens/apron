@@ -2,8 +2,9 @@
 
 For each model with a healthy memory record, reads the safetensors headers
 at the solution's resolved revision (range reads, no weights downloaded) and
-writes the total, the ``lm_head.weight`` bytes and the tied-embeddings flag
-to ``tests/fixtures/cohort/weight-bytes.json``.
+writes the total, the ``lm_head.weight`` bytes, the tied-embeddings flag and
+the config fields the activation estimate reads to
+``tests/fixtures/cohort/weight-bytes.json``.
 ``tests/unit/test_calculator_vs_cohort.py`` then checks the calculator's
 weight prediction against every measured record with no network.
 
@@ -16,7 +17,12 @@ import json
 import sys
 
 from apron.adapters.evidence.hf_hub import HFHubResolver
-from apron.application.orchestration.plan_pipeline import _tied_embeddings
+from apron.application.orchestration.plan_pipeline import (
+    _tied_embeddings,
+    download_processor_config,
+    mtp_tensor_bytes,
+)
+from apron.domain.mechanisms.calculator import activation_config
 from apron.interfaces.cohort_root import REPO, load_cohort_run
 
 OUT = REPO / "tests" / "fixtures" / "cohort" / "weight-bytes.json"
@@ -42,6 +48,8 @@ def main() -> int:
             print(f"{model_id}: no safetensors headers or config", file=sys.stderr)
             return 1
         config = json.loads(config_raw)
+        # The planner's own reading of the processor files (run_plan_pipeline).
+        processor = download_processor_config(resolver, model_id, revision)
         text = config.get("text_config") if isinstance(config.get("text_config"), dict) else {}
         models[model_id] = {
             "revision": revision,
@@ -49,10 +57,17 @@ def main() -> int:
             "f32_bytes": sum(size for dtype, size in (meta or {}).values() if dtype == "F32"),
             "quantized": bool(config.get("quantization_config")),
             "lm_head_bytes": tensors.get("lm_head.weight", 0),
+            "mtp_bytes": mtp_tensor_bytes(tensors, config),
             "tie_word_embeddings": _tied_embeddings(config),
             "vocab_size": config.get("vocab_size", text.get("vocab_size")),
             "hidden_size": config.get("hidden_size", text.get("hidden_size")),
-            "torch_dtype": config.get("torch_dtype", text.get("torch_dtype", "bfloat16")),
+            "torch_dtype": config.get("torch_dtype")
+            or config.get("dtype")
+            or text.get("torch_dtype")
+            or text.get("dtype")
+            or "bfloat16",
+            # The config fields the startup-peak (activation) estimate reads.
+            "activation": activation_config(config, processor),
             # Mamba-1 state shape fields (None for attention models).
             "ssm": {
                 k: config[k]

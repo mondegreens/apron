@@ -188,17 +188,50 @@ def _recorded_runs() -> list[Path]:
     """Recorded responses from real runs (L0-F classifier, class 6 lineage search),
     each with its own strict schema."""
     return sorted(
-        [*(FIXTURES / "l0f").glob("class*.json"), FIXTURES / "cohort" / "weight-bytes.json"]
+        [
+            *(FIXTURES / "l0f").glob("class*.json"),
+            FIXTURES / "cohort" / "weight-bytes.json",
+            FIXTURES / "cohort" / "configs.json",
+            FIXTURES / "cohort" / "processors.json",
+            *(FIXTURES / "cohort" / "headers").glob("*.json"),
+        ]
     )
 
 
 @pytest.mark.parametrize("path", _recorded_runs(), ids=lambda p: str(p.relative_to(FIXTURES)))
 def test_recorded_run_validates_strictly(path: Path) -> None:
-    from unit._l0f_fixture import L0FRecording, LineageRecording, load_weight_bytes
+    from unit._l0f_fixture import (
+        L0FRecording,
+        LineageRecording,
+        RecordedHeaders,
+        load_weight_bytes,
+    )
 
     data = json.loads(path.read_text())
     if path.name == "weight-bytes.json":
         load_weight_bytes(data)
+    elif path.name == "configs.json":
+        # scripts/kv_budget_residuals.py --configs: each recorded model's
+        # config.json as published, at the revision weight-bytes.json records.
+        weights = json.loads((path.parent / "weight-bytes.json").read_text())
+        assert set(data) == set(weights)
+        for config in data.values():
+            assert isinstance(config, dict)
+            assert isinstance(config.get("architectures"), list) and config["architectures"]
+    elif path.name == "processors.json":
+        # The same script: each multimodal wrapper's processor files as
+        # published at that revision, null where the revision has none.
+        from apron.application.orchestration.plan_pipeline import PROCESSOR_FILES
+        from apron.domain.mechanisms.calculator import declares_towers
+
+        configs = json.loads((path.parent / "configs.json").read_text())
+        assert set(data) == {m for m, config in configs.items() if declares_towers(config)}
+        for files in data.values():
+            assert set(files) == {name for name, _ in PROCESSOR_FILES}
+            assert all(f is None or isinstance(f, dict) for f in files.values())
+            assert any(files.values())
+    elif path.parent.name == "headers":
+        RecordedHeaders.model_validate(data)
     elif path.name.endswith("-lineage.json"):
         LineageRecording.model_validate(data)
     else:

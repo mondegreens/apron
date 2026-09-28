@@ -35,6 +35,36 @@ def _is_attention_free(config: dict[str, Any]) -> bool:
     return not config.get("num_attention_heads")
 
 
+# Attention shapes the calculator does not count: a sparse-attention indexer
+# (DeepSeek V3.2 / GLM-5 DSA: index_topk), compressed KV (DeepSeek V4:
+# compress_ratios), and per-layer kinds other than full or sliding attention
+# (linear attention, Mamba).  vLLM pages each with its own KV spec, so a plain
+# estimate would be confidently wrong.  Models whose layout layered.py reads
+# (``family``: DeepSeek V4 / V4.1, Qwen4Exp and GLM5Next among them, when their
+# configs carry every field it reads) are ``layered_decode`` before this check;
+# anything else with these fields stays unknown.
+_UNMODELLED_ATTENTION_FIELDS = ("index_topk", "compress_ratios")
+_MODELLED_LAYER_TYPES = frozenset({"full_attention", "sliding_attention"})
+
+
+def unmodelled_attention(config: dict[str, Any]) -> str | None:
+    """The config field that names an attention layout the calculator does
+    not model, or None."""
+    from apron.domain.mechanisms.layered import text_config
+
+    for source in (config, text_config(config)):
+        for key in _UNMODELLED_ATTENTION_FIELDS:
+            if source.get(key):
+                return key
+        kinds = source.get("layer_types")
+        if isinstance(kinds, list) and not set(kinds) <= _MODELLED_LAYER_TYPES:
+            return "layer_types"
+        for key in ("linear_num_value_heads", "hybrid_override_pattern", "layers_block_type"):
+            if source.get(key):
+                return key
+    return None
+
+
 def _has_mla_fields(config: dict[str, Any]) -> bool:
     """Detect Multi-Latent Attention from config.json fields."""
     return config.get("kv_lora_rank") is not None and config.get("qk_rope_head_dim") is not None
@@ -88,7 +118,7 @@ def build_model_spec(
     if family(config) is not None:
         # Per-layer caches the calculator counts as vLLM pages them (layered.py).
         mechanism = "layered_decode"
-    elif primary_arch in unmodelled_architectures:
+    elif primary_arch in unmodelled_architectures or unmodelled_attention(config):
         mechanism = UNKNOWN_MECHANISM
     else:
         mechanism = _infer_mechanism(primary_arch, config)

@@ -109,6 +109,8 @@ class CalculatorPlanningSource:
                 "non_pytorch_overhead_bytes": result["non_pytorch_overhead_bytes"],
                 "cuda_graph_estimate_bytes": result["cuda_graph_estimate_bytes"],
                 "available_kv_cache_bytes": result["available_kv_cache_bytes"],
+                # What vLLM requests: ceil(total x gpu_memory_utilization).
+                "gpu_available_bytes": result["gpu_available_bytes"],
                 "total_required_bytes": result["total_required_bytes"],
                 # Per-GPU when tensor_parallel > 1; the plan builder reads the
                 # heads and per-token KV to choose TP and the batch size.
@@ -122,6 +124,15 @@ class CalculatorPlanningSource:
                 **(
                     {"state_per_sequence_bytes": result["state_per_sequence_bytes"]}
                     if "state_per_sequence_bytes" in result
+                    else {}
+                ),
+                # Memory vLLM may hold on top of the prediction (the compile
+                # benchmark's embedding-sized segment, calculator.compile_segment_bytes).
+                "compile_segment_bytes": result.get("compile_segment_bytes", 0),
+                # A state (Mamba) cache: one KV block per decode sequence.
+                **(
+                    {"kv_bytes_per_block": result["kv_bytes_per_block"]}
+                    if "kv_bytes_per_block" in result
                     else {}
                 ),
             },

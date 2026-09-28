@@ -59,6 +59,7 @@ def main() -> int:
             },
         )
         metadata = {
+            **fixture.get("activation", {}),
             "vocab_size": fixture["vocab_size"],
             "hidden_size": fixture["hidden_size"],
             "torch_dtype": dtype,  # the plan's served dtype

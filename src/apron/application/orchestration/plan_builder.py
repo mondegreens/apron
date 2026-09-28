@@ -17,6 +17,12 @@ if TYPE_CHECKING:
     from apron.domain.schemas.tasks import ServingWorkloadSpec
 
 
+#: The ``gpu_memory_utilization`` every plan the planner builds sets; the
+#: plan pipeline predicts the KV budget at it.  vLLM's own default is 0.92
+#: (config/cache.py:111 in v0.29.0, :103 in v0.30.0).
+PLAN_GPU_MEMORY_UTILIZATION = 0.90
+
+
 def build_plan(
     claim: PlanningClaim,
     model_spec: ModelSpec,
@@ -41,7 +47,7 @@ def build_plan(
     tp = _derive_tensor_parallel(total_required, hardware_spec, config)
     batch_size = _derive_batch_size(available_kv, config, tp)
 
-    gpu_util = 0.90
+    gpu_util = PLAN_GPU_MEMORY_UTILIZATION
     max_model_len = _derive_max_model_len(workload)
 
     engine_configuration: dict[str, str] = {

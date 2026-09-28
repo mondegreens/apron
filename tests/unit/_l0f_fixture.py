@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class RecordedClassification(BaseModel):
@@ -122,12 +122,43 @@ class RecordedWeightBytes(_Strict):
     f32_bytes: int
     quantized: bool
     lm_head_bytes: int
+    mtp_bytes: (
+        int  # multi-token-prediction layers vLLM does not load (plan_pipeline.mtp_tensor_bytes)
+    )
     tie_word_embeddings: bool
     vocab_size: int
     hidden_size: int
     torch_dtype: str
+    # The config fields the activation estimate reads (calculator.activation_config).
+    activation: dict[str, int | float | bool | str]
     ssm: dict[str, int] | None = None
+
+    @field_validator("activation")
+    @classmethod
+    def _known_activation_fields(
+        cls, value: dict[str, int | float | bool | str]
+    ) -> dict[str, int | float | bool | str]:
+        from apron.domain.mechanisms.calculator import ACTIVATION_FIELDS, ENCODER_FIELDS
+
+        known = {*ACTIVATION_FIELDS, *ENCODER_FIELDS, "vision_config", "audio_config"}
+        unknown = set(value) - known
+        if unknown:
+            raise ValueError(f"unknown activation fields: {sorted(unknown)}")
+        return value
 
 
 def load_weight_bytes(data: dict[str, Any]) -> dict[str, RecordedWeightBytes]:
     return {model: RecordedWeightBytes.model_validate(v) for model, v in data.items()}
+
+
+# ---------------------------------------------------------------------------
+# tests/fixtures/cohort/headers/*.json (scripts/record_tensor_headers.py)
+# ---------------------------------------------------------------------------
+
+
+class RecordedHeaders(_Strict):
+    model_id: str
+    revision: str
+    config: dict[str, Any]  # the checkpoint's config.json, as published
+    # tensor name (expert and n-gram shard indices folded) -> [dtype, bytes, tensors]
+    tensors: dict[str, tuple[str, int, int]]

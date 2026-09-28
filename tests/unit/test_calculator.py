@@ -358,9 +358,17 @@ def test_moe_activation_is_not_scaled_by_the_routing_ratio():
     result = calculate(_deepseek_input())
     assert result is not None
     config = _deepseek_input().artifact_metadata
-    expected = (
-        config["vocab_size"] * config["hidden_size"] * 2 + 2 * 2048 * config["hidden_size"] * 2
-    )
+    tokens, hidden = 2048, config["hidden_size"]
+    compile_peak = config["vocab_size"] * hidden * 2 + 2 * tokens * hidden * 2
+    # DeepSeek-V3's forward (MLA + MoE, the GLM-4.7-Flash probe's rule) is
+    # larger: the prefill-context dummy (16384 tokens: 4 x 256 seqs x block 16),
+    # the full fused-MoE workspace (every routed token, no routing factor) and
+    # the observed graph buffers.
+    prefill_context = 16384 * 128 * (128 + 128) * 2
+    workspace = tokens * 8 * (max(2048, hidden) + max(2 * 2048, hidden)) * 2
+    graph = 5 * tokens * 128 * 192 * 2 + 7 * tokens * hidden * 2 + 2 * tokens * 512 * 2
+    expected = max(compile_peak, prefill_context + workspace + graph)
+    assert expected > compile_peak
     assert result["activation_estimate_bytes"] == expected
 
 

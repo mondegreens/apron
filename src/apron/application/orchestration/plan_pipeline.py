@@ -7,10 +7,23 @@ ranking or promotion logic in interfaces.
 from __future__ import annotations
 
 import json
+import re
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from apron.application.orchestration.plan_builder import build_plan, served_dtype
+from apron.application.orchestration.plan_builder import (
+    PLAN_GPU_MEMORY_UTILIZATION,
+    build_plan,
+    served_dtype,
+)
 from apron.application.orchestration.resolution import ResolutionChain
+from apron.domain.mechanisms.calculator import (
+    ENCODER_FIELDS,
+    activation_config,
+    declares_towers,
+    encoder_peak_note,
+)
+from apron.domain.mechanisms.layered import KV_BUDGET_SAFETY_BUFFER_BYTES, state_block_capacity
 from apron.domain.mechanisms.model_spec_builder import build_model_spec
 from apron.domain.schemas.solutions import DeploymentPlan, RenderContext
 
@@ -32,6 +45,9 @@ class PlanPipelineResult:
     ``config.json`` itself, which diagnosis needs (F5).  A prediction-error
     candidate (unknown mechanism) keeps ``claim``, ``model_spec`` and
     ``observation`` with ``error`` set, so the claim can be stored.
+    ``host_memory_bytes`` are the checkpoint's tables the engine keeps in
+    pinned host memory (all ranks together), and ``notes`` say what the
+    prediction needs besides the GPUs.
     """
 
     __slots__ = (
@@ -40,9 +56,11 @@ class PlanPipelineResult:
         "claim",
         "context",
         "error",
+        "host_memory_bytes",
         "load_problems",
         "model_config",
         "model_spec",
+        "notes",
         "observation",
         "plan",
     )
@@ -60,8 +78,12 @@ class PlanPipelineResult:
         chat_template: str | None = None,
         chat_renderer: str | None = None,
         load_problems: tuple[str, ...] | None = None,
+        host_memory_bytes: int = 0,
+        notes: tuple[str, ...] = (),
     ) -> None:
         self.plan = plan
+        self.host_memory_bytes = host_memory_bytes
+        self.notes = notes
         # Why the engine would refuse the checkpoint's tensors; () when it
         # would load them; None when no check applies (GPU-free, pre-boot).
         self.load_problems = load_problems
@@ -96,6 +118,10 @@ def run_plan_pipeline(
     | None = None,
     unmodelled_architectures: frozenset[str] = frozenset(),
     tokenizer_modes: frozenset[str] = frozenset(),
+    reasoning_parsers: frozenset[str] = frozenset(),
+    state_blocks: StateBlockFacts | None = None,
+    gpu_memory_utilization: float = PLAN_GPU_MEMORY_UTILIZATION,
+    dtype: str | None = None,
 ) -> PlanPipelineResult:
     """Run the full plan pipeline: resolve → calculate → build plan.
 
@@ -103,6 +129,20 @@ def run_plan_pipeline(
     fixes TP (a fix proof); 1 predicts the whole model on one GPU.
     ``load_check`` (the engine adapter's) reads the checkpoint's tensor names
     and says whether the engine would load them, before any GPU is paid for.
+    ``max_num_seqs`` is the engine's default on this GPU; ``state_blocks``
+    (the engine version's facts) says where that version needs one state
+    block per decode sequence, and the plan lowers ``max_num_seqs`` to what
+    the predicted cache holds (``state_block_limit``).  ``tokenizer_modes``
+    and ``reasoning_parsers`` are the engine version's registries
+    (``reasoning_parser_for`` says when a plan names a parser).
+    ``gpu_memory_utilization`` and ``dtype`` are what the plan boots with: the
+    planner's own plans set ``PLAN_GPU_MEMORY_UTILIZATION`` and serve the
+    checkpoint's runtime dtype (``dtype=None``); a given plan (a fix proof) is
+    predicted with its own values, or vLLM's defaults where it sets none.
+    A multimodal wrapper (a ``vision_config`` / ``audio_config``) also has its
+    processor files read at the resolved revision (``download_processor_config``):
+    they size the vision tower's startup peak; where that peak is not modelled
+    the notes say so (``encoder_peak_note``).
     """
     chain = ResolutionChain(resolver)
     result = chain.resolve(model_id)
@@ -120,8 +160,12 @@ def run_plan_pipeline(
 
     read_meta = getattr(resolver, "_tensor_meta", None)
     meta = read_meta(model_id, result.observation.resolved_revision) if read_meta else None
-    if meta:
-        tensors: dict[str, int] | None = loaded_tensor_bytes(meta, config)
+    if meta and dtype == "float32":
+        # Served in float32: every tensor loads at its stored size (the
+        # 16-bit downcast of ``loaded_tensor_bytes`` is dtype=auto's).
+        tensors: dict[str, int] | None = {name: size for name, (_, size) in meta.items()}
+    elif meta:
+        tensors = loaded_tensor_bytes(meta, config)
     else:
         read_tensors = getattr(resolver, "_tensor_bytes", None)
         tensors = (
@@ -130,6 +174,18 @@ def run_plan_pipeline(
     total_weight_bytes = _resolve_weight_bytes(
         resolver, model_id, result.observation, config, tensors=tensors
     )
+    host_bytes = host_tensor_bytes(tensors, config) if tensors else 0
+    notes = _host_memory_notes(host_bytes, config, tensor_parallel)
+    # Only a multimodal wrapper's processor files size anything: a text-only
+    # checkpoint costs no extra requests.
+    processor = (
+        download_processor_config(resolver, model_id, result.observation.resolved_revision)
+        if declares_towers(config)
+        else None
+    )
+    encoder_note = encoder_peak_note(config, processor)
+    if encoder_note is not None:
+        notes = (*notes, encoder_note)
     load_problems = (
         load_check(tensors, config.get("quantization_config"))
         if load_check is not None and tensors
@@ -144,31 +200,42 @@ def run_plan_pipeline(
         unmodelled_architectures=unmodelled_architectures,
     )
 
-    # A multimodal checkpoint keeps its language model in ``text_config``;
-    # vLLM sizes caches from it (``hf_text_config``).
-    text = config.get("text_config")
-    calc_metadata = {**config, **text} if isinstance(text, dict) else dict(config)
-    calc_metadata["torch_dtype"] = runtime_dtype(config)
-    calc_metadata["total_weight_bytes"] = total_weight_bytes
-    calc_metadata["components"] = [c.model_dump(mode="json") for c in model_spec.components]
-
-    claim = planning_source.predict(
-        calc_metadata,
-        hardware,
-        {
-            "isl": 512,
-            "osl": 128,
-            "max_batch_size": 4,
-            "tensor_parallel": tensor_parallel,
-            # The engine's profiling run size on this GPU (sizes the activation peak).
-            **(
-                {"max_num_batched_tokens": max_num_batched_tokens}
-                if max_num_batched_tokens
-                else {}
-            ),
-            **({"max_num_seqs": max_num_seqs} if max_num_seqs else {}),
-        },
+    calc_metadata = calculator_metadata(
+        config,
+        model_spec,
+        total_weight_bytes=total_weight_bytes,
+        replicated_weight_bytes=replicated_tensor_bytes(tensors, config) if tensors else 0,
+        dtype=dtype,
+        processor=processor,
     )
+
+    def predict(seqs: int | None) -> Any:
+        return planning_source.predict(
+            calc_metadata,
+            hardware,
+            {
+                "isl": 512,
+                "osl": 128,
+                "max_batch_size": 4,
+                "tensor_parallel": tensor_parallel,
+                "gpu_memory_utilization": gpu_memory_utilization,
+                # The engine's profiling run size on this GPU (sizes the activation peak).
+                **(
+                    {"max_num_batched_tokens": max_num_batched_tokens}
+                    if max_num_batched_tokens
+                    else {}
+                ),
+                **({"max_num_seqs": seqs} if seqs else {}),
+            },
+        )
+
+    claim = predict(max_num_seqs)
+    limit = state_block_limit(claim.proposed_configuration, max_num_seqs, state_blocks)
+    if limit is not None:
+        # The prediction the plan is booted with: fewer sequences never raise
+        # the activation, so the cache still holds them.
+        claim = predict(limit[0])
+        notes = (*notes, limit[1])
 
     if claim.proposed_configuration.get("status") == "unknown":
         return PlanPipelineResult(
@@ -178,6 +245,8 @@ def run_plan_pipeline(
             model_spec=model_spec,
             model_config=config,
             load_problems=load_problems,
+            host_memory_bytes=host_bytes,
+            notes=notes,
         )
 
     deployment_plan = build_plan(
@@ -189,6 +258,16 @@ def run_plan_pipeline(
         clock=clock,
         id_gen=id_gen,
     )
+
+    if limit is not None:
+        deployment_plan = deployment_plan.model_copy(
+            update={
+                "engine_configuration": {
+                    **deployment_plan.engine_configuration,
+                    "max_num_seqs": str(limit[0]),
+                }
+            }
+        )
 
     # A model type the engine has its own tokenizer mode for (no chat template
     # in the repo): the plan names that mode, and the engine renders the chat.
@@ -205,6 +284,32 @@ def run_plan_pipeline(
             }
         )
 
+    chat_template = _download_chat_template(
+        resolver, model_id, result.observation.resolved_revision
+    )
+    # A model that answers in a reasoning channel the engine has a parser for:
+    # without the parser vLLM returns the whole generation as content, framing
+    # stripped (Muse-Glimmer-30B, 2026-09-28: every answer right, every case
+    # scored wrong).  The plan names the parser; the engine splits the channels.
+    if model_type in reasoning_parsers:
+        parser = reasoning_parser_for(
+            model_type,
+            reasoning_parsers,
+            chat_template,
+            _download_json(
+                resolver, model_id, "tokenizer_config.json", result.observation.resolved_revision
+            ),
+        )
+        if parser is not None:
+            deployment_plan = deployment_plan.model_copy(
+                update={
+                    "engine_configuration": {
+                        **deployment_plan.engine_configuration,
+                        "reasoning_parser": parser,
+                    }
+                }
+            )
+
     assert result.locator is not None
     ctx = RenderContext(plan=deployment_plan, locator=result.locator, hardware=hardware)
 
@@ -216,11 +321,149 @@ def run_plan_pipeline(
         model_spec=model_spec,
         model_config=config,
         load_problems=load_problems,
-        chat_template=_download_chat_template(
-            resolver, model_id, result.observation.resolved_revision
-        ),
+        chat_template=chat_template,
         chat_renderer=chat_renderer,
+        host_memory_bytes=host_bytes,
+        notes=notes,
     )
+
+
+def calculator_metadata(
+    config: dict[str, Any],
+    model_spec: ModelSpec,
+    *,
+    total_weight_bytes: int,
+    replicated_weight_bytes: int = 0,
+    dtype: str | None = None,
+    processor: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """What the calculator reads for one checkpoint: ``config.json`` with the
+    language model's ``text_config`` merged over it (vLLM sizes caches from
+    ``hf_text_config``), the dtype it is served in, the loaded weight bytes
+    and the mechanisms.  ``dtype`` None: the runtime dtype of dtype=auto.
+    *processor* (``download_processor_config``) adds the fields that size a
+    traced vision tower's dummy encoder batch (``ENCODER_FIELDS``)."""
+    text = config.get("text_config")
+    metadata = {**config, **text} if isinstance(text, dict) else dict(config)
+    if processor is not None:
+        encoder = activation_config(config, processor)
+        metadata.update({k: encoder[k] for k in ENCODER_FIELDS if k in encoder})
+    metadata["torch_dtype"] = dtype or runtime_dtype(config)
+    metadata["total_weight_bytes"] = total_weight_bytes
+    if replicated_weight_bytes:
+        metadata["replicated_weight_bytes"] = replicated_weight_bytes
+    metadata["components"] = [c.model_dump(mode="json") for c in model_spec.components]
+    return metadata
+
+
+@dataclass(frozen=True)
+class StateBlockFacts:
+    """Where one engine version needs a state (Mamba) block per decode sequence
+    (the version's generated facts; ``None`` / empty where it has none)."""
+
+    engine_version: str
+    check: str | None  # the check that refuses more sequences than blocks
+    profiling: tuple[str, ...] = ()  # CUDA-graph profiling: one block per sequence
+    default_source: str | None = None  # where the default max_num_seqs is set
+
+
+_GIB = 1 << 30
+
+
+def state_block_limit(
+    predicted: dict[str, Any], default_seqs: int | None, facts: StateBlockFacts | None
+) -> tuple[int, str] | None:
+    """``max_num_seqs`` the plan must set, and why; None to keep the default.
+
+    A state cache serves one decode sequence per KV block.  With full CUDA
+    graphs vLLM refuses ``max_num_seqs`` above the pool's blocks
+    (``facts.check``), and its CUDA-graph profiling allocates
+    ``min(max_num_seqs, max_cudagraph_capture_size)`` blocks before the real
+    cache (``facts.profiling``): Nemotron-3.5 on an H100 failed the first
+    (1024 > 733 blocks, vLLM v0.30.0), Qwen3.8-27B the second (512 blocks x
+    51,380,224 bytes, vLLM v0.29.0).  The pool is ``available //
+    bytes_per_block``; the predicted available memory less the safety buffer
+    (``KV_BUDGET_SAFETY_BUFFER_BYTES``, the largest error measured over every
+    healthy record) and less the compile segment vLLM may hold for this plan
+    (``compile_segment_bytes``) bounds it from below.  A default at or under
+    that bound satisfies both, since the profiling blocks never exceed
+    ``max_num_seqs``.
+    """
+    per_block = int(predicted.get("kv_bytes_per_block") or 0)
+    available = predicted.get("available_kv_cache_bytes")
+    if (
+        facts is None
+        or not (facts.check or facts.profiling)
+        or not default_seqs
+        or per_block <= 0
+        or not isinstance(available, int | float)
+    ):
+        return None
+    segment = int(predicted.get("compile_segment_bytes") or 0)
+    margin = KV_BUDGET_SAFETY_BUFFER_BYTES + segment
+    capacity = state_block_capacity(int(available), per_block, margin_bytes=margin)
+    if default_seqs <= capacity:
+        return None
+    seqs = max(1, capacity)
+    blocks = max(0, int(available)) // per_block
+    sites = ", ".join(s for s in (facts.check, *facts.profiling) if s)
+    default_at = f", {facts.default_source}" if facts.default_source else ""
+    held = f", plus a {segment / _GIB:.2f} GiB compile segment vLLM may hold" if segment else ""
+    note = (
+        f"max_num_seqs {seqs}: vLLM {facts.engine_version} defaults to {default_seqs} on this "
+        f"GPU{default_at}, but a state (Mamba) cache serves one decode sequence per KV block "
+        f"and the predicted {int(available) / _GIB:.2f} GiB of KV memory holds {blocks} blocks "
+        f"of {per_block:,} bytes, {capacity} after a {margin / _GIB:.2f} GiB safety buffer "
+        f"(the largest KV-budget error measured over the cohort's healthy boots, "
+        f"{KV_BUDGET_SAFETY_BUFFER_BYTES / _GIB:.2f} GiB{held}); vLLM refuses more sequences "
+        f"than blocks with full CUDA graphs and allocates one block per sequence to profile "
+        f"them ({sites})"
+    )
+    return seqs, note
+
+
+def _host_memory_notes(
+    host_bytes: int, config: dict[str, Any], tensor_parallel: int
+) -> tuple[str, ...]:
+    """What the pod needs in host RAM for tables the engine keeps off the GPU."""
+    if not host_bytes:
+        return ()
+    ranks = max(1, tensor_parallel)
+    return (
+        f"host RAM: {host_bytes / 2**30:.2f} GiB of n-gram embedding tables stay in pinned "
+        f"host memory, {host_bytes / ranks / 2**30:.2f} GiB per tensor-parallel rank x {ranks} "
+        "(vLLM v0.30.0 VLLM_PLE_CPU_OFFLOAD=1 default, config/engram.py:40-47); "
+        "not counted as GPU weights; the pod needs this RAM besides the GPUs",
+    )
+
+
+#: The processor files vLLM's multimodal processors read, and where
+#: ``activation_config`` expects each: processor_config.json holds both
+#: processors; the older layout has one file each.
+PROCESSOR_FILES: tuple[tuple[str, str | None], ...] = (
+    ("processor_config.json", None),
+    ("preprocessor_config.json", "image_processor"),
+    ("video_preprocessor_config.json", "video_processor"),
+)
+
+
+def download_processor_config(
+    resolver: Any, model_id: str, revision: str
+) -> dict[str, Any] | None:
+    """The checkpoint's processor configuration in the shape
+    ``activation_config`` takes: processor_config.json's ``image_processor`` /
+    ``video_processor``, else preprocessor_config.json and
+    video_preprocessor_config.json under those keys.  None when there is none."""
+    found: dict[str, Any] = {}
+    for filename, key in PROCESSOR_FILES:
+        data = _download_json(resolver, model_id, filename, revision)
+        if data is None:
+            continue
+        if key is None:
+            found.update({k: data[k] for k in ("image_processor", "video_processor") if k in data})
+        elif key not in found:
+            found[key] = data
+    return found or None
 
 
 def _download_config(resolver: Any, model_id: str, revision: str) -> bytes | None:
@@ -246,6 +489,59 @@ def _download_chat_template(resolver: Any, model_id: str, revision: str) -> str 
         named = {t.get("name"): t.get("template") for t in template if isinstance(t, dict)}
         template = named.get("default") or next(iter(named.values()), None)
     return template if isinstance(template, str) else None
+
+
+def _download_json(
+    resolver: Any, model_id: str, filename: str, revision: str
+) -> dict[str, Any] | None:
+    if not hasattr(resolver, "_download_file"):
+        return None
+    raw = resolver._download_file(model_id, filename, revision)
+    if raw is None:
+        return None
+    data = json.loads(raw)
+    return data if isinstance(data, dict) else None
+
+
+def declares_reasoning_channel(
+    chat_template: str | None, tokenizer_config: dict[str, Any] | None
+) -> bool:
+    """Whether the model says it answers with a separate reasoning channel.
+
+    Either its tokenizer config's response schema has a ``reasoning_content``
+    field (Muse-Glimmer: ``to=self<|message|>`` .. ``<|eom|>``), or its chat
+    template renders an assistant turn's ``reasoning_content``.
+    """
+    template = (tokenizer_config or {}).get("response_template")
+    fields = template.get("fields") if isinstance(template, dict) else None
+    if isinstance(fields, dict) and "reasoning_content" in fields:
+        return True
+    return bool(chat_template and "reasoning_content" in chat_template)
+
+
+def reasoning_parser_for(
+    model_type: str,
+    reasoning_parsers: frozenset[str],
+    chat_template: str | None,
+    tokenizer_config: dict[str, Any] | None,
+) -> str | None:
+    """The engine reasoning parser a plan names for this model, or None.
+
+    All three must hold: the plan's engine version registers a parser under
+    the model's type (vLLM turns none on by itself, config/reasoning.py:22);
+    the template has no ``enable_thinking`` (the request switches thinking
+    off there, and the answer is already the content); and the model declares
+    a reasoning channel (``declares_reasoning_channel``).  A type match alone
+    is not enough: ``mistral`` names a parser and Mistral-7B-Instruct has no
+    reasoning channel.
+    """
+    if model_type not in reasoning_parsers:
+        return None
+    if chat_template and "enable_thinking" in chat_template:
+        return None
+    if not declares_reasoning_channel(chat_template, tokenizer_config):
+        return None
+    return model_type
 
 
 # Stored bytes per element, by safetensors dtype name.
@@ -297,6 +593,133 @@ def _tied_embeddings(config: dict[str, Any]) -> bool:
     return bool(config.get("tie_word_embeddings", nested.get("tie_word_embeddings", False)))
 
 
+_LAYER = re.compile(r"(?:^|\.)layers\.(\d+)\.")
+
+# Model types whose vLLM v0.30.0 loader drops every checkpoint tensor whose name
+# contains "mtp." (a WeightsMapper substring mapped to None): DeepSeek V4
+# (models/deepseek_v4/nvidia/model.py:1793,1803), V4.1
+# (models/deepseek_v41/nvidia/model.py:1006,1016; nvidia/vl_model.py:94,108),
+# Qwen4Exp, whose MTP layers ``mtp_num_hidden_layers`` counts
+# (models/qwen4_exp/nvidia/model.py:849-852, 1044-1047), and the Qwen3.5
+# family, whose mapper sends the ``mtp.`` prefix to None in v0.29.0 and v0.30.0
+# alike (model_executor/models/qwen3_5.py:321-323, 476-479; the MoE classes
+# inherit it).  Qwen3.6-35B-A3B-FP8 measured 34.23 GiB against 34.88 predicted
+# with its 0.80 GiB of mtp.* counted (group B, 2026-09-28).  NemotronH maps the
+# ``mtp`` prefix to None (models/nemotron_h.py:711 in v0.29.0, :728 in v0.30.0):
+# Nemotron-3.5-Lightning-30B-A3B stores 2.49 GiB of ``mtp.layers.*`` the engine
+# never loads.  Qwen3-Next drops ``mtp.`` the same way (models/qwen3_next.py:808
+# in v0.29.0, :810 in v0.30.0).
+_MTP_NAMES_DROPPED = frozenset(
+    {
+        "deepseek_v4",
+        "deepseek_v41",
+        "qwen4_exp",
+        "qwen3_5",
+        "qwen3_5_moe",
+        "nemotron_h",
+        "qwen3_next",
+    }
+)
+
+
+def _text_config(config: dict[str, Any]) -> dict[str, Any]:
+    nested = config.get("text_config")
+    return nested if isinstance(nested, dict) else config
+
+
+def mtp_tensor_bytes(tensors: dict[str, int], config: dict[str, Any]) -> int:
+    """Bytes of the multi-token-prediction layers the main model skips.
+
+    GLM-4.x MoE and DeepSeek V3 checkpoints store ``num_nextn_predict_layers``
+    extra layers after the last decoder layer; vLLM loads them only for
+    speculative decoding and skips them otherwise
+    (``model_executor/models/utils.py:542``, ``glm4_moe_lite.py:361-363``).
+    GLM-4.7-Flash measured 55.87 GiB against 58.15 predicted with them
+    counted (2026-09-28).  DeepSeek V4 / V4.1 and Qwen4Exp name them ``mtp.*``
+    instead, which their loaders drop (``_MTP_NAMES_DROPPED``).
+    """
+    text = _text_config(config)
+    extra = int(text.get("num_nextn_predict_layers") or 0)
+    layers = int(text.get("num_hidden_layers") or 0)
+    by_name = str(config.get("model_type") or "") in _MTP_NAMES_DROPPED
+    total = 0
+    for name, size in tensors.items():
+        match = _LAYER.search(name)
+        if (by_name and "mtp." in name) or (
+            extra and layers and match and layers <= int(match.group(1)) < layers + extra
+        ):
+            total += size
+    return total
+
+
+# N-gram embedding tables vLLM v0.30.0 keeps in pinned host memory, split
+# across the tensor-parallel ranks (EngramConfig.cpu_offload defaults to
+# VLLM_PLE_CPU_OFFLOAD=1: config/engram.py:18-47, envs.py:2047).  Keyed by
+# architecture and the config field naming the n-gram layers, as vLLM keys it
+# (config/engram.py:18-23): DeepSeek V4.1's Engram tables
+# (models/deepseek_v41/nvidia/engram.py:217-296, the ``engram.embed`` weight and
+# scale) and Qwen4Exp's PLE n-gram table
+# (models/qwen4_exp/nvidia/ngram_embedding.py:430-443, 690-708).
+_HOST_TABLES: dict[str, tuple[str, re.Pattern[str]]] = {
+    "DeepseekV41ForCausalLM": ("engram_layer_ids", re.compile(r"\.engram\.embed\.")),
+    "Qwen4ExpForCausalLM": ("ple_layer_ids", re.compile(r"\.ple_embedding\.ngram_embedding\.")),
+    "Qwen4ExpForConditionalGeneration": (
+        "ple_layer_ids",
+        re.compile(r"\.ple_embedding\.ngram_embedding\."),
+    ),
+}
+
+
+def _host_table(config: dict[str, Any]) -> re.Pattern[str] | None:
+    """The tensor names the engine keeps in host memory for this model, or None."""
+    architecture = (config.get("architectures") or [""])[0]
+    table = _HOST_TABLES.get(architecture)
+    if table is None or not _text_config(config).get(table[0]):
+        return None
+    return table[1]
+
+
+def host_tensor_bytes(tensors: dict[str, int], config: dict[str, Any]) -> int:
+    """Bytes of the checkpoint vLLM keeps in pinned host memory, not on a GPU."""
+    names = _host_table(config)
+    if names is None:
+        return 0
+    return sum(size for name, size in tensors.items() if names.search(name))
+
+
+# DeepSeek V4 / V4.1 weights every tensor-parallel rank holds whole: the fused
+# wq_a + wkv projection (disable_tp: models/deepseek_v4/attention.py:243-250,
+# deepseek_v41/attention.py:316-323), the compressors (disable_tp:
+# deepseek_v4/compressor.py:270-278, deepseek_v41/compressor.py:219-226), the
+# indexer (ReplicatedLinear: deepseek_v4/attention.py:958-970,
+# deepseek_v41/attention.py:1089-1127), the router gate (GateLinear is a
+# ReplicatedLinear: layers/fused_moe/router/gate_linear.py:14;
+# deepseek_v4/nvidia/model.py:830-878), the hyper-connection parameters
+# (deepseek_v4/nvidia/model.py:1169-1210, 1420-1438), V4.1's Engram projection
+# (ReplicatedLinear: deepseek_v41/common/engram.py:926-941) and the RMSNorms.
+_DEEPSEEK_REPLICATED = re.compile(
+    r"^(?:layers\.\d+\.(?:"
+    r"attn\.(?:wq_a|wkv|compressor|indexer)\."
+    r"|ffn\.gate\."
+    r"|hc_"
+    r"|engram\.(?:wkv|q_weight|k_weight)"
+    r"|(?:attn|ffn)_norm\."
+    r"|attn\.(?:q|kv)_norm\."
+    r")|hc_head_|norm\.)"
+)
+
+
+def replicated_tensor_bytes(tensors: dict[str, int], config: dict[str, Any]) -> int:
+    """Bytes of loaded weights vLLM keeps whole on every tensor-parallel rank.
+
+    Only DeepSeek V4 / V4.1 are traced; every other model's weights are
+    divided by TP (the calculator's ``_per_gpu``).
+    """
+    if str(config.get("model_type") or "") not in ("deepseek_v4", "deepseek_v41"):
+        return 0
+    return sum(size for name, size in tensors.items() if _DEEPSEEK_REPLICATED.match(name))
+
+
 def _resolve_weight_bytes(
     resolver: Any,
     model_id: str,
@@ -315,15 +738,25 @@ def _resolve_weight_bytes(
     3. The Hub's per-dtype parameter counts, every dtype summed at its width
        (the old path counted only the first dtype: Qwen3-0.6B-FP8 lost its
        FP8 half).  An unknown dtype makes the total unknown (0), never a guess.
+
+    Tables the engine keeps in host memory (``host_tensor_bytes``) are not
+    GPU weights; without headers they cannot be told apart, so a model that
+    has them is unknown (0) rather than counted whole.
     """
     rev = observation.resolved_revision
     if tensors is None and hasattr(resolver, "_tensor_bytes"):
         tensors = resolver._tensor_bytes(model_id, rev)
     if tensors:
-        total = sum(tensors.values())
+        total = (
+            sum(tensors.values())
+            - mtp_tensor_bytes(tensors, config or {})
+            - host_tensor_bytes(tensors, config or {})
+        )
         if _tied_embeddings(config or {}) and "lm_head.weight" in tensors:
             total -= tensors["lm_head.weight"]
         return total
+    if _host_table(config or {}) is not None:
+        return 0
 
     if hasattr(resolver, "_download_file"):
         index_content = resolver._download_file(model_id, "model.safetensors.index.json", rev)
@@ -346,6 +779,7 @@ def recorded_loaded_bytes(entry: dict[str, Any], plan_dtype: str | None) -> int:
     """Weights a recorded checkpoint loads at under a plan's dtype, through the
     planner's own resolution (tests/fixtures/cohort/weight-bytes.json rows)."""
     total, f32, lm_head = (int(entry[k]) for k in ("total_bytes", "f32_bytes", "lm_head_bytes"))
+    total -= int(entry.get("mtp_bytes") or 0)  # skipped by the main model (mtp_tensor_bytes)
     meta = {"lm_head.weight": ("BF16", lm_head)} if lm_head else {}
     meta |= {"f32": ("F32", f32), "rest": ("BF16", total - lm_head - f32)}
     config: dict[str, Any] = {"tie_word_embeddings": entry["tie_word_embeddings"]}
