@@ -148,6 +148,11 @@ class EngineFacts:
         # (reasoning/__init__.py, tool_parsers/__init__.py registries).
         self.reasoning_parsers = frozenset(facts["reasoning_parsers"]["names"])
         self.tool_parsers = frozenset(facts["tool_parsers"]["names"])
+        # Architecture -> the reasoning parser vLLM's own recipes name for it.
+        self.reasoning_parser_architectures: dict[str, str] = {
+            arch: entry["parser"]
+            for arch, entry in facts["reasoning_parser_architectures"]["architectures"].items()
+        }
         # method ->(minimum capability, source line)
         self.quant_min_capability: dict[str, tuple[int, str]] = self._method_table(
             "min_capability", "min_capability_source"

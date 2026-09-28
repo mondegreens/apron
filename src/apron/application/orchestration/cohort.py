@@ -801,7 +801,7 @@ def _run_task_suite(
                 ctx,
                 model_id=model_id,
                 chat_template_kwargs=chat_template_kwargs(sp.chat_template),
-                request_fields=reasoning_request_fields(sp.chat_template),
+                request_fields=reasoning_request_fields(sp.chat_template, sp.chat_renderer),
             ),
             "endpoint": endpoint,
         }

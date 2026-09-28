@@ -8,6 +8,7 @@ all known before provisioning (F4).
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -225,6 +226,10 @@ def build_task_attempt(
     )
 
 
+# A template that switches thinking off by ``thinking_mode`` (MiniMax-M3).
+_THINKING_MODE_DISABLED = re.compile(r"thinking_mode\s*==\s*['\"]disabled['\"]")
+
+
 def chat_template_kwargs(chat_template: str | None) -> dict[str, Any] | None:
     """Template kwargs for a model whose chat template accepts them (§9.1 step 4).
 
@@ -235,8 +240,13 @@ def chat_template_kwargs(chat_template: str | None) -> dict[str, Any] | None:
     / high / xhigh); it gets ``low``, the suite's minimal reasoning.  vLLM
     drops a ``reasoning_effort`` request field for it: the field reaches the
     template only as a variable of that name (chat_completion/protocol.py:
-    585-598, renderers/hf.py:726-737, v0.30.0).  Templates that read neither
-    variable get no kwargs, so the request body is exactly what an ordinary
+    585-598, renderers/hf.py:726-737, v0.30.0).  MiniMax-M3's template reads
+    ``thinking_mode`` (enabled / disabled / adaptive; undefined renders
+    adaptive) and, disabled, ends the prompt with ``</mm:think>``: the answer
+    starts at once, and the ``minimax_m3`` parser reads the same kwarg
+    (reasoning/minimax_m3_reasoning_parser.py:44-45).  Only a template that
+    knows the ``disabled`` value gets it.  Templates that read none of these
+    variables get no kwargs, so the request body is exactly what an ordinary
     client sends.
     """
     kwargs: dict[str, Any] = {}
@@ -244,22 +254,38 @@ def chat_template_kwargs(chat_template: str | None) -> dict[str, Any] | None:
         kwargs["enable_thinking"] = False
     if chat_template and "reasoning_strength" in chat_template:
         kwargs["reasoning_strength"] = "low"
+    if chat_template and _THINKING_MODE_DISABLED.search(chat_template):
+        kwargs["thinking_mode"] = "disabled"
     return kwargs or None
 
 
-def reasoning_request_fields(chat_template: str | None) -> dict[str, Any] | None:
+# Tokenizer modes whose chat renderer reads ``reasoning_effort`` from the
+# request (vLLM v0.30.0 tokenizers/deepseek_v4.py:43-48 and deepseek_v41.py):
+# DeepSeek V4/V4.1 repos ship no chat template, vLLM renders the chat, and
+# thinking defaults to "high" unless the request says otherwise.
+REASONING_EFFORT_RENDERERS = frozenset({"deepseek_v4", "deepseek_v41"})
+
+
+def reasoning_request_fields(
+    chat_template: str | None, renderer: str | None = None
+) -> dict[str, Any] | None:
     """Request fields that keep reasoning short where it cannot be switched off.
 
     gpt-oss always reasons in its analysis channel; its template reads
     ``reasoning_effort`` and has no ``enable_thinking``.  vLLM takes the
-    effort as the OpenAI request field (not a template kwarg) for it.  A
-    template with ``enable_thinking`` gets that switch instead.
+    effort as the OpenAI request field (not a template kwarg) for it.  GLM-5.x
+    templates always open ``<think>`` and read the same variable (``low`` or
+    ``high``, else ``max``); the field reaches them as it (chat_completion/
+    protocol.py:585-589, v0.30.0).  A template with ``enable_thinking`` gets
+    that switch instead.
     """
     if (
         chat_template
         and "enable_thinking" not in chat_template
         and ("reasoning_effort" in chat_template)
     ):
+        return {"reasoning_effort": "low"}
+    if chat_template is None and renderer in REASONING_EFFORT_RENDERERS:
         return {"reasoning_effort": "low"}
     return None
 

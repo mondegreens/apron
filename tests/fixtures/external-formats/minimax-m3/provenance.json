@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "source_name": "minimax-m3",
+  "locations": [
+    {
+      "repository": "MiniMaxAI/MiniMax-M3",
+      "revision": "f0e1c1e04d40177e4673a22097036854f536e9c0",
+      "retrieval_method": "huggingface_hub_api"
+    }
+  ],
+  "retrieval_date": "2026-09-28",
+  "license": "MiniMax Community License",
+  "has_formal_schema": false,
+  "formal_schema_file": null,
+  "schema_description": "Hugging Face Hub model repository file: the chat template (thinking_mode enabled / disabled / adaptive, reasoning wrapped in <mm:think> .. </mm:think>).",
+  "pinned_files": [
+    {
+      "source_path": "MiniMaxAI/MiniMax-M3/chat_template.jinja",
+      "local_path": "chat_template.jinja",
+      "sha256": "11421244f67553498e5c8112dae02802025bcc4305ec45ad380af95c96f9fe64",
+      "size_bytes": 11756,
+      "role": "representative_content"
+    }
+  ],
+  "notes": "A reasoning model whose model_type (minimax_m3_vl) names no vLLM parser; vLLM serves its architecture with the minimax_m3 reasoning parser. With thinking_mode disabled the template ends the prompt with </mm:think>. The planner reads this template to name the parser and the request's thinking_mode."
+}

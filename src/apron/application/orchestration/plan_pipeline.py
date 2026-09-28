@@ -32,7 +32,7 @@ from apron.domain.mechanisms.model_spec_builder import build_model_spec
 from apron.domain.schemas.solutions import DeploymentPlan, RenderContext
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable
+    from collections.abc import Callable, Iterable, Mapping, Sequence
 
     from apron.domain.artifacts import ArtifactSourceObservation
     from apron.domain.ports import Clock, IdGenerator
@@ -123,6 +123,7 @@ def run_plan_pipeline(
     unmodelled_architectures: frozenset[str] = frozenset(),
     tokenizer_modes: frozenset[str] = frozenset(),
     reasoning_parsers: frozenset[str] = frozenset(),
+    reasoning_parser_architectures: Mapping[str, str] | None = None,
     state_blocks: StateBlockFacts | None = None,
     gpu_memory_utilization: float = PLAN_GPU_MEMORY_UTILIZATION,
     dtype: str | None = None,
@@ -137,8 +138,9 @@ def run_plan_pipeline(
     (the engine version's facts) says where that version needs one state
     block per decode sequence, and the plan lowers ``max_num_seqs`` to what
     the predicted cache holds (``state_block_limit``).  ``tokenizer_modes``
-    and ``reasoning_parsers`` are the engine version's registries
-    (``reasoning_parser_for`` says when a plan names a parser).
+    and ``reasoning_parsers`` are the engine version's registries, and
+    ``reasoning_parser_architectures`` the parser that version serves each
+    architecture with (``reasoning_parser_for`` says when a plan names one).
     ``gpu_memory_utilization`` and ``dtype`` are what the plan boots with: the
     planner's own plans set ``PLAN_GPU_MEMORY_UTILIZATION`` and serve the
     checkpoint's runtime dtype (``dtype=None``); a given plan (a fix proof) is
@@ -309,7 +311,9 @@ def run_plan_pipeline(
     # without the parser vLLM returns the whole generation as content, framing
     # stripped (Muse-Glimmer-30B, 2026-09-28: every answer right, every case
     # scored wrong).  The plan names the parser; the engine splits the channels.
-    if model_type in reasoning_parsers:
+    architectures = [str(a) for a in config.get("architectures") or []]
+    served_with = reasoning_parser_architectures or {}
+    if served_parser(model_type, architectures, reasoning_parsers, served_with) is not None:
         parser = reasoning_parser_for(
             model_type,
             reasoning_parsers,
@@ -317,6 +321,9 @@ def run_plan_pipeline(
             _download_json(
                 resolver, model_id, "tokenizer_config.json", result.observation.resolved_revision
             ),
+            architectures=architectures,
+            served_with=served_with,
+            engine_renders_chat=chat_template is None and chat_renderer is not None,
         )
         if parser is not None:
             deployment_plan = deployment_plan.model_copy(
@@ -540,29 +547,66 @@ def declares_reasoning_channel(
     return bool(chat_template and "reasoning_content" in chat_template)
 
 
+def served_parser(
+    model_type: str,
+    architectures: Sequence[str],
+    reasoning_parsers: frozenset[str],
+    served_with: Mapping[str, str],
+) -> str | None:
+    """The reasoning parser the engine version serves this model with, or None.
+
+    The architecture's own (``served_with``: the parser the version's example
+    checkpoint for it is served with, from the engine facts) comes first:
+    GLM-5.x is ``glm_moe_dsa`` / ``glm5_next`` and served with ``glm45``,
+    MiniMax-M3 is ``minimax_m3_vl`` and served with ``minimax_m3``.  Otherwise
+    a parser registered under the model's type (Muse-Glimmer's
+    ``muse_glimmer``).  Either must be a parser the version registers.
+    """
+    for arch in architectures:
+        parser = served_with.get(arch)
+        if parser is not None:
+            return parser if parser in reasoning_parsers else None
+    return model_type if model_type in reasoning_parsers else None
+
+
 def reasoning_parser_for(
     model_type: str,
     reasoning_parsers: frozenset[str],
     chat_template: str | None,
     tokenizer_config: dict[str, Any] | None,
+    *,
+    architectures: Sequence[str] = (),
+    served_with: Mapping[str, str] | None = None,
+    engine_renders_chat: bool = False,
 ) -> str | None:
     """The engine reasoning parser a plan names for this model, or None.
 
-    All three must hold: the plan's engine version registers a parser under
-    the model's type (vLLM turns none on by itself, config/reasoning.py:22);
-    the template has no ``enable_thinking`` (the request switches thinking
-    off there, and the answer is already the content); and the model declares
-    a reasoning channel (``declares_reasoning_channel``).  A type match alone
-    is not enough: ``mistral`` names a parser and Mistral-7B-Instruct has no
-    reasoning channel.
+    All three must hold: the plan's engine version serves the model with a
+    parser it registers (``served_parser``; vLLM turns none on by itself,
+    config/reasoning.py:22); the template has no ``enable_thinking`` (the
+    request switches thinking off there, and the answer is already the
+    content); and the model declares a reasoning channel
+    (``declares_reasoning_channel``).  A parser match alone is not enough:
+    ``mistral`` names a parser and Mistral-7B-Instruct has no reasoning
+    channel.  Where the repo has no template and the engine renders the chat
+    in its own tokenizer mode, that renderer is the template and the parser
+    comes with it: DeepSeek V4 / V4.1's opens ``<think>`` unless the request
+    switches thinking off (v0.30.0 tokenizers/deepseek_v4.py:30-35,
+    deepseek_v41.py:70-72), and their parsers start in reasoning on the same
+    default (parser/deepseek_v4.py:248-253).  A renderer that does not think
+    by default is served with a parser that passes the content through
+    (DeepSeek V3.2's ``deepseek_v3``: reasoning/deepseek_v3_reasoning_parser.py:30-38).
     """
-    if model_type not in reasoning_parsers:
+    parser = served_parser(model_type, architectures, reasoning_parsers, served_with or {})
+    if parser is None:
         return None
+    if engine_renders_chat:
+        return parser
     if chat_template and "enable_thinking" in chat_template:
         return None
     if not declares_reasoning_channel(chat_template, tokenizer_config):
         return None
-    return model_type
+    return parser
 
 
 # Stored bytes per element, by safetensors dtype name.

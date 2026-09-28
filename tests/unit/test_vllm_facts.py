@@ -86,6 +86,13 @@ def test_facts_equal_what_the_pinned_source_generates(version: str) -> None:
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    recipes = source.parent / "recipes"  # the generator's reasoning-parser source
+    has_commit = subprocess.run(
+        ["git", "-C", str(recipes), "cat-file", "-e", f"{module.RECIPES_COMMIT}^{{commit}}"],
+        capture_output=True,
+    )
+    if has_commit.returncode != 0:
+        pytest.skip(f"vllm-project/recipes at {module.RECIPES_COMMIT[:7]} not available")
     assert module.generate(source) == load_facts(version), "run scripts/generate_vllm_facts.py"
 
 

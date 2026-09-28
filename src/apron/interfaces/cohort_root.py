@@ -127,6 +127,10 @@ def cohort_envelope(maximum_spend: float = AUTHORIZED_USD) -> AuthorizationEnvel
 # reason first: 512 tokens instead of 8 (owner, 2026-09-27).  A different suite
 # is a different evaluation protocol; the first cohort's records keep theirs.
 TASK_SUITE_V2 = REPO / "cohort" / "task-suite-v2.json"
+# Deployment checks (PLAN §18.1 item 5): long-context needle, tool call, JSON
+# output, image input, reasoning split.  Scored by DeploymentCheckScorer with
+# each plan's deployment facts; v2 and its records are untouched.
+TASK_SUITE_V3 = REPO / "cohort" / "task-suite-v3.json"
 
 
 def load_inputs(
@@ -363,6 +367,7 @@ class CohortPlanner:
             unmodelled_architectures=facts.hybrid_architectures,
             tokenizer_modes=facts.tokenizer_modes,
             reasoning_parsers=facts.reasoning_parsers,
+            reasoning_parser_architectures=facts.reasoning_parser_architectures,
             state_blocks=StateBlockFacts(
                 engine_version=facts.version,
                 check=facts.state_block_check,

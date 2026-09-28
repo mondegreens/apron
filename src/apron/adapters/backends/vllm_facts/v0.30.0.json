@@ -592,6 +592,264 @@
       "min_capability_source": "model_executor/layers/quantization/mxfp4.py:66"
     }
   },
+  "reasoning_parser_architectures": {
+    "architectures": {
+      "BailingMoeV3ForCausalLM": {
+        "parser": "ling3",
+        "recipes": [
+          "inclusionAI/Ling-3.0-flash"
+        ]
+      },
+      "BailingMoeV3VLForConditionalGeneration": {
+        "parser": "ling3",
+        "recipes": [
+          "inclusionAI/Ling-3.0-flash-VL"
+        ]
+      },
+      "DeepseekV32ForCausalLM": {
+        "parser": "deepseek_v3",
+        "recipes": [
+          "deepseek-ai/DeepSeek-V3.2-Exp"
+        ]
+      },
+      "DeepseekV3ForCausalLM": {
+        "parser": "deepseek_v3",
+        "recipes": [
+          "deepseek-ai/DeepSeek-V3"
+        ]
+      },
+      "DeepseekV41ForCausalLM": {
+        "parser": "deepseek_v41",
+        "recipes": [
+          "deepseek-ai/DeepSeek-V4.1-Flash"
+        ]
+      },
+      "DeepseekV4ForCausalLM": {
+        "parser": "deepseek_v4",
+        "recipes": [
+          "deepseek-ai/DeepSeek-V4-Flash"
+        ]
+      },
+      "DeepseekV4ForConditionalGeneration": {
+        "parser": "deepseek_v4",
+        "recipes": [
+          "deepseek-ai/DeepSeek-V4-Flash-Vision-Exp"
+        ]
+      },
+      "DiffusionGemmaForBlockDiffusion": {
+        "parser": "gemma4",
+        "recipes": [
+          "google/diffusiongemma-26B-A4B-it"
+        ]
+      },
+      "Dots3NoteForCausalLM": {
+        "parser": "qwen3",
+        "recipes": [
+          "dots-studio/dots3-note-prev"
+        ]
+      },
+      "Gemma4ForCausalLM": {
+        "parser": "gemma4",
+        "recipes": [
+          "google/gemma-4-E2B-it"
+        ]
+      },
+      "Gemma4ForConditionalGeneration": {
+        "parser": "gemma4",
+        "recipes": [
+          "google/gemma-4-E2B-it"
+        ]
+      },
+      "Gemma4UnifiedForConditionalGeneration": {
+        "parser": "gemma4",
+        "recipes": [
+          "google/gemma-4-12B-it"
+        ]
+      },
+      "Glm4MoeForCausalLM": {
+        "parser": "glm45",
+        "recipes": [
+          "zai-org/GLM-4.5"
+        ]
+      },
+      "Glm4vMoeForConditionalGeneration": {
+        "parser": "glm45",
+        "recipes": [
+          "zai-org/GLM-4.5V"
+        ]
+      },
+      "Glm5NextForCausalLM": {
+        "parser": "glm45",
+        "recipes": [
+          "zai-org/GLM-5.3-Flash"
+        ]
+      },
+      "Glm5NextForConditionalGeneration": {
+        "parser": "glm45",
+        "recipes": [
+          "zai-org/GLM-5.3-Flash"
+        ]
+      },
+      "GlmMoeDsaForCausalLM": {
+        "parser": "glm45",
+        "recipes": [
+          "zai-org/GLM-5"
+        ]
+      },
+      "HYV3ForCausalLM": {
+        "parser": "hy_v3",
+        "recipes": [
+          "tencent/Hy3-preview"
+        ]
+      },
+      "HYV4ForCausalLM": {
+        "parser": "hy_v4",
+        "recipes": [
+          "tencent/Hy4-preview"
+        ]
+      },
+      "InklingForCausalLM": {
+        "parser": "inkling",
+        "recipes": [
+          "thinkingmachines/Inkling-NVFP4"
+        ]
+      },
+      "InklingForConditionalGeneration": {
+        "parser": "inkling",
+        "recipes": [
+          "thinkingmachines/Inkling-NVFP4"
+        ]
+      },
+      "InternS1ForConditionalGeneration": {
+        "parser": "deepseek_r1",
+        "recipes": [
+          "internlm/Intern-S1"
+        ]
+      },
+      "InternS2PreviewForConditionalGeneration": {
+        "parser": "qwen3",
+        "recipes": [
+          "internlm/Intern-S2-Preview"
+        ]
+      },
+      "KimiK25ForConditionalGeneration": {
+        "parser": "kimi_k2",
+        "recipes": [
+          "moonshotai/Kimi-K2.5"
+        ]
+      },
+      "KimiK3ForConditionalGeneration": {
+        "parser": "kimi_k3",
+        "recipes": [
+          "moonshotai/Kimi-K3"
+        ]
+      },
+      "LagunaForCausalLM": {
+        "parser": "poolside_v1",
+        "recipes": [
+          "poolside/Laguna-XS.2"
+        ]
+      },
+      "MiMoV2FlashForCausalLM": {
+        "parser": "qwen3",
+        "recipes": [
+          "XiaomiMiMo/MiMo-V2-Flash"
+        ]
+      },
+      "MiMoV2ForCausalLM": {
+        "parser": "mimo",
+        "recipes": [
+          "XiaomiMiMo/MiMo-V2.5-Pro"
+        ]
+      },
+      "MiniMaxM2ForCausalLM": {
+        "parser": "minimax_m2",
+        "recipes": [
+          "MiniMaxAI/MiniMax-M2"
+        ]
+      },
+      "MiniMaxM3SparseForCausalLM": {
+        "parser": "minimax_m3",
+        "recipes": [
+          "MiniMaxAI/MiniMax-M3"
+        ]
+      },
+      "MiniMaxM3SparseForConditionalGeneration": {
+        "parser": "minimax_m3",
+        "recipes": [
+          "MiniMaxAI/MiniMax-M3"
+        ]
+      },
+      "MuseGlimmerForCausalLM": {
+        "parser": "muse_glimmer",
+        "recipes": [
+          "meta-models/Muse-Glimmer-30B"
+        ]
+      },
+      "MuseGlimmerForConditionalGeneration": {
+        "parser": "muse_glimmer",
+        "recipes": [
+          "meta-models/Muse-Glimmer-30B"
+        ]
+      },
+      "NemotronH_Nano_Omni_Reasoning_V3": {
+        "parser": "nemotron_v3",
+        "recipes": [
+          "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16"
+        ]
+      },
+      "NemotronH_Omni_Reasoning_V3": {
+        "parser": "nemotron_v3",
+        "recipes": [
+          "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16"
+        ]
+      },
+      "NemotronH_Super_Omni_Reasoning_V3": {
+        "parser": "nemotron_v3",
+        "recipes": [
+          "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16"
+        ]
+      },
+      "Qwen3ForCausalLM": {
+        "parser": "qwen3",
+        "recipes": [
+          "Qwen/Qwen3-8B"
+        ]
+      },
+      "Qwen3MoeForCausalLM": {
+        "parser": "qwen3",
+        "recipes": [
+          "Qwen/Qwen3-30B-A3B"
+        ]
+      },
+      "Qwen3_5ForConditionalGeneration": {
+        "parser": "qwen3",
+        "recipes": [
+          "Qwen/Qwen3.5-0.8B",
+          "Qwen/Qwen3.5-4B"
+        ]
+      },
+      "Qwen3_5MoeForConditionalGeneration": {
+        "parser": "qwen3",
+        "recipes": [
+          "Qwen/Qwen3.5-35B-A3B"
+        ]
+      },
+      "Step3p5ForCausalLM": {
+        "parser": "step3p5",
+        "recipes": [
+          "stepfun-ai/Step-3.5-Flash"
+        ]
+      },
+      "Step3p7ForConditionalGeneration": {
+        "parser": "step3p5",
+        "recipes": [
+          "stepfun-ai/Step-3.7-Flash"
+        ]
+      }
+    },
+    "source": "tests/models/registry.py (_TEXT_GENERATION_EXAMPLE_MODELS, _MULTIMODAL_EXAMPLE_MODELS) x vllm-project/recipes@f050a17eec51 models/*/*.yaml (features.reasoning.args)"
+  },
   "reasoning_parsers": {
     "names": [
       "cohere_command3",

@@ -13,7 +13,9 @@ and, per version: the scheduler defaults `vllm serve` picks per GPU memory
 tier (``get_batch_defaults``), and where the version needs one state (Mamba)
 block per decode sequence (the check that refuses more, and the CUDA-graph
 profiling cache of one block per sequence); and the names its
-``--reasoning-parser`` and ``--tool-call-parser`` registries accept;
+``--reasoning-parser`` and ``--tool-call-parser`` registries accept, and which
+reasoning parser each architecture is served with (its test-registry example's
+vllm-project recipe, ``reasoning_parser_architectures``);
 
 and writes ``src/apron/adapters/backends/vllm_facts.json`` with the vLLM
 version and commit they came from.  The index below only says where each
@@ -304,6 +306,7 @@ def generate(source: Path) -> dict[str, Any]:
     commit = subprocess.run(
         ["git", "-C", str(source), "rev-parse", "HEAD"], capture_output=True, text=True
     ).stdout.strip()
+    parsers = reasoning_parsers(source)
     return {
         "engine": "vllm",
         "engine_version": version,
@@ -316,7 +319,8 @@ def generate(source: Path) -> dict[str, Any]:
         "source_names": _names_entry(version, source_names(source)),
         "architectures": registered_architectures(source),
         "tokenizer_modes": _tokenizer_modes(source),
-        "reasoning_parsers": reasoning_parsers(source),
+        "reasoning_parsers": parsers,
+        "reasoning_parser_architectures": reasoning_parser_architectures(source, parsers["names"]),
         "tool_parsers": tool_parsers(source),
         "batch_defaults": batch_defaults(source),
         "state_blocks": state_blocks(source),
@@ -558,6 +562,137 @@ def reasoning_parsers(source: Path) -> dict[str, Any]:
 def tool_parsers(source: Path) -> dict[str, Any]:
     """Names ``--tool-call-parser`` accepts in this version."""
     return _registry_names(source, TOOL_PARSERS)
+
+
+# Which reasoning parser vLLM serves an architecture with.  vLLM turns none on
+# by itself (config/reasoning.py:22) and its source keys no parser on a model
+# type (GLM-5's glm_moe_dsa is served with glm45, MiniMax-M3's minimax_m3_vl
+# with minimax_m3).  The association is the project's own, in two places: the
+# version's test registry names the example checkpoint of each architecture it
+# serves (tests/models/registry.py), and the vllm-project/recipes serve command
+# for that checkpoint names the parser (``features.reasoning.args``).  Joined
+# on the checkpoint, the result is keyed on the architecture, never on a
+# model id.  The recipes are read at a pinned commit, so the facts are
+# reproducible; an architecture whose examples' recipes disagree names none.
+EXAMPLE_REGISTRY = "tests/models/registry.py"
+_EXAMPLE_TABLES = ("_TEXT_GENERATION_EXAMPLE_MODELS", "_MULTIMODAL_EXAMPLE_MODELS")
+# vllm-project/recipes, checked out next to the vLLM source (.sources/recipes).
+RECIPES_COMMIT = "f050a17eec51c7093727ddbc765c005647bc92f3"
+
+
+def _example_checkpoints(source: Path) -> dict[str, set[str]]:
+    """Architecture -> the checkpoints the version's test registry serves it with."""
+    examples: dict[str, set[str]] = {}
+    for node in ast.parse((source / EXAMPLE_REGISTRY).read_text()).body:
+        if isinstance(node, ast.AnnAssign):
+            target, value = node.target, node.value
+        elif isinstance(node, ast.Assign):
+            target, value = node.targets[0], node.value
+        else:
+            continue
+        if not (
+            isinstance(target, ast.Name)
+            and target.id in _EXAMPLE_TABLES
+            and isinstance(value, ast.Dict)
+        ):
+            continue
+        for key, info in zip(value.keys, value.values, strict=True):
+            if not (isinstance(key, ast.Constant) and isinstance(info, ast.Call)):
+                continue
+            ids = examples.setdefault(str(key.value), set())
+            extras = [kw.value for kw in info.keywords if kw.arg == "extras"]
+            for arg in [*info.args[:2], *extras]:
+                if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                    ids.add(arg.value)
+                elif isinstance(arg, ast.Dict):
+                    ids.update(
+                        str(v.value)
+                        for v in arg.values
+                        if isinstance(v, ast.Constant) and isinstance(v.value, str)
+                    )
+    if not examples:
+        raise SystemExit(f"{EXAMPLE_REGISTRY}: no example tables found — update the index")
+    return examples
+
+
+def _version_tuple(text: str) -> tuple[int, ...] | None:
+    match = re.fullmatch(r"v?(\d+(?:\.\d+)*)", text.strip())
+    return tuple(int(p) for p in match.group(1).split(".")) if match else None
+
+
+def _recipe_parsers(recipes: Path) -> dict[str, tuple[str, str | None]]:
+    """Checkpoint -> (reasoning parser, min_vllm_version) from the pinned recipes."""
+    import io
+    import tarfile
+
+    import yaml
+
+    archive = subprocess.run(
+        ["git", "-C", str(recipes), "archive", RECIPES_COMMIT, "models"],
+        capture_output=True,
+        check=False,
+    )
+    if archive.returncode != 0:
+        raise SystemExit(
+            f"{recipes}: vllm-project/recipes commit {RECIPES_COMMIT} not found — fetch it"
+        )
+    parsers: dict[str, tuple[str, str | None]] = {}
+    with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as tar:
+        for member in sorted(tar.getmembers(), key=lambda m: m.name):
+            if not (member.isfile() and member.name.endswith(".yaml")):
+                continue
+            handle = tar.extractfile(member)
+            recipe = yaml.safe_load(handle.read()) if handle else None
+            if not isinstance(recipe, dict):
+                continue
+            model = recipe.get("model") or {}
+            reasoning = (recipe.get("features") or {}).get("reasoning") or {}
+            args = [str(a) for a in reasoning.get("args") or []]
+            if not args:  # a recipe that always reasons names it in its base args
+                args = [str(a) for a in model.get("base_args") or []]
+            if "--reasoning-parser" in args[:-1] and model.get("model_id"):
+                parser = args[args.index("--reasoning-parser") + 1]
+                minimum = model.get("min_vllm_version")
+                parsers[str(model["model_id"])] = (parser, str(minimum) if minimum else None)
+    if not parsers:
+        raise SystemExit(f"{recipes}@{RECIPES_COMMIT}: no recipe names a reasoning parser")
+    return parsers
+
+
+def reasoning_parser_architectures(source: Path, registered: list[str]) -> dict[str, Any]:
+    """Architecture -> the reasoning parser its example checkpoint's recipe serves it
+    with, for parsers this version registers and recipes it can run."""
+    recipes = source.parent / "recipes"
+    if not (recipes / ".git").exists():
+        raise SystemExit(f"{recipes}: vllm-project/recipes checkout not found next to vLLM")
+    version = _version_tuple(
+        subprocess.run(
+            ["git", "-C", str(source), "describe", "--tags"], capture_output=True, text=True
+        ).stdout
+    )
+    by_checkpoint = _recipe_parsers(recipes)
+    known = set(registered)
+    architectures: dict[str, Any] = {}
+    for arch, checkpoints in sorted(_example_checkpoints(source).items()):
+        served: dict[str, str] = {}
+        for checkpoint in sorted(checkpoints):
+            if checkpoint not in by_checkpoint:
+                continue
+            parser, minimum = by_checkpoint[checkpoint]
+            needs = _version_tuple(minimum) if minimum else None
+            if parser in known and not (needs and version and needs > version):
+                served[checkpoint] = parser
+        if len(set(served.values())) == 1:
+            architectures[arch] = {
+                "parser": next(iter(served.values())),
+                "recipes": sorted(served),
+            }
+    return {
+        "architectures": architectures,
+        "source": f"{EXAMPLE_REGISTRY} ({', '.join(_EXAMPLE_TABLES)}) x "
+        f"vllm-project/recipes@{RECIPES_COMMIT[:12]} models/*/*.yaml "
+        "(features.reasoning.args)",
+    }
 
 
 REGISTRY = "vllm/model_executor/models/registry.py"

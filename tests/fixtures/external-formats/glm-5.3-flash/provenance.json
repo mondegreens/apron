@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "source_name": "glm-5.3-flash",
+  "locations": [
+    {
+      "repository": "zai-org/GLM-5.3-Flash",
+      "revision": "eb9eb208eb0d988989d07a6a12d0fdeb5f52574a",
+      "retrieval_method": "huggingface_hub_api"
+    }
+  ],
+  "retrieval_date": "2026-09-28",
+  "license": "MIT",
+  "has_formal_schema": false,
+  "formal_schema_file": null,
+  "schema_description": "Hugging Face Hub model repository file: the chat template (as GLM-5.3's, with image/video/audio placeholders).",
+  "pinned_files": [
+    {
+      "source_path": "zai-org/GLM-5.3-Flash/chat_template.jinja",
+      "local_path": "chat_template.jinja",
+      "sha256": "0c4099f3382d6c92700dfb99725025360966fd73032f0ecf32377c0d9e6309c5",
+      "size_bytes": 10950,
+      "role": "representative_content"
+    }
+  ],
+  "notes": "A reasoning model whose model_type (glm5_next) names no vLLM parser; vLLM serves its architecture with the glm45 reasoning parser."
+}
