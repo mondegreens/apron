@@ -153,6 +153,16 @@ class EngineFacts:
             arch: entry["parser"]
             for arch, entry in facts["reasoning_parser_architectures"]["architectures"].items()
         }
+        # Architecture -> the tool-call parser the recipes name for it, and
+        # checkpoint -> the parsers its own recipe names (for an architecture
+        # the test registry has no example checkpoint of).
+        self.tool_parser_architectures: dict[str, str] = {
+            arch: entry["parser"]
+            for arch, entry in facts["tool_parser_architectures"]["architectures"].items()
+        }
+        self.recipe_checkpoints: dict[str, dict[str, str]] = dict(
+            facts["recipe_checkpoints"]["checkpoints"]
+        )
         # method ->(minimum capability, source line)
         self.quant_min_capability: dict[str, tuple[int, str]] = self._method_table(
             "min_capability", "min_capability_source"

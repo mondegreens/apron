@@ -28,10 +28,9 @@ from apron.adapters.evaluations.deployment_checks import (
     schema_errors,
     solid_png,
 )
-from apron.adapters.evaluations.deployment_facts import (
-    deployment_facts,
+from apron.adapters.evaluations.deployment_facts import deployment_facts, vision_enabled
+from apron.application.orchestration.plan_pipeline import (
     tool_call_parser_for,
-    vision_enabled,
     with_tool_calling,
 )
 from apron.domain.schemas.solutions import DeploymentPlan
@@ -662,3 +661,6 @@ def test_the_cohort_step_runs_v3_with_a_for_plans_scorer_and_records_every_verdi
         )
         output = json.loads(record.output or "")
         assert output["verdict"] == attempt["verdict"] and output["reason"] == attempt["reason"]
+        # A skipped check is neither accepted nor rejected.
+        skipped = attempt["verdict"] == "skipped"
+        assert record.accepted is (None if skipped else attempt["verdict"] == "pass")

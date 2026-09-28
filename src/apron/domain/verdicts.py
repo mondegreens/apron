@@ -55,18 +55,30 @@ def task_verdict(
 
     The rule is a pass rate over the suite's cases: accepted final attempts
     divided by the number of cases.  A missing case counts as not accepted.
-    With no ``quality_floor`` declared, every case must be accepted.
+    A case whose final attempt was skipped (``accepted is None``: a
+    deployment check the plan does not serve, e.g. an image to a text-only
+    model) is left out of the rate and listed in the detail.  With no
+    ``quality_floor`` declared, every case that applies must be accepted.
     """
     if not case_ids:
         return Verdict(False, "task suite declares no cases")
     foreign = sorted({a.solution_fingerprint for a in attempts} - {solution_fingerprint})
     if foreign:
         return Verdict(False, "task attempts belong to a different solution", tuple(foreign))
-    accepted = accepted_case_ids(attempts) & set(case_ids)
-    missing = tuple(sorted(set(case_ids) - set(final_attempts(attempts))))
-    rate = len(accepted) / len(case_ids)
+    final = final_attempts(attempts)
+    skipped = sorted(c for c in case_ids if c in final and final[c].accepted is None)
+    applies = [c for c in case_ids if c not in skipped]
+    if not applies:
+        return Verdict(False, "every case was skipped", tuple(f"skipped {c}" for c in skipped))
+    accepted = accepted_case_ids(attempts) & set(applies)
+    missing = tuple(sorted(set(case_ids) - set(final)))
+    rate = len(accepted) / len(applies)
     floor = 1.0 if quality_floor is None else quality_floor
-    detail = (f"accepted {len(accepted)}/{len(case_ids)}", *(f"missing {c}" for c in missing))
+    detail = (
+        f"accepted {len(accepted)}/{len(applies)}",
+        *(f"missing {c}" for c in missing),
+        *(f"skipped {c}" for c in skipped),
+    )
     if rate >= floor:
         return Verdict(True, None, detail)
     return Verdict(False, f"pass rate {rate:.2f} below quality floor {floor:.2f}", detail)

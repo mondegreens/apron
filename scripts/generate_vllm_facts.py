@@ -307,6 +307,7 @@ def generate(source: Path) -> dict[str, Any]:
         ["git", "-C", str(source), "rev-parse", "HEAD"], capture_output=True, text=True
     ).stdout.strip()
     parsers = reasoning_parsers(source)
+    tools = tool_parsers(source)
     return {
         "engine": "vllm",
         "engine_version": version,
@@ -321,7 +322,9 @@ def generate(source: Path) -> dict[str, Any]:
         "tokenizer_modes": _tokenizer_modes(source),
         "reasoning_parsers": parsers,
         "reasoning_parser_architectures": reasoning_parser_architectures(source, parsers["names"]),
-        "tool_parsers": tool_parsers(source),
+        "tool_parsers": tools,
+        "tool_parser_architectures": parser_architectures(source, "tool", tools["names"]),
+        "recipe_checkpoints": recipe_checkpoints(source, parsers["names"], tools["names"]),
         "batch_defaults": batch_defaults(source),
         "state_blocks": state_blocks(source),
         "compressed_tensors": {
@@ -620,8 +623,19 @@ def _version_tuple(text: str) -> tuple[int, ...] | None:
     return tuple(int(p) for p in match.group(1).split(".")) if match else None
 
 
-def _recipe_parsers(recipes: Path) -> dict[str, tuple[str, str | None]]:
-    """Checkpoint -> (reasoning parser, min_vllm_version) from the pinned recipes."""
+def _flag_value(args: list[str], flag: str) -> str | None:
+    return args[args.index(flag) + 1] if flag in args[:-1] else None
+
+
+def _recipe_parsers(recipes: Path) -> dict[str, dict[str, str | None]]:
+    """Checkpoint -> its recipe's reasoning parser, tool-call parser and
+    min_vllm_version, from the pinned recipes.
+
+    The reasoning parser is in ``features.reasoning.args`` (or the base args
+    of a recipe that always reasons); the tool-call parser in
+    ``features.tool_calling.args``, which serve with
+    ``--enable-auto-tool-choice`` (e.g. models/zai-org/GLM-5.1.yaml).
+    """
     import io
     import tarfile
 
@@ -636,7 +650,7 @@ def _recipe_parsers(recipes: Path) -> dict[str, tuple[str, str | None]]:
         raise SystemExit(
             f"{recipes}: vllm-project/recipes commit {RECIPES_COMMIT} not found — fetch it"
         )
-    parsers: dict[str, tuple[str, str | None]] = {}
+    parsers: dict[str, dict[str, str | None]] = {}
     with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as tar:
         for member in sorted(tar.getmembers(), key=lambda m: m.name):
             if not (member.isfile() and member.name.endswith(".yaml")):
@@ -646,52 +660,102 @@ def _recipe_parsers(recipes: Path) -> dict[str, tuple[str, str | None]]:
             if not isinstance(recipe, dict):
                 continue
             model = recipe.get("model") or {}
-            reasoning = (recipe.get("features") or {}).get("reasoning") or {}
-            args = [str(a) for a in reasoning.get("args") or []]
-            if not args:  # a recipe that always reasons names it in its base args
-                args = [str(a) for a in model.get("base_args") or []]
-            if "--reasoning-parser" in args[:-1] and model.get("model_id"):
-                parser = args[args.index("--reasoning-parser") + 1]
+            features = recipe.get("features") or {}
+            reasoning_args = [str(a) for a in (features.get("reasoning") or {}).get("args") or []]
+            if not reasoning_args:  # a recipe that always reasons names it in its base args
+                reasoning_args = [str(a) for a in model.get("base_args") or []]
+            tool_args = [str(a) for a in (features.get("tool_calling") or {}).get("args") or []]
+            reasoning = _flag_value(reasoning_args, "--reasoning-parser")
+            tool = (
+                _flag_value(tool_args, "--tool-call-parser")
+                if "--enable-auto-tool-choice" in tool_args
+                else None
+            )
+            if (reasoning or tool) and model.get("model_id"):
                 minimum = model.get("min_vllm_version")
-                parsers[str(model["model_id"])] = (parser, str(minimum) if minimum else None)
-    if not parsers:
+                parsers[str(model["model_id"])] = {
+                    "reasoning": reasoning,
+                    "tool": tool,
+                    "min_vllm_version": str(minimum) if minimum else None,
+                }
+    if not any(entry["reasoning"] for entry in parsers.values()):
         raise SystemExit(f"{recipes}@{RECIPES_COMMIT}: no recipe names a reasoning parser")
     return parsers
 
 
-def reasoning_parser_architectures(source: Path, registered: list[str]) -> dict[str, Any]:
-    """Architecture -> the reasoning parser its example checkpoint's recipe serves it
-    with, for parsers this version registers and recipes it can run."""
+def _recipes_checkout(source: Path) -> Path:
     recipes = source.parent / "recipes"
     if not (recipes / ".git").exists():
         raise SystemExit(f"{recipes}: vllm-project/recipes checkout not found next to vLLM")
-    version = _version_tuple(
+    return recipes
+
+
+def _source_version(source: Path) -> tuple[int, ...] | None:
+    return _version_tuple(
         subprocess.run(
             ["git", "-C", str(source), "describe", "--tags"], capture_output=True, text=True
         ).stdout
     )
-    by_checkpoint = _recipe_parsers(recipes)
+
+
+def recipe_parsers(source: Path, kind: str, registered: list[str]) -> dict[str, str]:
+    """Checkpoint -> the *kind* (``reasoning`` / ``tool``) parser its recipe
+    serves it with, for parsers this version registers and recipes it can run."""
+    version = _source_version(source)
     known = set(registered)
+    served: dict[str, str] = {}
+    for checkpoint, entry in sorted(_recipe_parsers(_recipes_checkout(source)).items()):
+        parser = entry[kind]
+        needs = _version_tuple(entry["min_vllm_version"]) if entry["min_vllm_version"] else None
+        if parser and parser in known and not (needs and version and needs > version):
+            served[checkpoint] = parser
+    return served
+
+
+def parser_architectures(source: Path, kind: str, registered: list[str]) -> dict[str, Any]:
+    """Architecture -> the *kind* parser its example checkpoint's recipe serves
+    it with, for parsers this version registers and recipes it can run."""
+    by_checkpoint = recipe_parsers(source, kind, registered)
     architectures: dict[str, Any] = {}
     for arch, checkpoints in sorted(_example_checkpoints(source).items()):
-        served: dict[str, str] = {}
-        for checkpoint in sorted(checkpoints):
-            if checkpoint not in by_checkpoint:
-                continue
-            parser, minimum = by_checkpoint[checkpoint]
-            needs = _version_tuple(minimum) if minimum else None
-            if parser in known and not (needs and version and needs > version):
-                served[checkpoint] = parser
+        served = {c: by_checkpoint[c] for c in sorted(checkpoints) if c in by_checkpoint}
         if len(set(served.values())) == 1:
             architectures[arch] = {
                 "parser": next(iter(served.values())),
                 "recipes": sorted(served),
             }
+    field = "features.reasoning.args" if kind == "reasoning" else "features.tool_calling.args"
     return {
         "architectures": architectures,
         "source": f"{EXAMPLE_REGISTRY} ({', '.join(_EXAMPLE_TABLES)}) x "
         f"vllm-project/recipes@{RECIPES_COMMIT[:12]} models/*/*.yaml "
-        "(features.reasoning.args)",
+        f"({field})",
+    }
+
+
+def reasoning_parser_architectures(source: Path, registered: list[str]) -> dict[str, Any]:
+    return parser_architectures(source, "reasoning", registered)
+
+
+def recipe_checkpoints(
+    source: Path, reasoning_registered: list[str], tool_registered: list[str]
+) -> dict[str, Any]:
+    """Checkpoint -> the parsers its own recipe serves it with.  For a
+    checkpoint whose architecture has no example checkpoint in the test
+    registry (Qwen4Exp's is ``""``, tests/models/registry.py:521, 1387), the
+    recipe for that exact checkpoint is the project's only word on it."""
+    reasoning = recipe_parsers(source, "reasoning", reasoning_registered)
+    tool = recipe_parsers(source, "tool", tool_registered)
+    return {
+        "checkpoints": {
+            c: {
+                **({"reasoning_parser": reasoning[c]} if c in reasoning else {}),
+                **({"tool_call_parser": tool[c]} if c in tool else {}),
+            }
+            for c in sorted(set(reasoning) | set(tool))
+        },
+        "source": f"vllm-project/recipes@{RECIPES_COMMIT[:12]} models/*/*.yaml "
+        "(features.reasoning.args, features.tool_calling.args)",
     }
 
 

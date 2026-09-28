@@ -662,6 +662,8 @@ def _task_row(run: CohortRun, sfp: str, protocol_fp: str, digests: list[str]) ->
         "attempts": len(attempts),
         "retries": sum(1 for a in attempts if a.retries),
         "accepted": len({a.case_id for a in attempts if a.accepted}),
+        # Suite v3: checks the plan does not serve (reason in the output).
+        "skipped": len({a.case_id for a in attempts if a.accepted is None}),
         # Cut at the case's max_tokens: tagged since the harness reads
         # finish_reason; before that, the output used every allowed token.
         "truncated": sum(1 for a in attempts if _truncated(a, limits)),

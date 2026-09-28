@@ -847,6 +847,418 @@
     ],
     "source": "reasoning/__init__.py:22"
   },
+  "recipe_checkpoints": {
+    "checkpoints": {
+      "ByteDance-Seed/Seed-OSS-36B-Instruct": {
+        "tool_call_parser": "seed_oss"
+      },
+      "JetBrains/Mellum2-12B-A2.5B-Instruct": {
+        "tool_call_parser": "hermes"
+      },
+      "JetBrains/Mellum2-12B-A2.5B-Thinking": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "hermes"
+      },
+      "LiquidAI/LFM2.5-1.2B-Instruct": {
+        "tool_call_parser": "lfm2"
+      },
+      "LiquidAI/LFM2.5-1.2B-JP-202606": {
+        "tool_call_parser": "lfm2"
+      },
+      "LiquidAI/LFM2.5-1.2B-Thinking": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "lfm2"
+      },
+      "LiquidAI/LFM2.5-230M": {
+        "tool_call_parser": "lfm2"
+      },
+      "LiquidAI/LFM2.5-350M": {
+        "tool_call_parser": "lfm2"
+      },
+      "LiquidAI/LFM2.5-8B-A1B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "lfm2"
+      },
+      "MiniMaxAI/MiniMax-M2": {
+        "reasoning_parser": "minimax_m2",
+        "tool_call_parser": "minimax_m2"
+      },
+      "MiniMaxAI/MiniMax-M2.1": {
+        "reasoning_parser": "minimax_m2",
+        "tool_call_parser": "minimax_m2"
+      },
+      "MiniMaxAI/MiniMax-M2.5": {
+        "reasoning_parser": "minimax_m2",
+        "tool_call_parser": "minimax_m2"
+      },
+      "MiniMaxAI/MiniMax-M2.7": {
+        "reasoning_parser": "minimax_m2",
+        "tool_call_parser": "minimax_m2"
+      },
+      "MiniMaxAI/MiniMax-M3": {
+        "reasoning_parser": "minimax_m3",
+        "tool_call_parser": "minimax_m3"
+      },
+      "Qwen/QwQ-32B": {
+        "reasoning_parser": "deepseek_r1",
+        "tool_call_parser": "hermes"
+      },
+      "Qwen/Qwen3-1.7B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "hermes"
+      },
+      "Qwen/Qwen3-14B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "hermes"
+      },
+      "Qwen/Qwen3-235B-A22B-Instruct-2507": {
+        "tool_call_parser": "hermes"
+      },
+      "Qwen/Qwen3-30B-A3B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "hermes"
+      },
+      "Qwen/Qwen3-32B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "hermes"
+      },
+      "Qwen/Qwen3-4B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "hermes"
+      },
+      "Qwen/Qwen3-8B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "hermes"
+      },
+      "Qwen/Qwen3-Coder-480B-A35B-Instruct": {
+        "tool_call_parser": "qwen3_coder"
+      },
+      "Qwen/Qwen3-Next-80B-A3B-Instruct": {
+        "tool_call_parser": "hermes"
+      },
+      "Qwen/Qwen3.5-0.8B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "Qwen/Qwen3.5-122B-A10B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "Qwen/Qwen3.5-27B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "Qwen/Qwen3.5-2B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "Qwen/Qwen3.5-35B-A3B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "Qwen/Qwen3.5-397B-A17B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "Qwen/Qwen3.5-4B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "Qwen/Qwen3.5-9B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "Qwen/Qwen3.6-27B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_xml"
+      },
+      "Qwen/Qwen3.6-35B-A3B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_xml"
+      },
+      "Qwen/Qwen3.8-2.4T-A95B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "Qwen/Qwen3.8-27B": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "Qwen/Qwen3.8-Flash-Next": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_xml"
+      },
+      "XiaomiMiMo/MiMo-V2-Flash": {
+        "reasoning_parser": "qwen3"
+      },
+      "XiaomiMiMo/MiMo-V2.5": {
+        "reasoning_parser": "mimo",
+        "tool_call_parser": "mimo"
+      },
+      "XiaomiMiMo/MiMo-V2.5-Pro": {
+        "reasoning_parser": "mimo",
+        "tool_call_parser": "mimo"
+      },
+      "arcee-ai/Trinity-Large-Thinking": {
+        "reasoning_parser": "deepseek_r1",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "deepseek-ai/DeepSeek-R1": {
+        "reasoning_parser": "deepseek_r1",
+        "tool_call_parser": "deepseek_v3"
+      },
+      "deepseek-ai/DeepSeek-V3": {
+        "reasoning_parser": "deepseek_v3",
+        "tool_call_parser": "deepseek_v3"
+      },
+      "deepseek-ai/DeepSeek-V3.1": {
+        "reasoning_parser": "deepseek_v3",
+        "tool_call_parser": "deepseek_v31"
+      },
+      "deepseek-ai/DeepSeek-V3.2": {
+        "reasoning_parser": "deepseek_v3",
+        "tool_call_parser": "deepseek_v32"
+      },
+      "deepseek-ai/DeepSeek-V3.2-Exp": {
+        "reasoning_parser": "deepseek_v3",
+        "tool_call_parser": "deepseek_v32"
+      },
+      "deepseek-ai/DeepSeek-V4-Flash": {
+        "reasoning_parser": "deepseek_v4",
+        "tool_call_parser": "deepseek_v4"
+      },
+      "deepseek-ai/DeepSeek-V4-Flash-Vision-Exp": {
+        "reasoning_parser": "deepseek_v4",
+        "tool_call_parser": "deepseek_v4"
+      },
+      "deepseek-ai/DeepSeek-V4-Pro": {
+        "reasoning_parser": "deepseek_v4",
+        "tool_call_parser": "deepseek_v4"
+      },
+      "dots-studio/dots3-note-prev": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "dots"
+      },
+      "google/diffusiongemma-26B-A4B-it": {
+        "reasoning_parser": "gemma4",
+        "tool_call_parser": "gemma4"
+      },
+      "google/gemma-4-12B-it": {
+        "reasoning_parser": "gemma4",
+        "tool_call_parser": "gemma4"
+      },
+      "google/gemma-4-26B-A4B-it": {
+        "reasoning_parser": "gemma4",
+        "tool_call_parser": "gemma4"
+      },
+      "google/gemma-4-31B-it": {
+        "reasoning_parser": "gemma4",
+        "tool_call_parser": "gemma4"
+      },
+      "google/gemma-4-E2B-it": {
+        "reasoning_parser": "gemma4",
+        "tool_call_parser": "gemma4"
+      },
+      "google/gemma-4-E4B-it": {
+        "reasoning_parser": "gemma4",
+        "tool_call_parser": "gemma4"
+      },
+      "inclusionAI/Ling-3.0-flash": {
+        "reasoning_parser": "ling3",
+        "tool_call_parser": "ling3"
+      },
+      "inclusionAI/Ling-3.0-flash-VL": {
+        "reasoning_parser": "ling3",
+        "tool_call_parser": "ling3"
+      },
+      "inclusionAI/Ling-3.0-tiny": {
+        "reasoning_parser": "ling3",
+        "tool_call_parser": "ling3"
+      },
+      "internlm/Intern-S1": {
+        "reasoning_parser": "deepseek_r1",
+        "tool_call_parser": "internlm"
+      },
+      "internlm/Intern-S2-Preview": {
+        "reasoning_parser": "qwen3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "meta-models/Muse-Glimmer-30B": {
+        "reasoning_parser": "muse_glimmer",
+        "tool_call_parser": "muse_glimmer"
+      },
+      "mindlab-research/Macaron-V1-Coding-Venti": {
+        "reasoning_parser": "glm45",
+        "tool_call_parser": "glm47"
+      },
+      "mistralai/Ministral-3-14B-Instruct-2512": {
+        "tool_call_parser": "mistral"
+      },
+      "mistralai/Ministral-3-8B-Reasoning-2512": {
+        "reasoning_parser": "mistral",
+        "tool_call_parser": "mistral"
+      },
+      "mistralai/Mistral-Large-3-675B-Instruct-2512": {
+        "tool_call_parser": "mistral"
+      },
+      "mistralai/Mistral-Medium-3.5-128B": {
+        "reasoning_parser": "mistral",
+        "tool_call_parser": "mistral"
+      },
+      "mistralai/Mistral-Small-4-119B-2603": {
+        "reasoning_parser": "mistral",
+        "tool_call_parser": "mistral"
+      },
+      "moonshotai/Kimi-K2-Instruct": {
+        "tool_call_parser": "kimi_k2"
+      },
+      "moonshotai/Kimi-K2-Thinking": {
+        "reasoning_parser": "kimi_k2",
+        "tool_call_parser": "kimi_k2"
+      },
+      "moonshotai/Kimi-K2.5": {
+        "reasoning_parser": "kimi_k2",
+        "tool_call_parser": "kimi_k2"
+      },
+      "moonshotai/Kimi-K2.6": {
+        "reasoning_parser": "kimi_k2",
+        "tool_call_parser": "kimi_k2"
+      },
+      "moonshotai/Kimi-K2.7-Code": {
+        "reasoning_parser": "kimi_k2",
+        "tool_call_parser": "kimi_k2"
+      },
+      "moonshotai/Kimi-K3": {
+        "reasoning_parser": "kimi_k3",
+        "tool_call_parser": "kimi_k3"
+      },
+      "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16": {
+        "tool_call_parser": "qwen3_coder"
+      },
+      "nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16": {
+        "tool_call_parser": "qwen3_coder"
+      },
+      "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16": {
+        "reasoning_parser": "nemotron_v3",
+        "tool_call_parser": "qwen3_xml"
+      },
+      "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16": {
+        "reasoning_parser": "nemotron_v3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16": {
+        "reasoning_parser": "nemotron_v3",
+        "tool_call_parser": "qwen3_xml"
+      },
+      "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16": {
+        "reasoning_parser": "nemotron_v3",
+        "tool_call_parser": "qwen3_coder"
+      },
+      "openai/gpt-oss-120b": {
+        "tool_call_parser": "openai"
+      },
+      "openai/gpt-oss-20b": {
+        "tool_call_parser": "openai"
+      },
+      "openbmb/MiniCPM-V-4.6": {
+        "tool_call_parser": "qwen3_coder"
+      },
+      "openbmb/MiniCPM5-2B": {
+        "tool_call_parser": "minicpm5"
+      },
+      "poolside/Laguna-M.1": {
+        "reasoning_parser": "poolside_v1",
+        "tool_call_parser": "poolside_v1"
+      },
+      "poolside/Laguna-S-2.1": {
+        "reasoning_parser": "poolside_v1",
+        "tool_call_parser": "poolside_v1"
+      },
+      "poolside/Laguna-XS-2.1": {
+        "reasoning_parser": "poolside_v1",
+        "tool_call_parser": "poolside_v1"
+      },
+      "poolside/Laguna-XS.2": {
+        "reasoning_parser": "poolside_v1",
+        "tool_call_parser": "poolside_v1"
+      },
+      "stepfun-ai/Step-3.5-Flash": {
+        "reasoning_parser": "step3p5",
+        "tool_call_parser": "step3p5"
+      },
+      "stepfun-ai/Step-3.7-Flash": {
+        "reasoning_parser": "step3p5",
+        "tool_call_parser": "step3p5"
+      },
+      "tencent/Hy3": {
+        "reasoning_parser": "hy_v3",
+        "tool_call_parser": "hy_v3"
+      },
+      "tencent/Hy3-preview": {
+        "reasoning_parser": "hy_v3",
+        "tool_call_parser": "hy_v3"
+      },
+      "tencent/Hy4-preview": {
+        "reasoning_parser": "hy_v4",
+        "tool_call_parser": "hy_v4"
+      },
+      "thinkingmachines/Inkling-NVFP4": {
+        "reasoning_parser": "inkling",
+        "tool_call_parser": "inkling"
+      },
+      "thinkingmachines/Inkling-Small-NVFP4": {
+        "reasoning_parser": "inkling",
+        "tool_call_parser": "inkling"
+      },
+      "zai-org/GLM-4.5": {
+        "reasoning_parser": "glm45",
+        "tool_call_parser": "glm45"
+      },
+      "zai-org/GLM-4.5V": {
+        "reasoning_parser": "glm45",
+        "tool_call_parser": "glm45"
+      },
+      "zai-org/GLM-4.6": {
+        "reasoning_parser": "glm45",
+        "tool_call_parser": "glm45"
+      },
+      "zai-org/GLM-4.6V": {
+        "reasoning_parser": "glm45",
+        "tool_call_parser": "glm45"
+      },
+      "zai-org/GLM-4.7": {
+        "reasoning_parser": "glm45",
+        "tool_call_parser": "glm47"
+      },
+      "zai-org/GLM-5": {
+        "reasoning_parser": "glm45",
+        "tool_call_parser": "glm47"
+      },
+      "zai-org/GLM-5.1": {
+        "reasoning_parser": "glm45",
+        "tool_call_parser": "glm47"
+      },
+      "zai-org/GLM-5.2": {
+        "reasoning_parser": "glm45",
+        "tool_call_parser": "glm47"
+      },
+      "zai-org/GLM-5.3": {
+        "reasoning_parser": "glm45",
+        "tool_call_parser": "glm47"
+      },
+      "zai-org/GLM-5.3-Flash": {
+        "reasoning_parser": "glm45",
+        "tool_call_parser": "glm47"
+      },
+      "zai-org/GLM-GA": {
+        "reasoning_parser": "glm45"
+      },
+      "zai-org/Glyph": {
+        "reasoning_parser": "glm45"
+      }
+    },
+    "source": "vllm-project/recipes@f050a17eec51 models/*/*.yaml (features.reasoning.args, features.tool_calling.args)"
+  },
   "source_commit": "98dff2a81d747d1dba01a47f939f48c3526d4206",
   "source_names": {
     "count": 78636,
@@ -872,6 +1284,240 @@
       "mistral"
     ],
     "source": "tokenizers/registry.py:42"
+  },
+  "tool_parser_architectures": {
+    "architectures": {
+      "BailingMoeV3ForCausalLM": {
+        "parser": "ling3",
+        "recipes": [
+          "inclusionAI/Ling-3.0-flash"
+        ]
+      },
+      "DeepseekV32ForCausalLM": {
+        "parser": "deepseek_v32",
+        "recipes": [
+          "deepseek-ai/DeepSeek-V3.2-Exp"
+        ]
+      },
+      "DeepseekV3ForCausalLM": {
+        "parser": "deepseek_v3",
+        "recipes": [
+          "deepseek-ai/DeepSeek-V3"
+        ]
+      },
+      "DeepseekV4ForCausalLM": {
+        "parser": "deepseek_v4",
+        "recipes": [
+          "deepseek-ai/DeepSeek-V4-Flash"
+        ]
+      },
+      "DiffusionGemmaForBlockDiffusion": {
+        "parser": "gemma4",
+        "recipes": [
+          "google/diffusiongemma-26B-A4B-it"
+        ]
+      },
+      "Dots3NoteForCausalLM": {
+        "parser": "dots",
+        "recipes": [
+          "dots-studio/dots3-note-prev"
+        ]
+      },
+      "Gemma4ForCausalLM": {
+        "parser": "gemma4",
+        "recipes": [
+          "google/gemma-4-E2B-it"
+        ]
+      },
+      "Gemma4ForConditionalGeneration": {
+        "parser": "gemma4",
+        "recipes": [
+          "google/gemma-4-E2B-it"
+        ]
+      },
+      "Gemma4UnifiedForConditionalGeneration": {
+        "parser": "gemma4",
+        "recipes": [
+          "google/gemma-4-12B-it"
+        ]
+      },
+      "Glm4MoeForCausalLM": {
+        "parser": "glm45",
+        "recipes": [
+          "zai-org/GLM-4.5"
+        ]
+      },
+      "Glm4vMoeForConditionalGeneration": {
+        "parser": "glm45",
+        "recipes": [
+          "zai-org/GLM-4.5V"
+        ]
+      },
+      "GlmMoeDsaForCausalLM": {
+        "parser": "glm47",
+        "recipes": [
+          "zai-org/GLM-5"
+        ]
+      },
+      "HYV3ForCausalLM": {
+        "parser": "hy_v3",
+        "recipes": [
+          "tencent/Hy3-preview"
+        ]
+      },
+      "HYV4ForCausalLM": {
+        "parser": "hy_v4",
+        "recipes": [
+          "tencent/Hy4-preview"
+        ]
+      },
+      "InklingForCausalLM": {
+        "parser": "inkling",
+        "recipes": [
+          "thinkingmachines/Inkling-NVFP4"
+        ]
+      },
+      "InklingForConditionalGeneration": {
+        "parser": "inkling",
+        "recipes": [
+          "thinkingmachines/Inkling-NVFP4"
+        ]
+      },
+      "InternS1ForConditionalGeneration": {
+        "parser": "internlm",
+        "recipes": [
+          "internlm/Intern-S1"
+        ]
+      },
+      "InternS2PreviewForConditionalGeneration": {
+        "parser": "qwen3_coder",
+        "recipes": [
+          "internlm/Intern-S2-Preview"
+        ]
+      },
+      "KimiK25ForConditionalGeneration": {
+        "parser": "kimi_k2",
+        "recipes": [
+          "moonshotai/Kimi-K2.5"
+        ]
+      },
+      "KimiK3ForConditionalGeneration": {
+        "parser": "kimi_k3",
+        "recipes": [
+          "moonshotai/Kimi-K3"
+        ]
+      },
+      "LagunaForCausalLM": {
+        "parser": "poolside_v1",
+        "recipes": [
+          "poolside/Laguna-XS.2"
+        ]
+      },
+      "MiMoV2ForCausalLM": {
+        "parser": "mimo",
+        "recipes": [
+          "XiaomiMiMo/MiMo-V2.5-Pro"
+        ]
+      },
+      "MiniMaxM2ForCausalLM": {
+        "parser": "minimax_m2",
+        "recipes": [
+          "MiniMaxAI/MiniMax-M2"
+        ]
+      },
+      "MiniMaxM3SparseForCausalLM": {
+        "parser": "minimax_m3",
+        "recipes": [
+          "MiniMaxAI/MiniMax-M3"
+        ]
+      },
+      "MiniMaxM3SparseForConditionalGeneration": {
+        "parser": "minimax_m3",
+        "recipes": [
+          "MiniMaxAI/MiniMax-M3"
+        ]
+      },
+      "MuseGlimmerForCausalLM": {
+        "parser": "muse_glimmer",
+        "recipes": [
+          "meta-models/Muse-Glimmer-30B"
+        ]
+      },
+      "MuseGlimmerForConditionalGeneration": {
+        "parser": "muse_glimmer",
+        "recipes": [
+          "meta-models/Muse-Glimmer-30B"
+        ]
+      },
+      "NemotronH_Nano_Omni_Reasoning_V3": {
+        "parser": "qwen3_coder",
+        "recipes": [
+          "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16"
+        ]
+      },
+      "NemotronH_Omni_Reasoning_V3": {
+        "parser": "qwen3_coder",
+        "recipes": [
+          "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16"
+        ]
+      },
+      "NemotronH_Super_Omni_Reasoning_V3": {
+        "parser": "qwen3_coder",
+        "recipes": [
+          "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16"
+        ]
+      },
+      "Qwen3ForCausalLM": {
+        "parser": "hermes",
+        "recipes": [
+          "Qwen/Qwen3-8B"
+        ]
+      },
+      "Qwen3MoeForCausalLM": {
+        "parser": "hermes",
+        "recipes": [
+          "Qwen/Qwen3-30B-A3B"
+        ]
+      },
+      "Qwen3NextForCausalLM": {
+        "parser": "hermes",
+        "recipes": [
+          "Qwen/Qwen3-Next-80B-A3B-Instruct"
+        ]
+      },
+      "Qwen3_5ForConditionalGeneration": {
+        "parser": "qwen3_coder",
+        "recipes": [
+          "Qwen/Qwen3.5-0.8B",
+          "Qwen/Qwen3.5-4B"
+        ]
+      },
+      "Qwen3_5MoeForConditionalGeneration": {
+        "parser": "qwen3_coder",
+        "recipes": [
+          "Qwen/Qwen3.5-35B-A3B"
+        ]
+      },
+      "SeedOssForCausalLM": {
+        "parser": "seed_oss",
+        "recipes": [
+          "ByteDance-Seed/Seed-OSS-36B-Instruct"
+        ]
+      },
+      "Step3p5ForCausalLM": {
+        "parser": "step3p5",
+        "recipes": [
+          "stepfun-ai/Step-3.5-Flash"
+        ]
+      },
+      "Step3p7ForConditionalGeneration": {
+        "parser": "step3p5",
+        "recipes": [
+          "stepfun-ai/Step-3.7-Flash"
+        ]
+      }
+    },
+    "source": "tests/models/registry.py (_TEXT_GENERATION_EXAMPLE_MODELS, _MULTIMODAL_EXAMPLE_MODELS) x vllm-project/recipes@f050a17eec51 models/*/*.yaml (features.tool_calling.args)"
   },
   "tool_parsers": {
     "names": [

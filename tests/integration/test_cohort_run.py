@@ -35,13 +35,16 @@ pytestmark = [
 ]
 
 
-def _inputs():  # type: ignore[no-untyped-def]
-    """The accepted inputs; ``APRON_TASK_SUITE=v2`` for the modern models."""
-    from apron.interfaces.cohort_root import TASK_SUITE_V2, load_inputs
+SUITE = os.environ.get("APRON_TASK_SUITE")
 
-    return load_inputs(
-        task_suite=TASK_SUITE_V2 if os.environ.get("APRON_TASK_SUITE") == "v2" else None
-    )
+
+def _inputs():  # type: ignore[no-untyped-def]
+    """The accepted inputs; ``APRON_TASK_SUITE=v2`` for the modern models,
+    ``v3`` for the deployment checks."""
+    from apron.interfaces.cohort_root import TASK_SUITE_V2, TASK_SUITE_V3, load_inputs
+
+    suites = {"v2": TASK_SUITE_V2, "v3": TASK_SUITE_V3}
+    return load_inputs(task_suite=suites.get(SUITE or ""))
 
 
 def _step(name: str) -> None:
@@ -404,11 +407,13 @@ def test_prestaged_run() -> None:
         live_rates,
         load_seed,
         stage_site,
+        v3_evaluator,
         weights_site,
     )
 
     rates = live_rates(os.environ["RUNPOD_API_KEY"])
-    planner = CohortPlanner(rates=rates)
+    # Suite v3's plans serve its checks (long context, tool calls, reasoning).
+    planner = CohortPlanner(rates=rates, deployment_checks=SUITE == "v3")
     tag = f"-{os.environ['APRON_RUN_TAG']}" if os.environ.get("APRON_RUN_TAG") else "-prestage"
     approved = set(json.loads((RUN_DIR / os.environ["APRON_APPROVED"]).read_text()))
     seeds = [s for s in load_seed() if s.key in approved]
@@ -421,7 +426,9 @@ def test_prestaged_run() -> None:
     storage = RunPodStorage(os.environ["RUNPOD_API_KEY"])
     site = weights_site(storage, executions, models)
     assert site is not None, f"no storage datacenter has stock for {executions}"
-    ports = build_ports(rates=rates, site=site)
+    ports = build_ports(
+        rates=rates, site=site, evaluator=v3_evaluator(plans) if SUITE == "v3" else None
+    )
     staging = stage_site(site, models, ports)
     record: dict = {
         "site": site.__dict__,

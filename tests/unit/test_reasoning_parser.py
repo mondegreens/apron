@@ -805,3 +805,20 @@ def test_engine_rendered_deepseek_chats_ask_for_low_reasoning_effort() -> None:
     assert reasoning_request_fields(None, "deepseek_v41") == {"reasoning_effort": "low"}
     assert reasoning_request_fields(None, "mistral") is None
     assert reasoning_request_fields(None) is None
+
+
+@pytest.mark.parametrize(
+    "model_id", ["deepseek-ai/DeepSeek-V4-Flash-0731", "deepseek-ai/DeepSeek-V4.1-Flash"]
+)
+def test_the_plans_own_renderer_asks_for_low_reasoning_effort(model_id: str) -> None:
+    """The renderer as the plan names it reaches the request fields (a lookup
+    by the bare mode missed ``vllm tokenizer mode deepseek_v4``: the DeepSeek
+    requests went out at the default "high" effort, caught in a dry run
+    before any GPU run, 2026-09-28)."""
+    from apron.application.orchestration.evidence import reasoning_request_fields
+
+    result = _group_plan(model_id, _served_with("v0.30.0"))
+    assert result.chat_template is None and result.chat_renderer is not None
+    assert reasoning_request_fields(result.chat_template, result.chat_renderer) == {
+        "reasoning_effort": "low"
+    }

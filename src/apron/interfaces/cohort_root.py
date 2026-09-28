@@ -36,6 +36,7 @@ from apron.adapters.backends.vllm_quantization import (
     engine_facts,
     engine_for,
 )
+from apron.adapters.evaluations.deployment_checks import DeploymentCheckScorer
 from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
 from apron.adapters.evidence.hf_hub import HFHubResolver
 from apron.adapters.evidence.hf_lineage import HubLineage
@@ -63,7 +64,11 @@ from apron.application.orchestration.correction import (
 )
 from apron.application.orchestration.evidence import solution_fingerprint
 from apron.application.orchestration.plan_builder import PLAN_GPU_MEMORY_UTILIZATION
-from apron.application.orchestration.plan_pipeline import StateBlockFacts, run_plan_pipeline
+from apron.application.orchestration.plan_pipeline import (
+    ServingFeatures,
+    StateBlockFacts,
+    run_plan_pipeline,
+)
 from apron.application.orchestration.pods import TargetPool
 from apron.application.orchestration.remediation import FixProofPorts
 from apron.application.orchestration.scheduler import CandidateSeed, estimate_cost
@@ -84,7 +89,7 @@ from apron.domain.schemas.solutions import (
 from apron.domain.schemas.tasks import ApplicationSpec, ServingWorkloadSpec, TaskSuiteSpec
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
 
     from apron.domain.ports import Clock, IdGenerator
 
@@ -131,6 +136,10 @@ TASK_SUITE_V2 = REPO / "cohort" / "task-suite-v2.json"
 # output, image input, reasoning split.  Scored by DeploymentCheckScorer with
 # each plan's deployment facts; v2 and its records are untouched.
 TASK_SUITE_V3 = REPO / "cohort" / "task-suite-v3.json"
+# The context a suite-v3 plan serves: the needle fills it.  32k tokens is a
+# common serving length every model of groups C and D exceeds natively
+# (owner-approved v3 proposal, 2026-09-28).
+V3_MAX_MODEL_LEN = 32768
 
 
 def load_inputs(
@@ -269,6 +278,9 @@ class CohortPlanner:
     clock: Clock = field(default_factory=WallClock)
     ids: IdGenerator = field(default_factory=UuidIdGenerator)
     resolver: Any = field(default_factory=HFHubResolver)
+    # Plans for task suite v3: served at V3_MAX_MODEL_LEN with the tool-call
+    # and reasoning parsers its deployment checks need (ServingFeatures).
+    deployment_checks: bool = False
 
     def engine(self, model_id: str) -> str | None:
         """The vLLM version a plan for *model_id* runs on: the newest one with a
@@ -352,6 +364,16 @@ class CohortPlanner:
     ) -> tuple[DeploymentPlan, Any]:
         facts = engine_facts(engine)
         memory = hardware_for(gpu).total_memory_bytes
+        features = (
+            ServingFeatures(
+                max_model_len=V3_MAX_MODEL_LEN,
+                tool_parsers=facts.tool_parsers,
+                tool_parser_architectures=facts.tool_parser_architectures,
+                recipe_checkpoints=facts.recipe_checkpoints,
+            )
+            if self.deployment_checks
+            else None
+        )
         pipeline = run_plan_pipeline(
             self.resolver,
             CalculatorPlanningSource(clock=self.clock),
@@ -378,6 +400,7 @@ class CohortPlanner:
             else None,
             gpu_memory_utilization=gpu_memory_utilization,
             dtype=dtype,
+            features=features,
         )
         if pipeline.model_spec is None or pipeline.claim is None:
             raise ValueError(f"{model_id}: planning failed: {pipeline.error}")
@@ -615,11 +638,18 @@ def weights_site(
         dict.fromkeys((*existing, *storage.storage_datacenters())),
         key=lambda dc: (region_rank(dc), dc not in existing),
     )
+    with_volume = {str(v.get("dataCenterId")) for v in storage.list_volumes()}
+
+    def staged_already(dc: str) -> bool:
+        return dc in with_volume and set(model_ids) <= staged_ok_on(dc)
+
     chosen: str | None = None
     for dc in candidates:
-        # GPU stock for every execution, and a CPU pod to stage from.
+        # GPU stock for every execution, and a CPU pod to stage from — unless
+        # every model is already on that datacenter's volume (2026-09-28: no
+        # CPU pod in US-CA-2 held back a run whose weights were all staged).
         if all(storage.stock_in(dc, e.gpu_sku, e.gpu_count) for e in executions) and (
-            storage.cpu_stock(dc)
+            staged_already(dc) or storage.cpu_stock(dc)
         ):
             chosen = dc
             break
@@ -637,6 +667,24 @@ def weights_site(
         volume = storage.ensure_volume(chosen, need_gb(on_volume))
     size = int(volume.get("size") or need_gb(on_volume))
     return WeightsSite(str(volume["id"]), chosen, size)
+
+
+def staged_ok_on(data_center_id: str, run_dir: Path | None = None) -> set[str]:
+    """Models a staging run verified in *data_center_id* (``staged`` events;
+    Apron keeps one weights volume per datacenter)."""
+    events = (run_dir or RUN_DIR) / "events.jsonl"
+    if not events.exists():
+        return set()
+    ok: set[str] = set()
+    for line in events.read_text().splitlines():
+        entry = json.loads(line) if line.strip() else {}
+        if (
+            entry.get("event") == "staged"
+            and entry.get("ok")
+            and entry.get("location") == data_center_id
+        ):
+            ok.add(str(entry["model_id"]))
+    return ok
 
 
 def staged_on(volume_id: str, run_dir: Path | None = None) -> set[str]:
@@ -657,7 +705,21 @@ def stage_site(
     ports: CohortPorts,
     run_dir: Path = RUN_DIR,
 ) -> StagingResult:
-    """Download *model_ids* onto the site's volume from a CPU pod in its datacenter."""
+    """Download *model_ids* onto the site's volume from a CPU pod in its datacenter.
+
+    Models a staging run already verified there are not fetched again, and
+    when all are, no stager pod is started at all.
+    """
+    from apron.application.orchestration.staging import StagedModel, StagingResult
+
+    done = staged_ok_on(site.data_center_id, run_dir)
+    if set(model_ids) <= done:
+        return StagingResult(
+            pod_id=None,
+            cost=0.0,
+            seconds=0.0,
+            models=[StagedModel(m, True, 0.0, "already staged") for m in model_ids],
+        )
     api_key = os.environ.get("RUNPOD_API_KEY")
     total = sum(staged_bytes(m) for m in model_ids)
     hours = (total / STAGER_BYTES_PER_SECOND + STAGER_PULL_SECONDS) / 3600
@@ -707,7 +769,11 @@ def build_ports(
     authorized: float = AUTHORIZED_USD,
     rates: dict[str, float] | None = None,
     site: WeightsSite | None = None,
+    evaluator: Any = None,
 ) -> CohortPorts:
+    """The run's ports.  ``evaluator`` scores the task suite: the
+    deterministic scorer unless given (suite v3's ``DeploymentCheckScorer``,
+    built for the run's plans: ``v3_evaluator``)."""
     install_log_masking()
     api_key = os.environ.get("RUNPOD_API_KEY")
     rates = rates if rates is not None else live_rates(api_key)
@@ -755,7 +821,7 @@ def build_ports(
             )
             for version in RUNNER_IMAGES
         },
-        evaluator=DeterministicScorer(),
+        evaluator=evaluator if evaluator is not None else DeterministicScorer(),
         store=LocalRecordStore(run_dir / "records"),
         budget=budget,
         clock=clock,
@@ -772,6 +838,11 @@ def build_ports(
             log=JsonlLedger(run_dir / "capacity-waits.jsonl"),
         ),
     )
+
+
+def v3_evaluator(plans: Iterable[SolutionPlan]) -> DeploymentCheckScorer:
+    """Suite v3's scorer, knowing each runnable plan's deployment facts."""
+    return DeploymentCheckScorer.for_plans(p for p in plans if p.status == "planned")
 
 
 def load_cohort_run(

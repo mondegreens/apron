@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from apron.application.orchestration.plan_builder import (
@@ -39,6 +39,11 @@ if TYPE_CHECKING:
     from apron.domain.protocols import ArtifactSourceResolver, PlanningSource
     from apron.domain.schemas.models import ModelSpec
     from apron.domain.schemas.primitives import HardwareSpec
+
+
+#: How a plan names a chat the engine renders in its own tokenizer mode
+#: (``PlanPipelineResult.chat_renderer``): this prefix, then the mode.
+ENGINE_RENDERER_PREFIX = "vllm tokenizer mode "
 
 
 class PlanPipelineResult:
@@ -107,6 +112,27 @@ class PlanPipelineResult:
         return self.plan is not None and self.error is None
 
 
+@dataclass(frozen=True)
+class ServingFeatures:
+    """What a plan serves besides chat at the smallest context (task suite v3).
+
+    Suite v3's deployment checks send a long-context needle, tool calls and a
+    reasoning split, so a plan that runs them starts the server for them:
+    ``max_model_len`` tokens of context, ``--enable-auto-tool-choice
+    --tool-call-parser`` where a parser is known (``tool_call_parser_for``),
+    and the reasoning parser also for a chat template with a thinking switch
+    (the checks switch thinking per request).  The rest are the plan's engine
+    version's facts: the tool parsers it registers, the one its recipes name
+    per architecture, and each recipe checkpoint's own parsers.  A plan
+    without features (suite v2's) is built exactly as before.
+    """
+
+    max_model_len: int
+    tool_parsers: frozenset[str] = frozenset()
+    tool_parser_architectures: Mapping[str, str] = field(default_factory=dict)
+    recipe_checkpoints: Mapping[str, Mapping[str, str]] = field(default_factory=dict)
+
+
 def run_plan_pipeline(
     resolver: ArtifactSourceResolver,
     planning_source: PlanningSource,
@@ -127,6 +153,7 @@ def run_plan_pipeline(
     state_blocks: StateBlockFacts | None = None,
     gpu_memory_utilization: float = PLAN_GPU_MEMORY_UTILIZATION,
     dtype: str | None = None,
+    features: ServingFeatures | None = None,
 ) -> PlanPipelineResult:
     """Run the full plan pipeline: resolve → calculate → build plan.
 
@@ -148,7 +175,9 @@ def run_plan_pipeline(
     A multimodal wrapper (a ``vision_config`` / ``audio_config``) also has its
     processor files read at the resolved revision (``download_processor_config``):
     they size the vision tower's startup peak; where that peak is not modelled
-    the notes say so (``encoder_peak_note``).
+    the notes say so (``encoder_peak_note``).  ``features`` (task suite v3)
+    predicts and plans at its ``max_model_len`` and adds the tool-call and
+    reasoning parsers the deployment checks need (``ServingFeatures``).
     """
     chain = ResolutionChain(resolver)
     result = chain.resolve(model_id)
@@ -216,14 +245,29 @@ def run_plan_pipeline(
         processor=processor,
     )
 
+    # The context the plan serves: 640 tokens (512 in, 128 out) unless the
+    # plan serves features, at most what the checkpoint's positions reach.
+    context = None
+    if features is not None:
+        context, context_note = served_context(features.max_model_len, config)
+        if context_note is not None:
+            notes = (*notes, context_note)
+
     def predict(seqs: int | None) -> Any:
         return planning_source.predict(
             calc_metadata,
             hardware,
             {
-                "isl": 512,
+                "isl": 512 if context is None else context - 128,
                 "osl": 128,
-                "max_batch_size": 4,
+                # The calculator reads max_model_len where vLLM sizes by it
+                # (MLA prefill workspace, encoder budget); unset, isl + osl.
+                # At a served context the plan must hold what vLLM checks at
+                # startup: one request of max_model_len
+                # (v1/core/kv_cache_utils.py:975-1010, "To serve at least one
+                # request"); four such requests is a bar vLLM never sets.
+                **({"max_model_len": context} if context is not None else {}),
+                "max_batch_size": 4 if context is None else 1,
                 "tensor_parallel": tensor_parallel,
                 "gpu_memory_utilization": gpu_memory_utilization,
                 # The engine's profiling run size on this GPU (sizes the activation peak).
@@ -266,6 +310,16 @@ def run_plan_pipeline(
         id_gen=id_gen,
     )
 
+    if context is not None:
+        deployment_plan = deployment_plan.model_copy(
+            update={
+                "engine_configuration": {
+                    **deployment_plan.engine_configuration,
+                    "max_model_len": str(context),
+                }
+            }
+        )
+
     if limit is not None:
         deployment_plan = deployment_plan.model_copy(
             update={
@@ -281,7 +335,7 @@ def run_plan_pipeline(
     chat_renderer = None
     model_type = str(config.get("model_type") or "")
     if model_type in tokenizer_modes:
-        chat_renderer = f"vllm tokenizer mode {model_type}"
+        chat_renderer = f"{ENGINE_RENDERER_PREFIX}{model_type}"
         deployment_plan = deployment_plan.model_copy(
             update={
                 "engine_configuration": {
@@ -313,7 +367,18 @@ def run_plan_pipeline(
     # scored wrong).  The plan names the parser; the engine splits the channels.
     architectures = [str(a) for a in config.get("architectures") or []]
     served_with = reasoning_parser_architectures or {}
-    if served_parser(model_type, architectures, reasoning_parsers, served_with) is not None:
+    recipe = dict((features.recipe_checkpoints.get(model_id) or {}) if features else {})
+    engine_renders_chat = chat_template is None and chat_renderer is not None
+    if (
+        served_parser(
+            model_type,
+            architectures,
+            reasoning_parsers,
+            served_with,
+            checkpoint_parser=recipe.get("reasoning_parser"),
+        )
+        is not None
+    ):
         parser = reasoning_parser_for(
             model_type,
             reasoning_parsers,
@@ -323,7 +388,9 @@ def run_plan_pipeline(
             ),
             architectures=architectures,
             served_with=served_with,
-            engine_renders_chat=chat_template is None and chat_renderer is not None,
+            engine_renders_chat=engine_renders_chat,
+            checkpoint_parser=recipe.get("reasoning_parser"),
+            thinking_per_request=features is not None,
         )
         if parser is not None:
             deployment_plan = deployment_plan.model_copy(
@@ -334,6 +401,25 @@ def run_plan_pipeline(
                     }
                 }
             )
+
+    if features is not None:
+        card = _download_text(
+            resolver, model_id, "README.md", result.observation.resolved_revision
+        )
+        tool_parser, tool_reason = tool_call_parser_for(
+            model_type,
+            features.tool_parsers,
+            chat_template,
+            card,
+            architectures=architectures,
+            served_with=features.tool_parser_architectures,
+            checkpoint_parser=recipe.get("tool_call_parser"),
+            engine_renders_chat=engine_renders_chat,
+        )
+        if tool_parser is not None:
+            deployment_plan = with_tool_calling(deployment_plan, tool_parser)
+        else:
+            notes = (*notes, f"no tool calling: {tool_reason}")
 
     assert result.locator is not None
     ctx = RenderContext(plan=deployment_plan, locator=result.locator, hardware=hardware)
@@ -531,6 +617,31 @@ def _download_json(
     return data if isinstance(data, dict) else None
 
 
+def _download_text(resolver: Any, model_id: str, filename: str, revision: str) -> str | None:
+    if not hasattr(resolver, "_download_file"):
+        return None
+    raw = resolver._download_file(model_id, filename, revision)
+    if raw is None:
+        return None
+    return raw.decode("utf-8", "replace") if isinstance(raw, bytes) else str(raw)
+
+
+def served_context(requested: int, config: Mapping[str, Any]) -> tuple[int, str | None]:
+    """The ``max_model_len`` a plan serves for *requested*, and a note when it
+    is less: vLLM refuses a length past the checkpoint's position limit
+    (``max_position_embeddings``, top level or in ``text_config``) unless
+    told to override it, so the plan serves that limit instead."""
+    text = config.get("text_config")
+    nested = text if isinstance(text, dict) else {}
+    limit = config.get("max_position_embeddings") or nested.get("max_position_embeddings")
+    if limit and int(limit) < requested:
+        return int(limit), (
+            f"max_model_len {int(limit)}: the checkpoint's max_position_embeddings "
+            f"(requested {requested})"
+        )
+    return requested, None
+
+
 def declares_reasoning_channel(
     chat_template: str | None, tokenizer_config: dict[str, Any] | None
 ) -> bool:
@@ -552,6 +663,8 @@ def served_parser(
     architectures: Sequence[str],
     reasoning_parsers: frozenset[str],
     served_with: Mapping[str, str],
+    *,
+    checkpoint_parser: str | None = None,
 ) -> str | None:
     """The reasoning parser the engine version serves this model with, or None.
 
@@ -560,13 +673,18 @@ def served_parser(
     GLM-5.x is ``glm_moe_dsa`` / ``glm5_next`` and served with ``glm45``,
     MiniMax-M3 is ``minimax_m3_vl`` and served with ``minimax_m3``.  Otherwise
     a parser registered under the model's type (Muse-Glimmer's
-    ``muse_glimmer``).  Either must be a parser the version registers.
+    ``muse_glimmer``).  Then the checkpoint's own recipe
+    (``checkpoint_parser``), for an architecture the version's test registry
+    has no example checkpoint of (Qwen4Exp: Qwen3.8-Flash-Next).  Each must be
+    a parser the version registers.
     """
     for arch in architectures:
         parser = served_with.get(arch)
         if parser is not None:
             return parser if parser in reasoning_parsers else None
-    return model_type if model_type in reasoning_parsers else None
+    if model_type in reasoning_parsers:
+        return model_type
+    return checkpoint_parser if checkpoint_parser in reasoning_parsers else None
 
 
 def reasoning_parser_for(
@@ -578,6 +696,8 @@ def reasoning_parser_for(
     architectures: Sequence[str] = (),
     served_with: Mapping[str, str] | None = None,
     engine_renders_chat: bool = False,
+    checkpoint_parser: str | None = None,
+    thinking_per_request: bool = False,
 ) -> str | None:
     """The engine reasoning parser a plan names for this model, or None.
 
@@ -596,17 +716,138 @@ def reasoning_parser_for(
     default (parser/deepseek_v4.py:248-253).  A renderer that does not think
     by default is served with a parser that passes the content through
     (DeepSeek V3.2's ``deepseek_v3``: reasoning/deepseek_v3_reasoning_parser.py:30-38).
+    ``thinking_per_request`` (suite v3, whose reasoning split switches
+    thinking on while its other checks switch it off) names the parser for a
+    template with a thinking switch too: the parser reads the request's
+    ``enable_thinking`` and passes the content through when it is off
+    (v0.30.0 parser/qwen3.py:231, 255-256); a parser that did not would show
+    as the other checks' answers in the reasoning field, never silently.
     """
-    parser = served_parser(model_type, architectures, reasoning_parsers, served_with or {})
+    parser = served_parser(
+        model_type,
+        architectures,
+        reasoning_parsers,
+        served_with or {},
+        checkpoint_parser=checkpoint_parser,
+    )
     if parser is None:
         return None
     if engine_renders_chat:
         return parser
-    if chat_template and "enable_thinking" in chat_template:
+    if chat_template and "enable_thinking" in chat_template and not thinking_per_request:
         return None
     if not declares_reasoning_channel(chat_template, tokenizer_config):
         return None
     return parser
+
+
+# ---------------------------------------------------------------------------
+# Tool calling: the plan-side rule (task suite v3)
+# ---------------------------------------------------------------------------
+
+#: Parsers vLLM documents for a model type whose name is not a parser name.
+#: Each entry is checked against the plan's engine version's registry before
+#: use.  ``gpt_oss`` -> ``openai``: docs/features/tool_calling.md, "OpenAI OSS
+#: Models (`openai`)", openai/gpt-oss-20b and -120b (v0.30.0, ced6857).
+DOCUMENTED_TOOL_PARSERS: dict[str, str] = {"gpt_oss": "openai"}
+
+#: A chat template that renders past tool calls as
+#: ``<tool_call>\n<function=NAME>\n<parameter=...>``: the format whose model
+#: cards name ``qwen3_coder`` (Qwen/Qwen3.6-35B-A3B-FP8 and
+#: nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16, both with exactly this
+#: template block).  An inference from those two cards, applied only to a
+#: template with the same block and no recipe or card that names a parser.
+_QWEN3_CODER_BLOCK = re.compile(r"<tool_call>(?:\\n|\n)<function=.*<parameter=", re.DOTALL)
+
+_CARD_PARSER = re.compile(r"--tool-call-parser[ =]+([A-Za-z0-9_.-]+)")
+
+
+def tool_call_parser_for(
+    model_type: str,
+    tool_parsers: frozenset[str],
+    chat_template: str | None,
+    model_card: str | None = None,
+    *,
+    architectures: Sequence[str] = (),
+    served_with: Mapping[str, str] | None = None,
+    checkpoint_parser: str | None = None,
+    engine_renders_chat: bool = False,
+) -> tuple[str | None, str]:
+    """The tool-call parser a plan names for this model, or None; and why.
+
+    The first that the plan's engine version registers
+    (``EngineFacts.tool_parsers``):
+
+    1. the parser the checkpoint's own vllm-project recipe serves it with
+       (``checkpoint_parser``; ``features.tool_calling.args``);
+    2. the parser the recipes name for its architecture (``served_with``,
+       joined on the version's example checkpoints like the reasoning parser);
+    3. the parser the model card names (``--tool-call-parser X``), when it
+       names exactly one;
+    4. the model type itself (``gemma4``, ``muse_glimmer``, ``minimax_m3``);
+    5. vLLM's documented parser for the type (``DOCUMENTED_TOOL_PARSERS``);
+    6. ``qwen3_coder`` for a template with that format's block.
+
+    The chat template must render the request's ``tools`` (otherwise the
+    model is never told about them).  Where the repo has no template and the
+    engine renders the chat in its own tokenizer mode, only a recipe says the
+    renderer takes tools (DeepSeek V4's recipe serves ``--tokenizer-mode
+    deepseek_v4 --tool-call-parser deepseek_v4``), so rules 3-6 do not apply.
+    Unlike the reasoning parser, a type match is not required: tool-parser
+    names are formats (``hermes``, ``openai``, ``qwen3_coder``), not types.
+    """
+    recipe_rules: list[tuple[str | None, str]] = [
+        (checkpoint_parser, "the checkpoint's vllm-project recipe serves it with"),
+        *(
+            (
+                (served_with or {}).get(arch),
+                f"the vllm-project recipes serve architecture {arch} with",
+            )
+            for arch in architectures
+        ),
+    ]
+    for parser, source in recipe_rules:
+        if parser is None:
+            continue
+        if parser not in tool_parsers:
+            return None, f"{source} {parser}, which this engine version does not register"
+        if not engine_renders_chat and not (chat_template and "tools" in chat_template):
+            return None, "the chat template does not render tools"
+        return parser, f"{source} --enable-auto-tool-choice --tool-call-parser {parser}"
+    if not chat_template or "tools" not in chat_template:
+        return None, "the chat template does not render tools"
+    if model_card:
+        named = sorted(set(_CARD_PARSER.findall(model_card)))
+        if len(named) == 1 and named[0] in tool_parsers:
+            return named[0], f"the model card names --tool-call-parser {named[0]}"
+        if len(named) > 1:
+            return None, f"the model card names several tool parsers: {named}"
+    if model_type in tool_parsers:
+        return model_type, f"the engine registers a tool parser under model type {model_type}"
+    documented = DOCUMENTED_TOOL_PARSERS.get(model_type)
+    if documented and documented in tool_parsers:
+        return documented, f"vLLM documents --tool-call-parser {documented} for {model_type}"
+    if "qwen3_coder" in tool_parsers and _QWEN3_CODER_BLOCK.search(chat_template):
+        return "qwen3_coder", "the template renders the qwen3_coder tool-call block"
+    return None, f"no tool parser is known for model type {model_type}"
+
+
+def with_tool_calling(plan: DeploymentPlan, parser: str) -> DeploymentPlan:
+    """*plan* started with ``--enable-auto-tool-choice --tool-call-parser parser``.
+
+    ``engine_flag_args`` renders ``"true"`` as the bare flag.  The flags
+    change no memory the calculator predicts; they do change the plan's
+    identity, so only suite-v3 plans carry them.
+    """
+    return plan.model_copy(
+        update={
+            "engine_configuration": {
+                **plan.engine_configuration,
+                "enable_auto_tool_choice": "true",
+                "tool_call_parser": parser,
+            }
+        }
+    )
 
 
 # Stored bytes per element, by safetensors dtype name.

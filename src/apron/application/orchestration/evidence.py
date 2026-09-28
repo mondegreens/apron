@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ValidationError
 
+from apron.application.orchestration.plan_pipeline import ENGINE_RENDERER_PREFIX
 from apron.domain.canonical import canonicalize, digest_hex
 from apron.domain.fingerprints import fingerprint_hex
 from apron.domain.schemas.migrations import load_record
@@ -186,7 +187,8 @@ def build_task_attempt(
 
     ``scored`` is an evaluation adapter's per-case result.  A case that errored
     (``status == "failed"``) is still a first-class attempt with
-    ``accepted=False`` and the error in ``failures``.  Cost fields follow §7:
+    ``accepted=False`` and the error in ``failures``; a skipped case
+    (``status == "skipped"``) has ``accepted=None``.  Cost fields follow §7:
     ``infrastructure_cost`` is this case's share of task-evaluation seconds x
     rate; the market-equivalent and out-of-pocket prices equal it here
     because RunPod Secure is paid at list price with no subsidy.
@@ -198,6 +200,9 @@ def build_task_attempt(
         # Cut at the case's max_tokens: a mismatch says nothing about the answer.
         errors.append("evaluation:truncated at max_tokens")
     score = scored.get("score")
+    # A check the plan cannot serve (suite v3) is skipped, not failed: no
+    # score and no acceptance either way; the output says why.
+    skipped = scored.get("status") == "skipped"
     return TaskAttemptRecord(
         decision_fingerprint=ctx.decision_fingerprint,
         task_suite_fingerprint=ctx.task_suite_fingerprint,
@@ -208,7 +213,7 @@ def build_task_attempt(
         attempt_id=attempt_id,
         output=scored.get("output"),
         criterion_scores={} if score is None else {ctx.protocol.scorer: float(score)},
-        accepted=bool(scored.get("accepted", False)),
+        accepted=None if skipped else bool(scored.get("accepted", False)),
         trace_references=trace_references,
         retries=retry,
         input_tokens=scored.get("input_tokens"),
@@ -277,7 +282,9 @@ def reasoning_request_fields(
     templates always open ``<think>`` and read the same variable (``low`` or
     ``high``, else ``max``); the field reaches them as it (chat_completion/
     protocol.py:585-589, v0.30.0).  A template with ``enable_thinking`` gets
-    that switch instead.
+    that switch instead.  *renderer* is the plan's ``chat_renderer``
+    (``ENGINE_RENDERER_PREFIX`` + the tokenizer mode); the bare mode is read
+    alike.
     """
     if (
         chat_template
@@ -285,7 +292,8 @@ def reasoning_request_fields(
         and ("reasoning_effort" in chat_template)
     ):
         return {"reasoning_effort": "low"}
-    if chat_template is None and renderer in REASONING_EFFORT_RENDERERS:
+    mode = (renderer or "").removeprefix(ENGINE_RENDERER_PREFIX)
+    if chat_template is None and mode in REASONING_EFFORT_RENDERERS:
         return {"reasoning_effort": "low"}
     return None
 

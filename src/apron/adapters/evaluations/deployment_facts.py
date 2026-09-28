@@ -8,17 +8,15 @@ template); ``deployment_facts`` reads them, GPU-free, into the string map the
 scorer receives (``DeploymentCheckScorer``).  A check the plan cannot serve is
 skipped with the reason these facts give, never sent and scored as wrong.
 
-``tool_call_parser_for`` is the plan-side rule for tool calling, the analogue
-of ``plan_pipeline.reasoning_parser_for``; ``with_tool_calling`` is the plan
-flag it implies.  Both live here until the planner adopts them: a plan that
-names a tool parser is a new solution identity, so the flag is added only to
-plans that run suite v3 (v2's plans, and their records, stay as they are).
+The plan-side rule for tool calling is the planner's
+(``plan_pipeline.tool_call_parser_for``): a plan that names a tool parser is a
+new solution identity, so only plans that run suite v3 carry the flag (v2's
+plans, and their records, stay as they are).
 """
 
 from __future__ import annotations
 
 import json
-import re
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -62,7 +60,9 @@ def deployment_facts(
     parser = engine.get("tool_call_parser", "")
     auto = engine.get("enable_auto_tool_choice", "").strip().lower() == "true"
     if parser and auto:
-        tool_reason = f"the plan starts vLLM with --enable-auto-tool-choice --tool-call-parser {parser}"
+        tool_reason = (
+            f"the plan starts vLLM with --enable-auto-tool-choice --tool-call-parser {parser}"
+        )
     elif parser:
         tool_reason = (
             f"the plan names tool parser {parser} without --enable-auto-tool-choice: "
@@ -115,82 +115,3 @@ def vision_enabled(
         return False, f"the plan sets the image limit to {limit} (--limit-mm-per-prompt {raw})"
     source = "--limit-mm-per-prompt" if raw else "vLLM's default"
     return True, f"vision_config present; image limit {limit} ({source})"
-
-
-# ---------------------------------------------------------------------------
-# Tool calling: the plan-side rule
-# ---------------------------------------------------------------------------
-
-#: Parsers vLLM documents for a model type whose name is not a parser name.
-#: Each entry is checked against the plan's engine version's registry before
-#: use.  ``gpt_oss`` -> ``openai``: docs/features/tool_calling.md, "OpenAI OSS
-#: Models (`openai`)", openai/gpt-oss-20b and -120b (v0.30.0, ced6857).
-DOCUMENTED_TOOL_PARSERS: dict[str, str] = {"gpt_oss": "openai"}
-
-#: A chat template that renders past tool calls as
-#: ``<tool_call>\n<function=NAME>\n<parameter=...>``: the format whose model
-#: cards name ``qwen3_coder`` (Qwen/Qwen3.6-35B-A3B-FP8 and
-#: nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16, both with exactly this
-#: template block).  An inference from those two cards, applied only to a
-#: template with the same block and no card of its own that names a parser.
-_QWEN3_CODER_BLOCK = re.compile(r"<tool_call>(?:\\n|\n)<function=.*<parameter=", re.DOTALL)
-
-_CARD_PARSER = re.compile(r"--tool-call-parser[ =]+([A-Za-z0-9_.-]+)")
-
-
-def tool_call_parser_for(
-    model_type: str,
-    tool_parsers: frozenset[str],
-    chat_template: str | None,
-    model_card: str | None = None,
-) -> tuple[str | None, str]:
-    """The tool-call parser a plan names for this model, or None; and why.
-
-    The template must render the request's ``tools`` (otherwise the model is
-    never told about them).  Then, in order, the first that the plan's engine
-    version registers (``EngineFacts.tool_parsers``):
-
-    1. the parser the model card names (``--tool-call-parser X``), when it
-       names exactly one;
-    2. the model type itself (``gemma4``, ``muse_glimmer``, ``minimax_m3``);
-    3. vLLM's documented parser for the type (``DOCUMENTED_TOOL_PARSERS``);
-    4. ``qwen3_coder`` for a template with that format's block.
-
-    Unlike the reasoning parser, a type match is not required: tool-parser
-    names are formats (``hermes``, ``openai``, ``qwen3_coder``), not model
-    types.
-    """
-    if not chat_template or "tools" not in chat_template:
-        return None, "the chat template does not render tools"
-    if model_card:
-        named = sorted(set(_CARD_PARSER.findall(model_card)))
-        if len(named) == 1 and named[0] in tool_parsers:
-            return named[0], f"the model card names --tool-call-parser {named[0]}"
-        if len(named) > 1:
-            return None, f"the model card names several tool parsers: {named}"
-    if model_type in tool_parsers:
-        return model_type, f"the engine registers a tool parser under model type {model_type}"
-    documented = DOCUMENTED_TOOL_PARSERS.get(model_type)
-    if documented and documented in tool_parsers:
-        return documented, f"vLLM documents --tool-call-parser {documented} for {model_type}"
-    if "qwen3_coder" in tool_parsers and _QWEN3_CODER_BLOCK.search(chat_template):
-        return "qwen3_coder", "the template renders the qwen3_coder tool-call block"
-    return None, f"no tool parser is known for model type {model_type}"
-
-
-def with_tool_calling(plan: DeploymentPlan, parser: str) -> DeploymentPlan:
-    """*plan* started with ``--enable-auto-tool-choice --tool-call-parser parser``.
-
-    ``engine_flag_args`` renders ``"true"`` as the bare flag.  The flags
-    change no memory the calculator predicts; they do change the plan's
-    identity, so only suite-v3 plans carry them.
-    """
-    return plan.model_copy(
-        update={
-            "engine_configuration": {
-                **plan.engine_configuration,
-                "enable_auto_tool_choice": "true",
-                "tool_call_parser": parser,
-            }
-        }
-    )

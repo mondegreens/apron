@@ -101,7 +101,9 @@ def needle_answer_budget(max_model_len: int, answer_tokens: int) -> int:
 
 def needle_prompt_budget(max_model_len: int, answer_tokens: int) -> int:
     """Prompt tokens the needle may fill: the context less the answer and a margin."""
-    return max_model_len - needle_answer_budget(max_model_len, answer_tokens) - NEEDLE_MARGIN_TOKENS
+    return (
+        max_model_len - needle_answer_budget(max_model_len, answer_tokens) - NEEDLE_MARGIN_TOKENS
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -490,7 +492,9 @@ class DeploymentCheckScorer(DeterministicScorer):
         if errors:
             reason = "content does not match the schema: " + "; ".join(errors)
             return _verdict(case, "fail", reason, observed, data, elapsed)
-        return _verdict(case, "pass", "content parses and matches the schema", observed, data, elapsed)
+        return _verdict(
+            case, "pass", "content parses and matches the schema", observed, data, elapsed
+        )
 
     def _image_input(
         self, case: dict[str, Any], model_id: str, endpoint: str, protocol: dict[str, Any]
@@ -539,7 +543,10 @@ class DeploymentCheckScorer(DeterministicScorer):
             int(case["max_tokens"]),
         )
         if switch:  # the suite's other cases switch thinking off; this one needs it on
-            body["chat_template_kwargs"] = {**body.get("chat_template_kwargs", {}), "enable_thinking": True}
+            body["chat_template_kwargs"] = {
+                **body.get("chat_template_kwargs", {}),
+                "enable_thinking": True,
+            }
         data, elapsed = self._chat(endpoint, body)
         message, content = _message(data)
         reasoning = _reasoning(message)
@@ -675,9 +682,7 @@ def _judge_tool_calls(
 
 
 def _no_facts(case: Mapping[str, str]) -> dict[str, Any]:
-    return _verdict(
-        case, "skipped", "the plan's deployment facts did not reach the scorer", {}
-    )
+    return _verdict(case, "skipped", "the plan's deployment facts did not reach the scorer", {})
 
 
 def _verdict(
