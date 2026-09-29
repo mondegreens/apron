@@ -25,6 +25,8 @@ from typing import TYPE_CHECKING, Any
 from apron.adapters.renderers.engine_flags import engine_flag_args
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from apron.domain.schemas.solutions import DeploymentPlan
 
 logger = logging.getLogger(__name__)
@@ -53,6 +55,10 @@ _RE_STARTUP_MSG = re.compile(
     r"([\d.]+) GiB for CUDAGraph memory",
     re.DOTALL,
 )
+# INFO (v1/worker/gpu/model_runner.py:428-431 in v0.30.0): the weights as
+# loaded, the same number as MemoryProfilingResult's weights_memory
+# (gpu_worker.py:570 reads model_runner.model_memory_usage).
+_RE_MODEL_LOADING = re.compile(r"Model loading took ([\d.]+) GiB memory")
 _RE_PROFILING_RESULT = re.compile(
     r"Memory profiling takes [\d.]+ seconds\.\s*"
     r"Total non KV cache memory:\s*([\d.]+)GiB;\s*"
@@ -105,9 +111,40 @@ CONTAINER_CONSOLE = "/proc/1/fd/1"
 MIRROR_PATTERN = "tail -n [+]1 -F"
 
 
+def _profiling_from_info(parsed: dict[str, Any]) -> dict[str, Any]:
+    """MemoryProfilingResult's numbers from vLLM's INFO lines, for a boot
+    whose log lacks the DEBUG line (pods log at DEBUG; a log cut short or a
+    boot at INFO still yields the terms).
+
+    v1/worker/gpu_worker.py in v0.30.0: peak activation = torch peak + the
+    applied CUDA-graph estimate (616-618); available KV = requested - non-KV
+    - the applied estimate (621-625), so non-KV = requested - available -
+    estimate; the estimate is applied by default (VLLM_MEMORY_PROFILER_
+    ESTIMATE_CUDAGRAPHS=1) and logged when it is above zero (820-834).
+    """
+    need = ("model_loading_gib", "peak_activation_gib", "requested_gib", "available_kv_cache_gib")
+    if not all(k in parsed for k in need):
+        return {}
+    graph = parsed.get("cuda_graph_estimate_gib", 0.0)
+    return {
+        "weights_memory": int(parsed["model_loading_gib"] * GIB),
+        "torch_peak_increase": int(max(0.0, parsed["peak_activation_gib"] - graph) * GIB),
+        "non_kv_cache_memory": int(
+            (parsed["requested_gib"] - parsed["available_kv_cache_gib"] - graph) * GIB
+        ),
+        **(
+            {"total_consumed": int(parsed["consumed_gib"] * GIB)}
+            if "consumed_gib" in parsed
+            else {}
+        ),
+        "profiling_source": "info",
+    }
+
+
 def launch_command(
     serve: str,
     *,
+    env: Mapping[str, str] | None = None,
     env_file: str | None = None,
     log: str | None = None,
     bin_dir: str = "/opt/venv/bin/",
@@ -129,9 +166,13 @@ def launch_command(
     """
     env_file = env_file or CONTAINER_ENV
     log = log or VLLM_LOG
+    # NCCL's warnings name a host fault in the log (an NVSwitch that cannot
+    # bind NVLS showed only "unhandled cuda error" without them, 2026-09-29).
+    settings = {"NCCL_DEBUG": "WARN", **(env or {})}
+    assigns = " ".join(f"{k}={shlex.quote(str(v))}" for k, v in settings.items())
     return (
         f"( . {env_file} && cd /workspace && "
-        f"exec env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 "
+        f"exec env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 {assigns} "
         f"{bin_dir}{serve} ) > {log} 2>&1 < /dev/null & "
         f"( exec tail -n +1 -F {log} > {console} ) 2>/dev/null < /dev/null &"
     )
@@ -474,6 +515,12 @@ class VllmEngineAdapter:
             parsed["cuda_graph_actual_gib"] = float(m.group(1))
             parsed["cuda_graph_estimate_gib"] = float(m.group(2))
 
+        m = _RE_MODEL_LOADING.search(log_text)
+        if m:
+            parsed["model_loading_gib"] = float(m.group(1))
+
+        if "non_kv_cache_memory" not in parsed:
+            parsed.update(_profiling_from_info(parsed))
         return parsed
 
     # ------------------------------------------------------------------
@@ -652,7 +699,14 @@ class VllmEngineAdapter:
             return ["--safetensors-load-strategy", "prefetch"]
         return []
 
-    def boot(self, plan: DeploymentPlan, target: Any, *, health_timeout: int = 600) -> BootResult:
+    def boot(
+        self,
+        plan: DeploymentPlan,
+        target: Any,
+        *,
+        health_timeout: int = 600,
+        env: Mapping[str, str] | None = None,
+    ) -> BootResult:
         """Boot vLLM from the rendered plan with no token in its environment.
 
         Returns when ``/health`` passes or the process exits.  There is no
@@ -670,7 +724,7 @@ class VllmEngineAdapter:
         extra = self.load_args(target, model_id)
         if extra:
             serve = " ".join([serve, *(shlex.quote(a) for a in extra)])
-        command = launch_command(serve)
+        command = launch_command(serve, env=env)
         start = time.monotonic()
         target.execute(command)
         last_size, last_change, stalled = None, start, False

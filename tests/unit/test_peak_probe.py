@@ -395,10 +395,11 @@ def test_the_probe_launch_is_the_cohort_launch_plus_the_probe_env(
     launch = driver.probe_launch(serve, env)
     assigns = " ".join(f"{k}={v}" for k, v in env.items())
     assert launch.replace(assigns + " ", "") == cohort_launch
-    # The token removal and offline mode still come first.
+    # The token removal and offline mode still come first, then the cohort's
+    # NCCL warnings, then the probe's variables.
     assert (
-        "exec env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 APRON_PEAK_PROBE=1"
-        in (launch)
+        "exec env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 NCCL_DEBUG=WARN "
+        "APRON_PEAK_PROBE=1" in launch
     )
     assert "PYTHONPATH=/workspace/peak_probe" in launch
 

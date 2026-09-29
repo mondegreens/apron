@@ -105,10 +105,11 @@ GPU_SPECS: dict[str, dict[str, Any]] = {
         "compute_capability": "8.9",
     },
     "NVIDIA H200": {
-        # Modern-model groups C/D.  141 GB nominal; 143,771 MiB is the figure
-        # nvidia-smi is commonly reported to show - NOT yet checked on a pod:
-        # the first boot's detected hardware replaces it in the records.
-        "total_memory_bytes": 150_754_820_096,
+        # Detected (143,156.0625 MiB) on the 4x H200 GLM-5.3-Flash boots,
+        # EUR-IS, 2026-09-29: the count whose hash is the reports'
+        # detected_hardware_fingerprint.  The 143,771 MiB guessed before was
+        # 0.60 GiB high.
+        "total_memory_bytes": 150_110_011_392,
         "compute_capability": "9.0",
     },
     "NVIDIA B200": {
@@ -831,6 +832,11 @@ class RunPodTarget:
         files) reaches only the image's download step: ``start.sh`` moves it
         into a root-only file and unsets it before anything else runs (F7).
         """
+        # DEBUG: vLLM's memory-profiling line, and its CUDA-graph input-address
+        # check, which runs only at DEBUG (breakable_cudagraph.py:288,
+        # cuda_graph.py:191 in v0.30.0) and turns a replay on moved inputs
+        # into an error instead of silently wrong outputs.  It caught exactly
+        # that in GLM-5.3-Flash on B200 and H200 (2026-09-29).
         env: dict[str, str] = {"VLLM_LOGGING_LEVEL": "DEBUG"}
         if model_id:
             env.update(

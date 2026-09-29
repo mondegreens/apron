@@ -15,6 +15,7 @@ records (the findings test and ``scripts/cohort_findings.py --check``).
 
 from __future__ import annotations
 
+import hashlib
 import re
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any
@@ -809,11 +810,29 @@ HARNESS_NAMES: dict[str, str] = {
     "harness:download_incomplete": "download check flagged a complete file",
     "harness:exception:QueryError": "GPU provider API error",
     "harness:exception:RemoteCommandTimeout": "a command on the pod did not answer in time",
+    "harness:host_nvls": "the host's NVSwitch could not bind NVLink SHARP (NVLS)",
+    "harness:nccl_init": "NCCL failed on the host before the model loaded",
 }
 
 
 def _harness(tag: str) -> str:
     return HARNESS_NAMES.get(tag, tag)
+
+
+def _sha(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+def _boot_evidence(run: CohortRun) -> dict[tuple[str, str], str]:
+    """Log lines of a failed boot its stored tail lost, keyed by the boot's
+    solution and a hash of that tail (``boot_evidence`` events).  The record
+    stays as stored; the event adds the evidence captured from the same pod
+    before it was torn down."""
+    return {
+        (str(e.get("solution_fingerprint")), str(e.get("log_tail_sha256"))): str(e["evidence"])
+        for e in run.events
+        if e.get("event") == "boot_evidence" and e.get("evidence")
+    }
 
 
 # Kinds of failed boot (``_failure_cause``); a broken plan fails on purpose.
@@ -832,6 +851,7 @@ def _failure_cause(run: CohortRun, r: VerificationReport) -> tuple[str, str]:
     cases = {fingerprint_hex(c.broken_plan): c for c in SIX_CLASSES}
     fixes = {m.corrected_plan_digest for m in run.records.remediations.values()}
     log = r.log_tail or ""
+    log += "\n" + _boot_evidence(run).get((r.solution_fingerprint or "", _sha(log)), "")
     recorded = sorted({f for f in r.failures if f.startswith("harness:")})
     case = cases.get(r.deployment_plan_digest or "")
     if case is not None and failed_as_named(case, log):

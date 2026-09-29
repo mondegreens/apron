@@ -81,7 +81,10 @@ def test_reader_resumes_after_the_last_frame_and_reports_errors() -> None:
     client = _Client([_Resp(200, SSE), _Resp(404, [])])
     reader = PodLogReader("rpa_secret", "hn1e", client=client)
     lines, error = reader.read("system")
-    assert [ln.line for ln in lines][:2] == [f"create container {IMG}", "9b61b0826a9a Pulling fs layer"]
+    assert [ln.line for ln in lines][:2] == [
+        f"create container {IMG}",
+        "9b61b0826a9a Pulling fs layer",
+    ]
     assert error is None
     lines, error = reader.read("system")
     assert lines == [] and error is not None and "404" in error

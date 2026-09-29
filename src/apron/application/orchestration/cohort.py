@@ -109,6 +109,22 @@ _HARNESS_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
         re.compile(r"`vocab` and `merges` must be both be from memory or both filenames"),
     ),
     (
+        # The host's NVSwitch fabric cannot bind NVLink SHARP multicast (NCCL
+        # names it with NCCL_DEBUG=WARN, which the launch sets).  4x H200
+        # machine 1pbo55fc2rpr, EUR-IS, 2026-09-29: every rank failed
+        # "CUDA error 401"; the same boot with NCCL_NVLS_ENABLE=0 passed an
+        # all-reduce and served.  Retried with NVLS off (``RETRY_ENV``).
+        "harness:host_nvls",
+        re.compile(r"Failed to bind NVLink SHARP \(NVLS\)"),
+    ),
+    (
+        # NCCL failing while a worker initialises its device, before any of
+        # the model is loaded: the host, not the model.  Same boot as above,
+        # logged without NCCL's own reason.
+        "harness:nccl_init",
+        re.compile(r"init_device\(\)[\s\S]{0,4000}?NCCL error: unhandled cuda error"),
+    ),
+    (
         # The provider had no instance to give (Secure capacity is volatile).
         "harness:no_capacity",
         re.compile(r"no longer any instances available", re.IGNORECASE),
@@ -122,6 +138,33 @@ _HARNESS_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
         ),
     ),
 )
+
+
+# A failed boot's stored log: its end, with the root-cause lines kept.  vLLM
+# prints each worker's traceback, then the API server's wrapper ("Engine core
+# initialization failed. See root cause above"); four workers' tracebacks
+# pushed the cause ("NCCL error: unhandled cuda error" under init_device())
+# out of the last 8000 characters of the 4x H200 boot of 2026-09-29.
+EVIDENCE_CHARS = 8000
+ROOT_CAUSE_CHARS = 2000
+_ROOT_CAUSE = re.compile(r"(?:Error|Exception): |NCCL WARN|init_device\(\)")
+_WRAPPER_LINE = re.compile(r"Engine core initialization failed|See root cause above")
+
+
+def evidence_tail(log: str, limit: int = EVIDENCE_CHARS) -> str:
+    """The last *limit* characters of *log*, led by the root-cause lines that
+    fall before them (distinct lines, at most ``ROOT_CAUSE_CHARS``)."""
+    if len(log) <= limit:
+        return log
+    causes: list[str] = []
+    for line in log[:-limit].splitlines():
+        if _ROOT_CAUSE.search(line) and not _WRAPPER_LINE.search(line) and line not in causes:
+            causes.append(line)
+    if not causes:
+        return log[-limit:]
+    kept = "\n".join(causes)[-ROOT_CAUSE_CHARS:]
+    marker = "\n[apron: log trimmed; root-cause lines above]\n"
+    return kept + marker + log[-(limit - len(kept) - len(marker)) :]
 
 
 # vLLM's startup heartbeat: a log that ends on it was still starting, not failing.
@@ -140,6 +183,10 @@ def classify_harness_error(log: str) -> str | None:
         return "harness:boot_deadline"
     return None
 
+
+# Engine environment for the retry after a harness failure the environment
+# can work around (the boot is otherwise the same plan).
+RETRY_ENV: dict[str, dict[str, str]] = {"harness:host_nvls": {"NCCL_NVLS_ENABLE": "0"}}
 
 TOKEN_LEAK = "harness:token_in_vllm_environ"
 RUNNER_IMAGE = "harness:runner_image_lacks_f7"
@@ -186,7 +233,14 @@ class ExecutionEngine(Protocol):
 
     def log_tail(self, target: Any, lines: int = 400) -> str: ...
 
-    def boot(self, plan: DeploymentPlan, target: Any, *, health_timeout: int = 600) -> Any: ...
+    def boot(
+        self,
+        plan: DeploymentPlan,
+        target: Any,
+        *,
+        health_timeout: int = 600,
+        env: Mapping[str, str] | None = None,
+    ) -> Any: ...
 
     def verify(
         self, plan: DeploymentPlan, target: Any, health_timeout: int = 600
@@ -463,6 +517,7 @@ def execute_solution(
             engine.evict_models(target, keep=model_id)  # disk: one model's weights at a time
 
         boot = None
+        retry_env: dict[str, str] = {}
         for attempt in range(2):  # a harness failure is retried once
             hygiene = engine.prepare_boot(target)
             if not hygiene.get("clean"):
@@ -474,7 +529,9 @@ def execute_solution(
                 tag = classify_harness_error(download["output_tail"]) or "harness:download"
                 failed_boots.append((download["output_tail"], tag))
                 continue
-            boot = engine.boot(sp.plan, target, health_timeout=ports.boot_timeout)
+            boot = engine.boot(
+                sp.plan, target, health_timeout=ports.boot_timeout, env=retry_env or None
+            )
             timing.engine_start += boot.seconds
             if boot.healthy:
                 break
@@ -482,7 +539,15 @@ def execute_solution(
             if tag is None:
                 break  # a model failure: diagnosis material, not retried
             failed_boots.append((boot.log_tail, tag))
-            _event(ports, "harness_retry", sp, failure=tag, attempt=attempt)
+            retry_env = dict(RETRY_ENV.get(tag, {}))
+            _event(
+                ports,
+                "harness_retry",
+                sp,
+                failure=tag,
+                attempt=attempt,
+                **({"retry_env": retry_env} if retry_env else {}),
+            )
             boot = None
 
         if boot is not None and boot.healthy:
@@ -653,7 +718,7 @@ def _store_outcome(
                 "claim_scope": "boot",
                 "boot_outcome": "failed",
                 "failures": (tag,),
-                "log_tail": mask_secrets(log)[-8000:],
+                "log_tail": evidence_tail(mask_secrets(log)),
                 "reason": "harness_failure",
             }
         )
@@ -691,7 +756,7 @@ def _store_outcome(
                         "claim_scope": "boot",
                         "boot_outcome": "failed",
                         "failures": ("boot:model_failure",),
-                        "log_tail": outcome.log_tail[-8000:],
+                        "log_tail": evidence_tail(outcome.log_tail),
                         "reason": reason,
                     }
                 ),

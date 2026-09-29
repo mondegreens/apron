@@ -466,3 +466,58 @@ def test_kv_cache_capacity_is_parsed() -> None:
     assert m is not None
     assert int(m.group(1).replace(",", "")) == 1_583_104
     assert float(m.group(3)) == 773.0
+
+
+def test_launch_turns_on_nccl_warnings_and_takes_extra_env() -> None:
+    """NCCL's warnings name a host fault in the vLLM log; a retry can add env."""
+    from apron.adapters.backends.vllm_engine import launch_command
+
+    plain = launch_command("vllm serve /m")
+    assert "HF_HUB_OFFLINE=1 NCCL_DEBUG=WARN /opt/venv/bin/vllm serve /m" in plain
+    retry = launch_command("vllm serve /m", env={"NCCL_NVLS_ENABLE": "0"})
+    assert "NCCL_DEBUG=WARN NCCL_NVLS_ENABLE=0 /opt/venv/bin/vllm serve /m" in retry
+    assert retry.index("-u HF_TOKEN") < retry.index("NCCL_NVLS_ENABLE=0")
+
+
+# A boot's lines as vLLM v0.30.0 prints them, numbers consistent with its
+# formulas: weights 15.30, torch peak 1.20, non-torch 0.70, CUDA-graph
+# estimate 0.80, requested 20.25 GiB -> non-KV 17.20, available KV 2.25,
+# peak activation (torch peak + estimate) 2.00, consumed (weights + non-torch)
+# 16.00.
+_INFO_LINES = (
+    "INFO [v1/worker/gpu/model_runner.py:428] Model loading took 15.30 GiB memory and "
+    "31.5 seconds\n"
+    "INFO [v1/worker/gpu_worker.py:640] Available KV cache memory: 2.25 GiB\n"
+    "INFO [v1/worker/gpu_worker.py:825] CUDA graph pool memory: 0.50 GiB (actual), "
+    "0.80 GiB (estimated), difference: 0.30 GiB (37.5%).\n"
+    "INFO [v1/worker/gpu_worker.py:888] Free memory on device (22.50/24.00 GiB) on "
+    "startup. Desired GPU memory utilization is (0.9, 20.25 GiB). Actual usage is 16.00 "
+    "GiB for consumed memory (weights + non-torch), 2.00 GiB for peak activation, and "
+    "0.50 GiB for CUDAGraph memory.\n"
+)
+_DEBUG_LINE = (
+    "DEBUG [v1/worker/gpu_worker.py:639] Memory profiling takes 2.50 seconds. Total non "
+    "KV cache memory: 17.20GiB; torch peak memory increase: 1.20GiB; total consumed (from "
+    "mem_get_info): 16.00GiB; weights memory: 15.30GiB.\n"
+)
+
+
+def test_an_info_logged_boot_gives_the_debug_profiling_numbers() -> None:
+    """A boot logged without the DEBUG profiling line still yields the memory
+    terms: the INFO lines carry the same numbers."""
+    info = VllmEngineAdapter.parse_profiling_logs(_INFO_LINES)
+    debug = VllmEngineAdapter.parse_profiling_logs(_DEBUG_LINE + _INFO_LINES)
+    assert info["profiling_source"] == "info" and "profiling_source" not in debug
+    for key in ("weights_memory", "torch_peak_increase", "non_kv_cache_memory", "total_consumed"):
+        assert abs(info[key] - debug[key]) <= 2, key  # int() of the same GiB figures
+
+
+def test_pods_log_vllm_at_debug() -> None:
+    """DEBUG keeps vLLM's CUDA-graph input-address check on: a replay on moved
+    inputs fails loudly instead of answering wrong (GLM-5.3-Flash, 2026-09-29)."""
+    from apron.adapters.backends.runpod import RunPodTarget
+
+    assert (
+        RunPodTarget.build_env(ssh_public_key="ssh-ed25519 AAAA test")["VLLM_LOGGING_LEVEL"]
+        == "DEBUG"
+    )

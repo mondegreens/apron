@@ -340,6 +340,7 @@ class FakeEngine:
         self._scenario = scenario
         self._token_in_environ = token_in_environ
         self.booted: list[DeploymentPlan] = []
+        self.boot_envs: list[dict[str, str]] = []
         self.evicted: list[str] = []
 
     def runner_supports_token_isolation(self, target: Any) -> bool:
@@ -357,8 +358,16 @@ class FakeEngine:
     def download_weights(self, target: Any, model_id: str) -> dict[str, Any]:
         return {"ok": True, "seconds": 60.0, "output_tail": ""}
 
-    def boot(self, plan: DeploymentPlan, target: Any, *, health_timeout: int = 600) -> BootResult:
+    def boot(
+        self,
+        plan: DeploymentPlan,
+        target: Any,
+        *,
+        health_timeout: int = 600,
+        env: Any = None,
+    ) -> BootResult:
         self.booted.append(plan)
+        self.boot_envs.append(dict(env or {}))
         result = self._scenario(plan, target)
         if result == "healthy":
             return BootResult(True, "", "vllm serve", 90.0)

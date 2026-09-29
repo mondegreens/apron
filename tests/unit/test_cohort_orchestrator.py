@@ -209,6 +209,22 @@ def test_harness_error_is_stored_retried_once_and_not_diagnosed(tmp_path: Path) 
             "harness:no_capacity",
         ),
         (
+            # 4x H200 1pbo55fc2rpr, EUR-IS, 2026-09-29 (NCCL_DEBUG=WARN).
+            "809fbbb02093:6293:6293 [0] transport/nvls.cc:287 NCCL WARN Failed to bind "
+            "NVLink SHARP (NVLS) Multicast memory of size 2097152 : CUDA error 401 'the "
+            "operation cannot be performed in the present state'.",
+            "harness:host_nvls",
+        ),
+        (
+            # The same boot as Apron logged it, without NCCL's warnings.
+            "(Worker pid=5055) ERROR 09-29 05:23:15 [v1/executor/multiproc_executor.py:944]"
+            "     self.worker.init_device()\n"
+            "(Worker pid=5055) ERROR 09-29 05:23:15 [v1/executor/multiproc_executor.py:944]"
+            " RuntimeError: NCCL error: unhandled cuda error (run with NCCL_DEBUG=INFO for "
+            "details)",
+            "harness:nccl_init",
+        ),
+        (
             "DOWNLOAD_INCOMPLETE: missing vocab.json; size merges.txt 0!=1671853",
             "harness:download_incomplete",
         ),
@@ -730,3 +746,50 @@ def test_pods_left_during_a_start_are_billed_by_pod(tmp_path: Path) -> None:
         _cost_on_records(cohort_ports.store), abs=1e-4
     )
     assert ledger_by_pod(ledger)["left-1"] == pytest.approx(left[0]["amount"])
+
+
+def test_an_nvswitch_that_cannot_bind_nvls_is_retried_with_nvls_off(tmp_path: Path) -> None:
+    """The host, not the model: the retry boots the same plan with
+    NCCL_NVLS_ENABLE=0 and the event log says so (2026-09-29, 4x H200)."""
+    calls: list[int] = []
+
+    def nvls_then_healthy(plan: Any, target: Any) -> Any:
+        calls.append(1)
+        if len(calls) == 1:
+            return "NCCL WARN Failed to bind NVLink SHARP (NVLS) Multicast memory"
+        return "healthy"
+
+    cohort_ports, engine, _, _ = ports(tmp_path, nvls_then_healthy)
+    sp = solution("Qwen/Qwen3-1.7B", "NVIDIA GeForce RTX 4090")
+    result = run_cohort([sp], accepted_inputs(), cohort_ports)
+    assert result.executed[sp.label].healthy
+    assert engine.boot_envs == [{}, {"NCCL_NVLS_ENABLE": "0"}]
+    events = cohort_ports.events
+    assert isinstance(events, MemoryLog)
+    retries = [e for e in events.entries if e.get("event") == "harness_retry"]
+    assert retries[0]["failure"] == "harness:host_nvls"
+    assert retries[0]["retry_env"] == {"NCCL_NVLS_ENABLE": "0"}
+
+
+def test_a_failed_boots_stored_log_keeps_its_root_cause() -> None:
+    """Four workers' tracebacks pushed the NCCL cause out of the last 8000
+    characters of the 4x H200 boot (2026-09-29); the stored tail keeps it."""
+    from apron.application.orchestration.cohort import EVIDENCE_CHARS, evidence_tail
+
+    cause = (
+        "(Worker pid=5055) ERROR [multiproc_executor.py:944]     self.worker.init_device()\n"
+        "(Worker pid=5055) ERROR [multiproc_executor.py:944] RuntimeError: NCCL error: "
+        "unhandled cuda error (run with NCCL_DEBUG=INFO for details)\n"
+    )
+    noise = '(APIServer pid=3686)   File "/opt/venv/lib/vllm/engine.py", line 1\n' * 400
+    wrapper = (
+        "(APIServer pid=3686) RuntimeError: Engine core initialization failed. "
+        "See root cause above."
+    )
+    log = cause + noise + wrapper
+    kept = evidence_tail(log)
+    assert len(kept) <= EVIDENCE_CHARS
+    assert kept.endswith(wrapper)
+    assert "NCCL error: unhandled cuda error" in kept
+    assert classify_harness_error(kept) == "harness:nccl_init"
+    assert evidence_tail("short log") == "short log"

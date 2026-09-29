@@ -192,8 +192,7 @@ def probe_launch(serve: str, env: dict[str, str]) -> str:
     ``env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1`` stays first,
     so the token removal and offline mode are the cohort's (vllm_engine.py:131-134).
     """
-    assigns = " ".join(f"{k}={shlex.quote(v)}" for k, v in env.items())
-    return launch_command(f"{assigns} {BIN}{serve}", bin_dir="")
+    return launch_command(serve, env=env)
 
 
 def estimate_usd(rate: float, boots: int) -> float:
