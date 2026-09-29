@@ -440,12 +440,12 @@
     "authorized": 200.0,
     "failed_boot_total": 45.059356,
     "ledger_classifier": 0.193358,
-    "ledger_corrected": -129.049729,
+    "ledger_corrected": -110.699995,
     "ledger_pod_idle": 0.243662,
     "ledger_probe": 1.397938,
-    "ledger_reconciled": 15.136162,
+    "ledger_reconciled": 20.835354,
     "ledger_settled": 204.544553,
-    "ledger_spent": 110.908373,
+    "ledger_spent": 134.957299,
     "ledger_staging": 2.153608,
     "ledger_storage": 16.288821,
     "per_solution": [
@@ -1347,7 +1347,7 @@
         "vllm": "v0.30.0"
       }
     ],
-    "provider_billed": 62.414916,
+    "provider_billed": 118.311128,
     "provider_mismatched": [],
     "provider_not_yet_billed": [
       "1vfyomjmetiqpl",
@@ -1357,6 +1357,7 @@
       "ia4lxog3zt7yvq",
       "iuka43221a50yy",
       "j0vmcky4srjtuf",
+      "kk69d45ev24d6o",
       "nnzli0ens2mc88",
       "t6wrf34abmdd5i",
       "txxu8odogbzs18",
