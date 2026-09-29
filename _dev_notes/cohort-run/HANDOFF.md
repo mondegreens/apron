@@ -90,35 +90,23 @@ What happened to GLM-5.3-Flash, in order:
 
 GPU-free — do these first, in this order:
 
-- **H1 — calculator vs the GLM 4xB200 record.** See
-  `pending-records/README.md` (record `1220b7a182caf10d…`).
-  - CUDA-graph memory for Glm5Next does not fit
-    `calculator.cuda_graph_estimate_bytes` (`layers x graphs x constant`):
-    - 4xB200, max_num_seqs default, ~83 graphs: 4.28 GiB measured vs 2.30
-      predicted, about 1.2 MiB per layer-graph;
-    - 2xB200 (record `12208ef6f21ef008…`, max_num_seqs 13, 4 graphs): implies
-      about 9 MiB per layer-graph.
-  - Torch peak: 3.39 vs 2.82 GiB at 16,384 tokens.
-  - vLLM's estimate is `first_capture + (total_graphs - 1) * per_graph`. The
-    source is `profile_cudagraph_memory` in
-    `.sources/vllm-v0.30.0/vllm/v1/worker/gpu/cudagraph_utils.py:847-960`. The
-    first capture is `layered.first_capture_bytes` in
-    `src/apron/domain/mechanisms/layered.py`.
-  - Fix term by term, then:
-    1. `pytest tests/unit/test_calculator_vs_cohort.py`;
-    2. move the record back to
-       `_dev_notes/cohort-run/records/verification-reports/` (not the repo's
-       top-level `records/`);
-    3. run `scripts/calculator_recheck.py`, then `scripts/cohort_findings.py`.
-  - **Never widen a tolerance.**
-- **H2 — Qwen3.8-Flash-Next plan.** On 2xB200 vLLM refused the plan:
-  `max_num_seqs (1024) exceeds available Mamba cache blocks (626)`. A TRTLLM
-  MoE padding term was added to the calculator since; the corrected plan
-  still asks for 714 > 626. The Qwen4Exp layout itself exists
-  (`layered._qwen4_exp_kinds`, notes in `qwen4exp-glm5next-kv-trace.md`); the
-  gap is that the plan's max_num_seqs is not capped at the state blocks the
-  calculator predicts, or the prediction is still high. Fix and test that on
-  the H200x4 plan before paying for G2.
+- **H1 — calculator vs the GLM 4xB200 record — deferred (owner, 2026-09-29).**
+  Not a phase blocker: the target GPU for GLM-5.3-Flash is 4xH200
+  (`cohort/modern-models.json`), where it is measured; §18.2 lets a miss stay
+  visible. The record waits in `pending-records/`; its README has what was
+  traced (2026-09-29) and what needs a probe. Never widen a tolerance.
+- **H2 — Qwen3.8-Flash-Next plan — checked 2026-09-29, no code change.**
+  - Target 4xH200: vLLM's default 1024 sequences against ~6,645 predicted
+    state blocks (63.35 GiB KV, 0.0095 GiB per block): the refusal cannot
+    happen there short of a tens-of-GiB error.
+  - 2xB200 refusal (record `1220a2044547c634…`): 841 blocks predicted, 626 in
+    vLLM, about 4 GiB high at TP 2 on SM100. One number cannot tell the KV
+    budget from the block size; stays visible.
+  - The 4xH100 failure (record `122069c0258a5541…`, max_num_seqs 692) was not
+    the model: NCCL "unhandled cuda error" at `ncclCommInitRank`, 4 s after
+    start, the host fault now classified and retried with
+    `NCCL_NVLS_ENABLE=0`. The record still says `boot:model_failure`: correct
+    it in findings with a `boot_evidence` event (G5), never by editing it.
 - **H3 — diagnosis rule.** vLLM v0.30 with CUDA graphs replays moved inputs
   for GLM-5.3-Flash (`breakable_cudagraph.py:419-424`). This showed on the
   tool-call request, on B200 and on H200. The fix is `enforce_eager`.
@@ -132,17 +120,14 @@ GPU-free — do these first, in this order:
   - the parser must match the template;
   - the reasoning check now sends no effort (`e0857da`).
   Decide the fix before any paid re-run.
-- **H5 — cost estimates.**
-  - `CohortPlanner.plan_for` (`src/apron/interfaces/cohort_root.py:361`) holds
-    a flat 25 minutes. The GLM download run cost $13.62 against a $7.65
-    estimate and tripped the ">50% overrun" stop: both variant runs report
-    `stopped: cost overrun`.
-  - Do not put the arithmetic in `interfaces/` (INV-11). `application/
-    orchestration/scheduler.estimate_cost` already models image pull +
-    download + boot. Its `DOWNLOAD_GB_PER_MINUTE = 6.0` is far below the ~54
-    GB/min measured on the pod.
-  - Reuse `estimate_cost` from `plan_for`, with measured rates and the ~20 min
-    load of a 330 GB model from a network-backed pod volume. Do this before G3.
+- **H5 — cost estimates — done (`657e13e`).** `scheduler.run_cost` is the
+  slowest measured case per term (image pull 13 min, download 28.3 GB/min,
+  engine start max(size class, checkpoint / 11.5 GB/min), evaluation 5 min);
+  `plan_for` reuses it through the seed row; `CohortPlanner.download_weights`
+  drops the download for a staged volume. `tests/unit/test_run_cost_vs_cohort.py`:
+  no recorded run cost more than its estimate (worst 60%; the stop is 150%).
+  These are the budget's holds, not expected spend: holds for everything left
+  (G1, G2, group D) are ~$290 downloading on the pod, ~$225 staged.
 - **H6 — seed cleanup.** `cohort/phase-1b-seed.json` still has a row for
   Nemotron-3-Nano, which `cohort/modern-models.json` dropped. Keep the seed
   consistent with the list; ask the owner before removing a model.
