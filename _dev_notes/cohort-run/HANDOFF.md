@@ -48,11 +48,11 @@ process `docs/development-process.md`; repo rules `AGENTS.md`.
   for the article; never open PRs or issues without the owner.
 - RunPod: no pods, no network volumes (the 3358 GB volume was deleted on
   2026-09-29, owner's go). Balance ~$3.66: the owner tops up before any GPU run.
-- Ledger: $112.76 spent of the $200 cap (`AUTHORIZED_USD` in
-  `src/apron/interfaces/cohort_root.py`) — **$87.24 left**, no open holds.
-  Reconciled to the RunPod bill up to 2026-09-29 01:12 UTC; the GLM runs of
-  04:17-05:23 UTC and the last storage line are still at the harness's own
-  rate x time until reconciled (G5).
+- Ledger: **$136.94 spent of the $200 cap, $63.06 left** after the
+  reconcile of 2026-09-29 21:05 UTC (`c29717f`): +$17.34 of it is the 4xH200
+  pod `yduvqoaynvo8ep`, kept after the GLM variant for debugging by hand and
+  never ledgered. 13 pods, G1's among them, not billed yet: reconcile again.
+  RunPod balance $53.66 before G1.
 - vLLM sources, outside the worktree: v0.30.0 at
   `/Users/vlad/repos/apron/.sources/vllm-v0.30.0/`, v0.29.0 at
   `/Users/vlad/repos/apron/.sources/vllm/`.
@@ -66,7 +66,7 @@ Group membership follows `cohort/modern-models.json`.
 | Base cohort | 15 small/medium (Qwen3, Mistral, Llama 3.1, Gemma 2, DeepSeek-V2-Lite, Mamba, quantized variants) | done, six fix proofs |
 | A | gpt-oss-120b, Gemma 4 31B, GLM-4.7-Flash (measured once, then replaced in the list) | done, healthy (H100) |
 | A | Muse-Glimmer-30B | booted healthy (H100, ran with group B), suite **0/3** — H4 |
-| A | gpt-oss-20b (RTX 4090) | **never run** — G1 |
+| A | gpt-oss-20b (RTX 4090) | done 2026-09-29 (G1): 3/3, serving SLO passes, $0.13 |
 | B | Qwen3.8-27B (v0.30), Qwen3.6-35B-A3B-FP8, Nemotron-3.5-Lightning | done, healthy (H100) |
 | B (dropped) | Nemotron-3-Nano NVFP4 | dropped from the list ("replaced by Nemotron-3.5"); a stale seed row remains — H6 |
 | C | GLM-5.3-Flash | healthy on 4xH200 with `enforce_eager` (solution `1220020ae7d2d05c…`): suite v3 4/5 — the miss was the reasoning check's own effort setting, fixed in `e0857da`; TPOT 111 ms fails the 100 ms SLO |
@@ -164,7 +164,7 @@ Paid — each needs the owner's explicit "да" after you state the price:
 
 | Id | What | Estimate |
 |---|---|---|
-| G1 | gpt-oss-20b on RTX 4090 (`approved-groupA-4090.json`, suite v2) | ~$1 |
+| G1 | gpt-oss-20b on RTX 4090 — **done** (`65f867b`) | $0.13 |
 | G2 | DeepSeek-V4.1-Flash, DeepSeek-V4-Flash-0731, Qwen3.8-Flash-Next on 4xH200 (`approved-groupC-h200x4-rest.json`, suite v3), after H2 and H5 | ~$15 each at $18.36/h |
 | G3 | GLM-5.3-Flash eager once more, to record the fixed reasoning check, after H5 | ~$14 |
 | G4 | Group D on 8xH200 or 8xB200, when stock exists | ~$40-60 each |
