@@ -1,0 +1,119 @@
+{
+  "inputs": {
+    "candidates": [
+      {
+        "model_id": "Qwen/Qwen3.8-Flash-Next",
+        "gpu_sku": "NVIDIA H100 80GB HBM3",
+        "size_class": "large",
+        "hardware_class": "datacenter",
+        "mechanism": "layered_decode",
+        "weight_gb": 360.0,
+        "gpu_count": 4,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "moe",
+          "hybrid_linear_attention",
+          "host_memory_tables",
+          "vision"
+        ]
+      },
+      {
+        "model_id": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "gpu_sku": "NVIDIA H100 80GB HBM3",
+        "size_class": "large",
+        "hardware_class": "datacenter",
+        "mechanism": "layered_decode",
+        "weight_gb": 166.9,
+        "gpu_count": 4,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "moe",
+          "compressed_kv"
+        ]
+      }
+    ],
+    "existing": {
+      "sizes": [],
+      "hardware": [],
+      "mechanisms": [],
+      "features": [],
+      "quantized": false,
+      "prediction_error": false,
+      "models": [],
+      "gpus": []
+    },
+    "measured": [],
+    "remaining_budget": 37.07163600000001,
+    "rates": {
+      "NVIDIA RTX A5000": 0.27,
+      "NVIDIA L4": 0.49,
+      "NVIDIA GeForce RTX 3090": 0.5,
+      "NVIDIA RTX A6000": 0.53,
+      "NVIDIA GeForce RTX 4090": 0.74,
+      "NVIDIA L40": 0.82,
+      "NVIDIA A100 80GB PCIe": 1.59,
+      "NVIDIA A100-SXM4-80GB": 1.59,
+      "NVIDIA H100 80GB HBM3": 3.49,
+      "NVIDIA H200": 4.59,
+      "NVIDIA B200": 6.79
+    }
+  },
+  "ranked": [
+    {
+      "key": "Qwen/Qwen3.8-Flash-Next@NVIDIA H100 80GB HBM3x4",
+      "cost": 27.4547,
+      "obligations": [
+        "size:large",
+        "hardware:datacenter",
+        "mechanism:layered_decode",
+        "new_model",
+        "new_gpu"
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "key": "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H100 80GB HBM3x4",
+      "reason": "estimate $19.97 exceeds remaining $9.62"
+    }
+  ],
+  "authorization": {
+    "schema_version": 1,
+    "permitted_action_classes": [
+      "gpu_execution",
+      "diagnosis_classification"
+    ],
+    "permitted_providers": [
+      "runpod"
+    ],
+    "permitted_accounts": [],
+    "credential_scopes": [
+      "runpod:pods",
+      "anthropic:messages",
+      "huggingface:read"
+    ],
+    "task_data_destinations": [
+      "api.anthropic.com"
+    ],
+    "hard_target_constraints": {
+      "cloud_type": "SECURE"
+    },
+    "maximum_spend": 100.0,
+    "baseline_allocation_digest": null,
+    "contributed_pool_digest": null,
+    "runtime_rules": {},
+    "lifecycle_rules": {},
+    "teardown_rules": {
+      "orphan_max_age_seconds": "3600",
+      "atexit": "terminate"
+    },
+    "security_rules": {},
+    "data_rules": {},
+    "publication_scope": null,
+    "adaptation_rules": {}
+  }
+}

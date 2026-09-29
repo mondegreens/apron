@@ -313,17 +313,26 @@ def test_cohort_run() -> None:
         build_ports,
         live_rates,
         load_seed,
+        staged_bytes,
+        v3_evaluator,
     )
 
     rates = live_rates(os.environ["RUNPOD_API_KEY"])
-    ports = build_ports(rates=rates)
-    planner = CohortPlanner(rates=rates)
+    planner = CohortPlanner(rates=rates, deployment_checks=SUITE == "v3")
     # A later pass names its own owner-approved list and tags its outputs
     # (cohort-ranking-<tag>.json); the first cohort's files stay as recorded.
     approved_file = os.environ.get("APRON_APPROVED", "approved-candidates.json")
     tag = f"-{os.environ['APRON_RUN_TAG']}" if os.environ.get("APRON_RUN_TAG") else ""
     approved = set(json.loads((RUN_DIR / approved_file).read_text()))
     seeds = [s for s in load_seed() if s.key in approved]
+    # Weights download on the pod (no volume): wherever stock appears first,
+    # the pod's own volume sized for the largest model (+15%, +10 GB).
+    largest = max((staged_bytes(s.model_id) for s in seeds), default=0)
+    ports = build_ports(
+        rates=rates,
+        evaluator=v3_evaluator(planner.plan_seed(s) for s in seeds) if SUITE == "v3" else None,
+        pod_volume_gb=int(largest * 1.15 / 1e9) + 10 if largest else None,
+    )
     ranking = rank_candidates(
         seeds, Coverage(), measured=[], remaining_budget=ports.budget.remaining, rates=rates
     )

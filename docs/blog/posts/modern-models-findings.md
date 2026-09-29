@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 22 on 7 GPU types
 - Failure classes fixed and re-verified: 6 of 6
-- Total cost: $57.61 of the $100 cap (failed boots included: $24.84)
+- Total cost: $74.87 of the $200 cap (failed boots included: $38.72)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -34,10 +34,10 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | B | Qwen/Qwen3.8-27B | 27.8 | 6,727,629 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 56.0 GiB per GPU | booted | 50.96 / 51.10 | 3 / 3 | 0.9138 | `122001a0c3f97733` +1 |
 | B | Qwen/Qwen3.6-35B-A3B-FP8 | 36 | 7,638,786 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 38.91 GiB per GPU | booted | 34.88 / 34.23 | 3 / 3 | 1.8343 | `12208654b66bdeae` +1 |
 | B | nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16 | 31.6 | 462,733 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 61.93 GiB per GPU | booted | 58.82 / 58.92 | 3 / 3 | 0.3089 | `12208228a1874270` +1 |
-| C | zai-org/GLM-5.3-Flash | 321 | 4,332,082 | NVIDIA B200 x2 | v0.30.0 | fits: 80.19 GiB per GPU | booted | 149.40 / 152.10 | 0 / 5 | 10.2636 | `12205bcd73a59449` +1 |
+| C | zai-org/GLM-5.3-Flash | 321 | 4,332,082 | NVIDIA B200 x2 | v0.30.0 | fits: 80.19 GiB per GPU | booted | 149.40 / 152.10 | 0 / 5 | 17.1389 | `12205bcd73a59449` +2 |
 | C | deepseek-ai/DeepSeek-V4.1-Flash | 763 | 651,078 | NVIDIA H200 x4 | v0.30.0 | fits: 81.29 GiB per GPU | failed | — | — | 1.3471 | `1220719311f18b1a` |
-| C | Qwen/Qwen3.8-Flash-Next | 180 | 1,226,891 | NVIDIA H200 x4 | v0.30.0 | fits: 62.85 GiB per GPU | failed | — | — | 6.4957 | `1220a2044547c634` |
-| C | deepseek-ai/DeepSeek-V4-Flash-0731 | 304.2 | 3,959,727 | NVIDIA H200 x4 | v0.30.0 | fits: 41.19 GiB per GPU | failed | — | — | 6.9127 | `12200c5a8ae38b12` |
+| C | Qwen/Qwen3.8-Flash-Next | 180 | 1,226,891 | NVIDIA H200 x4 | v0.30.0 | fits: 62.85 GiB per GPU | failed | — | — | 10.0789 | `122069c0258a5541` +1 |
+| C | deepseek-ai/DeepSeek-V4-Flash-0731 | 304.2 | 3,959,727 | NVIDIA H200 x4 | v0.30.0 | fits: 41.19 GiB per GPU | failed | — | — | 10.3293 | `12200c5a8ae38b12` +1 |
 | D | zai-org/GLM-5.3 | 753.3 | 1,351,716 | NVIDIA H200 x8 | — | fits: 94.15 GiB per GPU | not run yet | — | — | — | — |
 | D | deepseek-ai/DeepSeek-V4-Pro-0813 | 1650 | 116,119 | NVIDIA H200 x8 | — | fits: 107.44 GiB per GPU | not run yet | — | — | — | — |
 | D | MiniMaxAI/MiniMax-M3 | 427 | 164,729 | NVIDIA H200 x8 | — | fits: 103.72 GiB per GPU | not run yet | — | — | — | — |
@@ -77,8 +77,8 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:failed_spend -->
 | Why the boot failed | Boots | Cost $ | Records |
 |---|---|---|---|
-| the model | 4 | 13.9058 | `122001a0c3f97733`, `12200c5a8ae38b12`, `1220a2044547c634`, `1220be1b1f6ceab3` |
-| the harness: harness:exception:TimeoutError | 1 | 3.4283 | `12205bcd73a59449` |
+| the model | 5 | 17.4890 | `122001a0c3f97733`, `12200c5a8ae38b12`, `122069c0258a5541`, `1220a2044547c634`, `1220be1b1f6ceab3` |
+| the harness: harness:exception:TimeoutError | 3 | 13.7203 | `12203e94dd0600eb`, `12205bcd73a59449`, `1220ab75c9b71ae7` |
 | a broken plan, failing as its class names (on purpose) | 6 | 1.5023 | `122003cbc66ff472`, `1220233b18004d3c`, `1220736506a57c47`, `122082b8cebddc87`, `12209c87b885bbbd`, `1220e27e21b0a24a` |
 | a fix that did not work | 1 | 1.3929 | `1220e2bb9d9e3077` |
 | the harness: harness:exception:KeyboardInterrupt | 1 | 1.3471 | `1220719311f18b1a` |

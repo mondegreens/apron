@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 22 on 7 GPU types
 - Failure classes fixed and re-verified: 6 of 6
-- Total cost: $57.61 of the $100 cap (failed boots included: $24.84)
+- Total cost: $74.87 of the $200 cap (failed boots included: $38.72)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -39,7 +39,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | Runner image | `sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba`, `sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336` |
 | Models measured | JunHowie/Qwen3-8B-GPTQ-Int4, Qwen/Qwen3-0.6B, Qwen/Qwen3-0.6B-FP8, Qwen/Qwen3-1.7B, Qwen/Qwen3-14B, Qwen/Qwen3-32B, Qwen/Qwen3-8B, Qwen/Qwen3-8B-AWQ, Qwen/Qwen3.6-35B-A3B-FP8, Qwen/Qwen3.8-27B, deepseek-ai/DeepSeek-V2-Lite, deepseek-ai/DeepSeek-V2-Lite-Chat, google/gemma-2-2b-it, google/gemma-4-31B-it, meta-llama/Llama-3.1-8B-Instruct, meta-models/Muse-Glimmer-30B, mistralai/Mistral-7B-Instruct-v0.3, nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16, openai/gpt-oss-120b, state-spaces/mamba-2.8b-hf, zai-org/GLM-4.7-Flash, zai-org/GLM-5.3-Flash |
 | GPUs measured | NVIDIA A100 80GB PCIe, NVIDIA A100-SXM4-80GB, NVIDIA B200, NVIDIA GeForce RTX 4090, NVIDIA H100 80GB HBM3, NVIDIA L4, NVIDIA RTX A6000 |
-| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-28T18:29:49.574276+00:00 |
+| Run window (UTC) | 2026-09-26T21:48:08.665977+00:00 → 2026-09-29T00:22:32.065944+00:00 |
 | Task suite | 3 cases, `1220e96408006e07` |
 | Serving workload | ISL 512, OSL 128, concurrency 4, SLO p99 TTFT 2000 ms, p99 TPOT 100 ms |
 <!-- /findings:setup -->
@@ -241,9 +241,10 @@ Failed boots and retries are included.
 | Qwen/Qwen3.8-27B | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | 0.3747 | 1 (0.3747) | `122001a0c3f97733` |
 | Qwen/Qwen3.8-27B | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | 0.5391 | 0 (0.0000) | `1220446b680c5d23` +4 |
 | Qwen/Qwen3.8-Flash-Next | NVIDIA B200 x2 | v0.30.0 | 6.4957 | 1 (6.4957) | `1220a2044547c634` |
+| Qwen/Qwen3.8-Flash-Next | NVIDIA H100 80GB HBM3 x4 | v0.30.0 | 3.5832 | 1 (3.5832) | `122069c0258a5541` |
 | deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe x1 | v0.29.0 | 0.2497 | 0 (0.0000) | `12200ac2fd197bfb` +7 |
 | deepseek-ai/DeepSeek-V2-Lite-Chat | NVIDIA A100 80GB PCIe x1 | v0.29.0 | 0.3289 | 0 (0.0000) | `1220010e0d05fce8` +4 |
-| deepseek-ai/DeepSeek-V4-Flash-0731 | NVIDIA B200 x2 | v0.30.0 | 6.9127 | 1 (6.9127) | `12200c5a8ae38b12` |
+| deepseek-ai/DeepSeek-V4-Flash-0731 | NVIDIA B200 x2 | v0.30.0 | 10.3293 | 2 (10.3293) | `12200c5a8ae38b12` +1 |
 | deepseek-ai/DeepSeek-V4.1-Flash | NVIDIA B200 x2 | v0.30.0 | 1.3471 | 1 (1.3471) | `1220719311f18b1a` |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 0.0253 | 0 (0.0000) | `1220044754a6eab0` +7 |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 0.0253 | 0 (0.0000) | `1220393369faa495` +7 |
@@ -263,15 +264,16 @@ Failed boots and retries are included.
 | state-spaces/mamba-2.8b-hf | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 0.0314 | 0 (0.0000) | `12200ac02bfdf76a` +7 |
 | zai-org/GLM-4.7-Flash | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | 0.1311 | 0 (0.0000) | `122005193f21e06c` +4 |
 | zai-org/GLM-5.3-Flash | NVIDIA B200 x2 | v0.30.0 | 10.2636 | 1 (3.4283) | `12200e8e8d67653c` +12 |
-| **Records total** |  |  | **39.4905** |  |  |
+| zai-org/GLM-5.3-Flash | NVIDIA B200 x4 | v0.30.0 | 6.8753 | 1 (6.8753) | `1220ab75c9b71ae7` |
+| **Records total** |  |  | **53.3657** |  |  |
 | Diagnosis model calls (Claude Haiku) |  |  | 0.1934 |  |  |
-| Idle time of reused pods |  |  | 0.2376 |  |  |
+| Idle time of reused pods |  |  | 0.2395 |  |  |
 | CPU pods that staged weights |  |  | 2.1536 |  |  |
-| Network volume storage for staged weights |  |  | 8.1835 |  |  |
-| Pods billed but missing from the ledger (reconciled) |  |  | 0.6502 |  |  |
-| Corrections to RunPod's bill (estimates, clock differences) |  |  | -0.1749 |  |  |
-| **Ledger spent** |  |  | **57.6062** |  | cap $100 |
-| RunPod billed, same window |  |  | 11.1742 |  | not billed yet: 1 pod(s) |
+| Network volume storage for staged weights |  |  | 10.1780 |  |  |
+| Pods billed but missing from the ledger (reconciled) |  |  | 15.1362 |  |  |
+| Corrections to RunPod's bill (estimates, clock differences) |  |  | -129.0497 |  |  |
+| **Ledger spent** |  |  | **74.8736** |  | cap $200 |
+| RunPod billed, same window |  |  | 62.4149 |  | not billed yet: 12 pod(s) |
 <!-- /findings:cost -->
 
 ## How to reproduce

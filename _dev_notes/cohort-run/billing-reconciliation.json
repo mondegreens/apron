@@ -1,12 +1,30 @@
 {
-  "billed_total": 11.174188,
+  "billed_total": 62.414916,
   "differing": [],
-  "ledger_pod_total": 11.176186,
+  "ledger_pod_total": 64.257549,
   "mismatched": [],
   "not_yet_billed": [
-    "f9vbojnauynvah"
+    "1vfyomjmetiqpl",
+    "96btwmak638rdj",
+    "c4ueqolx1ngxc4",
+    "f9vbojnauynvah",
+    "ia4lxog3zt7yvq",
+    "iuka43221a50yy",
+    "j0vmcky4srjtuf",
+    "nnzli0ens2mc88",
+    "t6wrf34abmdd5i",
+    "txxu8odogbzs18",
+    "up4ntxcks0bzuh",
+    "wgm6rh8g0tvdhb"
   ],
   "pods": [
+    {
+      "billed": 1.157155,
+      "difference": 0.0,
+      "ledger": 1.157155,
+      "named_by_run": true,
+      "pod": "0vnqmav9bm30kb"
+    },
     {
       "billed": 0.212553,
       "difference": 0.0,
@@ -20,6 +38,13 @@
       "ledger": 0.01782,
       "named_by_run": true,
       "pod": "1hy0qrztswpvsn"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.089,
+      "named_by_run": true,
+      "pod": "1vfyomjmetiqpl"
     },
     {
       "billed": 0.096501,
@@ -36,11 +61,39 @@
       "pod": "1zyr660l6vlrdw"
     },
     {
+      "billed": 4.610382,
+      "difference": 0.0,
+      "ledger": 4.610382,
+      "named_by_run": true,
+      "pod": "5an57rzjhwrmbm"
+    },
+    {
+      "billed": 0.18975,
+      "difference": 0.0,
+      "ledger": 0.18975,
+      "named_by_run": true,
+      "pod": "6yy673tw0wjh0e"
+    },
+    {
       "billed": 0.104332,
       "difference": 0.0,
       "ledger": 0.104332,
       "named_by_run": true,
       "pod": "7l0uecp1u30fhb"
+    },
+    {
+      "billed": 21.599993,
+      "difference": 0.0,
+      "ledger": 21.599993,
+      "named_by_run": true,
+      "pod": "91udhg1y75n8gm"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.043067,
+      "named_by_run": true,
+      "pod": "96btwmak638rdj"
     },
     {
       "billed": 1.397699,
@@ -57,11 +110,25 @@
       "pod": "adf11ef12rl1qa"
     },
     {
+      "billed": 0.648305,
+      "difference": 0.0,
+      "ledger": 0.648305,
+      "named_by_run": true,
+      "pod": "b2cxgxzq5opvxj"
+    },
+    {
       "billed": 0.113302,
       "difference": 0.0,
       "ledger": 0.113302,
       "named_by_run": true,
       "pod": "bdjkw5nbsj625z"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.029683,
+      "named_by_run": true,
+      "pod": "c4ueqolx1ngxc4"
     },
     {
       "billed": 0.143771,
@@ -92,6 +159,27 @@
       "pod": "fy7vvlu4f5l5l5"
     },
     {
+      "billed": 3.414635,
+      "difference": 0.0,
+      "ledger": 3.414635,
+      "named_by_run": true,
+      "pod": "g6y1jvzbm4jten"
+    },
+    {
+      "billed": 1.452196,
+      "difference": 0.0,
+      "ledger": 1.452196,
+      "named_by_run": true,
+      "pod": "gi84b4cdaz27yv"
+    },
+    {
+      "billed": 3.426292,
+      "difference": 0.0,
+      "ledger": 3.426292,
+      "named_by_run": true,
+      "pod": "gkudanatwscfc8"
+    },
+    {
       "billed": 0.868655,
       "difference": 0.0,
       "ledger": 0.868655,
@@ -104,6 +192,13 @@
       "ledger": 0.243082,
       "named_by_run": true,
       "pod": "i4wm7xzhu4r1wz"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.03,
+      "named_by_run": true,
+      "pod": "ia4lxog3zt7yvq"
     },
     {
       "billed": 0.97169,
@@ -120,6 +215,27 @@
       "pod": "idy00eidbjrj64"
     },
     {
+      "billed": 3.60718,
+      "difference": 0.0,
+      "ledger": 3.60718,
+      "named_by_run": true,
+      "pod": "igmuvkkrl1h4j7"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.022067,
+      "named_by_run": true,
+      "pod": "iuka43221a50yy"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.488333,
+      "named_by_run": true,
+      "pod": "j0vmcky4srjtuf"
+    },
+    {
       "billed": 0.113136,
       "difference": 0.0,
       "ledger": 0.113136,
@@ -132,6 +248,13 @@
       "ledger": 0.111138,
       "named_by_run": true,
       "pod": "jaw52t8omxeh6w"
+    },
+    {
+      "billed": 0.754387,
+      "difference": 0.0,
+      "ledger": 0.754387,
+      "named_by_run": true,
+      "pod": "kf7af9xfmnhep6"
     },
     {
       "billed": 0.312853,
@@ -176,6 +299,20 @@
       "pod": "n99tlxduol1a1q"
     },
     {
+      "billed": 1.043204,
+      "difference": 0.0,
+      "ledger": 1.043204,
+      "named_by_run": true,
+      "pod": "nhevdd44pe5b4h"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 1.033533,
+      "named_by_run": true,
+      "pod": "nnzli0ens2mc88"
+    },
+    {
       "billed": 0.520128,
       "difference": 0.0,
       "ledger": 0.520128,
@@ -218,11 +355,39 @@
       "pod": "rpxdrib9e80tkn"
     },
     {
+      "billed": 6.868403,
+      "difference": 0.0,
+      "ledger": 6.868403,
+      "named_by_run": true,
+      "pod": "t10rarq98qiwmk"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.040467,
+      "named_by_run": true,
+      "pod": "t6wrf34abmdd5i"
+    },
+    {
       "billed": 0.347876,
       "difference": 0.0,
       "ledger": 0.347876,
       "named_by_run": true,
       "pod": "tbwmztvyaiaej2"
+    },
+    {
+      "billed": 0.021194,
+      "difference": 0.0,
+      "ledger": 0.021194,
+      "named_by_run": true,
+      "pod": "tvuknutqxlhbxz"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.011367,
+      "named_by_run": true,
+      "pod": "txxu8odogbzs18"
     },
     {
       "billed": 0.128319,
@@ -244,11 +409,46 @@
       "ledger": 0.191352,
       "named_by_run": true,
       "pod": "uen772hwen7url"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.02865,
+      "named_by_run": true,
+      "pod": "up4ntxcks0bzuh"
+    },
+    {
+      "billed": 0.3675,
+      "difference": 0.0,
+      "ledger": 0.3675,
+      "named_by_run": true,
+      "pod": "uv3q4ny9qmnsiz"
+    },
+    {
+      "billed": 0.985096,
+      "difference": 0.0,
+      "ledger": 0.985096,
+      "named_by_run": true,
+      "pod": "v6ricvo4j74atq"
+    },
+    {
+      "billed": null,
+      "difference": null,
+      "ledger": 0.024467,
+      "named_by_run": true,
+      "pod": "wgm6rh8g0tvdhb"
+    },
+    {
+      "billed": 1.095057,
+      "difference": 0.0,
+      "ledger": 1.095057,
+      "named_by_run": true,
+      "pod": "wig6had87n7397"
     }
   ],
   "unledgered": [],
   "window": {
-    "end": "2026-09-27T20:19:08Z",
+    "end": "2026-09-29T01:12:15Z",
     "start": "2026-09-26T00:00:00Z"
   }
 }

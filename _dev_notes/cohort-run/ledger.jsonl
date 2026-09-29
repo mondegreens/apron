@@ -435,3 +435,41 @@
 {"amount": 25.5153, "at": "2026-09-28T18:14:40.162474+00:00", "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x2", "op": "hold"}
 {"amount": 3.428332, "at": "2026-09-28T18:29:49.002296+00:00", "estimate": 25.5153, "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x2", "op": "settle"}
 {"amount": 19.4232, "at": "2026-09-28T18:29:49.574083+00:00", "label": "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA B200x2", "op": "hold"}
+{"amount": 3.416601, "at": "2026-09-28T18:44:55.301344+00:00", "estimate": 19.4232, "label": "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA B200x2", "op": "settle"}
+{"amount": 0.569146, "at": "2026-09-28T18:44:55.314700+00:00", "label": "storage:7jiuum2nk6:3358GB:0.884h", "op": "spend"}
+{"amount": 1.425402, "at": "2026-09-28T20:57:43.404507+00:00", "label": "storage:7jiuum2nk6:3358GB:2.213h", "op": "spend"}
+{"amount": 27.4547, "at": "2026-09-28T20:59:34.369089+00:00", "label": "Qwen/Qwen3.8-Flash-Next@NVIDIA H100 80GB HBM3x4", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-28T21:11:43.412538+00:00", "label": "Qwen/Qwen3.8-Flash-Next@NVIDIA H100 80GB HBM3x4", "op": "annotate", "pod_id": "igmuvkkrl1h4j7"}
+{"amount": 2.326667, "at": "2026-09-28T21:14:58.413088+00:00", "label": "pod-idle:igmuvkkrl1h4j7", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-28T21:14:58.414733+00:00", "label": "pod-idle:igmuvkkrl1h4j7", "op": "annotate", "pod_id": "igmuvkkrl1h4j7"}
+{"amount": 3.58324, "at": "2026-09-28T21:14:58.415837+00:00", "estimate": 27.4547, "label": "Qwen/Qwen3.8-Flash-Next@NVIDIA H100 80GB HBM3x4", "op": "settle"}
+{"amount": 0.001878, "at": "2026-09-28T21:14:58.899540+00:00", "estimate": 2.326667, "label": "pod-idle:igmuvkkrl1h4j7", "op": "settle"}
+{"amount": 51.0306, "at": "2026-09-28T23:46:41.365518+00:00", "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x4", "op": "hold"}
+{"amount": 6.875349, "at": "2026-09-29T00:01:52.679792+00:00", "estimate": 51.0306, "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x4", "op": "settle"}
+{"amount": 64.754, "at": "2026-09-29T00:01:53.173671+00:00", "label": "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4", "op": "hold"}
+{"amount": 64.754, "at": "2026-09-29T00:22:31.540758+00:00", "estimate": 64.754, "flag": "replayed:estimate", "label": "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4", "op": "settle"}
+{"amount": 51.0306, "at": "2026-09-29T00:22:32.065716+00:00", "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x4", "op": "hold"}
+{"amount": 51.0306, "at": "2026-09-29T01:10:19.655317+00:00", "estimate": 51.0306, "flag": "replayed:estimate", "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x4", "op": "settle"}
+{"amount": 0.586895, "at": "2026-09-29T01:10:20.045936+00:00", "label": "reconcile:unledgered:0vnqmav9bm30kb", "op": "spend"}
+{"amount": 0.18975, "at": "2026-09-29T01:10:20.047034+00:00", "label": "reconcile:unledgered:6yy673tw0wjh0e", "op": "spend"}
+{"amount": 3.414635, "at": "2026-09-29T01:10:20.047435+00:00", "label": "reconcile:unledgered:g6y1jvzbm4jten", "op": "spend"}
+{"amount": 3.426292, "at": "2026-09-29T01:10:20.047723+00:00", "label": "reconcile:unledgered:gkudanatwscfc8", "op": "spend"}
+{"amount": -64.754, "at": "2026-09-29T01:12:15.065086+00:00", "label": "reconcile:unattributed:deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4", "op": "correct", "source": "runpod billing API", "pod_id": "6yy673tw0wjh0e", "note": "settled without its pod (replayed estimate; billed $0.18975); the bill is booked by pod"}
+{"amount": -3.428332, "at": "2026-09-29T01:12:15.065086+00:00", "label": "reconcile:unattributed:zai-org/GLM-5.3-Flash@NVIDIA B200x2", "op": "correct", "source": "runpod billing API", "pod_id": "gkudanatwscfc8", "note": "settled without its pod (billed $3.426292); the bill is booked by pod"}
+{"amount": -3.416601, "at": "2026-09-29T01:12:15.065086+00:00", "label": "reconcile:unattributed:deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA B200x2", "op": "correct", "source": "runpod billing API", "pod_id": "g6y1jvzbm4jten", "note": "settled without its pod (billed $3.414635); the bill is booked by pod"}
+{"amount": -6.875349, "at": "2026-09-29T01:12:15.065086+00:00", "label": "reconcile:unattributed:zai-org/GLM-5.3-Flash@NVIDIA B200x4", "op": "correct", "source": "runpod billing API", "pod_id": "t10rarq98qiwmk", "note": "settled without its pod (billed $6.868354); the bill is booked by pod"}
+{"amount": -51.0306, "at": "2026-09-29T01:12:15.065086+00:00", "label": "reconcile:unattributed:zai-org/GLM-5.3-Flash@NVIDIA B200x4", "op": "correct", "source": "runpod billing API", "pod_id": "0rlx4vt9m6j2ce", "note": "settled without its pod (replayed estimate of a killed run; not billed yet); the bill is booked by pod"}
+{"amount": 6.868403, "at": "2026-09-29T01:12:16.261319+00:00", "label": "reconcile:unledgered:t10rarq98qiwmk", "op": "spend"}
+{"amount": 0.57026, "at": "2026-09-29T01:12:16.261820+00:00", "label": "reconcile:correct:0vnqmav9bm30kb", "op": "correct", "source": "runpod billing API"}
+{"amount": 4.608351, "at": "2026-09-29T01:12:16.262006+00:00", "label": "reconcile:correct:5an57rzjhwrmbm", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.007481, "at": "2026-09-29T01:12:16.262189+00:00", "label": "reconcile:correct:91udhg1y75n8gm", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.001686, "at": "2026-09-29T01:12:16.262345+00:00", "label": "reconcile:correct:b2cxgxzq5opvxj", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.001842, "at": "2026-09-29T01:12:16.262462+00:00", "label": "reconcile:correct:gi84b4cdaz27yv", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.022062, "at": "2026-09-29T01:12:16.262640+00:00", "label": "reconcile:correct:igmuvkkrl1h4j7", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.003068, "at": "2026-09-29T01:12:16.262744+00:00", "label": "reconcile:correct:kf7af9xfmnhep6", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.001316, "at": "2026-09-29T01:12:16.262943+00:00", "label": "reconcile:correct:nhevdd44pe5b4h", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.020684, "at": "2026-09-29T01:12:16.263166+00:00", "label": "reconcile:correct:tvuknutqxlhbxz", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.001538, "at": "2026-09-29T01:12:16.263274+00:00", "label": "reconcile:correct:uv3q4ny9qmnsiz", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.000705, "at": "2026-09-29T01:12:16.263362+00:00", "label": "reconcile:correct:v6ricvo4j74atq", "op": "correct", "source": "runpod billing API"}
+{"amount": 0.000759, "at": "2026-09-29T01:12:16.263462+00:00", "label": "reconcile:correct:wig6had87n7397", "op": "correct", "source": "runpod billing API"}
+{"amount": -4.6097, "at": "2026-09-29T01:12:43.008626+00:00", "label": "reconcile:unattributed:zai-org/GLM-5.3-Flash@NVIDIA B200x2", "op": "correct", "source": "runpod billing API", "pod_id": "5an57rzjhwrmbm", "note": "settled without its pod (interrupted start, rate x rental); the bill is booked by pod"}

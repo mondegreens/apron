@@ -407,17 +407,17 @@
     }
   ],
   "cost": {
-    "authorized": 100.0,
-    "failed_boot_total": 24.84358,
+    "authorized": 200.0,
+    "failed_boot_total": 38.71877,
     "ledger_classifier": 0.193358,
-    "ledger_corrected": -0.174899,
-    "ledger_pod_idle": 0.237597,
+    "ledger_corrected": -129.049729,
+    "ledger_pod_idle": 0.239475,
     "ledger_probe": 1.397938,
-    "ledger_reconciled": 0.650187,
-    "ledger_settled": 44.964962,
-    "ledger_spent": 57.606215,
+    "ledger_reconciled": 15.136162,
+    "ledger_settled": 174.624752,
+    "ledger_spent": 74.873576,
     "ledger_staging": 2.153608,
-    "ledger_storage": 8.183464,
+    "ledger_storage": 10.178012,
     "per_solution": [
       {
         "cost": 1.392902,
@@ -829,6 +829,19 @@
         "vllm": "v0.30.0"
       },
       {
+        "cost": 3.58324,
+        "failed_boot_cost": 3.58324,
+        "failed_boots": 1,
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 4,
+        "label": "Qwen/Qwen3.8-Flash-Next@NVIDIA H100 80GB HBM3x4",
+        "model": "Qwen/Qwen3.8-Flash-Next",
+        "records": [
+          "122069c0258a5541e9cfc0b9a03fe7a4a61fa10438c1d822a3bac0bec5ac9212cbe3"
+        ],
+        "vllm": "v0.30.0"
+      },
+      {
         "cost": 0.249715,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -866,15 +879,16 @@
         "vllm": "v0.29.0"
       },
       {
-        "cost": 6.912677,
-        "failed_boot_cost": 6.912677,
-        "failed_boots": 1,
+        "cost": 10.329278,
+        "failed_boot_cost": 10.329278,
+        "failed_boots": 2,
         "gpu": "NVIDIA B200",
         "gpu_count": 2,
         "label": "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA B200x2",
         "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
         "records": [
-          "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4"
+          "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4",
+          "12203e94dd0600eb3eabbcda907021a0f64929527da69852cee58f9c6b5a53981bb4"
         ],
         "vllm": "v0.30.0"
       },
@@ -1215,33 +1229,60 @@
           "1220f6dc0aaab80454907ed2a48ef7100d7ad719e4e237478e75d27e07c321b42a08"
         ],
         "vllm": "v0.30.0"
+      },
+      {
+        "cost": 6.875349,
+        "failed_boot_cost": 6.875349,
+        "failed_boots": 1,
+        "gpu": "NVIDIA B200",
+        "gpu_count": 4,
+        "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x4",
+        "model": "zai-org/GLM-5.3-Flash",
+        "records": [
+          "1220ab75c9b71ae7b6f90e06f1d7ce243006bfadf8c871704ba95ea4b12aa5fc193d"
+        ],
+        "vllm": "v0.30.0"
       }
     ],
-    "provider_billed": 11.174188,
+    "provider_billed": 62.414916,
     "provider_mismatched": [],
     "provider_not_yet_billed": [
-      "f9vbojnauynvah"
+      "1vfyomjmetiqpl",
+      "96btwmak638rdj",
+      "c4ueqolx1ngxc4",
+      "f9vbojnauynvah",
+      "ia4lxog3zt7yvq",
+      "iuka43221a50yy",
+      "j0vmcky4srjtuf",
+      "nnzli0ens2mc88",
+      "t6wrf34abmdd5i",
+      "txxu8odogbzs18",
+      "up4ntxcks0bzuh",
+      "wgm6rh8g0tvdhb"
     ],
-    "records_total": 39.490485
+    "records_total": 53.365675
   },
   "failed_spend": [
     {
-      "boots": 4,
+      "boots": 5,
       "cause": "the model",
-      "cost": 13.905802,
+      "cost": 17.489042,
       "records": [
         "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc",
         "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4",
+        "122069c0258a5541e9cfc0b9a03fe7a4a61fa10438c1d822a3bac0bec5ac9212cbe3",
         "1220a2044547c634bd416353eb88f0273bdd28307fd3c5a237eb8d12a2c4c949eba3",
         "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
       ]
     },
     {
-      "boots": 1,
+      "boots": 3,
       "cause": "the harness: harness:exception:TimeoutError",
-      "cost": 3.428332,
+      "cost": 13.720282,
       "records": [
-        "12205bcd73a5944993204f4ebcc98f0d5329c0a7cf413fca332607b380391c5a2244"
+        "12203e94dd0600eb3eabbcda907021a0f64929527da69852cee58f9c6b5a53981bb4",
+        "12205bcd73a5944993204f4ebcc98f0d5329c0a7cf413fca332607b380391c5a2244",
+        "1220ab75c9b71ae7b6f90e06f1d7ce243006bfadf8c871704ba95ea4b12aa5fc193d"
       ]
     },
     {
@@ -2243,7 +2284,7 @@
         "weight_gib_per_gpu": 74.7
       },
       "cases": 5,
-      "cost": 10.2636,
+      "cost": 17.1389,
       "downloads_30d": 4332082,
       "gpu": "NVIDIA B200",
       "gpu_count": 2,
@@ -2254,7 +2295,8 @@
       "predicted_weight_bytes": 160416686204,
       "records": [
         "12205bcd73a5944993204f4ebcc98f0d5329c0a7cf413fca332607b380391c5a2244",
-        "12208ef6f21ef008c1cf64b94c292e15ca883f05d636ba7d857dfe8e1206ab28f395"
+        "12208ef6f21ef008c1cf64b94c292e15ca883f05d636ba7d857dfe8e1206ab28f395",
+        "1220ab75c9b71ae7b6f90e06f1d7ce243006bfadf8c871704ba95ea4b12aa5fc193d"
       ],
       "status": "booted",
       "vllm": "v0.30.0"
@@ -2294,7 +2336,7 @@
         "weight_gib_per_gpu": 58.76
       },
       "cases": null,
-      "cost": 6.4957,
+      "cost": 10.0789,
       "downloads_30d": 1226891,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
@@ -2304,6 +2346,7 @@
       "params_b": 180,
       "predicted_weight_bytes": null,
       "records": [
+        "122069c0258a5541e9cfc0b9a03fe7a4a61fa10438c1d822a3bac0bec5ac9212cbe3",
         "1220a2044547c634bd416353eb88f0273bdd28307fd3c5a237eb8d12a2c4c949eba3"
       ],
       "status": "failed",
@@ -2319,7 +2362,7 @@
         "weight_gib_per_gpu": 37.25
       },
       "cases": null,
-      "cost": 6.9127,
+      "cost": 10.3293,
       "downloads_30d": 3959727,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
@@ -2329,7 +2372,8 @@
       "params_b": 304.2,
       "predicted_weight_bytes": null,
       "records": [
-        "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4"
+        "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4",
+        "12203e94dd0600eb3eabbcda907021a0f64929527da69852cee58f9c6b5a53981bb4"
       ],
       "status": "failed",
       "vllm": "v0.30.0"
@@ -2424,7 +2468,7 @@
       "vllm": "v0.29.0"
     }
   ],
-  "record_count": 303,
+  "record_count": 309,
   "records_table": {
     "broken_on_purpose": {
       "boots": 8,
@@ -2495,7 +2539,7 @@
         "vllm": null
       }
     ],
-    "record_count": 303,
+    "record_count": 309,
     "rows": [
       {
         "accepted": 0,
@@ -2567,10 +2611,10 @@
         "boot": "failed",
         "cases": null,
         "cold_start_seconds": null,
-        "cost": 6.912677,
-        "error": null,
-        "failed_boots": 1,
-        "failure": "the model",
+        "cost": 10.329278,
+        "error": "TimeoutError: Pod g6y1jvzbm4jten did not reach RUNNING within 900s",
+        "failed_boots": 2,
+        "failure": "the harness: harness:exception:TimeoutError",
         "gpu": "NVIDIA B200",
         "gpu_count": 2,
         "kv_cache_tokens": null,
@@ -2580,9 +2624,10 @@
         "p99_ttft_ms": null,
         "predicted_peak_bytes": 2415919104,
         "predicted_weight_bytes": 78666270300,
-        "record": "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4",
+        "record": "12203e94dd0600eb3eabbcda907021a0f64929527da69852cee58f9c6b5a53981bb4",
         "records": [
-          "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4"
+          "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4",
+          "12203e94dd0600eb3eabbcda907021a0f64929527da69852cee58f9c6b5a53981bb4"
         ],
         "slo_p99_ttft_ms": null,
         "slo_verdict": null,
@@ -3484,6 +3529,33 @@
         "vllm": "v0.30.0"
       },
       {
+        "accepted": null,
+        "boot": "failed",
+        "cases": null,
+        "cold_start_seconds": null,
+        "cost": 3.58324,
+        "error": "Exception: WorkerProc initialization failed due to an exception in a background process. See stack trace for…",
+        "failed_boots": 1,
+        "failure": "the model",
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 4,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": null,
+        "measured_weight_bytes": null,
+        "model": "Qwen/Qwen3.8-Flash-Next",
+        "p99_ttft_ms": null,
+        "predicted_peak_bytes": 989855744,
+        "predicted_weight_bytes": 63096292478,
+        "record": "122069c0258a5541e9cfc0b9a03fe7a4a61fa10438c1d822a3bac0bec5ac9212cbe3",
+        "records": [
+          "122069c0258a5541e9cfc0b9a03fe7a4a61fa10438c1d822a3bac0bec5ac9212cbe3"
+        ],
+        "slo_p99_ttft_ms": null,
+        "slo_verdict": null,
+        "tasks_passed": null,
+        "vllm": "v0.30.0"
+      },
+      {
         "accepted": 0,
         "boot": "booted",
         "cases": 3,
@@ -3590,6 +3662,33 @@
         "slo_p99_ttft_ms": 2000.0,
         "slo_verdict": "fail",
         "tasks_passed": false,
+        "vllm": "v0.30.0"
+      },
+      {
+        "accepted": null,
+        "boot": "failed",
+        "cases": null,
+        "cold_start_seconds": null,
+        "cost": 6.875349,
+        "error": "TimeoutError: Pod t10rarq98qiwmk did not reach RUNNING within 900s",
+        "failed_boots": 1,
+        "failure": "the harness: harness:exception:TimeoutError",
+        "gpu": "NVIDIA B200",
+        "gpu_count": 4,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": null,
+        "measured_weight_bytes": null,
+        "model": "zai-org/GLM-5.3-Flash",
+        "p99_ttft_ms": null,
+        "predicted_peak_bytes": 3028287488,
+        "predicted_weight_bytes": 82740740516,
+        "record": "1220ab75c9b71ae7b6f90e06f1d7ce243006bfadf8c871704ba95ea4b12aa5fc193d",
+        "records": [
+          "1220ab75c9b71ae7b6f90e06f1d7ce243006bfadf8c871704ba95ea4b12aa5fc193d"
+        ],
+        "slo_p99_ttft_ms": null,
+        "slo_verdict": null,
+        "tasks_passed": null,
         "vllm": "v0.30.0"
       }
     ]
@@ -4092,7 +4191,7 @@
     }
   ],
   "setup": {
-    "authorized": 100.0,
+    "authorized": 200.0,
     "cloud_types": [
       "SECURE"
     ],
@@ -4110,7 +4209,7 @@
       "sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-28T18:29:49.574276+00:00",
+    "last_event": "2026-09-29T00:22:32.065944+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B",
