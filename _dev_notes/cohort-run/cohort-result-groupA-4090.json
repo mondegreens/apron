@@ -1,0 +1,74 @@
+{
+  "executed": {
+    "openai/gpt-oss-20b@NVIDIA GeForce RTX 4090x1": {
+      "solution_fp": "1220961fd61e9fcf85976eed9bf3a8b38497e217200afb9af7e35dfa9d7535c4d961",
+      "healthy": true,
+      "boot_report_digest": "1220cda095dbab4a2973d3d00253628fd43d042f82c09246a6a0c877c3af8bf96a2b",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "122088987ac6f69b3f3544ffcec7e66f4e954f1b0ababe61bfc57384560c3884fd35",
+        "1220ebb711d4db4b8a66ab6132abd63551e9ef5c8ca2f3e3e9cfd393d516e6690306",
+        "1220899c0b44228a8b4382c6186fdc153530626c31e8ccd4ea4e8d77264ef3bc06aa"
+      ],
+      "serving_digest": "12209fb82a68a018afac28887d28f4d65e0952fe578b635e82dee10df0096fa250f3",
+      "log_tail": "",
+      "serving_log": "",
+      "harness_failures": [],
+      "cost": 0.133522,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "451": 0,
+          "1007": 0
+        },
+        "token_free": true
+      }
+    }
+  },
+  "prediction_errors": {},
+  "skipped": {},
+  "stopped": "cost overrun >50% on ['variant']",
+  "budget": {
+    "authorized": 200.0,
+    "spent": 112.894472,
+    "held": 0,
+    "remaining": 87.105528,
+    "open_holds": [],
+    "flags": [
+      "l0a3-run1:replayed:estimate",
+      "stage:Qwen/Qwen3-32B:replayed:estimate",
+      "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1:interrupted_in_provision:tvuknutqxlhbxz:23s_at_3.49_per_h",
+      "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1:interrupted_by_owner_stop:uv3q4ny9qmnsiz:377s_at_3.49_per_h",
+      "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3:stopped_to_fix_download_hang:ia4lxog3zt7yvq:~450s_at_0.24_per_h",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:replayed:provider_reported",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:settled_by_owner",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x2:interrupted_start: rate x rental 14:55:32-15:15:54, reconcile to the bill",
+      "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4:replayed:estimate",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x4:replayed:estimate"
+    ],
+    "overruns": [
+      "variant"
+    ]
+  },
+  "decision_report": {
+    "schema_version": 1,
+    "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+    "candidates": [
+      {
+        "solution_fingerprint": "1220961fd61e9fcf85976eed9bf3a8b38497e217200afb9af7e35dfa9d7535c4d961",
+        "qualification_status": "serving_verified",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220b7c3c6ab46db\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"122088987ac6f69b3f3544ffcec7e66f4e954f1b0ababe61bfc57384560c3884fd35\", \"1220899c0b44228a8b4382c6186fdc153530626c31e8ccd4ea4e8d77264ef3bc06aa\", \"1220ebb711d4db4b8a66ab6132abd63551e9ef5c8ca2f3e3e9cfd393d516e6690306\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"12209fb82a68a018afac28887d28f4d65e0952fe578b635e82dee10df0096fa250f3\"], \"detail\": [\"pass\", \"p99_ttft_ms 119.8 within SLO 2000.0\", \"p99_tpot_ms 8.6 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      }
+    ],
+    "outcome_economics": null,
+    "uncertainty": null,
+    "disclosed_comparable_set": [],
+    "exclusions": []
+  }
+}

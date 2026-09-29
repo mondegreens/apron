@@ -502,3 +502,9 @@
 {"amount": 4.231677, "at": "2026-09-29T05:23:30.782570+00:00", "estimate": 7.65, "label": "variant", "op": "settle"}
 {"amount": 6e-05, "at": "2026-09-29T05:23:30.791596+00:00", "estimate": 3.06, "label": "pod-idle:yduvqoaynvo8ep", "op": "settle"}
 {"amount": 1.399472, "at": "2026-09-29T06:27:03.205543+00:00", "label": "storage:7jiuum2nk6:3358GB:2.173h", "op": "spend"}
+{"amount": 0.6597, "at": "2026-09-29T20:45:24.214570+00:00", "label": "openai/gpt-oss-20b@NVIDIA GeForce RTX 4090x1", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-29T20:52:31.406398+00:00", "label": "openai/gpt-oss-20b@NVIDIA GeForce RTX 4090x1", "op": "annotate", "pod_id": "kk69d45ev24d6o"}
+{"amount": 0.123333, "at": "2026-09-29T20:56:13.768312+00:00", "label": "pod-idle:kk69d45ev24d6o", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-29T20:56:13.771552+00:00", "label": "pod-idle:kk69d45ev24d6o", "op": "annotate", "pod_id": "kk69d45ev24d6o"}
+{"amount": 0.133522, "at": "2026-09-29T20:56:13.782682+00:00", "estimate": 0.6597, "label": "openai/gpt-oss-20b@NVIDIA GeForce RTX 4090x1", "op": "settle"}
+{"amount": 0.000101, "at": "2026-09-29T20:56:14.262442+00:00", "estimate": 0.123333, "label": "pod-idle:kk69d45ev24d6o", "op": "settle"}

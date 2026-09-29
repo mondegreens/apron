@@ -331,6 +331,21 @@
       "weights_now": 1192099840
     },
     {
+      "activation_at_run": 1181859840,
+      "activation_measured": 1181116006,
+      "activation_now": 1181859840,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "openai/gpt-oss-20b",
+      "profiled_tokens": 2048,
+      "record": "1220cda095dbab4a2973d3d00253628fd43d042f82c09246a6a0c877c3af8bf96a2b",
+      "tensor_parallel": 1,
+      "vllm": "v0.30.0",
+      "weights_at_run": 13761264768,
+      "weights_measured": 14817637171,
+      "weights_now": 13761264768
+    },
+    {
       "activation_at_run": 1252638720,
       "activation_measured": 1256277934,
       "activation_now": 1252638720,
@@ -426,11 +441,11 @@
     "failed_boot_total": 45.059356,
     "ledger_classifier": 0.193358,
     "ledger_corrected": -129.049729,
-    "ledger_pod_idle": 0.243561,
+    "ledger_pod_idle": 0.243662,
     "ledger_probe": 1.397938,
     "ledger_reconciled": 15.136162,
-    "ledger_settled": 204.411031,
-    "ledger_spent": 110.77475,
+    "ledger_settled": 204.544553,
+    "ledger_spent": 110.908373,
     "ledger_staging": 2.153608,
     "ledger_storage": 16.288821,
     "per_solution": [
@@ -1180,6 +1195,23 @@
         "vllm": "v0.29.0"
       },
       {
+        "cost": 0.133521,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "label": "openai/gpt-oss-20b@NVIDIA GeForce RTX 4090x1",
+        "model": "openai/gpt-oss-20b",
+        "records": [
+          "122088987ac6f69b3f3544ffcec7e66f4e954f1b0ababe61bfc57384560c3884fd35",
+          "1220899c0b44228a8b4382c6186fdc153530626c31e8ccd4ea4e8d77264ef3bc06aa",
+          "12209fb82a68a018afac28887d28f4d65e0952fe578b635e82dee10df0096fa250f3",
+          "1220cda095dbab4a2973d3d00253628fd43d042f82c09246a6a0c877c3af8bf96a2b",
+          "1220ebb711d4db4b8a66ab6132abd63551e9ef5c8ca2f3e3e9cfd393d516e6690306"
+        ],
+        "vllm": "v0.30.0"
+      },
+      {
         "cost": 0.09866,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -1331,7 +1363,7 @@
       "up4ntxcks0bzuh",
       "wgm6rh8g0tvdhb"
     ],
-    "records_total": 73.449309
+    "records_total": 73.58283
   },
   "failed_spend": [
     {
@@ -2121,6 +2153,23 @@
       "weight_delta_bytes": -711144504
     },
     {
+      "claim": "12204815131b172aa1c50bba04c27955f2cab07e188accdd088a1035811c84f327f1",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "gpu_count": 1,
+      "kv_consistency_bytes": 2475214025,
+      "measured_persistent_bytes": 16374562816,
+      "measured_weight_bytes": 14817637171,
+      "model": "openai/gpt-oss-20b",
+      "notes": [],
+      "predicted_total_bytes": 15626214528,
+      "predicted_weight_bytes": 13761264768,
+      "record": "1220cda095dbab4a2973d3d00253628fd43d042f82c09246a6a0c877c3af8bf96a2b",
+      "solution": "1220961fd61e9fcf85976eed9bf3a8b38497e217200afb9af7e35dfa9d7535c4d961",
+      "total_delta_bytes": -748348288,
+      "vllm": "v0.30.0",
+      "weight_delta_bytes": -1056372403
+    },
+    {
       "claim": "12209d690270761812757fe2a523b6c05b6db5ff88ee1b90896807ce4432cabc7c45",
       "gpu": "NVIDIA GeForce RTX 4090",
       "gpu_count": 1,
@@ -2213,7 +2262,7 @@
   ],
   "modern_models": [
     {
-      "accepted": null,
+      "accepted": 3,
       "before_gpu": {
         "mechanism": "autoregressive_decode",
         "status": "planned",
@@ -2221,19 +2270,21 @@
         "total_gib_per_gpu": 14.55,
         "weight_gib_per_gpu": 12.82
       },
-      "cases": null,
-      "cost": null,
+      "cases": 3,
+      "cost": 0.1335,
       "downloads_30d": 6759761,
       "gpu": "NVIDIA GeForce RTX 4090",
       "gpu_count": 1,
       "group": "A",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 14817637171,
       "model": "openai/gpt-oss-20b",
       "params_b": 20.9,
-      "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet",
-      "vllm": null
+      "predicted_weight_bytes": 13761264768,
+      "records": [
+        "1220cda095dbab4a2973d3d00253628fd43d042f82c09246a6a0c877c3af8bf96a2b"
+      ],
+      "status": "booted",
+      "vllm": "v0.30.0"
     },
     {
       "accepted": 3,
@@ -2610,7 +2661,7 @@
       "vllm": "v0.29.0"
     }
   ],
-  "record_count": 332,
+  "record_count": 338,
   "records_table": {
     "broken_on_purpose": {
       "boots": 8,
@@ -2628,19 +2679,6 @@
     },
     "not_rendered": [],
     "planned": [
-      {
-        "gpu": "NVIDIA GeForce RTX 4090",
-        "gpu_count": 1,
-        "model": "openai/gpt-oss-20b",
-        "predicted": {
-          "mechanism": "autoregressive_decode",
-          "status": "planned",
-          "tensor_parallel": 1,
-          "total_gib_per_gpu": 14.55,
-          "weight_gib_per_gpu": 12.82
-        },
-        "vllm": null
-      },
       {
         "gpu": "NVIDIA H200",
         "gpu_count": 8,
@@ -2681,7 +2719,7 @@
         "vllm": null
       }
     ],
-    "record_count": 332,
+    "record_count": 338,
     "rows": [
       {
         "accepted": 0,
@@ -3174,6 +3212,37 @@
         "slo_verdict": "fail",
         "tasks_passed": true,
         "vllm": "v0.29.0"
+      },
+      {
+        "accepted": 3,
+        "boot": "booted",
+        "cases": 3,
+        "cold_start_seconds": 183.7,
+        "cost": 0.133521,
+        "error": null,
+        "failed_boots": 0,
+        "failure": null,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "gpu_count": 1,
+        "kv_cache_tokens": 93400,
+        "measured_peak_bytes": 1181116006,
+        "measured_weight_bytes": 14817637171,
+        "model": "openai/gpt-oss-20b",
+        "p99_ttft_ms": 119.80089438031428,
+        "predicted_peak_bytes": 1181859840,
+        "predicted_weight_bytes": 13761264768,
+        "record": "1220cda095dbab4a2973d3d00253628fd43d042f82c09246a6a0c877c3af8bf96a2b",
+        "records": [
+          "122088987ac6f69b3f3544ffcec7e66f4e954f1b0ababe61bfc57384560c3884fd35",
+          "1220899c0b44228a8b4382c6186fdc153530626c31e8ccd4ea4e8d77264ef3bc06aa",
+          "12209fb82a68a018afac28887d28f4d65e0952fe578b635e82dee10df0096fa250f3",
+          "1220cda095dbab4a2973d3d00253628fd43d042f82c09246a6a0c877c3af8bf96a2b",
+          "1220ebb711d4db4b8a66ab6132abd63551e9ef5c8ca2f3e3e9cfd393d516e6690306"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.30.0"
       },
       {
         "accepted": 1,
@@ -4347,6 +4416,21 @@
       "completed": 50,
       "failed": 0,
       "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "openai/gpt-oss-20b",
+      "output_token_throughput": 463.74715181350825,
+      "p99_tpot_ms": 8.577431812873256,
+      "p99_ttft_ms": 119.80089438031428,
+      "recomputed_verdict": "pass",
+      "record": "12209fb82a68a018afac28887d28f4d65e0952fe578b635e82dee10df0096fa250f3",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass",
+      "vllm": "v0.30.0"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA GeForce RTX 4090",
       "model": "state-spaces/mamba-2.8b-hf",
       "output_token_throughput": 429.0505377424363,
       "p99_tpot_ms": 8.799394910465777,
@@ -4454,7 +4538,7 @@
       "sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-29T15:34:02.701280+00:00",
+    "last_event": "2026-09-29T20:56:14.262845+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B",
@@ -4475,6 +4559,7 @@
       "mistralai/Mistral-7B-Instruct-v0.3",
       "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
       "openai/gpt-oss-120b",
+      "openai/gpt-oss-20b",
       "state-spaces/mamba-2.8b-hf",
       "zai-org/GLM-4.7-Flash",
       "zai-org/GLM-5.3-Flash"
@@ -5431,6 +5516,28 @@
       "solution": "1220666c11f9a2493f0047e42c0fd1f2bd30cb61f936cb2771797f62726d9a19b7bc",
       "truncated": 0,
       "vllm": "v0.29.0"
+    },
+    {
+      "accepted": 3,
+      "attempts": 3,
+      "cases": 3,
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "model": "openai/gpt-oss-20b",
+      "passed": true,
+      "records": [
+        "122088987ac6f69b3f3544ffcec7e66f4e954f1b0ababe61bfc57384560c3884fd35",
+        "1220899c0b44228a8b4382c6186fdc153530626c31e8ccd4ea4e8d77264ef3bc06aa",
+        "1220ebb711d4db4b8a66ab6132abd63551e9ef5c8ca2f3e3e9cfd393d516e6690306"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "skipped": 0,
+      "solution": "1220961fd61e9fcf85976eed9bf3a8b38497e217200afb9af7e35dfa9d7535c4d961",
+      "truncated": 0,
+      "vllm": "v0.30.0"
     },
     {
       "accepted": 0,
