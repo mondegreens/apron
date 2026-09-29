@@ -173,6 +173,29 @@ Money:
 - G1 + G2 + G3 ≈ $60 leaves ~$27 of the $200 cap.
 - Group D (~$120-180) does not fit, and needs an owner decision on the cap first.
 
+## Groups C and D: GPU-free readiness (2026-09-29)
+
+Planned with today's code and live rates (suite v3 plans), all on vLLM v0.30.0:
+
+| Model | GPUs | Weights / total / GPU (GiB per GPU) | KV GiB | Hold (download) | Notes |
+|---|---|---|---|---|---|
+| DeepSeek-V4.1-Flash | 4xH200 | 77.98 / 81.67 / 125.82 | 44.60 | $24.80 | host RAM 188.83 GiB (Engram tables) |
+| DeepSeek-V4-Flash-0731 | 4xH200 | 37.25 / 46.55 / 125.82 | 85.63 | $21.08 | — |
+| Qwen3.8-Flash-Next | 4xH200 | 58.76 / 62.95 / 125.82 | 63.35 | $23.17 | host RAM 95.37 GiB; 1024 seqs vs ~6,645 blocks |
+| GLM-5.3 | 8xH200 | 88.20 / 96.75 / 125.82 | 31.89 | $67.57 | GlmMoeDsa: breakable graphs; the DEBUG input-address check caught GLM-5.3-Flash (Glm5Next) |
+| DeepSeek-V4-Pro-0813 | 8xH200 | 101.94 / 115.12 / 125.82 | 19.81 | $77.84 | — |
+| MiniMax-M3 | 8xH200 | 99.79 / 104.99 / 125.82 | 22.21 | $74.95 | vision tower peak not traced |
+
+- Host RAM: pods are created without `min_memory_in_gb` (SDK default 1).
+  RunPod lists 188 GB per H200 (`lowestPrice.minMemory`, 1 GPU), so 4xH200
+  holds ~750 GB against V4.1's ~203 GB. Not requested explicitly.
+- Pod disk: download-on-pod sizes the pod volume at largest x 1.15 + 10 GB,
+  ~1,037 GB for DeepSeek-V4-Pro. RunPod's docs name no maximum for a pod
+  volume (it is the host's local disk): unknown. A network volume holds
+  up to 4,000 GB (`runpod_storage.MAX_VOLUME_GB`); group D's three
+  checkpoints are 2,502.7 GB. Group D: stage on a network volume.
+- Stock: `stock-watch.jsonl` (read-only poll every 10 min, 4x/8x H200/B200).
+
 ## How to run (no volume: weights download on the pod)
 
 The GPU steps are pytest steps in `tests/integration/test_cohort_run.py`,
