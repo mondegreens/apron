@@ -114,12 +114,12 @@ GPU-free — do these first, in this order:
     existing rules there, with this source observation.
   - The check runs only at DEBUG (line 288, `cuda_graph.py:191`). It exists to
     prevent silent wrong outputs: see "Never blind yourself".
-- **H4 — Muse-Glimmer 0/3.** Re-read its task records in the light of what GLM
-  taught:
-  - a thinking switch and an effort level are different knobs;
-  - the parser must match the template;
-  - the reasoning check now sends no effort (`e0857da`).
-  Decide the fix before any paid re-run.
+- **H4 — Muse-Glimmer 0/3 — resolved (2026-09-29).** The 0/3 is solution
+  `1220155171f73cac…`, served without a reasoning parser: the reasoning
+  landed in the answer ("to=self … assistant to=user50"). Solution
+  `1220cf5cc8099fd5…` with `reasoning_parser: muse_glimmer` scored 3/3. The
+  article's model card showed the first solution by digest; it now shows the
+  latest one (`2f32050`). No paid re-run needed.
 - **H5 — cost estimates — done (`657e13e`).** `scheduler.run_cost` is the
   slowest measured case per term (image pull 13 min, download 28.3 GB/min,
   engine start max(size class, checkpoint / 11.5 GB/min), evaluation 5 min);
@@ -131,15 +131,12 @@ GPU-free — do these first, in this order:
 - **H6 — seed cleanup.** `cohort/phase-1b-seed.json` still has a row for
   Nemotron-3-Nano, which `cohort/modern-models.json` dropped. Keep the seed
   consistent with the list; ask the owner before removing a model.
-- **G-gate — exit gate on the Rev 4 records.**
-  `APRON_COHORT_GATE=1 uv run pytest tests/test_exit_gate_1b_cohort.py -m cohort`
-  now gives 7/9 (6/9 while any committed file matches a secret pattern:
-  item 8 scans the whole tree). CI runs this, so the PR is red once pushed.
-  - 7a: Rev 4 models were chosen by owner-approved lists
-    (`approved-*.json`), not the scheduler.
-  - 9: the `probe:` peak-probe settles have no hold events.
-  - Update the gate to know owner-approved runs and probes. Do not delete
-    records.
+- **G-gate — exit gate — 9/9 on the real records (`bfc5dd0`).** Item 7a
+  accepts an execution in an owner-approved list whose model is on
+  `cohort/modern-models.json` (§18.1.1). Item 9 attributes `pod-abandoned:`
+  spends to the next settle, leaves out settles flagged `interrupted*` and
+  `probe:` settles (no records), and counts `pending-records/`. Rankings now
+  record their cost model; older ones re-derive with H1's rates.
 - **Older, partly done:**
   - Engine versions (`engine-versions-inventory.md`):
     - readable engine version (+ driver/CUDA/PyTorch) on PlanningClaim and
