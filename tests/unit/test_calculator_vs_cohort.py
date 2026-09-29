@@ -30,7 +30,7 @@ RUN = REPO / "_dev_notes" / "cohort-run"
 TOLERANCE = 0.06
 
 
-def _measured_points() -> list[tuple[str, str, int, int]]:
+def _measured_points() -> list[tuple[str, str, str, int, int]]:
     if not (RUN / "records").is_dir():
         return []
     records = load_cohort_run(RUN).records
@@ -47,6 +47,7 @@ def _measured_points() -> list[tuple[str, str, int, int]]:
         points.add(
             (
                 entry.model_id,
+                entry.requested_execution.gpu_sku,
                 entry.deployment_plan.dtype or "bfloat16",
                 entry.deployment_plan.tensor_parallel,
                 report.model_weight_memory,
@@ -56,10 +57,13 @@ def _measured_points() -> list[tuple[str, str, int, int]]:
 
 
 @pytest.mark.skipif(not (RUN / "records").is_dir(), reason="cohort records not present")
-@pytest.mark.parametrize(("model_id", "dtype", "tp", "measured"), _measured_points())
+@pytest.mark.parametrize(("model_id", "gpu", "dtype", "tp", "measured"), _measured_points())
 def test_weight_prediction_matches_the_measurement(
-    model_id: str, dtype: str, tp: int, measured: int
+    model_id: str, gpu: str, dtype: str, tp: int, measured: int
 ) -> None:
+    from apron.domain.mechanisms.layered import padded_weight_bytes
+    from apron.interfaces.cohort_root import hardware_for
+
     recorded = json.loads(FIXTURE.read_text())
     assert model_id in recorded, "run scripts/record_weight_bytes.py"
     loaded = recorded_loaded_bytes(recorded[model_id], dtype)
@@ -67,7 +71,11 @@ def test_weight_prediction_matches_the_measurement(
     # the buffers vLLM builds at load (layered.startup_buffer_bytes) depend on
     # the plan's batch and are checked with the KV budget below.
     replicated = int(recorded[model_id].get("replicated_bytes") or 0)
-    predicted = _per_gpu(loaded - replicated, tp) + replicated
+    # Experts vLLM pads past the checkpoint on this GPU (layered.padded_weight_bytes).
+    major, _, minor = hardware_for(gpu).compute_capability.partition(".")
+    config = json.loads(CONFIGS.read_text())[model_id]
+    padded = padded_weight_bytes(config, tp=tp, sm=int(major) * 10 + int(minor or 0))
+    predicted = _per_gpu(loaded - replicated, tp) + replicated + padded
     assert abs(predicted - measured) / measured <= TOLERANCE, (
         f"{model_id} ({dtype}) TP {tp}: predicted {predicted / 2**30:.2f} GiB, "
         f"measured {measured / 2**30:.2f} GiB"

@@ -534,3 +534,26 @@ def test_glm53_and_minimax_m3_get_layered_decode() -> None:
     for config in (no_freq, no_index_dim):
         assert family(config) is None
         assert build_model_spec(config).components[0].mechanism == "unknown"
+
+
+def test_gpt_oss_experts_are_padded_on_marlin_only() -> None:
+    """gpt-oss's MXFP4 experts run on Marlin below SM 9.0, which rounds the
+    hidden size to 256 and the rank's intermediate size to 128
+    (fused_moe/oracle/mxfp4.py:745-749): 2880 -> 3072 x 2944 on an RTX 4090,
+    0.855 GiB for gpt-oss-20b; OpenAI's Triton kernels (SM 9.x) keep 2880."""
+    from apron.domain.mechanisms.layered import gpt_oss_marlin_padding
+
+    gpt_oss_20b = {
+        "model_type": "gpt_oss",
+        "num_hidden_layers": 24,
+        "num_local_experts": 32,
+        "hidden_size": 2880,
+        "intermediate_size": 2880,
+        "quantization_config": {"quant_method": "mxfp4"},
+    }
+    assert gpt_oss_marlin_padding(gpt_oss_20b, tp=1, sm=89) == 917_962_752
+    assert padded_weight_bytes(gpt_oss_20b, tp=1, sm=89) == 917_962_752
+    assert gpt_oss_marlin_padding(gpt_oss_20b, tp=1, sm=90) == 0  # Triton
+    assert gpt_oss_marlin_padding(gpt_oss_20b, tp=1, sm=None) == 0
+    assert gpt_oss_marlin_padding(gpt_oss_20b, tp=1, sm=89, moe_backend="triton") == 0
+    assert gpt_oss_marlin_padding({**gpt_oss_20b, "model_type": "qwen3"}, tp=1, sm=89) == 0

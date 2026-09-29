@@ -1169,9 +1169,52 @@ def padded_weight_bytes(
     FlashInfer's TRTLLM kernel (``trtllm_bf16_expert_padding``, SM 10.x only).
     *sm* is the GPU's compute capability (major * 10 + minor), None when
     unknown; *moe_backend* vLLM's ``--moe-backend`` (default ``auto``)."""
-    return _mxfp4_expert_padding(config, tp=tp) + trtllm_bf16_expert_padding(
-        config, tp=tp, sm=sm, moe_backend=moe_backend
+    return (
+        _mxfp4_expert_padding(config, tp=tp)
+        + trtllm_bf16_expert_padding(config, tp=tp, sm=sm, moe_backend=moe_backend)
+        + gpt_oss_marlin_padding(config, tp=tp, sm=sm, moe_backend=moe_backend)
     )
+
+
+def gpt_oss_marlin_padding(
+    config: dict[str, Any], *, tp: int, sm: int | None, moe_backend: str = "auto"
+) -> int:
+    """Per-GPU bytes vLLM v0.30.0 adds to gpt-oss's MXFP4 experts on Marlin.
+
+    The gpt-oss backends in priority order (fused_moe/oracle/mxfp4.py:332-354)
+    run on Marlin below SM 9.0: OpenAI's Triton kernels need 9.0 <= SM < 11.0
+    (experts/gpt_oss_triton_kernels_moe.py:36-48); Marlin needs SM 7.5
+    (experts/marlin_moe.py:561).  Marlin rounds the hidden size up to 256 and
+    the rank's intermediate size to 128 (oracle/mxfp4.py:745-749) before the
+    weights are created (quantization/mxfp4.py:190-192): per expert and layer
+    w13 is [2I, H / 2] uint8 with [2I, H / 32] scales and a [2I] bf16 bias, w2
+    [H, I / 2] with [H, I / 32] scales and an [H] bias (mxfp4.py:194-290).  The
+    repack keeps the bytes: scales stay e8m0 (marlin_utils_fp4.py:125-139).
+    gpt-oss-20b on an RTX 4090: 2880 -> 3072 and 2880 -> 2944, 0.855 GiB of the
+    0.98 GiB its record measured over the checkpoint (2026-09-29).  SM 9.x runs
+    Triton, whose rounding (to 64) leaves 2880 as it is; SM 10.x and 12.x are
+    not traced (0).
+    """
+    text = text_config(config)
+    if str(text.get("model_type") or config.get("model_type") or "") != "gpt_oss":
+        return 0
+    quant = config.get("quantization_config") or text.get("quantization_config") or {}
+    if quant.get("quant_method") != "mxfp4" or moe_backend not in ("auto", "marlin"):
+        return 0
+    if sm is None or not 75 <= sm < 90:
+        return 0
+    hidden = int(text["hidden_size"])
+    per_rank = int(text["intermediate_size"]) // tp
+
+    def expert_bytes(h: int, i: int) -> int:
+        w13 = 2 * i * (h // 2) + 2 * i * (h // 32) + 2 * i * 2
+        w2 = h * (i // 2) + h * (i // 32) + h * 2
+        return w13 + w2
+
+    padded = expert_bytes(-(-hidden // 256) * 256, -(-per_rank // 128) * 128)
+    layers = int(text["num_hidden_layers"])
+    experts = int(text["num_local_experts"])
+    return layers * experts * (padded - expert_bytes(hidden, per_rank))
 
 
 # Models whose MoE layers are Qwen3NextSparseMoeBlock: Qwen3.5-MoE

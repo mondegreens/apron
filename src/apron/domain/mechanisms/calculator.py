@@ -971,9 +971,18 @@ def calculate_autoregressive_decode(
     weight_bytes = metadata.get("total_weight_bytes", 0)
     if weight_bytes <= 0:
         return None
+    from apron.domain.mechanisms.layered import padded_weight_bytes
+
     # Per GPU: each tensor-parallel rank holds 1/tp of the weights and of the
-    # KV heads (a KV head is replicated when there are fewer heads than ranks).
-    weight_bytes = _per_gpu(int(weight_bytes), tp)
+    # KV heads (a KV head is replicated when there are fewer heads than ranks);
+    # vLLM pads some experts past the checkpoint (``padded_weight_bytes``:
+    # gpt-oss's MXFP4 experts on Marlin below SM 9.0).
+    weight_bytes = _per_gpu(int(weight_bytes), tp) + padded_weight_bytes(
+        metadata,
+        tp=tp,
+        sm=_compute_capability(inputs),
+        moe_backend=str(inputs.execution_spec_data.get("moe_backend") or "auto"),
+    )
     kv_heads_per_gpu = max(1, -(-gqa["num_kv_heads"] // tp))
 
     isl, osl, max_batch_size = _workload_params(inputs)
