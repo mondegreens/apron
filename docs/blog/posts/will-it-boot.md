@@ -32,27 +32,33 @@ at the models people actually run this month, and how we found out.
 ## Highlights
 
 - **Before renting anything**, Apron predicted the memory of current open
-  models (gpt-oss-120b, GLM-4.7-Flash, Gemma 4 31B, Qwen3.6-35B-A3B,
-  Muse-Glimmer-30B, Nemotron-3.5, Qwen3.8-27B) from their configs, safetensors
-  headers and the pinned vLLM release's own source. Weights landed within
-  about 1% of what vLLM measured on the GPU.
+  models (gpt-oss-120b, gpt-oss-20b, GLM-4.7-Flash, Gemma 4 31B,
+  Qwen3.6-35B-A3B, Muse-Glimmer-30B, Nemotron-3.5, Qwen3.8-27B, GLM-5.3-Flash)
+  from their configs, safetensors headers and the pinned vLLM release's own
+  source. Weights landed within about 1% of what vLLM measured on the GPU,
+  except gpt-oss-20b on an RTX 4090: 7.7% heavier, because vLLM pads its
+  experts on that card. The source said why; Apron counts it now.
 - **It was wrong about the startup memory peak** of four new models (off by up
   to 3×). We did not tune a constant. We recorded the GPU allocator's history
   during vLLM's profiling run, found every live tensor at the peak, and fixed the
-  rule for all models. Today 25 of 25 measured points agree within 6%.
+  rule for all models. Today all 30 measured points agree within 10%, 27
+  within 6%.
 - **Two models failed to boot** with vLLM's defaults on an H100, both hybrid
   (Mamba / linear attention) models. Both failures are predictable without a
-  GPU, and the planner now chooses a setting that avoids them. [pending: proof
-  boots]
+  GPU, and the planner now chooses a setting that avoids them. With it, both
+  booted and answered 3/3.
 - **One model booted and "failed" every task while answering all of them
   correctly.** It needed a reasoning parser. Booting is not answering.
+- **GLM-5.3-Flash on four H200s runs, but only in eager mode.** With CUDA
+  graphs vLLM's own DEBUG-only check caught the graphs reading moved inputs on
+  a tool call. That check exists so a model does not answer wrong in silence.
 - **vLLM released v0.30 on September 22.** Apron planned on it the same week:
   one runner image per vLLM version, facts and diagnosis rules generated from
   that version's source. Two of the models we want next do not load on v0.29 at
   all.
-- **All of it cost $16.61** in GPU and CPU time, including every failed boot
-  and every diagnostic run. Weights were staged on network storage by a CPU pod,
-  so no GPU minute was spent downloading.
+- **All of it cost $136.94**, reconciled to RunPod's bill, including every
+  failed boot, every diagnostic run, and one pod we kept to debug by hand that
+  billed $21.57 on its own.
 
 ## The problem nobody owns
 
@@ -172,40 +178,73 @@ attention, vision; v0.30)
 **Muse-Glimmer-30B** (Meta; dense, sliding plus full attention, vision; v0.30)
 - Hardware: one H100. Weights predicted 55.46 GiB, measured 55.83 GiB.
 - KV room: 11.0 GiB, 217,478 tokens.
-- Cold start: 156 s. p99 TTFT 0.19 s.
-- Tasks 0/3, while every answer was right: it replies in a reasoning channel
-  and an answer channel, and without `--reasoning-parser muse_glimmer` vLLM
-  returns both as one string. [pending: re-run with the parser]
+- Cold start: 176 s. p99 TTFT 0.18 s. Tasks 3/3.
+- Needs: `--reasoning-parser muse_glimmer`. Without it the first run scored
+  0/3 while every answer was right: the model replies in a reasoning channel
+  and an answer channel, and vLLM returned both as one string.
 
 **Nemotron-3.5-Lightning 30B** (NVIDIA; MoE, Mamba plus attention; v0.30)
 - Hardware: one H100. Failed to boot with vLLM's defaults: 1,024 concurrent
   sequences need 1,024 Mamba state blocks and only 733 fit.
-- Needs: `--max-num-seqs` at or below the block count; Apron now picks 556
-  before renting. [pending: proof boot]
+- Needs: `--max-num-seqs` at or below the block count. Apron picks 556 before
+  renting, and with it the model booted: weights predicted 58.82 GiB, measured
+  58.92 GiB; KV room 9.0 GiB, 53,546 tokens; cold start 135 s; p99 TTFT
+  0.62 s. Tasks 3/3.
 
-**Qwen3.8-27B** (Alibaba; dense, gated delta-net hybrid, vision; v0.29)
-- Hardware: one H100. Failed to boot: before measuring CUDA graphs vLLM
-  allocates a KV cache for 512 sequences, 24.5 GiB for this model, more than was
-  left; the out-of-memory surfaced as an opaque FlashAttention error.
-- Needs: a lower `--max-num-seqs`; Apron now picks 275. [pending: proof boot]
+**Qwen3.8-27B** (Alibaba; dense, gated delta-net hybrid, vision; failed on
+v0.29, booted on v0.30)
+- Hardware: one H100. On v0.29 it failed to boot: before measuring CUDA graphs
+  vLLM allocates a KV cache for 512 sequences, 24.5 GiB for this model, more
+  than was left; the out-of-memory surfaced as an opaque FlashAttention error.
+- Needs: a lower `--max-num-seqs`. Apron picks 275, and with it the model
+  booted on v0.30: weights predicted 50.96 GiB, measured 51.10 GiB; KV room
+  16.3 GiB, 31,085 tokens; cold start 197 s; p99 TTFT 0.19 s. Tasks 3/3.
 
-### Running now: the models everyone is using this month
+**gpt-oss-20b** (OpenAI; MoE, MXFP4, alternating sliding and full attention; v0.30)
+- Hardware: one RTX 4090 (24 GB), the consumer card. Weights predicted
+  12.82 GiB, measured 13.80 GiB: below Hopper, vLLM runs gpt-oss's MXFP4
+  experts on Marlin, which pads them from 2880 to 3072 x 2944. Apron counts
+  that now (13.67 GiB).
+- KV room: 4.3 GiB, 93,400 tokens.
+- Cold start: 152 s. p99 TTFT 0.12 s, 8.6 ms per output token. Tasks 3/3.
+  The run cost $0.13.
 
-GLM-5.3-Flash and DeepSeek-V4.1-Flash are the two most-used open models on
-OpenRouter this month. With Qwen3.8-Flash-Next and DeepSeek-V4-Flash they are
-running on four H200s (141 GB each) on vLLM v0.30 as this is written. Neither
-GLM-5.3-Flash nor DeepSeek-V4.1-Flash loads on vLLM v0.29. What Apron predicts
-before the run, per GPU at tensor parallel 4:
+### Four GPUs: GLM-5.3-Flash
+
+**GLM-5.3-Flash** (Z.ai; the most-used open model on OpenRouter this month;
+MoE, sparse MLA plus linear attention, vision; v0.30 only)
+- Hardware: four H200s. Weights predicted 76.26 GiB per GPU, measured
+  76.37 GiB (the checkpoint is 328 GB; downloaded on the pod in 6 minutes).
+- KV room: 45.6 GiB per GPU, 3.1 million tokens.
+- Cold start: 28 min, most of it loading 328 GB from the pod's network disk.
+  p99 TTFT 0.38 s; 112 ms per output token, which misses a 100 ms SLO.
+  Deployment checks 4/5 (long-context needle, tool call, JSON, image, reasoning);
+  the miss was our reasoning check's own effort setting, since fixed.
+- Needs: `--enforce-eager`. With CUDA graphs it booted on four B200s, passed a
+  32k-token needle, then died on the tool-call request: "Input tensor addresses
+  changed between capture and replay". That check exists only when vLLM logs at
+  DEBUG (`compilation/breakable_cudagraph.py:419-424`), and it exists to stop a
+  graph from reading the wrong memory and answering wrong without a word. We
+  kept DEBUG on for exactly this. The same request failed the same way on
+  H200s; eager mode served it.
+
+### Not booted yet: the rest of the four-GPU group, and eight GPUs
+
+DeepSeek-V4.1-Flash, DeepSeek-V4-Flash and Qwen3.8-Flash-Next have not booted
+yet: B200 hosts that never started a pod, a boot limit we have since removed,
+a plan vLLM refused (Qwen3.8-Flash-Next on two B200s: 1,024 sequences, 626
+state blocks), and a host whose NVSwitch failed NCCL at startup. None of those
+was the model. Four-GPU H200 machines have been out of stock since. What
+Apron predicts before the run, per GPU at tensor parallel 4:
 
 | Model | Weights per GPU | Also needs | Predicted before the run |
 |---|---|---|---|
-| GLM-5.3-Flash | 74.7 GiB | — | fits; vision encoder peak not modelled yet |
 | DeepSeek-V4.1-Flash | 78.0 GiB | 189 GiB of pinned host RAM (Engram tables) | fits; FP8 KV forced |
 | Qwen3.8-Flash-Next | 58.8 GiB | 95 GiB of pinned host RAM (n-gram tables) | fits |
 | DeepSeek-V4-Flash | 37.3 GiB | — | fits |
 
-[pending: cards with measurements for these four, and for group D on eight
-H200s: GLM-5.3, DeepSeek-V4-Pro and MiniMax-M3]
+Group D, eight H200s each, is planned the same way and waits for machines:
+GLM-5.3 (88.2 GiB per GPU), DeepSeek-V4-Pro (101.9) and MiniMax-M3 (99.8).
 
 ## The bug we are proudest of finding: the startup peak
 
@@ -302,9 +341,10 @@ whether the change works. That is the part Apron records.
 
 | Model | What happened | Could it be known before renting? | Fix | Proven by a second boot |
 |---|---|---|---|---|
-| Nemotron-3.5-Lightning (v0.30) | `max_num_seqs (1024) exceeds available Mamba cache blocks (733)` | Yes: every decoding sequence needs one Mamba state block; the blocks follow from the KV budget | planner sets `max_num_seqs` from the predicted block count (556) | [pending] |
-| Qwen3.8-27B (v0.29) | an opaque `aten::new_empty ... API call failed` inside FlashAttention | Yes: before measuring CUDA graphs, vLLM allocates a KV cache for 512 sequences; for this hybrid that is 24.5 GiB, more than was left | same planner rule | [pending] |
-| Muse-Glimmer-30B (v0.30) | booted, answered, scored 0/3 | Yes: its chat template has a reasoning channel and vLLM registers a parser for it | plan adds `--reasoning-parser muse_glimmer` when the template declares a reasoning channel | [pending] |
+| Nemotron-3.5-Lightning (v0.30) | `max_num_seqs (1024) exceeds available Mamba cache blocks (733)` | Yes: every decoding sequence needs one Mamba state block; the blocks follow from the KV budget | planner sets `max_num_seqs` from the predicted block count (556) | yes, 3/3 |
+| Qwen3.8-27B (v0.29) | an opaque `aten::new_empty ... API call failed` inside FlashAttention | Yes: before measuring CUDA graphs, vLLM allocates a KV cache for 512 sequences; for this hybrid that is 24.5 GiB, more than was left | same planner rule (275) | yes, 3/3 (v0.30) |
+| Muse-Glimmer-30B (v0.30) | booted, answered, scored 0/3 | Yes: its chat template has a reasoning channel and vLLM registers a parser for it | plan adds `--reasoning-parser muse_glimmer` when the template declares a reasoning channel | yes, 3/3 |
+| GLM-5.3-Flash (v0.30) | "Input tensor addresses changed between capture and replay" on a tool call | No: a runtime check, at DEBUG only | `--enforce-eager` | yes, 4/5 deployment checks |
 
 The second row is the interesting one. The real error was an out-of-memory in
 the caching allocator, but the FlashAttention extension is built against an
@@ -321,6 +361,12 @@ sized for one group of models filled up when the next group was added, and an
 SSH read that waited for a command to finish before reading its output
 deadlocked on a 12.7 MB vLLM log (the SSH window is 2 MiB). The second one cost
 us a healthy boot's measurement and $1.08.
+
+The rented machines broke too, and a broken machine looks like a broken model:
+a four-H200 host whose NVSwitch failed NCCL's first call, and four-H100 and
+two-B200 hosts that failed the same way or never started a pod at all. Apron
+now tells a host fault from a model failure, retries (another machine, or
+NCCL's NVLink SHARP off), and records neither as the model's.
 
 ## vLLM moved; so did Apron
 
@@ -340,31 +386,37 @@ true for v0.30, and a record says which one it was measured on.
 
 | | |
 |---|---|
-| GPU and CPU time, every boot, failed or not | $16.61 |
-| of which diagnostic probe boots | $1.40 |
+| Everything so far, every boot failed or not, reconciled to RunPod's bill | $136.94 |
+| gpt-oss-20b on an RTX 4090, the whole run | $0.13 |
+| GLM-5.3-Flash on four H200s, one run with the download | $13.62 |
+| one four-H200 pod (a faulty host), kept afterwards to debug by hand, its whole bill | $21.57 |
 | staging ~190 GB of weights with a CPU pod | $0.024 |
-| checking staged weights on the GPU pod | 1–2 s per model |
-| engine start (cold compile) | 104–507 s per model |
+| engine start (cold compile) | 104 s–28 min per model |
 
-The budget for the whole phase is $100. Weights are staged once onto a network
-volume in the same datacenter as the GPU; the GPU pod only verifies them.
+The budget for the whole phase is $200. The most expensive single line is the
+pod we kept to debug by hand: the harness settles a pod when its run ends, and
+a kept pod keeps billing. We found it only when we reconciled against RunPod's
+bill. Weights now download on the pod itself (about 0.9 GB/s): a network
+volume attaches only to pods in its own datacenter, and the GPUs kept
+appearing elsewhere.
 
 ## What this does not show
 
-- **Seven models, one boot each, one GPU type.** An earlier cohort of smaller
-  models adds five GPU types. That is evidence, not a statistic.
+- **Nine models, one measured boot each.** An earlier cohort of
+  smaller models adds five GPU types. That is evidence, not a statistic.
 - **Some parts of the startup-peak rule come from observation.** The shapes are
   from source; how many buffers the compiled graph keeps alive at once was read
   from the probe for the models we probed. A new model family can break it, and
   the next probe is cheap.
-- **The KV budget is predicted within ±0.5 GiB on 27 of 28 records.** The
-  outlier, GLM's MLA CUDA graphs, is not modelled yet; the planner's safety
-  buffer (2.19 GiB) is the largest error measured across all records, not a
-  tuned margin.
+- **The KV budget is predicted within the planner's safety buffer (plus a
+  compile segment vLLM may hold) on every record kept.** GLM's MLA CUDA graphs are not modelled yet, and one
+  GLM-5.3-Flash record with CUDA graphs (2.61 GiB over) waits in a separate
+  folder until the calculator explains it; the buffer (2.19 GiB) is the
+  largest error measured, not a tuned margin.
 - **The task suite is a correctness check, not a benchmark.** It proves the
   endpoint answers; it says nothing about which model is better.
-- **No multi-GPU, no speculative decoding, no prefill/decode split yet.** Those
-  are where the field is; they are next, not claimed.
+- **One model on four GPUs so far; no speculative decoding, no prefill/decode
+  split yet.** Those are where the field is; they are next, not claimed.
 
 ## Where Apron fits
 
