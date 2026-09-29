@@ -3,6 +3,30 @@
 Read this before acting. It is the state of the cohort work, what is left, how
 to run it, and the traps that cost money or time. Older history:
 `_dev_notes/cohort-run/notebook.md`. Process: `docs/development-process.md`.
+The previous session's task list does not carry over: the open work below is
+complete, and its labels (F1-F8, P1-P3) are this document's own.
+
+## The plan
+
+- **Binding text:** `/Users/vlad/repos/apron/_thoughts/phase-1b-cohort/PLAN.md`
+  (`_thoughts/` is git-ignored and lives in the main checkout, not in this
+  worktree; read it by that absolute path). Rev 3 (§0-§17, 2026-09-25) is the
+  original Evidence Cohort plan: foundations, L0 proofs, budget ledger,
+  fingerprints, scheduler/orchestrator, six failure-fix proofs, exit gate,
+  findings article. Rev 3 is done: exit gate 9/9, article draft PR #43.
+- **Rev 4 amendment (§18, 2026-09-27):** add current open models in groups
+  A-D, engine version per plan (vLLM v0.30.0 added), task suites v2/v3,
+  calculator coverage for hybrid attention, a second article. What "done"
+  means for Rev 4 is §18.2: groups A-C measured or recorded as failed with the
+  cause; v0.30 image, facts and hypothesis rules; every prediction miss traced
+  or left visible, never loosened; article 2 generated from the records.
+- **Changes after Rev 4 (§18.4, 2026-09-28/29):** cap $200; staged weights
+  dropped, weights download on the pod; pod start watched through RunPod's log
+  API; no fixed boot limit; vLLM keeps logging at DEBUG; host faults are not
+  model failures; unexplained measurements wait in `pending-records/`.
+- **Status against the plan:** §18.3 table (updated 2026-09-29) and the model
+  table below. Rev 4 is **not done**: group C has three models never booted,
+  group D is not run, article 2 lacks the group C results.
 
 ## Where things are
 
@@ -29,7 +53,7 @@ to run it, and the traps that cost money or time. Older history:
 | C, never booted | DeepSeek-V4.1-Flash, DeepSeek-V4-Flash-0731, Qwen3.8-Flash-Next | P2; ~$15 each on 4xH200 |
 | D | GLM-5.3, DeepSeek-V4-Pro-0813, MiniMax-M3 (8xH200) | not run: no 8-GPU machine was in stock all of 2026-09-28/29 |
 
-## Open work (task ids from the session's task list)
+## Open work
 
 GPU-free (do these first):
 
@@ -57,9 +81,20 @@ GPU-free (do these first):
 5. **F7 — reconcile + findings + article.** `scripts/reconcile_billing.py`
    after today's pods post; regenerate findings/README; put the GLM lessons
    into the article (#43).
-6. Older in-progress items: #48 model list, #49/#52/#56-#58 engine versions,
-   #62/#74 startup peaks + encoder plumbing, #65/#66 calculator layouts for
-   DeepSeek V4 / Qwen4Exp / Glm5Next, #68 Qwen3.6 peak miss.
+6. Older items still open (from the Rev 4 work, each partly done):
+   - Model list refresh in `cohort/modern-models.json` and the seed (Muse-
+     Glimmer-30B, Nemotron-3.5-Lightning, MiniMax-M3, DeepSeek-V4-Pro-0813 in;
+     Kimi-K2, MiniMax-M2.7, DeepSeek-V3.2 out).
+   - Engine versions (inventory: `engine-versions-inventory.md`): readable
+     engine version (+ driver/CUDA/PyTorch) on PlanningClaim and
+     VerificationReport (ADR-003 §5); facts per version everywhere, no silent
+     default; findings/article show the engine version per row.
+   - Startup peaks: encoder-phase plumbing (processor configs into the
+     activation estimate; untraced vision towers flagged, not a silent 0);
+     Qwen3.6-35B peak 1.92 vs 1.01 GiB predicted, Muse 1.83 vs 2.71.
+   - Calculator KV layouts traced but not all implemented: DeepSeek V4/V4.1
+     (packed KV, mtp.*, Engram host RAM), Qwen4Exp (Qwen3.8-Flash-Next) and
+     Glm5Next (notes: `_dev_notes/cohort-run/*-kv-trace.md`).
 
 Paid (each needs the owner's explicit "да" with a stated price):
 
