@@ -261,6 +261,37 @@ def test_modern_models_list_every_approved_model(synthetic: tuple[Path, CohortRu
     assert "not run yet" in table and "GLM-5.3" in table
 
 
+def test_a_model_run_twice_shows_its_latest_solution(synthetic: tuple[Path, CohortRun]) -> None:
+    """The card shows the latest booted solution (its last ``executed``
+    event) and that solution's answers, whichever digest sorts first."""
+    from dataclasses import replace
+
+    run = synthetic[1]
+    model = "Qwen/Qwen3-1.7B"
+    plan = {"models": [{"group": "A", "model_id": model, "gpu": "x", "gpu_count": 1}]}
+    solutions = sorted(
+        {
+            r.solution_fingerprint or ""
+            for r in run.records.measured().values()
+            if run.records.solutions[r.solution_fingerprint or ""].model_id == model
+        }
+    )
+    assert len(solutions) > 1
+    for latest in solutions:
+        events = [
+            *run.events,
+            {"event": "executed", "solution_fingerprint": latest, "at": "2099-01-01T00:00:00"},
+        ]
+        found = build_findings(replace(run, events=events), authorized=100.0, modern=plan)
+        card = found["modern_models"][0]
+        memory = next(r for r in found["memory"] if r["solution"] == latest)
+        tasks = [t for t in found["tasks"] if t["solution"] == latest]
+        assert memory["record"] in card["records"]
+        assert card["measured_weight_bytes"] == memory["measured_weight_bytes"]
+        if tasks:
+            assert card["accepted"] == max(tasks, key=lambda t: len(t["scoring"]))["accepted"]
+
+
 def test_weights_time_is_empty_without_staged_boots(findings: dict) -> None:
     assert findings["weights_time"] == []
     assert "No boot from staged weights yet" in render_tables(findings)["weights_time"]

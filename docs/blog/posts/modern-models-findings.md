@@ -29,12 +29,12 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | A | openai/gpt-oss-20b | 20.9 | 6,759,761 | NVIDIA GeForce RTX 4090 x1 | — | fits: 14.55 GiB per GPU | not run yet | — | — | — | — |
 | A | openai/gpt-oss-120b | 116.8 | 4,484,728 | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | fits: 64.02 GiB per GPU | booted | 60.77 / 61.43 | 3 / 3 | 0.5865 | `1220ded0ff281432` |
 | A | google/gemma-4-31B-it | 31.3 | 9,460,570 | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | fits: 65.14 GiB per GPU | booted | 58.46 / 58.99 | 3 / 3 | 0.3235 | `1220ea39d74241fc` |
-| A | meta-models/Muse-Glimmer-30B | 29.6 | 286,662 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 59.95 GiB per GPU | booted | 55.46 / 55.83 | 0 / 3 | 0.4703 | `1220bf6b162c4318` |
+| A | meta-models/Muse-Glimmer-30B | 29.6 | 286,662 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 59.95 GiB per GPU | booted | 55.46 / 55.83 | 3 / 3 | 0.4703 | `1220bf6b162c4318` |
 | A | zai-org/GLM-4.7-Flash | 31.2 | 1,854,281 | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | fits: 60.09 GiB per GPU | booted | 58.15 / 55.87 | 3 / 3 | 0.1311 | `122089055d7f1339` |
 | B | Qwen/Qwen3.8-27B | 27.8 | 6,727,629 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 56.0 GiB per GPU | booted | 50.96 / 51.10 | 3 / 3 | 0.9138 | `122001a0c3f97733` +1 |
 | B | Qwen/Qwen3.6-35B-A3B-FP8 | 36 | 7,638,786 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 38.91 GiB per GPU | booted | 34.88 / 34.23 | 3 / 3 | 1.8343 | `12208654b66bdeae` +1 |
 | B | nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16 | 31.6 | 462,733 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 61.93 GiB per GPU | booted | 58.82 / 58.92 | 3 / 3 | 0.3089 | `12208228a1874270` +1 |
-| C | zai-org/GLM-5.3-Flash | 321 | 4,332,082 | NVIDIA H200 x4 | v0.30.0 | fits: 80.19 GiB per GPU | booted | 76.26 / 76.37 | 1 / 5 | 37.2069 | `1220106dee467e37` +4 |
+| C | zai-org/GLM-5.3-Flash | 321 | 4,332,082 | NVIDIA H200 x4 | v0.30.0 | fits: 80.19 GiB per GPU | booted | 76.26 / 76.37 | 4 / 5 | 37.2069 | `1220106dee467e37` +4 |
 | C | deepseek-ai/DeepSeek-V4.1-Flash | 763 | 651,078 | NVIDIA H200 x4 | v0.30.0 | fits: 81.29 GiB per GPU | failed | — | — | 1.3627 | `1220400d7cc203eb` +1 |
 | C | Qwen/Qwen3.8-Flash-Next | 180 | 1,226,891 | NVIDIA H200 x4 | v0.30.0 | fits: 62.85 GiB per GPU | failed | — | — | 10.0789 | `122069c0258a5541` +1 |
 | C | deepseek-ai/DeepSeek-V4-Flash-0731 | 304.2 | 3,959,727 | NVIDIA H200 x4 | v0.30.0 | fits: 41.19 GiB per GPU | failed | — | — | 10.3293 | `12200c5a8ae38b12` +1 |

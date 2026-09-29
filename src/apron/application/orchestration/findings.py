@@ -173,6 +173,7 @@ def _memory(run: CohortRun, versions: Mapping[str, str]) -> list[dict[str, Any]]
                 "notes": list(r.prediction_notes),
                 "record": digest,
                 "claim": claim_digest,
+                "solution": r.solution_fingerprint,
             }
         )
     return rows
@@ -186,7 +187,18 @@ def _modern(
     run: CohortRun,
     versions: Mapping[str, str],
 ) -> list[dict[str, Any]]:
-    """One row per approved modern model: not run yet, failed, or measured."""
+    """One row per approved modern model: not run yet, failed, or measured.
+
+    A model run more than once (another plan, GPU or engine setting) shows
+    its latest booted solution, by the solution's last ``executed`` event,
+    with that solution's memory and task rows: Muse-Glimmer-30B was scored
+    0/3 without its reasoning parser and 3/3 with it, and the card showed
+    whichever solution sorted first by digest."""
+    executed: dict[str, str] = {}
+    for e in run.events:
+        if e.get("event") == "executed" and e.get("solution_fingerprint"):
+            sfp = e["solution_fingerprint"]
+            executed[sfp] = max(executed.get(sfp, ""), str(e.get("at", "")))
     rows = []
     failed = defaultdict(list)
     failed_on: dict[str, set[str]] = defaultdict(set)
@@ -198,11 +210,15 @@ def _modern(
     for m in (plan or {}).get("models", []):
         model = m["model_id"]
         booted = [r for r in memory if r["model"] == model]
-        scored = [t for t in tasks if t["model"] == model]
+        best = max(booted, key=lambda r: executed.get(r["solution"], ""), default=None)
+        scored = [
+            t
+            for t in tasks
+            if t["model"] == model and (best is None or t["solution"] == best["solution"])
+        ]
         latest_rule = max(scored, key=lambda t: len(t.get("scoring") or []), default=None)
         spent = sum(c["cost"] for c in cost.get("per_solution", []) if c.get("model") == model)
         status = "booted" if booted else ("failed" if failed.get(model) else "not run yet")
-        best = booted[-1] if booted else None
         if best:
             vllm = best["vllm"]
         elif failed.get(model):
@@ -671,6 +687,7 @@ def _task_row(run: CohortRun, sfp: str, protocol_fp: str, digests: list[str]) ->
         "passed": verdict.passed if verdict else None,
         "scoring": list(protocol.deterministic_checks) if protocol else None,
         "records": sorted(digests),
+        "solution": sfp,
     }
 
 
