@@ -5,11 +5,16 @@ from __future__ import annotations
 import pytest
 
 from apron.application.orchestration.scheduler import (
+    COST_MODEL,
+    H1_COST_MODEL,
     CandidateSeed,
+    CostModel,
     Coverage,
     estimate_cost,
     obligations_met,
     rank_candidates,
+    ranking_record,
+    rerank,
 )
 
 RATES = {"NVIDIA GeForce RTX 4090": 0.74, "NVIDIA L4": 0.49, "NVIDIA A100 80GB PCIe": 1.59}
@@ -129,3 +134,31 @@ def test_gpu_without_rate_is_skipped() -> None:
     seed = _seed("a", gpu="NVIDIA Imaginary")
     ranking = rank_candidates([seed], Coverage(), measured=[], remaining_budget=50, rates=RATES)
     assert ranking.skipped[0][1].startswith("no rate")
+
+
+def test_a_ranking_is_rederived_with_the_cost_model_it_was_made_with() -> None:
+    """Rankings recorded before 2026-09-29 name no cost model: they were made
+    with H1's rates, and today's rates would rank a candidate they skipped."""
+    seeds = [_seed("a", weight_gb=6.0), _seed("big", weight_gb=400.0, size_class="large")]
+
+    def made_with(model: CostModel) -> dict:  # type: ignore[type-arg]
+        ranking = rank_candidates(
+            seeds, Coverage(), measured=[], remaining_budget=1.5, rates=RATES, cost_model=model
+        )
+        return ranking_record(
+            ranking,
+            candidates=seeds,
+            existing=Coverage(),
+            measured=[],
+            remaining_budget=1.5,
+            rates=RATES,
+            cost_model=model,
+        )
+
+    old = made_with(H1_COST_MODEL)
+    unnamed = {k: v for k, v in old["inputs"].items() if k not in ("cost_model", "download")}
+    assert [r["key"] for r in old["ranked"]] == [seeds[0].key]
+    assert [r.seed.key for r in rerank({**old, "inputs": unnamed}).ranked] == [seeds[0].key]
+    new = made_with(COST_MODEL)
+    assert len(new["ranked"]) == 2
+    assert [r.seed.key for r in rerank(new).ranked] == [r["key"] for r in new["ranked"]]

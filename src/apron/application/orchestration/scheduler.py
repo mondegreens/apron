@@ -49,6 +49,49 @@ IMAGE_PULL_MINUTES = 13.0
 
 
 @dataclass(frozen=True)
+class CostModel:
+    """The rates a cost estimate is made with.  A ranking records the model it
+    used (``ranking_record``), so ``rerank`` re-derives it with the same one."""
+
+    image_pull_minutes: float
+    download_gb_per_minute: float
+    boot_minutes_small: float
+    boot_minutes_mid: float
+    boot_minutes_large: float
+    load_gb_per_minute: float | None  # None: no load term
+    evaluation_minutes: float
+
+    def boot_minutes(self, size_class: SizeClass) -> float:
+        return {
+            "small": self.boot_minutes_small,
+            "mid": self.boot_minutes_mid,
+            "large": self.boot_minutes_large,
+        }[size_class]
+
+
+COST_MODEL = CostModel(
+    image_pull_minutes=IMAGE_PULL_MINUTES,
+    download_gb_per_minute=DOWNLOAD_GB_PER_MINUTE,
+    boot_minutes_small=_BOOT_MINUTES["small"],
+    boot_minutes_mid=_BOOT_MINUTES["mid"],
+    boot_minutes_large=_BOOT_MINUTES["large"],
+    load_gb_per_minute=LOAD_GB_PER_MINUTE,
+    evaluation_minutes=EVALUATION_MINUTES,
+)
+# H1's rates (download 6 GB/min, no load or evaluation term).  Every ranking
+# recorded before 2026-09-29 was made with them and names no cost model.
+H1_COST_MODEL = CostModel(
+    image_pull_minutes=13.0,
+    download_gb_per_minute=6.0,
+    boot_minutes_small=25.0,
+    boot_minutes_mid=35.0,
+    boot_minutes_large=45.0,
+    load_gb_per_minute=None,
+    evaluation_minutes=0.0,
+)
+
+
+@dataclass(frozen=True)
 class CandidateSeed:
     """One (model, GPU) point the cohort may measure."""
 
@@ -97,25 +140,41 @@ class Ranking:
     skipped: list[tuple[CandidateSeed, str]] = field(default_factory=list)
 
 
-def run_minutes(weight_gb: float, size_class: SizeClass, *, download: bool) -> float:
+def run_minutes(
+    weight_gb: float, size_class: SizeClass, *, download: bool, model: CostModel = COST_MODEL
+) -> float:
     """Pod minutes for one model: image pull + download (when the pod fetches
     the weights itself; none from a staged volume) + engine start (the size
     class's boot time, or the checkpoint at the measured load rate when that
     is longer) + evaluation."""
-    fetch = weight_gb / DOWNLOAD_GB_PER_MINUTE if download else 0.0
-    boot = max(_BOOT_MINUTES[size_class], weight_gb / LOAD_GB_PER_MINUTE)
-    return IMAGE_PULL_MINUTES + fetch + boot + EVALUATION_MINUTES
+    fetch = weight_gb / model.download_gb_per_minute if download else 0.0
+    boot = model.boot_minutes(size_class)
+    if model.load_gb_per_minute:
+        boot = max(boot, weight_gb / model.load_gb_per_minute)
+    return model.image_pull_minutes + fetch + boot + model.evaluation_minutes
 
 
 def run_cost(
-    weight_gb: float, size_class: SizeClass, gpu_count: int, hourly_rate: float, *, download: bool
+    weight_gb: float,
+    size_class: SizeClass,
+    gpu_count: int,
+    hourly_rate: float,
+    *,
+    download: bool,
+    model: CostModel = COST_MODEL,
 ) -> float:
     """``run_minutes`` x the per-GPU rate x the GPU count."""
-    minutes = run_minutes(weight_gb, size_class, download=download)
+    minutes = run_minutes(weight_gb, size_class, download=download, model=model)
     return round(minutes / 60 * hourly_rate * gpu_count, 4)
 
 
-def estimate_cost(seed: CandidateSeed, hourly_rate: float, *, download: bool = True) -> float:
+def estimate_cost(
+    seed: CandidateSeed,
+    hourly_rate: float,
+    *,
+    download: bool = True,
+    model: CostModel = COST_MODEL,
+) -> float:
     """``run_cost`` for a seed (H1).  *download*: the pod downloads the
     weights (the default since the staged volume was dropped, 2026-09-29).
 
@@ -124,7 +183,12 @@ def estimate_cost(seed: CandidateSeed, hourly_rate: float, *, download: bool = T
     if seed.prediction_error:
         return 0.0
     return run_cost(
-        seed.weight_gb, seed.size_class, seed.gpu_count, hourly_rate, download=download
+        seed.weight_gb,
+        seed.size_class,
+        seed.gpu_count,
+        hourly_rate,
+        download=download,
+        model=model,
     )
 
 
@@ -156,13 +220,14 @@ def rank_candidates(
     remaining_budget: float,
     rates: Mapping[str, float],
     download: bool = True,
+    cost_model: CostModel = COST_MODEL,
 ) -> Ranking:
     """Order candidates by evidence value inside the budget.
 
     Score (higher first): number of coverage obligations met, then number of
     new architecture features, then lower cost.  Greedy: each pick updates the
     coverage the next candidates are scored against, so the list reads as a
-    plan, not a static sort.  *download*: as in ``estimate_cost``.
+    plan, not a static sort.  *download*, *cost_model*: as in ``estimate_cost``.
     """
     done = set(measured)
     pool: list[CandidateSeed] = []
@@ -180,7 +245,9 @@ def rank_candidates(
     while pool:
         scored = []
         for seed in pool:
-            cost = estimate_cost(seed, rates.get(seed.gpu_sku, 0.0), download=download)
+            cost = estimate_cost(
+                seed, rates.get(seed.gpu_sku, 0.0), download=download, model=cost_model
+            )
             met = obligations_met(seed, coverage)
             new_features = len(set(seed.features) - coverage.features)
             scored.append((seed, cost, met, (len(met), new_features, -cost)))
@@ -235,8 +302,11 @@ def ranking_record(
     measured: Sequence[str],
     remaining_budget: float,
     rates: Mapping[str, float],
+    download: bool = True,
+    cost_model: CostModel = COST_MODEL,
 ) -> dict[str, Any]:
-    """Inputs and output of one ranking, so the choice can be re-derived later."""
+    """Inputs and output of one ranking, so the choice can be re-derived later:
+    the cost model and the download flag the estimates were made with too."""
     return {
         "inputs": {
             "candidates": [{**asdict(s), "features": list(s.features)} for s in candidates],
@@ -244,6 +314,8 @@ def ranking_record(
             "measured": list(measured),
             "remaining_budget": remaining_budget,
             "rates": dict(rates),
+            "download": download,
+            "cost_model": asdict(cost_model),
         },
         "ranked": [
             {"key": r.seed.key, "cost": r.estimated_cost, "obligations": list(r.obligations)}
@@ -254,8 +326,12 @@ def ranking_record(
 
 
 def rerank(record: Mapping[str, Any]) -> Ranking:
-    """Run the scheduler again on a recorded ranking's inputs."""
+    """Run the scheduler again on a recorded ranking's inputs, with the cost
+    model it names (``H1_COST_MODEL`` for the rankings recorded before one was
+    named: they were made with it, downloading on the pod)."""
     inputs = record["inputs"]
+    named = inputs.get("cost_model")
+    cost_model = CostModel(**named) if named else H1_COST_MODEL
     seeds = [
         CandidateSeed(**{**c, "features": tuple(c.get("features", ()))})
         for c in inputs["candidates"]
@@ -277,4 +353,6 @@ def rerank(record: Mapping[str, Any]) -> Ranking:
         measured=inputs["measured"],
         remaining_budget=float(inputs["remaining_budget"]),
         rates=inputs["rates"],
+        download=bool(inputs.get("download", True)),
+        cost_model=cost_model,
     )

@@ -49,6 +49,7 @@ from apron.application.orchestration.scheduler import rerank
 from apron.application.orchestration.serving import evaluate_serving_slos
 from apron.application.sanitization import contains_secret
 from apron.domain.fingerprints import fingerprint_hex
+from apron.domain.schemas.records import VerificationReport
 from apron.domain.schemas.reports import CandidateEconomics, DecisionReport
 from apron.domain.verdicts import task_verdict
 from apron.interfaces.cohort_root import load_cohort_run
@@ -60,6 +61,7 @@ if TYPE_CHECKING:
     from apron.domain.schemas.records import DiagnosisRule
 
 REPO = Path(__file__).resolve().parents[1]
+MODERN_MODELS = REPO / "cohort" / "modern-models.json"
 
 # ---------------------------------------------------------------------------
 # The run, as the checks see it
@@ -78,6 +80,12 @@ class GateRun:
     ranking: dict[str, Any] | None = None  # cohort-ranking.json (§1 item 7)
     # Later passes (cohort-ranking-<tag>.json), e.g. the re-scoring pass.
     later_rankings: tuple[dict[str, Any], ...] = ()
+    # Rev 4 (PLAN §18.1.1): executions the owner named -- in an approved run
+    # list (approved-*.json) and a model of cohort/modern-models.json.
+    owner_named: frozenset[str] = frozenset()
+    # Reports the calculator cannot explain yet (pending-records/, §18.4.7):
+    # stored evidence, kept out of records/ only for the calculator's tests.
+    pending_reports: tuple[VerificationReport, ...] = ()
 
 
 def load_run(run_dir: Path, rules_dir: Path, authorized: float) -> GateRun:
@@ -101,6 +109,23 @@ def load_run(run_dir: Path, rules_dir: Path, authorized: float) -> GateRun:
         later_rankings=tuple(
             json.loads(p.read_text("utf-8")) for p in sorted(run_dir.glob("cohort-ranking-*.json"))
         ),
+        owner_named=_owner_named(run_dir),
+        pending_reports=tuple(
+            VerificationReport.model_validate_json(p.read_text("utf-8"))
+            for p in sorted((run_dir / "pending-records").rglob("*.json"))
+        ),
+    )
+
+
+def _owner_named(run_dir: Path) -> frozenset[str]:
+    """Executions in the owner's approved run lists whose model is on the
+    owner's Rev 4 list (PLAN §18.1.1)."""
+    modern = {m["model_id"] for m in json.loads(MODERN_MODELS.read_text())["models"]}
+    return frozenset(
+        key
+        for path in sorted(run_dir.glob("approved-*.json"))
+        for key in json.loads(path.read_text("utf-8"))
+        if key.split("@", 1)[0] in modern
     )
 
 
@@ -546,27 +571,39 @@ def check_budget(run: GateRun) -> list[str]:
             holds_by_label[e["label"]].append(e["solution_fingerprint"])
     seen: dict[str, int] = defaultdict(int)
     settled: dict[str, float] = defaultdict(float)
+    # Pods that never started are spent under their own label just before the
+    # candidate's settle (cohort.py, ABANDONED_PREFIX); the run's records
+    # carry them, so they belong to that settle.
+    abandoned = 0.0
     for entry in run.ledger:
+        if entry["op"] == "spend" and str(entry["label"]).startswith("pod-abandoned:"):
+            abandoned += float(entry["amount"])
+            continue
         if entry["op"] != "settle":
             continue
         label = str(entry["label"])
         index = seen[label]
         seen[label] += 1
-        if str(entry.get("flag", "")).startswith("replayed"):
-            continue  # a replayed hold is a crashed pod: its records were never written
-        if str(entry["label"]).startswith(("classifier:", "pod-idle:", "stage:")):
-            # classifier calls, pooled pods' idle time and weight-staging CPU
-            # pods: run-level cost, in the ledger and the findings, no records
+        flag = str(entry.get("flag", ""))
+        if flag.startswith(("replayed", "interrupted")):
+            # a replayed hold is a crashed pod, an interrupted one a run stopped
+            # in provisioning or by the owner: their records were never written
+            continue
+        if str(entry["label"]).startswith(("classifier:", "pod-idle:", "stage:", "probe:")):
+            # classifier calls, pooled pods' idle time, weight-staging CPU pods
+            # and peak probes (results in peak-probe/): run-level cost, in the
+            # ledger and the findings, no records
             continue
         fps = holds_by_label.get(label, [])
         if index >= len(fps):
             problems.append(f"settle {label!r} #{index + 1} has no hold event")
             continue
-        settled[fps[index]] += float(entry["amount"])
+        settled[fps[index]] += float(entry["amount"]) + abandoned
+        abandoned = 0.0
 
     stored: dict[str, float] = defaultdict(float)
     counts: dict[str, int] = defaultdict(int)
-    for r in run.records.reports.values():
+    for r in (*run.records.reports.values(), *run.pending_reports):
         stored[r.solution_fingerprint or ""] += r.market_equivalent_price or 0.0
         counts[r.solution_fingerprint or ""] += 1
     for a in run.records.attempts.values():
@@ -588,7 +625,8 @@ def check_budget(run: GateRun) -> list[str]:
 
 def check_selection(run: GateRun) -> list[str]:
     """The recorded ranking re-derives from its inputs; every measured seed
-    solution was ranked; every execution sits inside the authorization."""
+    solution was ranked, or named by the owner for Rev 4 (PLAN §18.1.1);
+    every execution sits inside the authorization."""
     record = run.ranking
     if record is None:
         return ["no cohort ranking on record (cohort-ranking.json)"]
@@ -616,8 +654,8 @@ def check_selection(run: GateRun) -> list[str]:
     entries, _ = _measured_entries(run)
     for e in entries:
         key = f"{e.model_id}@{e.requested_execution.gpu_sku}x{e.requested_execution.gpu_count}"
-        if e.coverage and key not in chosen:
-            problems.append(f"{key}: measured but never chosen by the scheduler")
+        if e.coverage and key not in chosen and key not in run.owner_named:
+            problems.append(f"{key}: measured but never chosen by the scheduler or the owner")
     return problems
 
 
@@ -887,6 +925,48 @@ def test_budget_ledger_must_equal_records(run: GateRun) -> None:
     assert any("ledger $" in p for p in check_budget(replace(run, ledger=ledger)))
 
 
+def test_budget_counts_abandoned_pods_with_their_candidate(run: GateRun) -> None:
+    """Pods that never started are spent under their own label just before
+    the candidate's settle; the run's records carry them."""
+    ledger = [dict(e) for e in run.ledger]
+    at = next(i for i, e in enumerate(ledger) if e["op"] == "settle")
+    split = {"op": "spend", "label": "pod-abandoned:p1", "amount": 0.25, "at": ledger[at]["at"]}
+    moved = [*ledger[:at], split, {**ledger[at], "amount": ledger[at]["amount"] - 0.25}]
+    assert check_budget(replace(run, ledger=[*moved, *ledger[at + 1 :]])) == []
+    extra = [*ledger[:at], split, *ledger[at:]]
+    assert any("ledger $" in p for p in check_budget(replace(run, ledger=extra)))
+
+
+def test_budget_leaves_out_runs_that_wrote_no_records(run: GateRun) -> None:
+    """A run interrupted in provisioning or by the owner, and a peak probe,
+    leave no records; a settle of any other run without a hold is flagged."""
+
+    def held(label: str, **settle: Any) -> list[dict[str, Any]]:
+        at = "2026-09-28T00:00:00"
+        return [
+            {"op": "hold", "label": label, "amount": 1.0, "at": at},
+            {"op": "settle", "label": label, "amount": 0.3, "at": at, **settle},
+        ]
+
+    no_records = [
+        *held("m@gpux1", flag="interrupted_by_owner_stop:pod:377s"),
+        *held("probe:peak:m"),
+    ]
+    assert check_budget(replace(run, ledger=[*run.ledger, *no_records])) == []
+    stray = replace(run, ledger=[*run.ledger, *held("m@gpux1")])
+    assert any("no hold event" in p for p in check_budget(stray))
+
+
+def test_budget_counts_pending_reports(run: GateRun) -> None:
+    """A report waiting in pending-records/ is still stored evidence."""
+    digest, report = next(
+        (d, r) for d, r in run.records.reports.items() if (r.market_equivalent_price or 0) > 0
+    )
+    moved = _with(run, reports={d: r for d, r in run.records.reports.items() if d != digest})
+    assert any("ledger $" in p for p in check_budget(moved))
+    assert check_budget(replace(moved, pending_reports=(report,))) == []
+
+
 def test_budget_spent_within_authorized(run: GateRun) -> None:
     assert any("authorized" in p for p in check_budget(replace(run, authorized=0.01)))
 
@@ -909,6 +989,25 @@ def test_selection_flags_an_unranked_measurement(run: GateRun) -> None:
     trimmed = json.loads(json.dumps(run.ranking))
     trimmed["ranked"] = [r for r in trimmed["ranked"] if not r["key"].startswith("mistralai/")]
     assert any("never chosen" in p for p in check_selection(replace(run, ranking=trimmed)))
+
+
+def test_selection_accepts_an_execution_the_owner_named(run: GateRun) -> None:
+    """Rev 4 (PLAN §18.1.1): the owner named the models; an execution in an
+    approved run list stands in for the scheduler's choice."""
+    assert run.ranking is not None
+    trimmed = json.loads(json.dumps(run.ranking))
+    named = {r["key"] for r in trimmed["ranked"] if r["key"].startswith("mistralai/")}
+    trimmed["ranked"] = [r for r in trimmed["ranked"] if r["key"] not in named]
+    doctored = replace(run, ranking=trimmed, owner_named=frozenset(named))
+    assert not any("never chosen" in p for p in check_selection(doctored))
+
+
+def test_owner_named_needs_the_owners_model_list(tmp_path: Path) -> None:
+    """An approved run list counts only for models on cohort/modern-models.json."""
+    modern = json.loads(MODERN_MODELS.read_text())["models"][0]["model_id"]
+    listed = f"{modern}@NVIDIA H200x4"
+    (tmp_path / "approved-x.json").write_text(json.dumps([listed, "lab/other@NVIDIA H200x4"]))
+    assert _owner_named(tmp_path) == frozenset({listed})
 
 
 def test_selection_flags_an_execution_outside_authorization(run: GateRun) -> None:
