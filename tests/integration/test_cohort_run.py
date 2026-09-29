@@ -462,6 +462,90 @@ def test_recorded_failure_fix_proof() -> None:
     assert proof.broken_failed, proof.notes
 
 
+def test_plan_variant_run() -> None:
+    """``APRON_COHORT_STEP=variant APRON_BASE_SOLUTION=<recorded solution fp>
+    APRON_ENGINE_SET=<json object>``: the recorded plan with the given engine
+    settings changed, run on the volume that holds its weights with the same
+    task suite.  ``APRON_GPU_SKU`` moves it to another GPU, and
+    ``APRON_WEIGHTS=download`` downloads the weights on the pod wherever that
+    GPU is in stock (the volume attaches only in its own datacenter).  A new
+    solution (its own fingerprint and records), never a rewrite of the
+    recorded one (owner, 2026-09-29: GLM-5.3-Flash without
+    CUDA graphs after the engine died on a graph replay mid-suite)."""
+    _step("variant")
+    from apron.adapters.backends.runpod_storage import RunPodStorage
+    from apron.application.orchestration.cohort import run_cohort
+    from apron.domain.schemas.solutions import DeploymentPlan
+    from apron.interfaces.cohort_root import (
+        CohortPlanner,
+        accrue_storage,
+        build_ports,
+        live_rates,
+        staged_bytes,
+        v3_evaluator,
+        weights_site,
+    )
+
+    fp = os.environ["APRON_BASE_SOLUTION"]
+    changes = json.loads(os.environ["APRON_ENGINE_SET"])
+    assert isinstance(changes, dict) and changes, "APRON_ENGINE_SET is a non-empty object"
+    row = next(
+        json.loads(line)
+        for line in (RUN_DIR / "solutions.jsonl").read_text().splitlines()
+        if fp in line
+    )
+    base = DeploymentPlan.model_validate(row["deployment_plan"])
+    engine = {**base.engine_configuration, **{k: str(v) for k, v in changes.items()}}
+    alloc = dict(base.resource_allocation)
+    if os.environ.get("APRON_GPU_SKU"):
+        alloc["gpu_sku"] = os.environ["APRON_GPU_SKU"]
+    variant = base.model_copy(
+        update={"engine_configuration": engine, "resource_allocation": alloc}
+    )
+    rates = live_rates(os.environ["RUNPOD_API_KEY"])
+    planner = CohortPlanner(rates=rates, deployment_checks=SUITE == "v3")
+    sp = planner.plan_for(variant, "variant")
+    assert sp.solution_fp != fp, "the variant must be its own solution"
+    evaluator = v3_evaluator([sp]) if SUITE == "v3" else None
+    site = None
+    if os.environ.get("APRON_WEIGHTS") == "download":
+        # The pod's own volume sized for the model (+15%, +10 GB), as the cohort step.
+        size = staged_bytes(sp.model_id)
+        ports = build_ports(
+            rates=rates, evaluator=evaluator, pod_volume_gb=int(size * 1.15 / 1e9) + 10
+        )
+    else:
+        storage = RunPodStorage(os.environ["RUNPOD_API_KEY"])
+        site = weights_site(storage, [sp.requested], [sp.model_id])
+        assert site is not None, "no volume holds the weights"
+        ports = build_ports(rates=rates, site=site, evaluator=evaluator)
+    record: dict = {
+        "base_solution": fp,
+        "changes": changes,
+        "gpu_sku": alloc["gpu_sku"],
+        "solution": sp.solution_fp,
+    }
+    try:
+        result = run_cohort(
+            [sp],
+            _inputs(),
+            ports,
+            repeat=os.environ.get("APRON_REPEAT") == "1",
+        )
+    finally:
+        if site is not None:
+            record["storage_cost"] = accrue_storage(site, ports.budget)
+    record["result"] = {
+        "executed": {k: v.__dict__ for k, v in result.executed.items()},
+        "skipped": result.skipped,
+        "stopped": result.stopped,
+        "budget": ports.budget.summary(),
+    }
+    tag = os.environ.get("APRON_RUN_TAG", sp.solution_fp[:16])
+    _write(f"variant-{tag}.json", record)
+    assert result.stopped is None, result.stopped
+
+
 # ---------------------------------------------------------------------------
 # Staged weights (owner go 2026-09-27): a CPU pod downloads onto a network
 # volume, then the GPU pods attach it and only load
