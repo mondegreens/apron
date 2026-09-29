@@ -307,6 +307,32 @@ def test_a_given_plan_is_predicted_at_its_dtype_and_utilization() -> None:
     assert bf16["gpu_available_bytes"] == -(-RTX_4090.total_memory_bytes * 9 // 10)
 
 
+def test_a_given_plan_is_costed_like_its_seed() -> None:
+    """A given plan's hold was a flat 25 minutes: GLM-5.3-Flash's 4x H200
+    variant cost $13.62 against $7.65 and stopped the run (2026-09-29).  It is
+    its seed's ``run_cost`` on the plan's GPU, with or without the download; a
+    model with no seed is costed from the plan's per-GPU weights as large."""
+    from apron.application.orchestration.scheduler import run_cost
+    from apron.interfaces.cohort_root import CohortPlanner, load_seed
+
+    seed = next(s for s in load_seed() if s.model_id == "state-spaces/mamba-2.8b-hf")
+    seeded = {"model_id": seed.model_id, "gpu_sku": RTX_4090.gpu_sku}
+    unseeded = {**seeded, "model_id": "lab/no-seed", "weight_bytes": "20000000000"}
+    for download in (True, False):
+        planner = CohortPlanner(
+            rates={RTX_4090.gpu_sku: 0.74},
+            clock=_Clock(),
+            resolver=_Resolver(),
+            download_weights=download,
+        )
+        given = planner.plan_for(DeploymentPlan(resource_allocation=seeded), "given")
+        assert given.estimate == run_cost(
+            seed.weight_gb, seed.size_class, 1, 0.74, download=download
+        )
+        other = planner.plan_for(DeploymentPlan(resource_allocation=unseeded), "given")
+        assert other.estimate == run_cost(20.0, "large", 1, 0.74, download=download)
+
+
 def test_a_given_plan_runs_on_the_vllm_its_architecture_needs() -> None:
     """A fix proof of a v0.30-only model was rebuilt on v0.29's image: another
     solution than the one that failed, so its stored failure was not found

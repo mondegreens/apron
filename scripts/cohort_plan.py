@@ -109,11 +109,6 @@ def _fix_proof_boots(planner, rates) -> None:  # type: ignore[no-untyped-def]
     from apron.application.orchestration.correction import CorrectionContext
     from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
     from apron.application.orchestration.remediation import SIX_CLASSES
-    from apron.application.orchestration.scheduler import (
-        _BOOT_MINUTES,
-        DOWNLOAD_GB_PER_MINUTE,
-        IMAGE_PULL_MINUTES,
-    )
     from apron.interfaces.cohort_root import REPO, RULES_DIR, available_catalog, hardware_for
 
     rules = load_rules(RULES_DIR, "vllm", "v0.29.0")
@@ -150,9 +145,9 @@ def _fix_proof_boots(planner, rates) -> None:  # type: ignore[no-untyped-def]
             continue
         gpu = fixed.resource_allocation["gpu_sku"]
         sp = planner.plan_for(fixed, f"class{case.failure_class}-fixed")
-        weight = (sp.claim.proposed_configuration.get("weight_memory_bytes") or 0) / 1e9
-        minutes = IMAGE_PULL_MINUTES + weight / DOWNLOAD_GB_PER_MINUTE + _BOOT_MINUTES["mid"]
-        cost = minutes / 60 * rates.get(gpu, 0.0) * count
+        cost = sp.estimate  # scheduler.run_cost, as the run's hold
+        rate = rates.get(gpu, 0.0) * count
+        minutes = cost / rate * 60 if rate else 0.0
         total += cost
         print(f"   class {case.failure_class}: {count}x {gpu}  ~{minutes:.0f} min  ${cost:.2f}")
     print(f"fix proofs total ≈ ${total:.2f} (+ classifier calls ≈ $0.07)")

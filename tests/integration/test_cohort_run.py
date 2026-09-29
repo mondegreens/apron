@@ -504,7 +504,11 @@ def test_plan_variant_run() -> None:
         update={"engine_configuration": engine, "resource_allocation": alloc}
     )
     rates = live_rates(os.environ["RUNPOD_API_KEY"])
-    planner = CohortPlanner(rates=rates, deployment_checks=SUITE == "v3")
+    planner = CohortPlanner(
+        rates=rates,
+        deployment_checks=SUITE == "v3",
+        download_weights=os.environ.get("APRON_WEIGHTS") == "download",
+    )
     sp = planner.plan_for(variant, "variant")
     assert sp.solution_fp != fp, "the variant must be its own solution"
     evaluator = v3_evaluator([sp]) if SUITE == "v3" else None

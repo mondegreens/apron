@@ -20,14 +20,31 @@ if TYPE_CHECKING:
 SizeClass = Literal["small", "mid", "large"]
 HardwareClass = Literal["consumer", "professional", "datacenter"]
 
+# The estimate is the slowest measured case, never a central guess: a run
+# that costs more than 1.5 x its estimate stops the cohort after it
+# (budget.OVERRUN_FACTOR; cohort._run_plans).  A flat 25 minutes stopped a
+# 4-GPU run at $13.62 against $7.65 (2026-09-29).  The measurements behind
+# each rate: tests/unit/test_run_cost_vs_cohort.py.
+#
 # Boot time scales with size (H1).  H1 said 15 / 25 / 35 min; a cold first
 # boot also JIT-compiles FlashInfer kernels after graph capture: L0-A3's
 # small model was still compiling 16 min after launch (notebook, 2026-09-26).
 _BOOT_MINUTES: dict[str, float] = {"small": 25.0, "mid": 35.0, "large": 45.0}
-DOWNLOAD_GB_PER_MINUTE = 6.0
+# Hub downloads measured (events.jsonl "staged", records' phase_seconds):
+# 0.47-0.89 GB/s; the slowest complete one is used.  H1's 6 GB/min predates
+# them.
+DOWNLOAD_GB_PER_MINUTE = 28.3
+# Engine start (load, profile, capture) per GB of checkpoint, the slowest
+# large boot (a 328.4 GB checkpoint in 28.4 min from its pod's own
+# network-backed volume).  The time follows the checkpoint, not the per-GPU
+# share: the same checkpoint on 2 and 4 GPUs started within 4 min.
+LOAD_GB_PER_MINUTE = 11.5
+# Task suite and serving measurement: 4.2 min for suite v3, the slowest.
+EVALUATION_MINUTES = 5.0
 # Every pod pulls the 9.1 GiB runner image first: 9 min (L0-A) and 13 min
-# (L0-A3) from pod creation to SSH, 2026-09-26 (_dev_notes/cohort-run/notebook.md).
-# H1's formula (download + boot) predates these measurements; the slower is used.
+# (L0-A3) from pod creation to SSH, 2026-09-26 (_dev_notes/cohort-run/notebook.md);
+# 3.8-6.5 min to the first container line since (events.jsonl "provisioned").
+# The slowest is used.
 IMAGE_PULL_MINUTES = 13.0
 
 
@@ -80,19 +97,35 @@ class Ranking:
     skipped: list[tuple[CandidateSeed, str]] = field(default_factory=list)
 
 
-def estimate_cost(seed: CandidateSeed, hourly_rate: float) -> float:
-    """(image pull + download minutes + boot minutes, scaled by size) x pod rate (H1).
+def run_minutes(weight_gb: float, size_class: SizeClass, *, download: bool) -> float:
+    """Pod minutes for one model: image pull + download (when the pod fetches
+    the weights itself; none from a staged volume) + engine start (the size
+    class's boot time, or the checkpoint at the measured load rate when that
+    is longer) + evaluation."""
+    fetch = weight_gb / DOWNLOAD_GB_PER_MINUTE if download else 0.0
+    boot = max(_BOOT_MINUTES[size_class], weight_gb / LOAD_GB_PER_MINUTE)
+    return IMAGE_PULL_MINUTES + fetch + boot + EVALUATION_MINUTES
+
+
+def run_cost(
+    weight_gb: float, size_class: SizeClass, gpu_count: int, hourly_rate: float, *, download: bool
+) -> float:
+    """``run_minutes`` x the per-GPU rate x the GPU count."""
+    minutes = run_minutes(weight_gb, size_class, download=download)
+    return round(minutes / 60 * hourly_rate * gpu_count, 4)
+
+
+def estimate_cost(seed: CandidateSeed, hourly_rate: float, *, download: bool = True) -> float:
+    """``run_cost`` for a seed (H1).  *download*: the pod downloads the
+    weights (the default since the staged volume was dropped, 2026-09-29).
 
     Prediction-error candidates spend no GPU and cost nothing.
     """
     if seed.prediction_error:
         return 0.0
-    minutes = (
-        IMAGE_PULL_MINUTES
-        + seed.weight_gb / DOWNLOAD_GB_PER_MINUTE
-        + _BOOT_MINUTES[seed.size_class]
+    return run_cost(
+        seed.weight_gb, seed.size_class, seed.gpu_count, hourly_rate, download=download
     )
-    return round(minutes / 60 * hourly_rate * seed.gpu_count, 4)
 
 
 def obligations_met(seed: CandidateSeed, coverage: Coverage) -> tuple[str, ...]:
@@ -122,13 +155,14 @@ def rank_candidates(
     measured: Iterable[str],
     remaining_budget: float,
     rates: Mapping[str, float],
+    download: bool = True,
 ) -> Ranking:
     """Order candidates by evidence value inside the budget.
 
     Score (higher first): number of coverage obligations met, then number of
     new architecture features, then lower cost.  Greedy: each pick updates the
     coverage the next candidates are scored against, so the list reads as a
-    plan, not a static sort.
+    plan, not a static sort.  *download*: as in ``estimate_cost``.
     """
     done = set(measured)
     pool: list[CandidateSeed] = []
@@ -146,7 +180,7 @@ def rank_candidates(
     while pool:
         scored = []
         for seed in pool:
-            cost = estimate_cost(seed, rates.get(seed.gpu_sku, 0.0))
+            cost = estimate_cost(seed, rates.get(seed.gpu_sku, 0.0), download=download)
             met = obligations_met(seed, coverage)
             new_features = len(set(seed.features) - coverage.features)
             scored.append((seed, cost, met, (len(met), new_features, -cost)))

@@ -71,7 +71,7 @@ from apron.application.orchestration.plan_pipeline import (
 )
 from apron.application.orchestration.pods import TargetPool
 from apron.application.orchestration.remediation import FixProofPorts
-from apron.application.orchestration.scheduler import CandidateSeed, estimate_cost
+from apron.application.orchestration.scheduler import CandidateSeed, estimate_cost, run_cost
 from apron.application.orchestration.staging import STORAGE_PREFIX, StagingResult, stage_weights
 from apron.application.sanitization import SecretMaskingFilter
 from apron.domain.artifacts.identity import ArtifactIdentity
@@ -291,6 +291,9 @@ class CohortPlanner:
     # Plans for task suite v3: served at V3_MAX_MODEL_LEN with the tool-call
     # and reasoning parsers its deployment checks need (ServingFeatures).
     deployment_checks: bool = False
+    # The pod downloads the weights (no staged volume, 2026-09-29): the cost
+    # estimate counts the download.  False when a staged volume holds them.
+    download_weights: bool = True
 
     def engine(self, model_id: str) -> str | None:
         """The vLLM version a plan for *model_id* runs on: the newest one with a
@@ -320,7 +323,9 @@ class CohortPlanner:
             seed.key,
             engine=engine,
             check_feasibility=True,
-            estimate=estimate_cost(seed, self.rates.get(seed.gpu_sku, 0.0)),
+            estimate=estimate_cost(
+                seed, self.rates.get(seed.gpu_sku, 0.0), download=self.download_weights
+            ),
             coverage={
                 "size_class": seed.size_class,
                 "hardware_class": seed.hardware_class,
@@ -358,8 +363,18 @@ class CohortPlanner:
         )
         gpu = alloc["gpu_sku"]
         count = int(alloc.get("gpu_count", "1"))
-        minutes = 25.0
-        estimate = round(minutes / 60 * self.rates.get(gpu, 0.0) * count, 4)
+        # The model's download size and size class from its seed row; a model
+        # with no seed (a fix proof's own checkpoint) is costed from the
+        # plan's per-GPU weights and as large, the slowest class.
+        seed = next((s for s in load_seed() if s.model_id == alloc["model_id"]), None)
+        weight_gb = seed.weight_gb if seed else int(alloc.get("weight_bytes") or 0) * count / 1e9
+        estimate = run_cost(
+            weight_gb,
+            seed.size_class if seed else "large",
+            count,
+            self.rates.get(gpu, 0.0),
+            download=self.download_weights,
+        )
         return self._solution(
             plan, pipeline, label, check_feasibility=False, estimate=estimate, engine=version
         )
