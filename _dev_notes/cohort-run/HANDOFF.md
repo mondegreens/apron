@@ -53,8 +53,9 @@ process `docs/development-process.md`; repo rules `AGENTS.md`.
   Reconciled to the RunPod bill up to 2026-09-29 01:12 UTC; the GLM runs of
   04:17-05:23 UTC and the last storage line are still at the harness's own
   rate x time until reconciled (G5).
-- vLLM sources: `/Users/vlad/repos/apron/.sources/vllm-v0.30.0/` (and
-  `vllm-v0.29.0`), outside the worktree.
+- vLLM sources, outside the worktree: v0.30.0 at
+  `/Users/vlad/repos/apron/.sources/vllm-v0.30.0/`, v0.29.0 at
+  `/Users/vlad/repos/apron/.sources/vllm/`.
 
 ## Models: what is measured, what is left
 
@@ -105,13 +106,19 @@ GPU-free — do these first, in this order:
     `src/apron/domain/mechanisms/layered.py`.
   - Fix term by term, then:
     1. `pytest tests/unit/test_calculator_vs_cohort.py`;
-    2. move the record back to `records/verification-reports/`;
+    2. move the record back to
+       `_dev_notes/cohort-run/records/verification-reports/` (not the repo's
+       top-level `records/`);
     3. run `scripts/calculator_recheck.py`, then `scripts/cohort_findings.py`.
   - **Never widen a tolerance.**
-- **H2 — Qwen3.8-Flash-Next plan.** Its plan's max_num_seqs exceeded the KV
-  blocks vLLM had: 714 > 626 on 2xB200. Implement the Qwen4Exp KV layout that
-  is already traced (`_dev_notes/cohort-run/qwen4exp-glm5next-kv-trace.md`). Check that
-  the plan fits before paying for G2.
+- **H2 — Qwen3.8-Flash-Next plan.** On 2xB200 vLLM refused the plan:
+  `max_num_seqs (1024) exceeds available Mamba cache blocks (626)`. A TRTLLM
+  MoE padding term was added to the calculator since; the corrected plan
+  still asks for 714 > 626. The Qwen4Exp layout itself exists
+  (`layered._qwen4_exp_kinds`, notes in `qwen4exp-glm5next-kv-trace.md`); the
+  gap is that the plan's max_num_seqs is not capped at the state blocks the
+  calculator predicts, or the prediction is still high. Fix and test that on
+  the H200x4 plan before paying for G2.
 - **H3 — diagnosis rule.** vLLM v0.30 with CUDA graphs replays moved inputs
   for GLM-5.3-Flash (`breakable_cudagraph.py:419-424`). This showed on the
   tool-call request, on B200 and on H200. The fix is `enforce_eager`.
@@ -141,7 +148,8 @@ GPU-free — do these first, in this order:
   consistent with the list; ask the owner before removing a model.
 - **G-gate — exit gate on the Rev 4 records.**
   `APRON_COHORT_GATE=1 uv run pytest tests/test_exit_gate_1b_cohort.py -m cohort`
-  now gives 7/9. CI runs this, so the PR is red once pushed.
+  now gives 7/9 (6/9 while any committed file matches a secret pattern:
+  item 8 scans the whole tree). CI runs this, so the PR is red once pushed.
   - 7a: Rev 4 models were chosen by owner-approved lists
     (`approved-*.json`), not the scheduler.
   - 9: the `probe:` peak-probe settles have no hold events.
@@ -158,13 +166,16 @@ GPU-free — do these first, in this order:
       and untraced vision towers are flagged, not a silent 0;
     - Qwen3.6 peak 1.92 vs 1.01 GiB predicted;
     - Muse 1.83 vs 2.71.
-  - KV layouts traced but not all implemented: DeepSeek V4/V4.1 (packed KV,
-    mtp.*, Engram host RAM) and Glm5Next (`*-kv-trace.md`).
+  - KV layouts: packed (DeepSeek V4/V4.1, Qwen4Exp) and glm5_next are
+    implemented in `layered.py`; what is left from the traces
+    (`*-kv-trace.md`) is the weight side (mtp.* and the host-RAM tables such
+    as DeepSeek's Engram). Check against the traces before writing code.
 - **G5 — bill, findings, article.**
   1. Run `scripts/reconcile_billing.py` once today's pods post.
   2. Regenerate findings/README.
-  3. Put the GLM and RunPod lessons into article 2
-     (`docs/blog/posts/modern-models-findings.md`, on the article branch).
+  3. Put the GLM and RunPod lessons into article 2. The prose is edited on
+     branch `phase-1b/findings-article` (PR #43; check it out in its own
+     worktree); this branch holds only the generated tables.
   4. Bring `notebook.md` up to date.
 
 Paid — each needs the owner's explicit "да" after you state the price:
@@ -234,7 +245,11 @@ Watching a run:
   then `provisioned` (with `start_attempts`: host, datacenter, seconds to the
   first log line), then `executed`.
 - The pod's system and container logs go to `_dev_notes/cohort-run/pod-logs/<pod>.log`.
-- vLLM's own log is `/var/log/vllm.log` on the pod (over SSH).
+- vLLM's own log is `/var/log/vllm.log` on the pod. Reach it over SSH:
+  `runpod.get_pod(id)["runtime"]["ports"]` gives the public IP and port of
+  private port 22; `RunPodTarget.execute(cmd)` connects with the key at
+  `RUNPOD_SSH_KEY_PATH` (else the default in `~/.ssh`) once `_ssh_host` and
+  `_ssh_port` are set.
 - Poll the events in a loop, and check that the thing you wait for actually
   advances. A watcher that checked only "alive" burned 11 idle minutes of a
   4xH200.
@@ -280,7 +295,8 @@ Stopping after the current model:
 - **Some hosts never start a pod.**
   - Apron now watches the start through the pod log API:
     `GET https://api.runpod.io/v2/pods/{id}/logs?source=system|container`,
-    SSE, Bearer key. The logs vanish when the pod is terminated.
+    server-sent events, authorised with the RunPod API key. The logs vanish
+    when the pod is terminated.
   - No system line in 3 min, or 10 min of silence: the pod is abandoned and
     another one rented, up to 3 tries. Each abandoned pod is billed on its own
     ledger line.
