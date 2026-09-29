@@ -42,6 +42,7 @@ if TYPE_CHECKING:
 
 SUITE = TaskSuiteSpec.model_validate_json(TASK_SUITE_V3.read_text())
 CASES = {c["id"]: dict(c) for c in SUITE.cases}
+REASONING_PROMPT = CASES["reasoning-1"]["prompt"]
 CHECKS = ["whitespace_normalized_exact_match", "strip_terminal_punctuation"]
 
 ALL_ON = {
@@ -393,7 +394,10 @@ def test_reasoning_split_passes_when_both_channels_hold_their_part(field: str) -
     server.message = {"role": "assistant", "content": "42", field: "17 + 25 = 42."}
     [result] = run(server, ["reasoning-1"], request_fields={"reasoning_effort": "low"})
     assert result["verdict"] == "pass", result["reason"]
-    assert server.chats[0]["reasoning_effort"] == "low"
+    # The suite keeps effort low; the case that asks for reasoning sends none
+    # (the model's default), as it turns a thinking switch on: GLM-5.3-Flash
+    # skipped thinking at low and at high and reasoned only at its default.
+    assert "reasoning_effort" not in server.chats[0]
 
 
 def test_reasoning_left_in_the_content_fails_and_names_the_missing_parser() -> None:
@@ -654,7 +658,13 @@ def test_the_cohort_step_runs_v3_with_a_for_plans_scorer_and_records_every_verdi
         "image-1": "skipped",  # gpt-oss has no vision_config
         "reasoning-1": "pass",
     }
-    assert all(body["reasoning_effort"] == "low" for body in server.chats)
+    # Every case keeps effort low but the one that asks for reasoning.
+    efforts = [
+        (body["messages"][-1]["content"] == REASONING_PROMPT, body.get("reasoning_effort"))
+        for body in server.chats
+    ]
+    assert all(effort == (None if asks else "low") for asks, effort in efforts)
+    assert sum(asks for asks, _ in efforts) == 1
     for attempt, retry in scored:
         record = build_task_attempt(
             ctx, attempt, attempt_id=f"a-{attempt['case_id']}", retry=retry

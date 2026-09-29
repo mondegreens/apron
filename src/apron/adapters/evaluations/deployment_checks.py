@@ -547,6 +547,13 @@ class DeploymentCheckScorer(DeterministicScorer):
                 **body.get("chat_template_kwargs", {}),
                 "enable_thinking": True,
             }
+        # Where effort, not a switch, governs thinking (GLM-5.x, gpt-oss,
+        # DeepSeek V4), the suite's "low" lets the model skip it.  This case
+        # asks for reasoning, so it sends no effort: the model's own default.
+        # GLM-5.3-Flash on 4xH200 (2026-09-29) answered "17 + 25" with an empty
+        # <think></think> at low and at high, and reasoned (113 characters)
+        # only at its template default, max; the glm45 parser split all three.
+        body.pop("reasoning_effort", None)
         data, elapsed = self._chat(endpoint, body)
         message, content = _message(data)
         reasoning = _reasoning(message)
