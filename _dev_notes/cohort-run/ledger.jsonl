@@ -473,3 +473,32 @@
 {"amount": 0.000705, "at": "2026-09-29T01:12:16.263362+00:00", "label": "reconcile:correct:v6ricvo4j74atq", "op": "correct", "source": "runpod billing API"}
 {"amount": 0.000759, "at": "2026-09-29T01:12:16.263462+00:00", "label": "reconcile:correct:wig6had87n7397", "op": "correct", "source": "runpod billing API"}
 {"amount": -4.6097, "at": "2026-09-29T01:12:43.008626+00:00", "label": "reconcile:unattributed:zai-org/GLM-5.3-Flash@NVIDIA B200x2", "op": "correct", "source": "runpod billing API", "pod_id": "5an57rzjhwrmbm", "note": "settled without its pod (interrupted start, rate x rental); the bill is booked by pod"}
+{"amount": 25.5153, "at": "2026-09-29T01:41:02.852624+00:00", "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x2", "op": "hold"}
+{"amount": 0.701633, "at": "2026-09-29T01:50:17.773412+00:00", "label": "pod-abandoned:lj259iqgkgnddx", "op": "spend"}
+{"amount": 0.688808, "at": "2026-09-29T01:50:17.775826+00:00", "label": "pod-abandoned:htbjibufldltm7", "op": "spend"}
+{"amount": 0.684658, "at": "2026-09-29T01:50:17.776292+00:00", "label": "pod-abandoned:kbpvdmm64v8o9v", "op": "spend"}
+{"amount": 0.018179, "at": "2026-09-29T01:50:17.776596+00:00", "estimate": 25.5153, "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x2", "op": "settle"}
+{"amount": 51.0306, "at": "2026-09-29T01:54:49.261182+00:00", "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x4", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-29T01:58:57.009176+00:00", "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x4", "op": "annotate", "pod_id": "uxt0bh4pm5rhx4"}
+{"amount": 4.526667, "at": "2026-09-29T02:21:06.950248+00:00", "label": "pod-idle:uxt0bh4pm5rhx4", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-29T02:21:06.954410+00:00", "label": "pod-idle:uxt0bh4pm5rhx4", "op": "annotate", "pod_id": "uxt0bh4pm5rhx4"}
+{"amount": 11.90285, "at": "2026-09-29T02:21:06.959791+00:00", "estimate": 51.0306, "label": "zai-org/GLM-5.3-Flash@NVIDIA B200x4", "op": "settle"}
+{"amount": 64.754, "at": "2026-09-29T02:21:07.133398+00:00", "label": "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4", "op": "hold"}
+{"amount": 0.00135, "at": "2026-09-29T02:21:07.133696+00:00", "estimate": 4.526667, "label": "pod-idle:uxt0bh4pm5rhx4", "op": "settle"}
+{"amount": 0.0, "at": "2026-09-29T02:21:07.133779+00:00", "label": "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4", "op": "annotate", "pod_id": "uxt0bh4pm5rhx4"}
+{"amount": 0.015631, "at": "2026-09-29T02:21:09.205680+00:00", "estimate": 64.754, "label": "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4", "op": "settle"}
+{"amount": 3.471484, "at": "2026-09-29T02:21:09.210363+00:00", "label": "storage:7jiuum2nk6:3358GB:5.391h", "op": "spend"}
+{"amount": 1.239853, "at": "2026-09-29T04:16:40.067823+00:00", "label": "storage:7jiuum2nk6:3358GB:1.925h", "op": "spend"}
+{"amount": 7.65, "at": "2026-09-29T04:17:41.256209+00:00", "label": "variant", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-29T04:23:18.014229+00:00", "label": "variant", "op": "annotate", "pod_id": "0u6rww3x7ya7yt"}
+{"amount": 3.06, "at": "2026-09-29T05:02:11.437750+00:00", "label": "pod-idle:0u6rww3x7ya7yt", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-29T05:02:11.439377+00:00", "label": "pod-idle:0u6rww3x7ya7yt", "op": "annotate", "pod_id": "0u6rww3x7ya7yt"}
+{"amount": 13.617942, "at": "2026-09-29T05:02:11.441387+00:00", "estimate": 7.65, "label": "variant", "op": "settle"}
+{"amount": 0.002676, "at": "2026-09-29T05:02:11.964451+00:00", "estimate": 3.06, "label": "pod-idle:0u6rww3x7ya7yt", "op": "settle"}
+{"amount": 7.65, "at": "2026-09-29T05:09:41.041121+00:00", "label": "variant", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-29T05:16:28.546140+00:00", "label": "variant", "op": "annotate", "pod_id": "yduvqoaynvo8ep"}
+{"amount": 3.06, "at": "2026-09-29T05:23:30.777008+00:00", "label": "pod-idle:yduvqoaynvo8ep", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-29T05:23:30.779548+00:00", "label": "pod-idle:yduvqoaynvo8ep", "op": "annotate", "pod_id": "yduvqoaynvo8ep"}
+{"amount": 4.231677, "at": "2026-09-29T05:23:30.782570+00:00", "estimate": 7.65, "label": "variant", "op": "settle"}
+{"amount": 6e-05, "at": "2026-09-29T05:23:30.791596+00:00", "estimate": 3.06, "label": "pod-idle:yduvqoaynvo8ep", "op": "settle"}
+{"amount": 1.399472, "at": "2026-09-29T06:27:03.205543+00:00", "label": "storage:7jiuum2nk6:3358GB:2.173h", "op": "spend"}
