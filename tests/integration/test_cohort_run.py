@@ -465,13 +465,14 @@ def test_recorded_failure_fix_proof() -> None:
 def test_plan_variant_run() -> None:
     """``APRON_COHORT_STEP=variant APRON_BASE_SOLUTION=<recorded solution fp>
     APRON_ENGINE_SET=<json object>``: the recorded plan with the given engine
-    settings changed, run on the volume that holds its weights with the same
-    task suite.  ``APRON_GPU_SKU`` moves it to another GPU, and
-    ``APRON_WEIGHTS=download`` downloads the weights on the pod wherever that
-    GPU is in stock (the volume attaches only in its own datacenter).  A new
+    settings changed, with the same task suite.  ``APRON_WEIGHTS=download``
+    downloads the weights on the pod wherever the GPU is in stock (the only
+    way since the volume was deleted, 2026-09-29); without it the run needs a
+    volume that holds them.  ``APRON_GPU_SKU`` moves it to another GPU;
+    ``APRON_REPEAT=1`` measures a solution that has records already.  A new
     solution (its own fingerprint and records), never a rewrite of the
-    recorded one (owner, 2026-09-29: GLM-5.3-Flash without
-    CUDA graphs after the engine died on a graph replay mid-suite)."""
+    recorded one (owner, 2026-09-29: GLM-5.3-Flash without CUDA graphs after
+    the engine replayed moved inputs mid-suite)."""
     _step("variant")
     from apron.adapters.backends.runpod_storage import RunPodStorage
     from apron.application.orchestration.cohort import run_cohort
