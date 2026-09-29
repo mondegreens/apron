@@ -280,6 +280,12 @@ class MemoryLog:
 Scenario = Callable[[DeploymentPlan, "FakeTarget"], Any]
 
 
+class PodStartError(RuntimeError):
+    def __init__(self, attempts: list[dict[str, Any]]) -> None:
+        super().__init__(f"no pod started after {len(attempts)} rentals")
+        self.attempts = attempts
+
+
 @dataclass
 class FakeTarget:
     requested: RequestedExecutionSpec
@@ -298,7 +304,11 @@ class FakeTarget:
         self.pod_id = f"pod-{self.requested.gpu_sku[-4:]}-{id(self) % 1000}"
         self.wait_timeout = wait_timeout
         if self.never_running:
-            raise TimeoutError(f"Pod {self.pod_id} did not reach RUNNING within {wait_timeout}s")
+            # What RunPodTarget raises when every pod rented for the start was
+            # abandoned by its logs (runpod.PodStartError).
+            raise PodStartError(
+                [{"pod_id": self.pod_id, "machine_id": "m-1", "outcome": "never_started"}]
+            )
         self.provisioned_env = dict(env or {})
         return {"pod_id": self.pod_id}
 

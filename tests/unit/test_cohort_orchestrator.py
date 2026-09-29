@@ -12,11 +12,13 @@ from typing import Any
 import pytest
 from _cohort_fakes import (
     FakeEvaluator,
+    MemoryLog,
     accepted_inputs,
     ports,
     solution,
 )
 
+from apron.application.orchestration.billing import ledger_by_pod
 from apron.application.orchestration.cohort import (
     classify_harness_error,
     recorded_evidence,
@@ -578,8 +580,9 @@ def test_an_interrupted_start_is_torn_down_settled_and_recorded(tmp_path: Path) 
     )
 
 
-def test_pod_that_never_runs_times_out_and_is_torn_down(tmp_path: Path) -> None:
-    """No Secure capacity or a stuck image pull: the wait is bounded, never forever."""
+def test_pod_that_never_starts_is_torn_down_and_recorded(tmp_path: Path) -> None:
+    """A pod whose host never starts it (its logs say so): torn down, settled,
+    recorded, with every pod rented for the start in the event log."""
     cohort_ports, _, targets, _ = ports(tmp_path, _healthy)
     sp = solution("Qwen/Qwen3-1.7B", "NVIDIA GeForce RTX 4090")
     original = cohort_ports.target_factory
@@ -591,15 +594,22 @@ def test_pod_that_never_runs_times_out_and_is_torn_down(tmp_path: Path) -> None:
 
     object.__setattr__(cohort_ports, "target_factory", stuck_factory)
     result = run_cohort([sp], accepted_inputs(), cohort_ports)
-    assert "TimeoutError" in result.skipped[sp.label]
-    assert targets[0].wait_timeout == cohort_ports.provision_timeout > 0
+    assert "PodStartError" in result.skipped[sp.label]
+    # No fixed limit: the pod's logs end a start that is not progressing.
+    assert targets[0].wait_timeout == cohort_ports.provision_timeout == 0
     assert targets[0].torn_down
+    events = cohort_ports.events
+    assert isinstance(events, MemoryLog)
+    errors = [e for e in events.entries if e.get("event") == "candidate_error"]
+    assert errors[-1]["start_attempts"] == [
+        {"pod_id": targets[0].pod_id, "machine_id": "m-1", "outcome": "never_started"}
+    ]
     assert cohort_ports.budget.holds == {}
     failed = [
         load_record(VerificationReport, cohort_ports.store.retrieve(d) or {})
         for d in recorded_evidence(cohort_ports.store, sp.solution_fp).failed_boots
     ]
-    assert [r.failures for r in failed] == [("harness:exception:TimeoutError",)]
+    assert [r.failures for r in failed] == [("harness:exception:PodStartError",)]
     assert _cost_on_records(cohort_ports.store) == pytest.approx(
         cohort_ports.budget.spent, abs=1e-4
     )
@@ -689,3 +699,34 @@ def test_a_model_without_a_chat_template_is_not_sent_the_chat_suite(tmp_path: Pa
     assert attempts and all(not a.accepted for a in attempts)
     assert all(any("no chat template" in f for f in a.failures) for a in attempts)
     assert all(a.retries == 0 for a in attempts)
+
+
+def test_pods_left_during_a_start_are_billed_by_pod(tmp_path: Path) -> None:
+    """A pod whose host never started it is its own ledger line, matched to
+    its bill; the candidate's hold pays only for the rest (2026-09-29: such
+    pods were settled under the candidate's label and counted twice)."""
+    cohort_ports, _, _, _ = ports(tmp_path, _healthy)
+    sp = solution("Qwen/Qwen3-1.7B", "NVIDIA GeForce RTX 4090")
+    original = cohort_ports.target_factory
+
+    def factory(requested: Any) -> Any:
+        target = original(requested)
+        target.start_attempts = [
+            {"pod_id": "left-1", "outcome": "never_started", "seconds": 190.0},
+            {"pod_id": "ok-2", "outcome": "started", "seconds": 300.0},
+        ]
+        return target
+
+    object.__setattr__(cohort_ports, "target_factory", factory)
+    run_cohort([sp], accepted_inputs(), cohort_ports)
+    ledger = cohort_ports.budget.ledger.read_all()
+    rate = cohort_ports.hourly_rate(sp.requested)
+    left = [e for e in ledger if e["label"] == "pod-abandoned:left-1"]
+    assert [e["op"] for e in left] == ["spend"]
+    assert left[0]["amount"] == pytest.approx(190.0 * rate / 3600, abs=1e-6)
+    settle = next(e for e in ledger if e["op"] == "settle" and e["label"] == sp.label)
+    # Nothing is lost or counted twice: the records carry the whole start.
+    assert settle["amount"] + left[0]["amount"] == pytest.approx(
+        _cost_on_records(cohort_ports.store), abs=1e-4
+    )
+    assert ledger_by_pod(ledger)["left-1"] == pytest.approx(left[0]["amount"])

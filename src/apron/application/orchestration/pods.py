@@ -28,6 +28,9 @@ if TYPE_CHECKING:
     from apron.domain.schemas.solutions import RequestedExecutionSpec
 
 IDLE_PREFIX = "pod-idle:"
+# A pod rented for a start and left because its host did not start it
+# (RunPod: its logs showed no progress); billed on its own, by pod.
+ABANDONED_PREFIX = "pod-abandoned:"
 # Held while a pod waits in the pool; settled at the real idle time.
 IDLE_HOLD_MINUTES = 10.0
 

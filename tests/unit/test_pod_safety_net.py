@@ -14,6 +14,7 @@ import pytest
 
 from apron.adapters.backends import runpod as runpod_module
 from apron.adapters.backends.runpod import TEARDOWN_BACKOFF_SECONDS, RunPodTarget
+from apron.adapters.backends.runpod_logs import LogLine
 from apron.application.orchestration.errors import PodLeakError
 
 if TYPE_CHECKING:
@@ -262,10 +263,17 @@ def test_wait_for_running_is_bounded_when_a_timeout_is_given() -> None:
     """A pod that never reports uptime raises instead of polling forever."""
     target = RunPodTarget(api_key="rp_test", gpu_type="NVIDIA GeForce RTX 4090")
     target._pod_id = "pod-stuck"
-    clock = iter([0.0, 0.0, 5.0, 11.0])
+    now = [0.0]
+
+    class _Pulling:  # a pod still logging its image pull: the logs never end the wait
+        def read(self, source: str) -> tuple[list[LogLine], None]:
+            now[0] += 3.0
+            return [LogLine(source, "Downloading", "")], None
+
     with (
         patch.object(target, "_gql_status", return_value={"pod": {"runtime": None}}),
-        patch.object(runpod_module.time, "monotonic", side_effect=lambda: next(clock)),
+        patch.object(target, "_log_reader_factory", return_value=_Pulling()),
+        patch.object(runpod_module.time, "monotonic", side_effect=lambda: now[0]),
         patch.object(runpod_module.time, "sleep"),
         pytest.raises(TimeoutError, match="pod-stuck"),
     ):

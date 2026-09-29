@@ -17,7 +17,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any
 
-from apron.application.orchestration.pods import IDLE_PREFIX
+from apron.application.orchestration.pods import ABANDONED_PREFIX, IDLE_PREFIX
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping, Sequence
@@ -39,6 +39,8 @@ def ledger_by_pod(ledger: Sequence[Mapping[str, Any]]) -> dict[str, float]:
         elif op in ("settle", "spend", "correct"):
             if label.startswith(IDLE_PREFIX):
                 settled[label[len(IDLE_PREFIX) :]] += float(entry["amount"])
+            elif label.startswith(ABANDONED_PREFIX):
+                settled[label[len(ABANDONED_PREFIX) :]] += float(entry["amount"])
             elif label.startswith(RECONCILE_PREFIX):
                 settled[label[len(RECONCILE_PREFIX) :]] += float(entry["amount"])
             elif label.startswith(CORRECTION_PREFIX):

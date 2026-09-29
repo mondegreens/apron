@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 
+from apron.adapters.backends.runpod_logs import LogLine, PodLogReader, StartWatch
 from apron.adapters.runner_image import RUNNER_HOST_CUDA_VERSIONS, RUNNER_IMAGE
 from apron.application.orchestration.errors import PodLeakError
 from apron.application.sanitization import mask_secrets
@@ -43,6 +44,11 @@ VOLUME_GB = 100
 VOLUME_MOUNT = "/runpod-volume"
 CLOUD_TYPE = "SECURE"  # D4: RunPod Secure only; Community is never used
 TEARDOWN_BACKOFF_SECONDS = (2, 4, 8)
+# Pods rented for one start before giving up.  RunPod does not say which host a
+# pod lands on; a host that never begins is left and another pod rented
+# (``PodStartAbandoned``).  Each abandoned host costs at most
+# runpod_logs.FIRST_LINE_WITHIN seconds of rent.
+START_ATTEMPTS = 3
 DEFAULT_LEAK_LOG = Path("_dev_notes/cohort-run/leaked_pods.json")
 
 # ``total_memory_bytes`` is the memory CUDA reports for one GPU
@@ -137,6 +143,8 @@ _POD_STATUS_QUERY = """query Pod {{
   pod(input: {{podId: "{pod_id}"}}) {{
     id
     name
+    machineId
+    machine {{ dataCenterId }}
     runtime {{
       uptimeInSeconds
       ports {{ ip isIpPublic privatePort publicPort type }}
@@ -222,6 +230,25 @@ def _age_from(pod: dict[str, Any], now: float) -> int:
     return int((pod.get("runtime") or {}).get("uptimeInSeconds") or 0)
 
 
+class PodStartAbandoned(RuntimeError):
+    """A rented pod whose logs showed its start was not progressing."""
+
+    def __init__(self, pod_id: str, verdict: str, report: dict[str, Any]) -> None:
+        super().__init__(f"Pod {pod_id} abandoned: {verdict} ({report})")
+        self.pod_id = pod_id
+        self.verdict = verdict
+        self.report = report
+
+
+class PodStartError(RuntimeError):
+    """Every pod rented for one start was abandoned (``PodStartAbandoned``)."""
+
+    def __init__(self, attempts: list[dict[str, Any]]) -> None:
+        verdicts = ", ".join(f"{a.get('pod_id')}: {a.get('outcome')}" for a in attempts)
+        super().__init__(f"no pod started after {len(attempts)} rentals ({verdicts})")
+        self.attempts = attempts
+
+
 class RemoteCommandTimeout(RuntimeError):
     """A remote command ran past its deadline (not a connection loss: never retried)."""
 
@@ -247,6 +274,9 @@ class RunPodTarget:
         leak_log: Path | None = None,
         network_volume_id: str | None = None,
         data_center_id: str | None = None,
+        volume_gb: int = VOLUME_GB,
+        pod_log_dir: Path | None = None,
+        start_attempts: int = START_ATTEMPTS,
     ) -> None:
         self._api_key = api_key or os.environ.get("RUNPOD_API_KEY")
         self._ssh_key_path = ssh_key_path or os.environ.get(
@@ -268,7 +298,19 @@ class RunPodTarget:
         if network_volume_id and not data_center_id:
             raise ValueError("a network volume needs its data_center_id")
         self._network_volume_id = network_volume_id
+        # The pod's own volume when weights download on the pod: sized for the
+        # model (a 360 GB checkpoint does not fit the 100 GB default).
+        self._volume_gb = volume_gb
         self._data_center_id = data_center_id
+        # Where each pod's system and container log lines are kept (None: not kept).
+        self._pod_log_dir = pod_log_dir
+        if start_attempts < 1:
+            raise ValueError(f"start_attempts must be >= 1, got {start_attempts}")
+        self._start_attempts = start_attempts
+        # The last pod start, as the logs showed it (``_wait_for_running``),
+        # and every pod rented for the current start.
+        self.start_report: dict[str, Any] = {}
+        self.start_attempts: list[dict[str, Any]] = []
 
         self._pod_id: str | None = None
         self._ssh: Any | None = None
@@ -404,26 +446,39 @@ class RunPodTarget:
                 "volume_in_gb": 0,  # the network volume is the pod's volume
             }
             if self._network_volume_id
-            else {"volume_in_gb": VOLUME_GB}
+            else {"volume_in_gb": self._volume_gb}
         )
-        pod = _runpod.create_pod(
-            name=POD_NAME_PREFIX,
-            image_name=self._image,
-            gpu_type_id=self._gpu_type,
-            gpu_count=self._gpu_count,
-            cloud_type=CLOUD_TYPE,
-            allowed_cuda_versions=list(RUNNER_HOST_CUDA_VERSIONS),
-            ports="22/tcp,8000/http",
-            volume_mount_path=VOLUME_MOUNT,  # explicit: model weights live here
-            container_disk_in_gb=50,
-            env=env or {},
-            **placement,
-        )
-        self._pod_id = pod["id"]
-        logger.info("Pod created: %s", self._pod_id)
-        self._register_teardown_guard()
-
-        pod_info = self._wait_for_running(wait_timeout)
+        self.start_attempts = []
+        pod_info: dict[str, Any] | None = None
+        for _ in range(self._start_attempts):
+            pod = _runpod.create_pod(
+                name=POD_NAME_PREFIX,
+                image_name=self._image,
+                gpu_type_id=self._gpu_type,
+                gpu_count=self._gpu_count,
+                cloud_type=CLOUD_TYPE,
+                allowed_cuda_versions=list(RUNNER_HOST_CUDA_VERSIONS),
+                ports="22/tcp,8000/http",
+                volume_mount_path=VOLUME_MOUNT,  # explicit: model weights live here
+                container_disk_in_gb=50,
+                env=env or {},
+                **placement,
+            )
+            self._pod_id = pod["id"]
+            logger.info("Pod created: %s", self._pod_id)
+            self._register_teardown_guard()
+            try:
+                pod_info = self._wait_for_running(wait_timeout)
+            except PodStartAbandoned as exc:
+                # The host is not starting this pod: leave it, rent another.
+                logger.warning("%s; terminating it", exc)
+                self.start_attempts.append(exc.report)
+                self.teardown()
+                continue
+            self.start_attempts.append(dict(self.start_report))
+            break
+        if pod_info is None:
+            raise PodStartError(self.start_attempts)
 
         self._establish_ssh(pod_info)
 
@@ -441,6 +496,7 @@ class RunPodTarget:
             "pod_id": self._pod_id,
             "hardware": self._hardware.model_dump(mode="json"),
             "detected_gpu_count": hw_info.get("gpu_count", 1),
+            "start_attempts": list(self.start_attempts),
         }
 
     # ------------------------------------------------------------------
@@ -818,24 +874,54 @@ class RunPodTarget:
         return data.get("data", {})
 
     def _wait_for_running(self, timeout: int = 0) -> dict[str, Any]:
-        """Poll until pod reaches RUNNING. No timeout by default — image
-        pulls and model downloads can take arbitrarily long."""
+        """Poll until the pod's container runs, reading the pod's own logs.
+
+        The host's system log (image pull, container create) and the
+        container's log decide (``runpod_logs.StartWatch``): a start that
+        keeps logging is waited on without limit; a host that writes no
+        line, or goes silent, is abandoned with ``PodStartAbandoned``.
+        ``timeout`` (0: none) is an outer bound on top.
+        """
         start = time.monotonic()
+        pod_id = str(self._pod_id)
+        reader = self._log_reader_factory(pod_id)
+        watch = StartWatch(rented_at=start)
+        self.start_report = {"pod_id": pod_id}
         while True:
-            if timeout > 0 and time.monotonic() - start > timeout:
-                raise TimeoutError(f"Pod {self._pod_id} did not reach RUNNING within {timeout}s")
-            query = _POD_STATUS_QUERY.format(pod_id=self._pod_id)
-            data = self._gql_status(query)
+            now = time.monotonic()
+            if timeout > 0 and now - start > timeout:
+                raise TimeoutError(f"Pod {pod_id} did not reach RUNNING within {timeout}s")
+            data = self._gql_status(_POD_STATUS_QUERY.format(pod_id=pod_id))
             pod = data.get("pod")
-            if pod is None:
-                time.sleep(10)
-                continue
-            runtime = pod.get("runtime")
+            if pod is not None and pod.get("machineId"):
+                self.start_report["machine_id"] = pod["machineId"]
+                self.start_report["data_center"] = (pod.get("machine") or {}).get("dataCenterId")
+            system, error = reader.read("system")
+            container, container_error = reader.read("container")
+            self._keep_pod_log(pod_id, [*system, *container])
+            watch.observe(time.monotonic(), system, container, error or container_error)
+            self.start_report.update(watch.report(time.monotonic()))
+            runtime = (pod or {}).get("runtime")
             if runtime and runtime.get("uptimeInSeconds", 0) > 0:
-                return pod
+                self.start_report["outcome"] = "started"
+                return pod  # type: ignore[return-value]
+            verdict = watch.verdict(time.monotonic())
+            if verdict is not None:
+                self.start_report["outcome"] = verdict
+                raise PodStartAbandoned(pod_id, verdict, dict(self.start_report))
             time.sleep(10)
 
-        raise TimeoutError(f"Pod {self._pod_id} did not reach RUNNING within {timeout}s")
+    def _log_reader_factory(self, pod_id: str) -> PodLogReader:
+        return PodLogReader(str(self._api_key), pod_id)
+
+    def _keep_pod_log(self, pod_id: str, lines: list[LogLine]) -> None:
+        """Append the pod's log lines to ``<pod_log_dir>/<pod_id>.log``."""
+        if self._pod_log_dir is None or not lines:
+            return
+        self._pod_log_dir.mkdir(parents=True, exist_ok=True)
+        with (self._pod_log_dir / f"{pod_id}.log").open("a") as fh:
+            for ln in lines:
+                fh.write(f"{ln.ts} [{ln.source}] {mask_secrets(ln.line)}\n")
 
     # ------------------------------------------------------------------
     # Internal — SSH management

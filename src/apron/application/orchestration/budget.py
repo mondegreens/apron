@@ -129,6 +129,17 @@ class BudgetTracker:
         self._append("spend", label, amount)
         self._spend(amount, label, None, None)
 
+    def record_pod_spend(self, amount: float, label: str) -> None:
+        """Spend on a pod that is already gone (a start left by its logs).
+
+        Never refused: it records money already spent, not a plan.  The
+        label names the pod, so the bill is matched to it (2026-09-29: pods
+        that never started were settled under the candidate's label with no
+        pod, and the reconcile counted them twice).
+        """
+        self._append("spend", label, amount)
+        self._spend(amount, label, None, None, replaying=True)
+
     def correct(self, amount: float, label: str, *, source: str) -> None:
         """A signed correction of spend already settled, from the provider's
         bill (``source`` names it).  Nothing earlier is rewritten: the L0-A3

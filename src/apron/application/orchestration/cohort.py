@@ -51,6 +51,7 @@ from apron.application.orchestration.evidence import (
     scorer_input,
     store_validated,
 )
+from apron.application.orchestration.pods import ABANDONED_PREFIX
 from apron.application.orchestration.serving import evaluate_serving_slos
 from apron.application.sanitization import mask_secrets
 from apron.domain.fingerprints import fingerprint_hex
@@ -226,13 +227,12 @@ class CohortPorts:
     # Not a limit on the boot: seconds without new vLLM log output before a
     # boot counts as hung (``VllmEngineAdapter.boot``).
     boot_timeout: int = 1200
-    # A pod that is not RUNNING by then (no Secure capacity, a stuck image
-    # pull) is torn down and recorded as a failed attempt: it may be billing.
-    # The runner image pulled in about 6 minutes on every host measured (H100
-    # and CPU pods, US-CA-2); a 2xB200 host sat 20 minutes without starting
-    # the container, billed from the rental (2026-09-28).  Past 15 minutes the
-    # host is stuck, not slow.
-    provision_timeout: int = 900
+    # No fixed limit on a pod's start (0): the pod's own logs decide.  A host
+    # that writes no system line, or goes silent, is left and another pod
+    # rented (runpod_logs.StartWatch); a start that keeps logging is waited
+    # on however long its image pull takes.  A fixed 15 minutes cut B200 pods
+    # without knowing whether they were pulling (2026-09-28).
+    provision_timeout: int = 0
     # One live pod per requested execution for the run (None: a pod per solution).
     pool: TargetPool | None = None
     # Wait for provider stock before a new pod; False when the wait gave up.
@@ -447,7 +447,16 @@ def execute_solution(
         if not reused:
             target.provision(env=ports.provision_env(sp), wait_timeout=ports.provision_timeout)
         ports.budget.annotate_hold(sp.label, target.pod_id)
-        _event(ports, "reused" if reused else "provisioned", sp, pod_id=target.pod_id)
+        # Every pod rented for this start, as its logs showed it (RunPod:
+        # host, datacenter, seconds to the first system and container line).
+        starts = None if reused else getattr(target, "start_attempts", None)
+        _event(
+            ports,
+            "reused" if reused else "provisioned",
+            sp,
+            pod_id=target.pod_id,
+            **({"start_attempts": starts} if starts else {}),
+        )
         if not reused and not engine.runner_supports_token_isolation(target):
             raise RunnerImageError("runner image lacks the F7 download step (apron-download)")
         if reused:
@@ -536,7 +545,16 @@ def execute_solution(
         _close_open_phases(timing)
 
     costs = attribute_costs(timing, rate, len(scored))
-    ports.budget.settle(costs.total, sp.label)
+    # Pods rented and left during this start bill on their own line, by pod;
+    # the hold pays for the rest.  The records still carry the whole cost:
+    # it is what this candidate's start cost.
+    abandoned = 0.0
+    for attempt in [] if reused else list(getattr(target, "start_attempts", None) or []):
+        if attempt.get("outcome") != "started" and attempt.get("pod_id"):
+            amount = round(float(attempt.get("seconds") or 0.0) * rate / 3600, 6)
+            ports.budget.record_pod_spend(amount, f"{ABANDONED_PREFIX}{attempt['pod_id']}")
+            abandoned += amount
+    ports.budget.settle(round(max(0.0, costs.total - abandoned), 6), sp.label)
     if leaked is not None:
         ports.budget.hold_open_ended(rate, f"leak:{leaked.pod_id}", leaked.pod_id)
     outcome.cost = costs.total
@@ -732,7 +750,14 @@ def _store_outcome(
         _event(ports, "pod_leak", sp, pod_id=leaked.pod_id, error=str(leaked))
         raise leaked
     if error is not None:
-        _event(ports, "candidate_error", sp, error=f"{type(error).__name__}: {error}")
+        starts = getattr(error, "attempts", None)
+        _event(
+            ports,
+            "candidate_error",
+            sp,
+            error=f"{type(error).__name__}: {error}",
+            **({"start_attempts": starts} if starts else {}),
+        )
         raise error
     return outcome
 

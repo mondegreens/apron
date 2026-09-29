@@ -24,7 +24,7 @@ from apron.adapters.backends.llm_classifier import guess_base_model
 from apron.adapters.backends.local_store import LocalRecordStore
 from apron.adapters.backends.rule_loader import load_rules
 from apron.adapters.backends.rule_repository import FileRuleRepository
-from apron.adapters.backends.runpod import CLOUD_TYPE, GPU_SPECS, RunPodTarget
+from apron.adapters.backends.runpod import CLOUD_TYPE, GPU_SPECS, VOLUME_GB, RunPodTarget
 from apron.adapters.backends.runpod_storage import (
     RunPodStagerPod,
     RunPodStorage,
@@ -105,8 +105,10 @@ RULES_DIR = REPO / "rules"
 # first cohort's records were made on.
 RUNNER_IMAGES_DEFAULT = "v0.29.0"
 # D4: the owner's cap for the whole Phase 1b cohort (all passes), not per day
-# or run; raising it is the owner's call (group D).
-AUTHORIZED_USD = 100.0
+# or run; raising it is the owner's call.  Raised from 100 to 200 by the owner
+# on 2026-09-28 ("groups C and D are mandatory; I will add credits"), with
+# $66.51 spent and group C on 4xB200 next.
+AUTHORIZED_USD = 200.0
 
 logger = logging.getLogger(__name__)
 
@@ -751,6 +753,7 @@ def stage_site(
         network_volume_id=site.volume_id,
         data_center_id=site.data_center_id,
         leak_log=run_dir / "leaked_pods.json",
+        pod_log_dir=run_dir / "pod-logs",
     )
     events = JsonlLedger(run_dir / "events.jsonl")
     return stage_weights(
@@ -792,6 +795,7 @@ def build_ports(
     rates: dict[str, float] | None = None,
     site: WeightsSite | None = None,
     evaluator: Any = None,
+    pod_volume_gb: int | None = None,
 ) -> CohortPorts:
     """The run's ports.  ``evaluator`` scores the task suite: the
     deterministic scorer unless given (suite v3's ``DeploymentCheckScorer``,
@@ -821,8 +825,11 @@ def build_ports(
             gpu_type=requested.gpu_sku,
             gpu_count=requested.gpu_count,
             leak_log=run_dir / "leaked_pods.json",
+            # Each pod's system and container log lines (image pull, start).
+            pod_log_dir=run_dir / "pod-logs",
             network_volume_id=site.volume_id if site else None,
             data_center_id=site.data_center_id if site else None,
+            volume_gb=pod_volume_gb if pod_volume_gb and not site else VOLUME_GB,
         )
 
     def provision_env(sp: SolutionPlan) -> dict[str, str]:
