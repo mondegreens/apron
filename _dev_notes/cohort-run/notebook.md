@@ -624,3 +624,54 @@ H200 memory in GPU_SPECS is not yet confirmed on a pod.
   per day or run; A cost ~$1.1, B about the same, C roughly $30-50, so A-C fit
   under $100 and the ledger itself stops the run before group D — the agreed
   checkpoint, enforced in code.  Spent so far $12.47.
+
+## 2026-09-28 — group B on v0.30, group C on B200 and H100 (from the records)
+
+- **Group B (staged, H100, vLLM v0.30.0):** Qwen3.8-27B, Muse-Glimmer-30B and
+  Nemotron-3.5 each 3/3, p99 TTFT 0.18-0.61 s (`caaef02`).  Muse's first
+  solution, served without a reasoning parser, scored 0/3: its reasoning
+  landed in the answer ("to=self … assistant to=user50").  With
+  `reasoning_parser: muse_glimmer` it scored 3/3.
+- **Group C on 2x B200 (US-CA-2 volume):** GLM-5.3-Flash booted (152.10 GiB
+  weights per GPU); Qwen3.8-Flash-Next refused, "max_num_seqs (1024) exceeds
+  available Mamba cache blocks (626)"; DeepSeek-V4-Flash-0731 and V4.1-Flash
+  did not boot (B200 hosts that never started a pod; a 30-min boot limit,
+  since removed).  Machine `u4mmovdxujq8` never started a pod three times.
+- **Qwen3.8-Flash-Next on 4x H100:** failed 4 s after start with NCCL
+  "unhandled cuda error" at `ncclCommInitRank` — a host fault, recorded then
+  as a model failure (`122069c0258a5541…`).
+- Ledger corrected to the bill (`3861a4d`): pods that never started had been
+  settled under their candidate's label; now booked by pod.  Cap raised to
+  $200 (owner).
+
+## 2026-09-29 — GLM-5.3-Flash, the volume deleted, G1, the gate
+
+- **GLM-5.3-Flash, in order** (HANDOFF "What happened to GLM-5.3-Flash"):
+  4x B200 with CUDA graphs booted, passed the 32k needle, then died on the
+  tool call with "Input tensor addresses changed between capture and replay"
+  — vLLM's DEBUG-only check (`breakable_cudagraph.py:419-424`), which exists to
+  stop silent wrong outputs.  4x H200 with `enforce_eager` (download on the
+  pod, 328.4 GB in 368.9 s): healthy, suite v3 4/5, TPOT 111 ms against the
+  100 ms SLO.  A second 4x H200 host had a broken NVSwitch (NCCL NVLS bind);
+  `NCCL_NVLS_ENABLE=0` worked by hand.  That pod was kept for debugging by
+  hand; RunPod billed it $21.57, the ledger had $4.23 (found at the evening
+  reconcile, +$17.34).
+- **Storage:** the 3358 GB US-CA-2 volume deleted (owner): B200 stock there
+  was unreliable and a volume attaches only in its own datacenter.  Weights
+  download on the pod since.
+- **Cost estimate (`657e13e`):** a flat 25 min held the GLM variant at $7.65;
+  it cost $13.62 and tripped the >50% stop.  Now the slowest measured case
+  per term; no recorded run cost more than its estimate (worst 60%).
+- **Exit gate 9/9 (`bfc5dd0`):** Rev 4's owner-named runs, abandoned pods,
+  interrupted runs, probes and pending records accounted for; records and
+  ledger unchanged.
+- **G1, gpt-oss-20b on an RTX 4090 (owner's go, EUR-IS-1):** 3/3, p99 TTFT
+  120 ms, TPOT 8.6 ms, $0.13 against a $0.66 hold.  It surfaced two bugs:
+  a replayed past overrun stopped every later run after its first model
+  (`6cd15a6`), and gpt-oss's MXFP4 experts on Marlin below SM 9.0 are padded
+  2880 -> 3072 x 2944, +0.855 GiB the calculator missed (`6413693`; 12.82 ->
+  13.67 GiB against 13.80 measured).
+- **Reconcile (`c29717f`):** spent $136.94 of $200 after the bill, $63.06 left.
+- **Stock:** no 4x or 8x H200/B200 anywhere at any poll since 20:06 UTC
+  (`stock-watch.jsonl`).  Groups C and D planned GPU-free, all "planned"
+  (HANDOFF, "Groups C and D: GPU-free readiness").
