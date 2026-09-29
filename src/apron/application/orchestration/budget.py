@@ -237,7 +237,10 @@ class BudgetTracker:
         self.spent += amount
         if flag:
             self.flags.append(f"{label}:{flag}")
-        if estimate is not None and estimate > 0 and amount > estimate * OVERRUN_FACTOR:
+        # An overrun stops the run that overspent (cohort._run_plans); one
+        # replayed from the ledger belongs to a past run and stops nothing.
+        overran = estimate is not None and estimate > 0 and amount > estimate * OVERRUN_FACTOR
+        if overran and not replaying:
             self.overruns.append(label)
         if self.spent > self.authorized + 1e-9 and not replaying:
             raise BudgetExceededError(

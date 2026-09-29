@@ -85,6 +85,22 @@ def test_overrun_of_fifty_percent_is_flagged() -> None:
     assert t.overruns == ["a"]
 
 
+def test_an_overrun_in_the_ledger_does_not_stop_a_later_run(tmp_path: Path) -> None:
+    """The overrun stop is for the run that overspent.  Replayed, a past
+    overrun stopped every later cohort run after its first model (the
+    4x H200 variant's $13.62 against $7.65 ended G1's run, 2026-09-29)."""
+    ledger = JsonlLedger(tmp_path / "ledger.jsonl")
+    past = _tracker(100.0, ledger)
+    past.hold(1.0, "variant")
+    past.settle(1.6, "variant")
+    assert past.overruns == ["variant"]
+    later = BudgetTracker.replay(authorized=100.0, ledger=ledger, clock=_Clock())
+    assert later.overruns == []
+    later.hold(1.0, "next")
+    later.settle(1.6, "next")
+    assert later.overruns == ["next"]
+
+
 def test_replay_after_simulated_crash_settles_open_hold_at_pod_cost(tmp_path: Path) -> None:
     ledger = JsonlLedger(tmp_path / "ledger.jsonl")
     first = _tracker(20.0, ledger)
