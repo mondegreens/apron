@@ -439,14 +439,15 @@
   "cost": {
     "authorized": 200.0,
     "failed_boot_total": 45.059356,
+    "ledger_abandoned": 2.075099,
     "ledger_classifier": 0.193358,
     "ledger_corrected": -110.699995,
     "ledger_pod_idle": 0.250586,
     "ledger_probe": 1.397938,
     "ledger_reconciled": 20.835354,
-    "ledger_settled": 247.421781,
-    "ledger_spent": 177.841451,
-    "ledger_staging": 2.153608,
+    "ledger_settled": 238.450881,
+    "ledger_spent": 170.85665,
+    "ledger_staging": 2.064608,
     "ledger_storage": 16.288821,
     "per_solution": [
       {

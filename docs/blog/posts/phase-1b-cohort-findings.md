@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 23 on 8 GPU types
 - Failure classes fixed and re-verified: 6 of 6
-- Total cost: $177.84 of the $200 cap (failed boots included: $45.06)
+- Total cost: $170.86 of the $200 cap (failed boots included: $45.06)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -293,11 +293,11 @@ Failed boots and retries are included.
 | **Records total** |  |  | **119.2669** |  |  |
 | Diagnosis model calls (Claude Haiku) |  |  | 0.1934 |  |  |
 | Idle time of reused pods |  |  | 0.2506 |  |  |
-| CPU pods that staged weights |  |  | 2.1536 |  |  |
+| CPU pods that staged weights |  |  | 2.0646 |  |  |
 | Network volume storage for staged weights |  |  | 16.2888 |  |  |
 | Pods billed but missing from the ledger (reconciled) |  |  | 20.8354 |  |  |
 | Corrections to RunPod's bill (estimates, clock differences) |  |  | -110.7000 |  |  |
-| **Ledger spent** |  |  | **177.8415** |  | cap $200 |
+| **Ledger spent** |  |  | **170.8567** |  | cap $200 |
 | RunPod billed, same window |  |  | 118.3111 |  | not billed yet: 13 pod(s) |
 <!-- /findings:cost -->
 

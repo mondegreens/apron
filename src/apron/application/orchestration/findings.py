@@ -774,29 +774,43 @@ def _cost(run: CohortRun, authorized: float, versions: Mapping[str, str]) -> dic
         # Diagnostic boots (scripts/peak_probe.py): paid, but not a solution.
         return str(e.get("label", "")).startswith(PROBE_PREFIX)
 
+    # A run that starts while another holds settles the live hold
+    # provisionally ("replayed"); the owner's later settle replaces it
+    # (BudgetTracker.replay, "provisional"), so only the owner's counts.
+    replaced: set[int] = set()
+    provisional: dict[str, int] = {}
+    for i, e in enumerate(run.ledger):
+        label = str(e.get("label", ""))
+        if e["op"] == "hold":
+            provisional.pop(label, None)
+        elif e["op"] == "settle" and str(e.get("flag") or "").startswith("replayed"):
+            provisional[label] = i
+        elif e["op"] == "settle" and label in provisional:
+            replaced.add(provisional.pop(label))
+    settles = [e for i, e in enumerate(run.ledger) if e["op"] == "settle" and i not in replaced]
     settled = sum(
         float(e["amount"])
-        for e in run.ledger
-        if e["op"] == "settle"
-        and not is_classifier(e)
-        and not is_pod_idle(e)
-        and not is_staging(e)
-        and not is_probe(e)
+        for e in settles
+        if not is_classifier(e) and not is_pod_idle(e) and not is_staging(e) and not is_probe(e)
     )
-    probe = sum(float(e["amount"]) for e in run.ledger if e["op"] == "settle" and is_probe(e))
-    staging = sum(float(e["amount"]) for e in run.ledger if e["op"] == "settle" and is_staging(e))
+    # Pods that never started, spent under their own label (cohort.py).
+    abandoned = sum(
+        float(e["amount"])
+        for e in run.ledger
+        if e["op"] == "spend" and str(e.get("label", "")).startswith("pod-abandoned:")
+    )
+    probe = sum(float(e["amount"]) for e in settles if is_probe(e))
+    staging = sum(float(e["amount"]) for e in settles if is_staging(e))
     storage = sum(
         float(e["amount"])
         for e in run.ledger
         if e["op"] == "spend" and str(e.get("label", "")).startswith(STORAGE_PREFIX)
     )
-    pod_idle = sum(
-        float(e["amount"]) for e in run.ledger if e["op"] == "settle" and is_pod_idle(e)
-    )
+    pod_idle = sum(float(e["amount"]) for e in settles if is_pod_idle(e))
     classifier = sum(
         float(e["amount"])
-        for e in run.ledger
-        if e["op"] in ("settle", "spend") and is_classifier(e)
+        for e in [*settles, *(e for e in run.ledger if e["op"] == "spend")]
+        if is_classifier(e)
     )
     reconciled = sum(
         float(e["amount"])
@@ -815,8 +829,17 @@ def _cost(run: CohortRun, authorized: float, versions: Mapping[str, str]) -> dic
         "ledger_staging": round(staging, 6),
         "ledger_storage": round(storage, 6),
         "ledger_probe": round(probe, 6),
+        "ledger_abandoned": round(abandoned, 6),
         "ledger_spent": round(
-            settled + classifier + pod_idle + staging + storage + probe + reconciled + corrected,
+            settled
+            + classifier
+            + pod_idle
+            + staging
+            + storage
+            + probe
+            + reconciled
+            + corrected
+            + abandoned,
             6,
         ),
         "provider_billed": billing.get("billed_total"),

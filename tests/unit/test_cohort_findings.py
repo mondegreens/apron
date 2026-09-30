@@ -358,3 +358,35 @@ def test_a_pending_memory_record_stays_visible(synthetic: tuple[Path, CohortRun]
         replace(run, events=[*run.events, latest]), authorized=100.0, modern=plan
     )
     assert card["cost"] == before["modern_models"][0]["cost"]
+
+
+def test_ledger_spent_equals_the_budget_replay(synthetic: tuple[Path, CohortRun]) -> None:
+    """The findings' spend is the budget's: a provisional settle that the
+    owner's settle replaced counts once, abandoned pods count."""
+    from dataclasses import replace
+    from datetime import UTC, datetime
+
+    from apron.application.orchestration.budget import BudgetTracker
+
+    run = synthetic[1]
+    ledger = [dict(e) for e in run.ledger]
+    at = next(i for i, e in enumerate(ledger) if e["op"] == "settle")
+    real = ledger[at]
+    provisional = {**real, "amount": 0.01, "flag": "replayed:provider_reported"}
+    abandoned = {"op": "spend", "label": "pod-abandoned:p", "amount": 0.2, "at": real["at"]}
+    doctored = [*ledger[:at], provisional, abandoned, real, *ledger[at + 1 :]]
+
+    class _Ledger:
+        def append(self, entry: dict) -> None:  # type: ignore[type-arg]
+            raise AssertionError("read only")
+
+        def read_all(self) -> list[dict]:  # type: ignore[type-arg]
+            return doctored
+
+    class _Clock:
+        def now(self) -> datetime:
+            return datetime(2026, 9, 30, tzinfo=UTC)
+
+    spent = BudgetTracker.replay(authorized=100.0, ledger=_Ledger(), clock=_Clock()).spent
+    found = build_findings(replace(run, ledger=doctored), authorized=100.0)
+    assert found["cost"]["ledger_spent"] == pytest.approx(spent, abs=1e-6)
