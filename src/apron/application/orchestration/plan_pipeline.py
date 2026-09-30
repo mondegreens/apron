@@ -1157,7 +1157,29 @@ _GLM5_NEXT_REPLICATED = re.compile(
     r"|blocks\.\d+\.(?:norm[12]\.|attn\.[qk]_norm\.|attn\.proj\.bias|mlp\.down_proj\.bias)))"
 )
 
+# Qwen4Exp (Qwen3.8-Flash-Next), vLLM v0.30.0, checkpoint names.  The
+# hyper-connections: the layers' merged down projection with the block inject
+# (MergedColumnParallelLinear, disable_tp: models/qwen4_exp/nvidia/
+# hyperconnection.py:96-107), the final mixer's down projection and every up
+# projection (ReplicatedLinear: 108-125), and their norms; the QSA indexer's
+# query-key projection (ReplicatedLinear: indexer_qsa.py:132-138); the PLE key
+# and value projections, merged into a disable_tp kv_proj (ple_layer.py:106-115;
+# model.py:155-156); the MoE router (ReplicatedLinear: model_executor/models/
+# qwen3_next.py:183-189, inherited at model.py:161-171).  Norms left out (under
+# a MiB).  Measured on 4x H200 (2026-09-29): 1.06 GiB per GPU of the 2.11 GiB
+# the record's weights hold over the plan; the rest is not traced.
+_QWEN4_EXP_REPLICATED = re.compile(
+    r"^model\.language_model\.(?:layers\.\d+\.(?:"
+    r"(?:attn|mlp)_hyper_connection\.(?:input_mix_weight_down|input_mix_weight_up"
+    r"|block_inject_weight|hc_norm)\."
+    r"|self_attn\.indexer\.index_qk_proj\."
+    r"|ple\.(?:key_proj|value_proj)\."
+    r"|mlp\.gate\."
+    r")|hyper_connection_mixer\.)"
+)
+
 _REPLICATED: dict[str, re.Pattern[str]] = {
+    "qwen4_exp": _QWEN4_EXP_REPLICATED,
     "deepseek_v4": _DEEPSEEK_REPLICATED,
     "deepseek_v41": _DEEPSEEK_REPLICATED,
     "glm_moe_dsa": _GLM_DSA_REPLICATED,
@@ -1169,7 +1191,7 @@ _REPLICATED: dict[str, re.Pattern[str]] = {
 def replicated_tensor_bytes(tensors: dict[str, int], config: dict[str, Any]) -> int:
     """Bytes of loaded weights vLLM keeps whole on every tensor-parallel rank.
 
-    Only DeepSeek V4 / V4.1, GLM-5.x DSA, GLM5Next and MiniMax-M3 are traced;
+    Only DeepSeek V4 / V4.1, GLM-5.x DSA, GLM5Next, MiniMax-M3 and Qwen4Exp are traced;
     every other model's weights are divided by TP (the calculator's ``_per_gpu``).
     """
     names = _REPLICATED.get(str(config.get("model_type") or ""))
@@ -1257,6 +1279,7 @@ def recorded_loaded_bytes(entry: dict[str, Any], plan_dtype: str | None) -> int:
     planner's own resolution (tests/fixtures/cohort/weight-bytes.json rows)."""
     total, f32, lm_head = (int(entry[k]) for k in ("total_bytes", "f32_bytes", "lm_head_bytes"))
     total -= int(entry.get("mtp_bytes") or 0)  # skipped by the main model (mtp_tensor_bytes)
+    total -= int(entry.get("host_bytes") or 0)  # kept in host memory (host_tensor_bytes)
     meta = {"lm_head.weight": ("BF16", lm_head)} if lm_head else {}
     meta |= {"f32": ("F32", f32), "rest": ("BF16", total - lm_head - f32)}
     config: dict[str, Any] = {"tie_word_embeddings": entry["tie_word_embeddings"]}

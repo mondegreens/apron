@@ -152,8 +152,16 @@ def _claim_for(run: CohortRun, sfp: str | None) -> tuple[str | None, dict[str, A
 
 
 def _memory(run: CohortRun, versions: Mapping[str, str]) -> list[dict[str, Any]]:
+    """One row per healthy memory report, the pending ones too (``pending``:
+    the calculator cannot explain them yet; they stay visible, PLAN §18.2)."""
     rows = []
-    for digest, r in sorted(run.records.measured().items(), key=lambda kv: _row_key(run, kv[1])):
+    pending = {
+        d: r
+        for d, r in run.pending.items()
+        if r.claim_scope == "memory" and r.boot_outcome == "healthy"
+    }
+    reports = {**run.records.measured(), **pending}
+    for digest, r in sorted(reports.items(), key=lambda kv: _row_key(run, kv[1])):
         entry = _entry(run, r.solution_fingerprint)
         claim_digest, predicted = _claim_for(run, r.solution_fingerprint)
         delta = r.predicted_minus_measured or {}
@@ -174,6 +182,7 @@ def _memory(run: CohortRun, versions: Mapping[str, str]) -> list[dict[str, Any]]
                 "record": digest,
                 "claim": claim_digest,
                 "solution": r.solution_fingerprint,
+                "pending": digest in pending,
             }
         )
     return rows
@@ -219,6 +228,8 @@ def _modern(
         latest_rule = max(scored, key=lambda t: len(t.get("scoring") or []), default=None)
         spent = sum(c["cost"] for c in cost.get("per_solution", []) if c.get("model") == model)
         status = "booted" if booted else ("failed" if failed.get(model) else "not run yet")
+        if best is not None and best.get("pending"):
+            status = "booted, calculator pending"
         if best:
             vllm = best["vllm"]
         elif failed.get(model):
@@ -1168,7 +1179,7 @@ def render_tables(findings: Mapping[str, Any]) -> dict[str, str]:
                 _before_gpu_text(r.get("before_gpu")),
                 r["status"],
                 f"{_gib(r['predicted_weight_bytes'])} / {_gib(r['measured_weight_bytes'])}"
-                if r["status"] == "booted"
+                if r["status"].startswith("booted")
                 else "—",
                 f"{r['accepted']} / {r['cases']}" if r.get("cases") else "—",
                 f"{r['cost']:.4f}" if r.get("cost") else "—",

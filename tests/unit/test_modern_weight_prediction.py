@@ -102,8 +102,15 @@ EXPECTED = {
         202_758_032_400,
         1_079_915_968,
     ),
-    # (total - PLE n-gram table - mtp) / 4 = 58.76 GiB
-    "Qwen/Qwen3.8-Flash-Next": (63_096_292_478, 5_214_301_696, 102_400_491_520, 0),
+    # (total - PLE n-gram table - mtp - replicated) / 4 + replicated = 59.82 GiB;
+    # replicated: hyper-connections, router, QSA indexer and PLE projections
+    # (plan_pipeline._QWEN4_EXP_REPLICATED).  Measured on 4x H200: 60.87 GiB.
+    "Qwen/Qwen3.8-Flash-Next": (
+        64_230_244_478,
+        5_214_301_696,
+        102_400_491_520,
+        1_511_936_000,
+    ),
     # (loaded - MTP layer 45 - replicated) / 4 + replicated + the top-k index
     # buffers vLLM builds at load (8192 tokens: 0.80 GiB) = 76.26 GiB.  Loaded:
     # the MLA layers' fp8 projections in bf16, the hyper-connection mixes, the
@@ -139,15 +146,15 @@ def test_group_c_weights_per_gpu(model_id: str) -> None:
 
 def test_host_tables_are_named_in_the_plan_notes() -> None:
     """The n-gram tables are not GPU weights, but the pod still needs the RAM."""
-    for model_id, gib, model_type in (
-        ("deepseek-ai/DeepSeek-V4.1-Flash", "188.83", "deepseek_v41"),
-        ("Qwen/Qwen3.8-Flash-Next", "95.37", "qwen4_exp"),
-    ):
-        note, encoder = _plan(model_id).notes
-        assert note.startswith(f"host RAM: {gib} GiB")
-        assert "x 4" in note
-        # Their vision towers are not traced: the plan says the peak omits them.
-        assert encoder == _untraced_tower_note(model_type)
+    note, encoder = _plan("deepseek-ai/DeepSeek-V4.1-Flash").notes
+    assert note.startswith("host RAM: 188.83 GiB") and "x 4" in note
+    # Its vision tower is not traced: the plan says the peak omits it.
+    assert encoder == _untraced_tower_note("deepseek_v41")
+    # Qwen4Exp runs Qwen3-VL's tower, which is traced; this fixture carries no
+    # processor files, so the note names those instead of an untraced tower.
+    note, encoder = _plan("Qwen/Qwen3.8-Flash-Next").notes
+    assert note.startswith("host RAM: 95.37 GiB") and "x 4" in note
+    assert "(no processor_config.json" in encoder and "not traced" not in encoder
     assert _plan("zai-org/GLM-5.3-Flash").notes == (_untraced_tower_note("glm5_next"),)
     assert _plan("deepseek-ai/DeepSeek-V4-Flash-0731").notes == ()
 
@@ -265,9 +272,10 @@ def test_qwen4exp_bf16_experts_are_padded_on_b200() -> None:
     GiB".  The H200 plan (SM 9.x, Triton) keeps the checkpoint's shard."""
     h200 = _plan("Qwen/Qwen3.8-Flash-Next", tp=2).claim.proposed_configuration
     b200 = _plan("Qwen/Qwen3.8-Flash-Next", tp=2, hardware=B200).claim.proposed_configuration
-    assert h200["weight_memory_bytes"] == 126_192_584_956  # 117.53 GiB
+    # 117.53 GiB + half the replicated 1.41 GiB (whole on each of 2 ranks)
+    assert h200["weight_memory_bytes"] == 126_948_552_956  # 118.23 GiB
     # + 48 layers x 512 experts x 3 x 2560 x 64 rows x 2 bytes = 22.5 GiB
-    assert b200["weight_memory_bytes"] == 126_192_584_956 + 24_159_191_040  # 140.03 GiB
+    assert b200["weight_memory_bytes"] == 126_948_552_956 + 24_159_191_040  # 140.73 GiB
 
 
 @pytest.mark.parametrize(

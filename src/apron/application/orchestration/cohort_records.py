@@ -255,3 +255,6 @@ class CohortRun:
     billing: dict[str, Any] | None = None
     # Run-time vs current calculator vs measurement (scripts/calculator_recheck.py).
     recheck: dict[str, Any] | None = None
+    # Reports the calculator cannot explain yet (pending-records/, PLAN
+    # §18.4.7): stored evidence, kept out of records/ only for its tests.
+    pending: dict[str, VerificationReport] = field(default_factory=dict)

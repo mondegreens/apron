@@ -81,7 +81,7 @@ from apron.domain.schemas.authority import AuthorizationEnvelope, DecisionReques
 from apron.domain.schemas.migrations import load_record
 from apron.domain.schemas.models import ArtifactSpec
 from apron.domain.schemas.primitives import HardwareSpec
-from apron.domain.schemas.records import DiagnosisRule
+from apron.domain.schemas.records import DiagnosisRule, VerificationReport
 from apron.domain.schemas.solutions import (
     DeploymentPlan,
     RequestedExecutionSpec,
@@ -914,6 +914,12 @@ def load_cohort_run(
         recheck=json.loads((run_dir / "calculator-recheck.json").read_text())
         if (run_dir / "calculator-recheck.json").exists()
         else None,
+        pending={
+            path.stem: load_record(VerificationReport, json.loads(path.read_text("utf-8")))
+            for path in sorted(
+                (run_dir / "pending-records" / "verification-reports").glob("*.json")
+            )
+        },
     )
 
 

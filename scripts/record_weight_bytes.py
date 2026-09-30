@@ -22,6 +22,7 @@ from apron.adapters.evidence.hf_hub import HFHubResolver
 from apron.application.orchestration.plan_pipeline import (
     _tied_embeddings,
     download_processor_config,
+    host_tensor_bytes,
     loaded_tensor_bytes,
     mtp_tensor_bytes,
     replicated_tensor_bytes,
@@ -65,6 +66,9 @@ def main(argv: list[str]) -> int:
             "quantized": bool(config.get("quantization_config")),
             "lm_head_bytes": tensors.get("lm_head.weight", 0),
             "mtp_bytes": mtp_tensor_bytes(tensors, config),
+            # Tables vLLM keeps in pinned host memory, not on a GPU
+            # (plan_pipeline.host_tensor_bytes, at their loaded width).
+            "host_bytes": host_tensor_bytes(loaded_tensor_bytes(stored, config), config),
             "tie_word_embeddings": _tied_embeddings(config),
             "vocab_size": config.get("vocab_size", text.get("vocab_size")),
             "hidden_size": config.get("hidden_size", text.get("hidden_size")),

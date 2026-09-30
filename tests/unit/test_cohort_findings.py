@@ -319,3 +319,37 @@ def test_diagnostic_probe_spend_is_its_own_line(synthetic: tuple[Path, CohortRun
     assert cost["ledger_probe"] == pytest.approx(1.25)
     assert cost["ledger_settled"] == pytest.approx(before["ledger_settled"])
     assert cost["ledger_spent"] == pytest.approx(before["ledger_spent"] + 1.25)
+
+
+def test_a_pending_memory_record_stays_visible(synthetic: tuple[Path, CohortRun]) -> None:
+    """A report waiting in pending-records/ (the calculator cannot explain it
+    yet) is still the model's measurement: its card says so (PLAN §18.2)."""
+    from dataclasses import replace
+
+    run = synthetic[1]
+    model = "Qwen/Qwen3-32B"
+    digest, report = next(
+        (d, r)
+        for d, r in run.records.measured().items()
+        if run.records.solutions[r.solution_fingerprint or ""].model_id == model
+    )
+    others = {d: r for d, r in run.records.reports.items() if d != digest}
+    latest = {
+        "event": "executed",
+        "solution_fingerprint": report.solution_fingerprint,
+        "at": "2099-01-01T00:00:00",
+    }
+    moved = replace(
+        run,
+        records=replace(run.records, reports=others),
+        pending={digest: report},
+        events=[*run.events, latest],
+    )
+    plan = {"models": [{"group": "A", "model_id": model, "gpu": "x", "gpu_count": 1}]}
+    found = build_findings(moved, authorized=100.0, modern=plan)
+    row = next(r for r in found["memory"] if r["record"] == digest)
+    assert row["pending"] is True
+    card = found["modern_models"][0]
+    assert digest in card["records"]
+    assert card["status"] == "booted, calculator pending"
+    assert "booted, calculator pending" in render_tables(found)["modern_models"]

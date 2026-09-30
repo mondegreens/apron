@@ -96,12 +96,14 @@ _MLA_BLOCK = 16
 
 #: Vision towers whose encoder-phase peak is traced (``_encoder_peak_bytes``),
 #: by the checkpoint's top-level ``model_type``, in vLLM v0.30.0.  The Qwen 3.5 /
-#: 3.6 wrappers run the Qwen3-VL tower (qwen3_5.py:111 -> qwen3_vl.py).
+#: 3.6 wrappers run the Qwen3-VL tower (qwen3_5.py:111 -> qwen3_vl.py), and so
+#: does Qwen4Exp (models/qwen4_exp/nvidia/model.py:922-926, Qwen3_VisionTransformer).
 _VISION_FAMILIES: dict[str, str] = {
     "qwen3_vl": "qwen3_vl",
     "qwen3_vl_moe": "qwen3_vl",
     "qwen3_5": "qwen3_vl",
     "qwen3_5_moe": "qwen3_vl",
+    "qwen4_exp": "qwen3_vl",
     "muse_glimmer": "muse_glimmer",
 }
 #: The fields ``activation_config`` derives for a traced vision tower (from

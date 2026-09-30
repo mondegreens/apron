@@ -137,6 +137,9 @@ class RecordedWeightBytes(_Strict):
     # (plan_pipeline.replicated_tensor_bytes); 0 for the families not traced.
     widened_bytes: int = 0
     replicated_bytes: int = 0
+    # Tables vLLM keeps in pinned host memory, not on a GPU
+    # (plan_pipeline.host_tensor_bytes).
+    host_bytes: int = 0
 
     @field_validator("activation")
     @classmethod
