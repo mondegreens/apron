@@ -353,3 +353,8 @@ def test_a_pending_memory_record_stays_visible(synthetic: tuple[Path, CohortRun]
     assert digest in card["records"]
     assert card["status"] == "booted, calculator pending"
     assert "booted, calculator pending" in render_tables(found)["modern_models"]
+    # Its cost still counts, on the card and per solution.
+    before = build_findings(
+        replace(run, events=[*run.events, latest]), authorized=100.0, modern=plan
+    )
+    assert card["cost"] == before["modern_models"][0]["cost"]

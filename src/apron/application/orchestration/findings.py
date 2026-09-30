@@ -739,7 +739,8 @@ def _prediction_errors(run: CohortRun, versions: Mapping[str, str]) -> list[dict
 def _cost(run: CohortRun, authorized: float, versions: Mapping[str, str]) -> dict[str, Any]:
     rec = run.records
     per: dict[str, dict[str, Any]] = {}
-    for digest, r in rec.reports.items():
+    # Pending reports are stored evidence and were paid for (pending-records/).
+    for digest, r in {**rec.reports, **run.pending}.items():
         row = per.setdefault(
             r.solution_fingerprint or "", _cost_row(run, r.solution_fingerprint, versions)
         )

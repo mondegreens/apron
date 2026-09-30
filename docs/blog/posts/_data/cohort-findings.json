@@ -872,7 +872,7 @@
         "vllm": "v0.30.0"
       },
       {
-        "cost": 0.237847,
+        "cost": 7.204683,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
         "gpu": "NVIDIA H200",
@@ -881,6 +881,7 @@
         "model": "Qwen/Qwen3.8-Flash-Next",
         "records": [
           "122006f580b132d17bef6b9d6aa71ea1edfbbc9a08ffa3d0022293fec77d596751bb",
+          "12204fbbf9605e6259da5a66dafd5ffe243d9156cf8f4bdb3b44afccacc95e17f827",
           "12205e0ec36542829403c9af5c4110c584a6fa61b6baa1338aeb21bb4d283f347b2a",
           "1220608c4026bdf0c58b3daf3b2e7427430da31d04edf64c0e18e478773ae8ca0ea8",
           "122084e0bedd57e6ffb2e73d0d03401a48d1076238ae546c408cab08e0e794d74610",
@@ -941,7 +942,7 @@
         "vllm": "v0.30.0"
       },
       {
-        "cost": 0.338675,
+        "cost": 8.623926,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
         "gpu": "NVIDIA H200",
@@ -952,6 +953,7 @@
           "12202e4f8b140fa5819d18d3f90d9faf861859f6d59f3886af7c2ec859f9698f7e65",
           "12202fac705c3fa335d21b10ef04c8ff39c01dd11c80dba8e1cdd4d6caa1cbd7ffff",
           "122074ab342053eefe203bec370a93f288cdda083ae2cde0c4103feda9e7de637418",
+          "1220a687eae3699576bd853ab076193977f9f9ef3be109d68de612512a135cd94132",
           "1220b20c578e4f866f98c06144bbd441fcadb13d11e739d46d87223b8266dbaf6a8d",
           "1220bf35dd82f180f4018cbfe0c285fdffa38eee53b233aa6a816d65cd442756cf4c",
           "1220db88deaf14ed63ed9b2511ba2b9e2c393e08c11f7841e2862597a5bfd52199fc"
@@ -985,7 +987,7 @@
         "vllm": "v0.30.0"
       },
       {
-        "cost": 0.308893,
+        "cost": 18.077725,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
         "gpu": "NVIDIA H200",
@@ -998,7 +1000,8 @@
           "12202b1d60061a1176460f1e03586c463de73c8285857da40e3d3672aa871f4d8d3b",
           "12204c513d27810138e3810f8573953712be53cdb9a519d7d7cfcfe9c7d21e318461",
           "1220607ea3025edd10b18cb710c6deffb76c764f8ccc1aad848b5e70793a8fd6e8a1",
-          "1220d2dff8b0341410264b8b7ce965f9754b37778cc01f8691b74b176af2ec1feb94"
+          "1220d2dff8b0341410264b8b7ce965f9754b37778cc01f8691b74b176af2ec1feb94",
+          "1220e81e9ab66dcaf0e33bb83d9304386e14383b9a2fd460bb7c03692d89769ffe0e"
         ],
         "vllm": "v0.30.0"
       },
@@ -1358,7 +1361,7 @@
         "vllm": "v0.30.0"
       },
       {
-        "cost": 7.000455,
+        "cost": 18.778203,
         "failed_boot_cost": 6.875349,
         "failed_boots": 1,
         "gpu": "NVIDIA B200",
@@ -1371,6 +1374,7 @@
           "12207105ba4e3905df5f8e06d180c774e00ed063e98d5a2e07ceed061e3fdf7788f1",
           "1220ab75c9b71ae7b6f90e06f1d7ce243006bfadf8c871704ba95ea4b12aa5fc193d",
           "1220b62c40cacecbca81d4201af1a97a76aec27d7dd7b4db1a74af38b252dd307d37",
+          "1220b7a182caf10d6c88891764b5fa199b38cb72e61e57f3e08b9b17f48e2d763ae4",
           "1220be63d7de3d1ee9182d71e2fdad9f9a16690a5a23a0dfd1625c51fc0a8ad47cc0",
           "1220d6a63b0f304bc921543043a5e2e4cff2ace98543ac21890ccc66098132a05015",
           "1220e49cce7143932fb7a4279a8fbef6581fec2528e4507d5a09b3b2ee064e7aec65",
@@ -1418,7 +1422,7 @@
       "up4ntxcks0bzuh",
       "wgm6rh8g0tvdhb"
     ],
-    "records_total": 74.468245
+    "records_total": 119.266912
   },
   "failed_spend": [
     {
@@ -2643,7 +2647,7 @@
         "weight_gib_per_gpu": 74.7
       },
       "cases": 5,
-      "cost": 37.2069,
+      "cost": 48.9847,
       "downloads_30d": 4332082,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
@@ -2672,7 +2676,7 @@
         "weight_gib_per_gpu": 77.98
       },
       "cases": 5,
-      "cost": 1.6716,
+      "cost": 19.4405,
       "downloads_30d": 651078,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
@@ -2699,7 +2703,7 @@
         "weight_gib_per_gpu": 58.76
       },
       "cases": 5,
-      "cost": 10.3168,
+      "cost": 17.2836,
       "downloads_30d": 1226891,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
@@ -2726,7 +2730,7 @@
         "weight_gib_per_gpu": 37.25
       },
       "cases": 5,
-      "cost": 10.668,
+      "cost": 18.9532,
       "downloads_30d": 3959727,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,

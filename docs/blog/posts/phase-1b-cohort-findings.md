@@ -260,14 +260,14 @@ Failed boots and retries are included.
 | Qwen/Qwen3.8-27B | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | 0.5391 | 0 (0.0000) | `1220446b680c5d23` +4 |
 | Qwen/Qwen3.8-Flash-Next | NVIDIA B200 x2 | v0.30.0 | 6.4957 | 1 (6.4957) | `1220a2044547c634` |
 | Qwen/Qwen3.8-Flash-Next | NVIDIA H100 80GB HBM3 x4 | v0.30.0 | 3.5832 | 1 (3.5832) | `122069c0258a5541` |
-| Qwen/Qwen3.8-Flash-Next | NVIDIA H200 x4 | v0.30.0 | 0.2378 | 0 (0.0000) | `122006f580b132d1` +5 |
+| Qwen/Qwen3.8-Flash-Next | NVIDIA H200 x4 | v0.30.0 | 7.2047 | 0 (0.0000) | `122006f580b132d1` +6 |
 | deepseek-ai/DeepSeek-V2-Lite | NVIDIA A100 80GB PCIe x1 | v0.29.0 | 0.2497 | 0 (0.0000) | `12200ac2fd197bfb` +7 |
 | deepseek-ai/DeepSeek-V2-Lite-Chat | NVIDIA A100 80GB PCIe x1 | v0.29.0 | 0.3289 | 0 (0.0000) | `1220010e0d05fce8` +4 |
 | deepseek-ai/DeepSeek-V4-Flash-0731 | NVIDIA B200 x2 | v0.30.0 | 10.3293 | 2 (10.3293) | `12200c5a8ae38b12` +1 |
-| deepseek-ai/DeepSeek-V4-Flash-0731 | NVIDIA H200 x4 | v0.30.0 | 0.3387 | 0 (0.0000) | `12202e4f8b140fa5` +5 |
+| deepseek-ai/DeepSeek-V4-Flash-0731 | NVIDIA H200 x4 | v0.30.0 | 8.6239 | 0 (0.0000) | `12202e4f8b140fa5` +6 |
 | deepseek-ai/DeepSeek-V4.1-Flash | NVIDIA B200 x4 | v0.30.0 | 0.0156 | 1 (0.0156) | `1220400d7cc203eb` |
 | deepseek-ai/DeepSeek-V4.1-Flash | NVIDIA B200 x2 | v0.30.0 | 1.3471 | 1 (1.3471) | `1220719311f18b1a` |
-| deepseek-ai/DeepSeek-V4.1-Flash | NVIDIA H200 x4 | v0.30.0 | 0.3089 | 0 (0.0000) | `12201e6e4570fadc` +5 |
+| deepseek-ai/DeepSeek-V4.1-Flash | NVIDIA H200 x4 | v0.30.0 | 18.0777 | 0 (0.0000) | `12201e6e4570fadc` +6 |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 0.0253 | 0 (0.0000) | `1220044754a6eab0` +7 |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 0.0253 | 0 (0.0000) | `1220393369faa495` +7 |
 | google/gemma-2-2b-it | NVIDIA GeForce RTX 4090 x1 | v0.29.0 | 0.0683 | 1 (0.0683) | `12209c87b885bbbd` |
@@ -288,9 +288,9 @@ Failed boots and retries are included.
 | zai-org/GLM-4.7-Flash | NVIDIA H100 80GB HBM3 x1 | v0.29.0 | 0.1311 | 0 (0.0000) | `122005193f21e06c` +4 |
 | zai-org/GLM-5.3-Flash | NVIDIA B200 x2 | v0.30.0 | 10.2636 | 1 (3.4283) | `12200e8e8d67653c` +12 |
 | zai-org/GLM-5.3-Flash | NVIDIA B200 x2 | v0.30.0 | 2.0933 | 1 (2.0933) | `12208366db6d2559` |
-| zai-org/GLM-5.3-Flash | NVIDIA B200 x4 | v0.30.0 | 7.0005 | 1 (6.8753) | `12201ea5a602b35a` +10 |
+| zai-org/GLM-5.3-Flash | NVIDIA B200 x4 | v0.30.0 | 18.7782 | 1 (6.8753) | `12201ea5a602b35a` +11 |
 | zai-org/GLM-5.3-Flash | NVIDIA H200 x4 | v0.30.0 | 17.8496 | 1 (4.2317) | `1220106dee467e37` +7 |
-| **Records total** |  |  | **74.4682** |  |  |
+| **Records total** |  |  | **119.2669** |  |  |
 | Diagnosis model calls (Claude Haiku) |  |  | 0.1934 |  |  |
 | Idle time of reused pods |  |  | 0.2506 |  |  |
 | CPU pods that staged weights |  |  | 2.1536 |  |  |
