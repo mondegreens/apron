@@ -7,7 +7,7 @@ categories:
 
 # I know you run models. Will it boot?
 
-![Poster parody: an engineer in a hoodie with a red OOM light on the hood points at you. Text: I know you run models. On rented GPUs. At 2 a.m. Apron needs you.](img/i-know-you-run-models.svg)
+![How the GPU memory is used: measured weight memory and KV cache pool per GPU, against the GPU's usable capacity](img/will-it-boot-header.svg)
 
 <!-- Draft for the owner. Every number below comes from a stored record in
 _dev_notes/cohort-run/records (digests in "Where the numbers come from") or
@@ -115,9 +115,9 @@ Apron is a small loop with a strict rule about what it is allowed to call true.
 2. **Say "unknown" out loud.** If a model uses an attention layout the
    calculator does not model, the answer is "unknown", not an estimate borrowed
    from a different layout.
-3. **Boot and measure.** Rent the GPU, attach pre-staged weights, boot the exact
-   plan, read vLLM's own memory accounting, run a small task suite and a serving
-   benchmark, tear the pod down.
+3. **Boot and measure.** Rent the GPU, download the weights on the pod, boot the
+   exact plan, read vLLM's own memory accounting, run a small task suite and a
+   serving benchmark, tear the pod down.
 4. **Keep prediction beside measurement.** Every record is content-addressed
    and stores what was predicted next to what was measured, with the engine
    image digest and the hardware it ran on.
@@ -363,7 +363,11 @@ Then I taught it the layouts, from the v0.30 source:
   GPU-only fit check would pass them on a pod that cannot hold them. Apron now
   reports the host-RAM requirement with the plan.
 
-All four are measured now (the cards above): weights within 1.5% of the plan.
+All four are measured now (the cards above): weights within 1.5% of the plan
+for 10 of 12 models. The two outliers are gpt-oss-20b (+7.7%, Marlin expert
+padding on the RTX 4090, now counted) and Qwen3.8-Flash-Next (+3.6%, partly
+layers vLLM keeps whole, partly not explained yet).
+
 What the calculator still under-predicts for these models is the startup peak
 and vLLM's CUDA-graph estimate. vLLM runs them without compilation, and those
 two rules were fitted on compiled models. Their records are kept apart until
@@ -404,19 +408,19 @@ two-B200 hosts that failed the same way or never started a pod at all. Apron
 now tells a host fault from a model failure, retries (another machine, or
 NCCL's NVLink SHARP off), and records neither as the model's.
 
-## vLLM moved; so did Apron
+## Serving latency
 
-vLLM v0.30.0 came out on September 22. By the next day Apron had a runner image
-for it, built in CI from that tag's own pinned requirements and pinned by
-digest; engine facts regenerated from the v0.30 source (ten new architectures
-registered); and the nineteen families of diagnosis rules re-cited against the
-new source, with 13 messages that no longer exist and 72 new ones. The planner
-picks, per model, the newest pinned vLLM version that registers its
-architecture; each plan is diagnosed by the rules of the version it runs on.
+![p99 TTFT: time to first token, inference-only, sorted fastest first with a 2-second example SLO reference](img/ttft.svg)
 
-Doing this is one command for the next release. It matters because answers
-expire: a flag, a default or a memory layout that was true for v0.29 may not be
-true for v0.30, and a record says which one it was measured on.
+![KV cache capacity: token pool vLLM allocated after loading the weights, log scale](img/kv-room.svg)
+
+## Answers expire every two weeks
+
+vLLM v0.30.0 came out on September 22; two of the models above do not load on
+v0.29 at all. A flag, a default or a memory layout that was true last release
+may not be true this one. Every record in this post says which vLLM version it
+was measured on, and Apron's planner picks the newest pinned version that
+registers a model's architecture.
 
 ## What it cost
 
@@ -462,20 +466,11 @@ appearing elsewhere.
 
 ## Where Apron fits
 
-Apron is not a serving engine, a benchmark or a leaderboard, and it does not
-replace any of them.
-
-- **vLLM** is the engine; Apron reads its source per release and boots it.
-- **aiconfigurator and llm-d's planner** produce plans; Apron can take their
-  plans as candidates and keep their predictions beside a measurement.
-- **vllm-project/recipes** hold verified configurations; Apron renders the ones
-  it proves in the same shape.
-- **InferenceMAX / InferenceX** measure performance at scale on datacenter
-  racks; Apron's records are about whether a given plan fits, boots and answers
-  on the GPU you can rent.
-
-Records are published under an open data license, verify without any server,
-and nothing leaves your machine unless you run `submit`.
+Apron reads vLLM's source, boots it, and keeps the record. It is not a serving
+engine, a benchmark or a leaderboard. When aiconfigurator, llm-d or
+vllm-project/recipes produce a plan or a verified config, Apron can take it as
+a candidate and keep the prediction beside a measurement. When any of them
+builds part of what Apron does, Apron calls their code and gets better.
 
 ## Apron needs YOU
 
@@ -487,6 +482,26 @@ The repository, the records and every rule are at
 
 ## Where the numbers come from
 
-<!-- TODO before publishing: the record digests for every row above, generated
-by scripts/cohort_findings.py; the probe files in
-_dev_notes/cohort-run/peak-probe/; the traces in _dev_notes/cohort-run/*-trace.md. -->
+Every number above traces to a content-addressed record in the repository.
+The record digest is the SHA-256 of its canonical JSON; anyone can verify it
+without a server.
+
+| Model | GPU | Record |
+|---|---|---|
+| gpt-oss-20b | RTX 4090 ×1 | `1220cda095dbab4a` |
+| gpt-oss-120b | H100 ×1 | `1220ded0ff281432` |
+| Gemma 4 31B | H100 ×1 | `1220ea39d74241fc` |
+| Muse-Glimmer-30B | H100 ×1 | `1220bf6b162c4318` |
+| GLM-4.7-Flash | H100 ×1 | `122089055d7f1339` |
+| Qwen3.8-27B | H100 ×1 | `122001a0c3f97733` |
+| Qwen3.6-35B-A3B-FP8 | H100 ×1 | `12208654b66bdeae` |
+| Nemotron-3.5-Lightning | H100 ×1 | `12208228a1874270` |
+| GLM-5.3-Flash | H200 ×4 | `1220106dee467e37` |
+| Qwen3.8-Flash-Next | H200 ×4 | `12204fbbf9605e62` |
+| DeepSeek-V4-Flash | H200 ×4 | `12200c5a8ae38b12` |
+| DeepSeek-V4.1-Flash | H200 ×4 | `1220400d7cc203eb` |
+
+The startup-peak probe files are in `_dev_notes/cohort-run/peak-probe/`;
+the KV layout traces are in `_dev_notes/cohort-run/*-trace.md`. The vLLM
+source references cite the pinned snapshots at `.sources/vllm/` (v0.29.0)
+and `.sources/vllm-v0.30.0/` (v0.30.0).

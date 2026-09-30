@@ -1,0 +1,126 @@
+<svg viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="KV cache capacity per model: how many tokens fit after the weights are loaded">
+  <style>
+    .viz-root {
+      color-scheme: light;
+      --surface-1: #fcfcfb;
+      --text-primary: #0b0b0b;
+      --text-secondary: #52514e;
+      --text-muted: #9a9a96;
+      --grid: #ececea;
+      --series-1: #2a78d6;
+      --series-low: #eb6834;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .viz-root {
+        color-scheme: dark;
+        --surface-1: #1a1a19;
+        --text-primary: #f0f0ec;
+        --text-secondary: #b0b0a8;
+        --text-muted: #6e6e68;
+        --grid: #2e2e2c;
+        --series-1: #3987e5;
+        --series-low: #d95926;
+      }
+    }
+    :root[data-theme="dark"] .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --text-primary: #f0f0ec;
+      --text-secondary: #b0b0a8;
+      --text-muted: #6e6e68;
+      --grid: #2e2e2c;
+      --series-1: #3987e5;
+      --series-low: #d95926;
+    }
+    .viz-root text {
+      font-family: 'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif;
+    }
+  </style>
+  <g class="viz-root">
+    <rect width="720" height="400" fill="var(--surface-1)"/>
+
+    <text x="40" y="28" font-size="18" font-weight="700" fill="var(--text-primary)"
+          letter-spacing="-0.5">KV cache capacity</text>
+    <text x="40" y="46" font-size="12" fill="var(--text-secondary)">Token pool vLLM allocated after loading the weights. Attention layout decides this, not model size.</text>
+
+    <!-- Chart: bars x=180..680 (500px). Log scale 5K..5M -->
+    <!-- log10(5000)=3.699, log10(5000000)=6.699. Range=3.0, 500px. 1 log=166.7px -->
+    <!-- x = 180 + (log10(val) - 3.699) × 166.7 -->
+
+    <!-- Grid at 10K, 100K, 1M -->
+    <!-- 10K: log=4.0 → x=180+(4.0-3.699)*166.7=230.2 -->
+    <!-- 100K: log=5.0 → x=180+(5.0-3.699)*166.7=397.0 -->
+    <!-- 1M: log=6.0 → x=180+(6.0-3.699)*166.7=563.7 -->
+    <line x1="230" y1="58" x2="230" y2="340" stroke="var(--grid)" stroke-width="1"/>
+    <line x1="397" y1="58" x2="397" y2="340" stroke="var(--grid)" stroke-width="1"/>
+    <line x1="564" y1="58" x2="564" y2="340" stroke="var(--grid)" stroke-width="1"/>
+
+    <text x="230" y="356" font-size="10" fill="var(--text-muted)" text-anchor="middle">10K</text>
+    <text x="397" y="356" font-size="10" fill="var(--text-muted)" text-anchor="middle">100K</text>
+    <text x="564" y="356" font-size="10" fill="var(--text-muted)" text-anchor="middle">1M</text>
+    <text x="397" y="372" font-size="11" fill="var(--text-secondary)" text-anchor="middle">tokens</text>
+
+    <!-- 11 rows (skip Qwen3.8-27B, data not different enough). Height=20, gap=6 (26 each). y starts 64 -->
+    <!-- Sorted descending -->
+
+    <!-- 1. Qwen3.8-Flash-Next: 4.06M → log=6.609 → x=665.0 -->
+    <text x="174" y="78" font-size="11" fill="var(--text-primary)" text-anchor="end">Qwen3.8-Flash-Next</text>
+    <rect x="180" y="66" width="485" height="20" rx="0 4 4 0" fill="var(--series-1)"/>
+    <text x="670" y="80" font-size="10" fill="var(--text-secondary)">4.06M</text>
+
+    <!-- 2. GLM-5.3-Flash: 3.1M → log=6.491 → x=645.4 -->
+    <text x="174" y="104" font-size="11" fill="var(--text-primary)" text-anchor="end">GLM-5.3-Flash</text>
+    <rect x="180" y="92" width="465" height="20" rx="0 4 4 0" fill="var(--series-1)"/>
+    <text x="650" y="106" font-size="10" fill="var(--text-secondary)">3.1M</text>
+
+    <!-- 3. DeepSeek-V4.1-Flash: 2.94M → log=6.468 → x=641.6 -->
+    <text x="174" y="130" font-size="11" fill="var(--text-primary)" text-anchor="end">V4.1-Flash</text>
+    <rect x="180" y="118" width="462" height="20" rx="0 4 4 0" fill="var(--series-1)"/>
+    <text x="647" y="132" font-size="10" fill="var(--text-secondary)">2.94M</text>
+
+    <!-- 4. DeepSeek-V4-Flash: 422K → log=5.625 → x=501.0 -->
+    <text x="174" y="156" font-size="11" fill="var(--text-primary)" text-anchor="end">V4-Flash</text>
+    <rect x="180" y="144" width="321" height="20" rx="0 4 4 0" fill="var(--series-1)"/>
+    <text x="506" y="158" font-size="10" fill="var(--text-secondary)">422K</text>
+
+    <!-- 5. Muse-Glimmer: 217K → log=5.337 → x=453.0 -->
+    <text x="174" y="182" font-size="11" fill="var(--text-primary)" text-anchor="end">Muse-Glimmer</text>
+    <rect x="180" y="170" width="273" height="20" rx="0 4 4 0" fill="var(--series-1)"/>
+    <text x="458" y="184" font-size="10" fill="var(--text-secondary)">217K</text>
+
+    <!-- 6. GLM-4.7-Flash: 169K → log=5.228 → x=434.9 -->
+    <text x="174" y="208" font-size="11" fill="var(--text-primary)" text-anchor="end">GLM-4.7-Flash</text>
+    <rect x="180" y="196" width="255" height="20" rx="0 4 4 0" fill="var(--series-1)"/>
+    <text x="440" y="210" font-size="10" fill="var(--text-secondary)">169K</text>
+
+    <!-- 7. Qwen3.6 FP8: 147K → log=5.167 → x=424.7 -->
+    <text x="174" y="234" font-size="11" fill="var(--text-primary)" text-anchor="end">Qwen3.6 FP8</text>
+    <rect x="180" y="222" width="245" height="20" rx="0 4 4 0" fill="var(--series-1)"/>
+    <text x="430" y="236" font-size="10" fill="var(--text-secondary)">147K</text>
+
+    <!-- 8. gpt-oss-20b: 93.4K → log=4.970 → x=391.9 -->
+    <text x="174" y="260" font-size="11" fill="var(--text-primary)" text-anchor="end">gpt-oss-20b</text>
+    <rect x="180" y="248" width="212" height="20" rx="0 4 4 0" fill="var(--series-1)"/>
+    <text x="397" y="262" font-size="10" fill="var(--text-secondary)">93K</text>
+
+    <!-- 9. gpt-oss-120b: 82K → log=4.914 → x=382.5 -->
+    <text x="174" y="286" font-size="11" fill="var(--text-primary)" text-anchor="end">gpt-oss-120b</text>
+    <rect x="180" y="274" width="203" height="20" rx="0 4 4 0" fill="var(--series-1)"/>
+    <text x="388" y="288" font-size="10" fill="var(--text-secondary)">82K</text>
+
+    <!-- 10. Nemotron-3.5: 53.5K → log=4.728 → x=351.5 -->
+    <text x="174" y="312" font-size="11" fill="var(--text-primary)" text-anchor="end">Nemotron-3.5</text>
+    <rect x="180" y="300" width="172" height="20" rx="0 4 4 0" fill="var(--series-1)"/>
+    <text x="357" y="314" font-size="10" fill="var(--text-secondary)">54K</text>
+
+    <!-- 11. Gemma 4: 9,986 → log=3.999 → x=230.0 -->
+    <text x="174" y="338" font-size="11" fill="var(--text-primary)" text-anchor="end" font-weight="600">Gemma 4 31B</text>
+    <rect x="180" y="326" width="50" height="20" rx="0 4 4 0" fill="var(--series-low)"/>
+    <text x="236" y="340" font-size="10" fill="var(--series-low)" font-weight="500">10K</text>
+
+    <!-- Annotation -->
+    <text x="180" y="390" font-size="10" fill="var(--text-muted)">Log scale. MLA and compressed attention (top 3) give 300× more tokens per GiB of cache.</text>
+    <text x="180" y="400" font-size="10" fill="var(--text-muted)">At 8K context per request: 10K tokens ≈ 1 concurrent request. 3M tokens ≈ 375.</text>
+  </g>
+</svg>
