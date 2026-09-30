@@ -32,14 +32,14 @@ def _seed(model: str, gpu: str = "NVIDIA GeForce RTX 4090", **kw) -> CandidateSe
 
 
 def test_cost_estimate_is_weight_proportional_and_size_scaled() -> None:
-    """Image pull + download at 28.3 GB/min + the class's boot + evaluation."""
+    """Image pull + download at 12.5 GB/min + the class's boot + evaluation."""
     small = _seed("a", weight_gb=6.0)
     large = _seed("b", weight_gb=66.0, size_class="large")
     assert estimate_cost(small, 0.74) == pytest.approx(
-        (13 + 6 / 28.3 + 25 + 5) / 60 * 0.74, abs=1e-3
+        (13 + 6 / 12.5 + 25 + 5) / 60 * 0.74, abs=1e-3
     )
     assert estimate_cost(large, 0.74) == pytest.approx(
-        (13 + 66 / 28.3 + 45 + 5) / 60 * 0.74, abs=1e-3
+        (13 + 66 / 12.5 + 45 + 5) / 60 * 0.74, abs=1e-3
     )
 
 
@@ -47,14 +47,14 @@ def test_a_large_checkpoint_is_costed_at_the_measured_load_rate() -> None:
     """GLM-5.3 (755.7 GB) on 8 GPUs: loading at 11.5 GB/min outlasts the
     large class's 45 min."""
     glm = _seed("g", weight_gb=755.7, size_class="large", gpu_count=8)
-    minutes = 13 + 755.7 / 28.3 + 755.7 / 11.5 + 5
+    minutes = 13 + 755.7 / 12.5 + 755.7 / 11.5 + 5
     assert estimate_cost(glm, 4.59) == pytest.approx(minutes / 60 * 4.59 * 8, abs=1e-3)
 
 
 def test_a_staged_volume_drops_only_the_download() -> None:
     seed = _seed("s", weight_gb=328.4, size_class="large", gpu_count=4)
     saved = estimate_cost(seed, 4.59) - estimate_cost(seed, 4.59, download=False)
-    assert saved == pytest.approx(328.4 / 28.3 / 60 * 4.59 * 4, abs=1e-3)
+    assert saved == pytest.approx(328.4 / 12.5 / 60 * 4.59 * 4, abs=1e-3)
 
 
 def test_multi_gpu_cost_scales_with_count() -> None:
@@ -143,14 +143,14 @@ def test_a_ranking_is_rederived_with_the_cost_model_it_was_made_with() -> None:
 
     def made_with(model: CostModel) -> dict:  # type: ignore[type-arg]
         ranking = rank_candidates(
-            seeds, Coverage(), measured=[], remaining_budget=1.5, rates=RATES, cost_model=model
+            seeds, Coverage(), measured=[], remaining_budget=1.75, rates=RATES, cost_model=model
         )
         return ranking_record(
             ranking,
             candidates=seeds,
             existing=Coverage(),
             measured=[],
-            remaining_budget=1.5,
+            remaining_budget=1.75,
             rates=RATES,
             cost_model=model,
         )

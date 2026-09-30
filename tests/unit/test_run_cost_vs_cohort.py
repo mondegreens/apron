@@ -7,10 +7,11 @@ the pod's rate from the report, the model's download size and size class from
 its seed row, the download counted unless a network volume held the weights.
 
 The rates in ``scheduler`` (measured 2026-09-26/29):
-- download 28.3 GB/min: gemma-4-31B-it, 62.6 GB in 132.6 s on a CPU stager,
-  the slowest; GLM-5.3 755.7 GB in 1,357.7 s; GLM-5.3-Flash 328.4 GB in
-  368.9 s on its 4x H200 pod (events.jsonl "staged", the report's
-  ``phase_seconds.weights``);
+- download 12.5 GB/min: DeepSeek-V4.1-Flash, 510.3 GB in 2,438.9 s on its
+  4x H200 pod, the slowest; DeepSeek-V4-Flash-0731 166.9 GB in 706.6 s;
+  gemma-4-31B-it 62.6 GB in 132.6 s on a CPU stager; GLM-5.3 755.7 GB in
+  1,357.7 s; GLM-5.3-Flash 328.4 GB in 368.9 s; Qwen3.8-Flash-Next 360.0 GB
+  in 338.2 s (events.jsonl "staged", the report's ``phase_seconds.weights``);
 - load 11.5 GB/min: GLM-5.3-Flash's engine start, 28.4 min from the 4x H200
   pod's own volume; 24.8 and 21.3 min from a network volume on 2x and 4x B200;
 - evaluation 5 min: suite v3 and the serving measurement took 4.2 min on the

@@ -575,15 +575,27 @@ def check_budget(run: GateRun) -> list[str]:
     # candidate's settle (cohort.py, ABANDONED_PREFIX); the run's records
     # carry them, so they belong to that settle.
     abandoned = 0.0
+    # A run that starts while another holds settles the live hold
+    # provisionally (flag "replayed"); the owner's own settle then replaces
+    # it with no hold of its own (budget.BudgetTracker.replay, "provisional").
+    # That settle belongs to the hold the provisional one took.
+    open_holds: dict[str, int] = defaultdict(int)
     for entry in run.ledger:
         if entry["op"] == "spend" and str(entry["label"]).startswith("pod-abandoned:"):
             abandoned += float(entry["amount"])
             continue
+        if entry["op"] == "hold":
+            open_holds[str(entry["label"])] += 1
+            continue
         if entry["op"] != "settle":
             continue
         label = str(entry["label"])
-        index = seen[label]
-        seen[label] += 1
+        if open_holds[label] > 0 or seen[label] == 0:
+            open_holds[label] = max(0, open_holds[label] - 1)
+            index = seen[label]
+            seen[label] += 1
+        else:
+            index = seen[label] - 1  # the owner's settle after a provisional one
         flag = str(entry.get("flag", ""))
         if flag.startswith(("replayed", "interrupted")):
             # a replayed hold is a crashed pod, an interrupted one a run stopped
@@ -955,6 +967,17 @@ def test_budget_leaves_out_runs_that_wrote_no_records(run: GateRun) -> None:
     assert check_budget(replace(run, ledger=[*run.ledger, *no_records])) == []
     stray = replace(run, ledger=[*run.ledger, *held("m@gpux1")])
     assert any("no hold event" in p for p in check_budget(stray))
+
+
+def test_budget_pairs_the_owners_settle_after_a_provisional_one(run: GateRun) -> None:
+    """A second run replays a live hold as a provisional settle; the owner's
+    settle then replaces it and belongs to the same hold."""
+    ledger = [dict(e) for e in run.ledger]
+    at = next(i for i, e in enumerate(ledger) if e["op"] == "settle")
+    real = ledger[at]
+    provisional = {**real, "amount": 0.01, "flag": "replayed:provider_reported"}
+    doctored = [*ledger[:at], provisional, real, *ledger[at + 1 :]]
+    assert check_budget(replace(run, ledger=doctored)) == []
 
 
 def test_budget_counts_pending_reports(run: GateRun) -> None:

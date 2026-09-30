@@ -229,7 +229,8 @@ def test_recorded_run_validates_strictly(path: Path) -> None:
         for files in data.values():
             assert set(files) == {name for name, _ in PROCESSOR_FILES}
             assert all(f is None or isinstance(f, dict) for f in files.values())
-            assert any(files.values())
+            # All null is a real state: DeepSeek-V4.1-Flash declares a vision
+            # tower and publishes no processor file (the plan's note says so).
     elif path.parent.name == "headers":
         RecordedHeaders.model_validate(data)
     elif path.name.endswith("-lineage.json"):

@@ -31,9 +31,9 @@ HardwareClass = Literal["consumer", "professional", "datacenter"]
 # small model was still compiling 16 min after launch (notebook, 2026-09-26).
 _BOOT_MINUTES: dict[str, float] = {"small": 25.0, "mid": 35.0, "large": 45.0}
 # Hub downloads measured (events.jsonl "staged", records' phase_seconds):
-# 0.47-0.89 GB/s; the slowest complete one is used.  H1's 6 GB/min predates
+# 0.21-1.06 GB/s; the slowest complete one is used.  H1's 6 GB/min predates
 # them.
-DOWNLOAD_GB_PER_MINUTE = 28.3
+DOWNLOAD_GB_PER_MINUTE = 12.5
 # Engine start (load, profile, capture) per GB of checkpoint, the slowest
 # large boot (a 328.4 GB checkpoint in 28.4 min from its pod's own
 # network-backed volume).  The time follows the checkpoint, not the per-GPU
