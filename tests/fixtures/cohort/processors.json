@@ -134,6 +134,11 @@
    "video_processor_type": "Qwen3VLVideoProcessor"
   }
  },
+ "deepseek-ai/DeepSeek-V4.1-Flash": {
+  "preprocessor_config.json": null,
+  "processor_config.json": null,
+  "video_preprocessor_config.json": null
+ },
  "google/gemma-4-31B-it": {
   "preprocessor_config.json": null,
   "processor_config.json": {

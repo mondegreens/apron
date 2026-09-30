@@ -16,7 +16,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:headline -->
 - Models measured: 23 on 8 GPU types
 - Failure classes fixed and re-verified: 6 of 6
-- Total cost: $159.76 of the $200 cap (failed boots included: $45.06)
+- Total cost: $177.84 of the $200 cap (failed boots included: $45.06)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -35,7 +35,7 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | B | Qwen/Qwen3.6-35B-A3B-FP8 | 36 | 7,638,786 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 38.91 GiB per GPU | booted | 34.88 / 34.23 | 3 / 3 | 1.8343 | `12208654b66bdeae` +1 |
 | B | nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16 | 31.6 | 462,733 | NVIDIA H100 80GB HBM3 x1 | v0.30.0 | fits: 61.93 GiB per GPU | booted | 58.82 / 58.92 | 3 / 3 | 0.3089 | `12208228a1874270` +1 |
 | C | zai-org/GLM-5.3-Flash | 321 | 4,332,082 | NVIDIA H200 x4 | v0.30.0 | fits: 80.19 GiB per GPU | booted | 76.26 / 76.37 | 4 / 5 | 37.2069 | `1220106dee467e37` +4 |
-| C | deepseek-ai/DeepSeek-V4.1-Flash | 763 | 651,078 | NVIDIA H200 x4 | v0.30.0 | fits: 81.29 GiB per GPU | failed | — | — | 1.3627 | `1220400d7cc203eb` +1 |
+| C | deepseek-ai/DeepSeek-V4.1-Flash | 763 | 651,078 | NVIDIA H200 x4 | v0.30.0 | fits: 81.29 GiB per GPU | booted, calculator pending | 77.98 / 79.07 | 5 / 5 | 1.6716 | `1220400d7cc203eb` +2 |
 | C | Qwen/Qwen3.8-Flash-Next | 180 | 1,226,891 | NVIDIA H200 x4 | v0.30.0 | fits: 62.85 GiB per GPU | booted, calculator pending | 58.76 / 60.87 | 5 / 5 | 10.3168 | `12204fbbf9605e62` +2 |
 | C | deepseek-ai/DeepSeek-V4-Flash-0731 | 304.2 | 3,959,727 | NVIDIA H200 x4 | v0.30.0 | fits: 41.19 GiB per GPU | booted, calculator pending | 37.25 / 37.80 | 4 / 5 | 10.6680 | `12200c5a8ae38b12` +2 |
 | D | zai-org/GLM-5.3 | 753.3 | 1,351,716 | NVIDIA H200 x8 | — | fits: 94.15 GiB per GPU | not run yet | — | — | — | — |

@@ -532,3 +532,7 @@
 {"amount": 0.002798, "at": "2026-09-30T00:24:08.075028+00:00", "estimate": 3.06, "label": "pod-idle:md3kso5eretn9o", "op": "settle"}
 {"amount": 24.7957, "at": "2026-09-30T00:25:53.987768+00:00", "label": "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA H200x4", "op": "hold"}
 {"amount": 0.0, "at": "2026-09-30T00:26:22.230474+00:00", "label": "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA H200x4", "op": "annotate", "pod_id": "yzczqp9ip656rf"}
+{"amount": 3.06, "at": "2026-09-30T01:24:58.619194+00:00", "label": "pod-idle:yzczqp9ip656rf", "op": "hold"}
+{"amount": 0.0, "at": "2026-09-30T01:24:58.628284+00:00", "label": "pod-idle:yzczqp9ip656rf", "op": "annotate", "pod_id": "yzczqp9ip656rf"}
+{"amount": 18.077723, "at": "2026-09-30T01:24:58.644073+00:00", "estimate": 24.7957, "label": "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA H200x4", "op": "settle"}
+{"amount": 0.003166, "at": "2026-09-30T01:24:59.249569+00:00", "estimate": 3.06, "label": "pod-idle:yzczqp9ip656rf", "op": "settle"}

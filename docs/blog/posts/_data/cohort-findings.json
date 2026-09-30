@@ -441,11 +441,11 @@
     "failed_boot_total": 45.059356,
     "ledger_classifier": 0.193358,
     "ledger_corrected": -110.699995,
-    "ledger_pod_idle": 0.24742,
+    "ledger_pod_idle": 0.250586,
     "ledger_probe": 1.397938,
     "ledger_reconciled": 20.835354,
-    "ledger_settled": 229.344058,
-    "ledger_spent": 159.760562,
+    "ledger_settled": 247.421781,
+    "ledger_spent": 177.841451,
     "ledger_staging": 2.153608,
     "ledger_storage": 16.288821,
     "per_solution": [
@@ -985,6 +985,24 @@
         "vllm": "v0.30.0"
       },
       {
+        "cost": 0.308893,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H200",
+        "gpu_count": 4,
+        "label": "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA H200x4",
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "records": [
+          "12201e6e4570fadc74a35ddbb20be71d76b9e05c151b4bd570978e6ddbd52cd81292",
+          "1220253051c8f266693109adc006799022f9f955f546e699d6daa3d5dd566602e119",
+          "12202b1d60061a1176460f1e03586c463de73c8285857da40e3d3672aa871f4d8d3b",
+          "12204c513d27810138e3810f8573953712be53cdb9a519d7d7cfcfe9c7d21e318461",
+          "1220607ea3025edd10b18cb710c6deffb76c764f8ccc1aad848b5e70793a8fd6e8a1",
+          "1220d2dff8b0341410264b8b7ce965f9754b37778cc01f8691b74b176af2ec1feb94"
+        ],
+        "vllm": "v0.30.0"
+      },
+      {
         "cost": 0.025271,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -1400,7 +1418,7 @@
       "up4ntxcks0bzuh",
       "wgm6rh8g0tvdhb"
     ],
-    "records_total": 74.159352
+    "records_total": 74.468245
   },
   "failed_spend": [
     {
@@ -2057,6 +2075,27 @@
       "weight_delta_bytes": -595884567
     },
     {
+      "claim": "122073ece7a703fb864359ea58155691398c229a2eb1d1c5ec198003d72e52a3f68b",
+      "gpu": "NVIDIA H200",
+      "gpu_count": 4,
+      "kv_consistency_bytes": 4506812276,
+      "measured_persistent_bytes": 87037512253,
+      "measured_weight_bytes": 84900766023,
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "notes": [
+        "host RAM: 188.83 GiB of n-gram embedding tables stay in pinned host memory, 47.21 GiB per tensor-parallel rank x 4 (vLLM v0.30.0 VLLM_PLE_CPU_OFFLOAD=1 default, config/engram.py:40-47); not counted as GPU weights; the pod needs this RAM besides the GPUs",
+        "encoder startup peak not modelled for the deepseek_v41 vision tower (not traced); activation may be under-predicted"
+      ],
+      "pending": true,
+      "predicted_total_bytes": 87696174784,
+      "predicted_weight_bytes": 83730322368,
+      "record": "1220e81e9ab66dcaf0e33bb83d9304386e14383b9a2fd460bb7c03692d89769ffe0e",
+      "solution": "12205147b2a2c7697d0557d37394d9d3690521682447f9fb94ffecba1f44a013be01",
+      "total_delta_bytes": 658662531,
+      "vllm": "v0.30.0",
+      "weight_delta_bytes": -1170443655
+    },
+    {
       "claim": "122017da1ce6eeb2ba09342f020bc0d96446471dcd1c1806a2451c547e1bb87b8ce5",
       "gpu": "NVIDIA GeForce RTX 4090",
       "gpu_count": 1,
@@ -2624,7 +2663,7 @@
       "vllm": "v0.30.0"
     },
     {
-      "accepted": null,
+      "accepted": 5,
       "before_gpu": {
         "mechanism": "layered_decode",
         "status": "planned",
@@ -2632,21 +2671,22 @@
         "total_gib_per_gpu": 81.29,
         "weight_gib_per_gpu": 77.98
       },
-      "cases": null,
-      "cost": 1.3627,
+      "cases": 5,
+      "cost": 1.6716,
       "downloads_30d": 651078,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
       "group": "C",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 84900766023,
       "model": "deepseek-ai/DeepSeek-V4.1-Flash",
       "params_b": 763,
-      "predicted_weight_bytes": null,
+      "predicted_weight_bytes": 83730322368,
       "records": [
         "1220400d7cc203eb3f0d38dd11e81e57302ef48bbfd7be619bc8540245c021f27133",
-        "1220719311f18b1a11547d5834455acb9dcb3b9b11a08ce597bb0f615c729f7fd58d"
+        "1220719311f18b1a11547d5834455acb9dcb3b9b11a08ce597bb0f615c729f7fd58d",
+        "1220e81e9ab66dcaf0e33bb83d9304386e14383b9a2fd460bb7c03692d89769ffe0e"
       ],
-      "status": "failed",
+      "status": "booted, calculator pending",
       "vllm": "v0.30.0"
     },
     {
@@ -2793,7 +2833,7 @@
       "vllm": "v0.29.0"
     }
   ],
-  "record_count": 353,
+  "record_count": 359,
   "records_table": {
     "broken_on_purpose": {
       "boots": 8,
@@ -2811,7 +2851,8 @@
     },
     "not_rendered": [
       "12202e4f8b140fa5819d18d3f90d9faf861859f6d59f3886af7c2ec859f9698f7e65",
-      "122084e0bedd57e6ffb2e73d0d03401a48d1076238ae546c408cab08e0e794d74610"
+      "122084e0bedd57e6ffb2e73d0d03401a48d1076238ae546c408cab08e0e794d74610",
+      "1220d2dff8b0341410264b8b7ce965f9754b37778cc01f8691b74b176af2ec1feb94"
     ],
     "planned": [
       {
@@ -2854,7 +2895,7 @@
         "vllm": null
       }
     ],
-    "record_count": 353,
+    "record_count": 359,
     "rows": [
       {
         "accepted": 0,
@@ -4415,6 +4456,21 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA H200",
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "output_token_throughput": 192.72930228303986,
+      "p99_tpot_ms": 21.958449092495627,
+      "p99_ttft_ms": 747.1039148047566,
+      "recomputed_verdict": "pass",
+      "record": "1220d2dff8b0341410264b8b7ce965f9754b37778cc01f8691b74b176af2ec1feb94",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass",
+      "vllm": "v0.30.0"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA GeForce RTX 4090",
       "model": "google/gemma-2-2b-it",
       "output_token_throughput": 501.66996473873604,
@@ -4703,7 +4759,7 @@
       "sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-30T00:26:22.233135+00:00",
+    "last_event": "2026-09-30T01:24:59.249801+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B",
@@ -5359,6 +5415,30 @@
       ],
       "skipped": 1,
       "solution": "122021cceb19437507ca5774f4a6f8c2cb453da5e03316ab30af7e585e30550d3895",
+      "truncated": 0,
+      "vllm": "v0.30.0"
+    },
+    {
+      "accepted": 5,
+      "attempts": 5,
+      "cases": 5,
+      "gpu": "NVIDIA H200",
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "passed": true,
+      "records": [
+        "12201e6e4570fadc74a35ddbb20be71d76b9e05c151b4bd570978e6ddbd52cd81292",
+        "1220253051c8f266693109adc006799022f9f955f546e699d6daa3d5dd566602e119",
+        "12202b1d60061a1176460f1e03586c463de73c8285857da40e3d3672aa871f4d8d3b",
+        "12204c513d27810138e3810f8573953712be53cdb9a519d7d7cfcfe9c7d21e318461",
+        "1220607ea3025edd10b18cb710c6deffb76c764f8ccc1aad848b5e70793a8fd6e8a1"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "skipped": 0,
+      "solution": "12205147b2a2c7697d0557d37394d9d3690521682447f9fb94ffecba1f44a013be01",
       "truncated": 0,
       "vllm": "v0.30.0"
     },
