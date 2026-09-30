@@ -441,11 +441,11 @@
     "failed_boot_total": 45.059356,
     "ledger_classifier": 0.193358,
     "ledger_corrected": -110.699995,
-    "ledger_pod_idle": 0.243662,
+    "ledger_pod_idle": 0.24742,
     "ledger_probe": 1.397938,
     "ledger_reconciled": 20.835354,
-    "ledger_settled": 204.544553,
-    "ledger_spent": 134.957299,
+    "ledger_settled": 229.344058,
+    "ledger_spent": 159.760562,
     "ledger_staging": 2.153608,
     "ledger_storage": 16.288821,
     "per_solution": [
@@ -872,6 +872,24 @@
         "vllm": "v0.30.0"
       },
       {
+        "cost": 0.237847,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H200",
+        "gpu_count": 4,
+        "label": "Qwen/Qwen3.8-Flash-Next@NVIDIA H200x4",
+        "model": "Qwen/Qwen3.8-Flash-Next",
+        "records": [
+          "122006f580b132d17bef6b9d6aa71ea1edfbbc9a08ffa3d0022293fec77d596751bb",
+          "12205e0ec36542829403c9af5c4110c584a6fa61b6baa1338aeb21bb4d283f347b2a",
+          "1220608c4026bdf0c58b3daf3b2e7427430da31d04edf64c0e18e478773ae8ca0ea8",
+          "122084e0bedd57e6ffb2e73d0d03401a48d1076238ae546c408cab08e0e794d74610",
+          "1220882c362a8c1bc5b4690d6a058a3fb9b4e2c04cdbd73165712635496737e19ae0",
+          "1220bd76dc41d57cd4feb7807d1b7e5b07b9b5e143caddc9c1b7019820a9e69c61e2"
+        ],
+        "vllm": "v0.30.0"
+      },
+      {
         "cost": 0.249715,
         "failed_boot_cost": 0.0,
         "failed_boots": 0,
@@ -919,6 +937,24 @@
         "records": [
           "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4",
           "12203e94dd0600eb3eabbcda907021a0f64929527da69852cee58f9c6b5a53981bb4"
+        ],
+        "vllm": "v0.30.0"
+      },
+      {
+        "cost": 0.338675,
+        "failed_boot_cost": 0.0,
+        "failed_boots": 0,
+        "gpu": "NVIDIA H200",
+        "gpu_count": 4,
+        "label": "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H200x4",
+        "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "records": [
+          "12202e4f8b140fa5819d18d3f90d9faf861859f6d59f3886af7c2ec859f9698f7e65",
+          "12202fac705c3fa335d21b10ef04c8ff39c01dd11c80dba8e1cdd4d6caa1cbd7ffff",
+          "122074ab342053eefe203bec370a93f288cdda083ae2cde0c4103feda9e7de637418",
+          "1220b20c578e4f866f98c06144bbd441fcadb13d11e739d46d87223b8266dbaf6a8d",
+          "1220bf35dd82f180f4018cbfe0c285fdffa38eee53b233aa6a816d65cd442756cf4c",
+          "1220db88deaf14ed63ed9b2511ba2b9e2c393e08c11f7841e2862597a5bfd52199fc"
         ],
         "vllm": "v0.30.0"
       },
@@ -1364,7 +1400,7 @@
       "up4ntxcks0bzuh",
       "wgm6rh8g0tvdhb"
     ],
-    "records_total": 73.58283
+    "records_total": 74.159352
   },
   "failed_spend": [
     {
@@ -1682,6 +1718,7 @@
       "measured_weight_bytes": 6098853560,
       "model": "JunHowie/Qwen3-8B-GPTQ-Int4",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 8391653632,
       "predicted_weight_bytes": 6103787520,
       "record": "1220b9e409435a57a94ec162cf8e0d401bf53a8967bbb168a213dbeb6482f7596ca6",
@@ -1699,6 +1736,7 @@
       "measured_weight_bytes": 1202590842,
       "model": "Qwen/Qwen3-0.6B",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 3105254656,
       "predicted_weight_bytes": 1192099840,
       "record": "1220c6220073e29214264a963891ea6b80eef4c94d99856874270159411ceb31e476",
@@ -1716,6 +1754,7 @@
       "measured_weight_bytes": 794568949,
       "model": "Qwen/Qwen3-0.6B-FP8",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 2664906496,
       "predicted_weight_bytes": 751751680,
       "record": "1220e319388876e8d22bc59a7cd1235262ecd2a9ccae4df7b3fe259b4fd45a260f90",
@@ -1733,6 +1772,7 @@
       "measured_weight_bytes": 794568949,
       "model": "Qwen/Qwen3-0.6B-FP8",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 2278367436,
       "predicted_weight_bytes": 622514688,
       "record": "12200078d8e3999ec13fe5d4ac6bfa6d2fdd69b297b01e1763a3ed34dcbee1c96dd0",
@@ -1750,6 +1790,7 @@
       "measured_weight_bytes": 3457448673,
       "model": "Qwen/Qwen3-1.7B",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 6063429068,
       "predicted_weight_bytes": 4063479808,
       "record": "1220066392da9480498cd4d467896ce42d89d66605a5a0ad783a12c4615fddb32493",
@@ -1767,6 +1808,7 @@
       "measured_weight_bytes": 3457448673,
       "model": "Qwen/Qwen3-1.7B",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 6063429068,
       "predicted_weight_bytes": 4063479808,
       "record": "122056e563edf84b102233abdb30ce90733de29eaa8ba8e23b06bbf302188c3ca8e6",
@@ -1784,6 +1826,7 @@
       "measured_weight_bytes": 3457448673,
       "model": "Qwen/Qwen3-1.7B",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 6063429068,
       "predicted_weight_bytes": 4063479808,
       "record": "1220205b397c672ee4ad674fc589d167da7dda4c181ee1603eafcd7c66235184198f",
@@ -1801,6 +1844,7 @@
       "measured_weight_bytes": 29549374996,
       "model": "Qwen/Qwen3-14B",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 34209706240,
       "predicted_weight_bytes": 29536614400,
       "record": "12203903ded913c699483a8f5a7902faf7cb5059209d1455fdfbe17c5ec95f0895b3",
@@ -1818,6 +1862,7 @@
       "measured_weight_bytes": 65530463518,
       "model": "Qwen/Qwen3-32B",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 74047759820,
       "predicted_weight_bytes": 65524246528,
       "record": "1220374d2a3c7d3a33d8fe3102211051c5dc5185751d49fbd620a90eb1d34897a479",
@@ -1835,6 +1880,7 @@
       "measured_weight_bytes": 65530463518,
       "model": "Qwen/Qwen3-32B",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 74047759820,
       "predicted_weight_bytes": 65524246528,
       "record": "1220eef514a1a275cd13bd98c041db9bda93e42c9df0b5126d4f6ede6c0811582fca",
@@ -1852,6 +1898,7 @@
       "measured_weight_bytes": 8203387535,
       "model": "Qwen/Qwen3-8B",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 19697105152,
       "predicted_weight_bytes": 16381470720,
       "record": "12209ac3de7807d51809acd76e127d26d804a5ec59e024150da7d0c9536599571ea5",
@@ -1869,6 +1916,7 @@
       "measured_weight_bytes": 16396037652,
       "model": "Qwen/Qwen3-8B",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 19697105152,
       "predicted_weight_bytes": 16381470720,
       "record": "122046447ffc1d89490228e1a78bf46bfc0f154518d1ee3fc69b76ea755703418513",
@@ -1886,6 +1934,7 @@
       "measured_weight_bytes": 6249177415,
       "model": "Qwen/Qwen3-8B-AWQ",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 9154843904,
       "predicted_weight_bytes": 6098479104,
       "record": "1220df650fa3167d293bc9cbd0e14aaa9de6c018c051dcc36f2849ce113a5f0d1269",
@@ -1903,6 +1952,7 @@
       "measured_weight_bytes": 36754182635,
       "model": "Qwen/Qwen3.6-35B-A3B-FP8",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 40444569696,
       "predicted_weight_bytes": 37454789472,
       "record": "12208654b66bdeae281a67714f40e69e681f90b81a7aa320361dd639fe8151aa3daa",
@@ -1922,6 +1972,7 @@
       "notes": [
         "max_num_seqs 275: vLLM v0.30.0 defaults to 1024 on this GPU, engine/arg_utils.py:2740, but a state (Mamba) cache serves one decode sequence per KV block and the predicted 15.37 GiB of KV memory holds 321 blocks of 51,380,224 bytes, 275 after a 2.19 GiB safety buffer (the largest KV-budget error measured over the cohort's healthy boots, 2.19 GiB); vLLM refuses more sequences than blocks with full CUDA graphs and allocates one block per sequence to profile them (config/compilation.py:1535, v1/worker/gpu_model_runner.py:6550, v1/worker/gpu/cudagraph_utils.py:974)"
       ],
+      "pending": false,
       "predicted_total_bytes": 60128334176,
       "predicted_weight_bytes": 54713457120,
       "record": "1220f20079fa79b1a0a51f6320c035b4a744f80896d23157ac9754195fac1dd1df30",
@@ -1929,6 +1980,27 @@
       "total_delta_bytes": 4304496747,
       "vllm": "v0.30.0",
       "weight_delta_bytes": -154750086
+    },
+    {
+      "claim": "12203cbc10904f9bf032a86f23028313f97d1b89a942377349eaef2fc19b4035b9d5",
+      "gpu": "NVIDIA H200",
+      "gpu_count": 4,
+      "kv_consistency_bytes": 3343638362,
+      "measured_persistent_bytes": 67538360729,
+      "measured_weight_bytes": 65358664826,
+      "model": "Qwen/Qwen3.8-Flash-Next",
+      "notes": [
+        "host RAM: 95.37 GiB of n-gram embedding tables stay in pinned host memory, 23.84 GiB per tensor-parallel rank x 4 (vLLM v0.30.0 VLLM_PLE_CPU_OFFLOAD=1 default, config/engram.py:40-47); not counted as GPU weights; the pod needs this RAM besides the GPUs",
+        "encoder startup peak not modelled for the qwen4_exp vision tower (not traced); activation may be under-predicted"
+      ],
+      "pending": true,
+      "predicted_total_bytes": 67595195518,
+      "predicted_weight_bytes": 63096292478,
+      "record": "12204fbbf9605e6259da5a66dafd5ffe243d9156cf8f4bdb3b44afccacc95e17f827",
+      "solution": "1220d54e1c900035732da9109ac0e7788f747ad871b96f776866f512efd39aadddcc",
+      "total_delta_bytes": 56834789,
+      "vllm": "v0.30.0",
+      "weight_delta_bytes": -2262372348
     },
     {
       "claim": "122001a3fa3351e82534d27e6861f214efdd19163876827b8677cf9bb75ba6057031",
@@ -1939,6 +2011,7 @@
       "measured_weight_bytes": 31482110279,
       "model": "deepseek-ai/DeepSeek-V2-Lite",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 33087091267,
       "predicted_weight_bytes": 31412968448,
       "record": "1220697d834da838ea2b058265f8dc1159098f8868d943b13b0f887b05fbb10162b9",
@@ -1956,6 +2029,7 @@
       "measured_weight_bytes": 31482110279,
       "model": "deepseek-ai/DeepSeek-V2-Lite-Chat",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 33087091267,
       "predicted_weight_bytes": 31412968448,
       "record": "1220c078c3a7d11e65be0f1d182e4a5ee4bb2541d40445ea8477e0d5e47c5325dae4",
@@ -1963,6 +2037,24 @@
       "total_delta_bytes": 864099129,
       "vllm": "v0.29.0",
       "weight_delta_bytes": -69141831
+    },
+    {
+      "claim": "1220526c095921327f103718b6b750771a690b3f704605a1819580c2f584ef1f033f",
+      "gpu": "NVIDIA H200",
+      "gpu_count": 4,
+      "kv_consistency_bytes": 4014550306,
+      "measured_persistent_bytes": 42069204664,
+      "measured_weight_bytes": 40587440947,
+      "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
+      "notes": [],
+      "pending": true,
+      "predicted_total_bytes": 49980996380,
+      "predicted_weight_bytes": 39991556380,
+      "record": "1220a687eae3699576bd853ab076193977f9f9ef3be109d68de612512a135cd94132",
+      "solution": "122021cceb19437507ca5774f4a6f8c2cb453da5e03316ab30af7e585e30550d3895",
+      "total_delta_bytes": 7911791716,
+      "vllm": "v0.30.0",
+      "weight_delta_bytes": -595884567
     },
     {
       "claim": "122017da1ce6eeb2ba09342f020bc0d96446471dcd1c1806a2451c547e1bb87b8ce5",
@@ -1973,6 +2065,7 @@
       "measured_weight_bytes": 5304284610,
       "model": "google/gemma-2-2b-it",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 7324181913,
       "predicted_weight_bytes": 5228683776,
       "record": "12206b393c533d0ae1e2e4c644df0af93e2bcc91115d04a0693e0f7494013333b586",
@@ -1990,6 +2083,7 @@
       "measured_weight_bytes": 5304284610,
       "model": "google/gemma-2-2b-it",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 7324181913,
       "predicted_weight_bytes": 5228683776,
       "record": "12207b314f3982aa828ce37adf4c6fb200cb9fe744a48dda8b483cd7e494d95bfec4",
@@ -2007,6 +2101,7 @@
       "measured_weight_bytes": 63340030197,
       "model": "google/gemma-4-31B-it",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 69420407768,
       "predicted_weight_bytes": 62766378712,
       "record": "1220ea39d74241fc727da331c646fcfa5c8d0338832b8295b8ec59d6594d44ce72fd",
@@ -2024,6 +2119,7 @@
       "measured_weight_bytes": 16106127360,
       "model": "meta-llama/Llama-3.1-8B-Instruct",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 19302119065,
       "predicted_weight_bytes": 16060522496,
       "record": "1220636ca167b3f0c240df5c80fa2aec588bd2bec55f7a763fb5acc33fe1bcfb5cec",
@@ -2041,6 +2137,7 @@
       "measured_weight_bytes": 59947006033,
       "model": "meta-models/Muse-Glimmer-30B",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 63899890944,
       "predicted_weight_bytes": 59553253376,
       "record": "1220ab41dd7bf8bd46c1c20743740af72e711cd8ca01f7f1e8991fadeed2f555079c",
@@ -2058,6 +2155,7 @@
       "measured_weight_bytes": 59947006033,
       "model": "meta-models/Muse-Glimmer-30B",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 64368982016,
       "predicted_weight_bytes": 59553253376,
       "record": "1220bf6b162c43180f199a86f397319a5b06d51e8e2f7f8f8bd482b22e8258b3b1ed",
@@ -2075,6 +2173,7 @@
       "measured_weight_bytes": 14506252042,
       "model": "mistralai/Mistral-7B-Instruct-v0.3",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 17581196134,
       "predicted_weight_bytes": 14496047104,
       "record": "1220c4ad8130d1bb5d01e086aa11b4155e57e820ff67e02fed5be6c2b1111bc090bb",
@@ -2092,6 +2191,7 @@
       "measured_weight_bytes": 14506252042,
       "model": "mistralai/Mistral-7B-Instruct-v0.3",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 17581196134,
       "predicted_weight_bytes": 14496047104,
       "record": "122075e500841efea613add26e52f3a827c8b87c32ddca193ffdf8fd23c0867db745",
@@ -2109,6 +2209,7 @@
       "measured_weight_bytes": 14506252042,
       "model": "mistralai/Mistral-7B-Instruct-v0.3",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 17581196134,
       "predicted_weight_bytes": 14496047104,
       "record": "1220ac02237cee071400d8ff6a286d8975f85c8f18558aa041bdeaaac5f6a578a165",
@@ -2128,6 +2229,7 @@
       "notes": [
         "max_num_seqs 556: vLLM v0.30.0 defaults to 1024 on this GPU, engine/arg_utils.py:2740, but a state (Mamba) cache serves one decode sequence per KV block and the predicted 9.51 GiB of KV memory holds 793 blocks of 12,877,824 bytes, 556 after a 2.85 GiB safety buffer (the largest KV-budget error measured over the cohort's healthy boots, 2.19 GiB, plus a 0.66 GiB compile segment vLLM may hold); vLLM refuses more sequences than blocks with full CUDA graphs and allocates one block per sequence to profile them (config/compilation.py:1535, v1/worker/gpu_model_runner.py:6550, v1/worker/gpu/cudagraph_utils.py:974)"
       ],
+      "pending": false,
       "predicted_total_bytes": 66502144640,
       "predicted_weight_bytes": 63155880576,
       "record": "12208228a1874270fa2f9bdb214d951c18ce192291b5a384edc2fb7dc73a3f325225",
@@ -2145,6 +2247,7 @@
       "measured_weight_bytes": 65959960248,
       "model": "openai/gpt-oss-120b",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 67839203200,
       "predicted_weight_bytes": 65248815744,
       "record": "1220ded0ff28143274f8d56e3a39b7c807a3a742d7d03ef2729270470ba3794a57ef",
@@ -2162,6 +2265,7 @@
       "measured_weight_bytes": 14817637171,
       "model": "openai/gpt-oss-20b",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 15626214528,
       "predicted_weight_bytes": 13761264768,
       "record": "1220cda095dbab4a2973d3d00253628fd43d042f82c09246a6a0c877c3af8bf96a2b",
@@ -2179,6 +2283,7 @@
       "measured_weight_bytes": 5615669739,
       "model": "state-spaces/mamba-2.8b-hf",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 7165026560,
       "predicted_weight_bytes": 5536691200,
       "record": "12206810a074c3de321e4b0f9b559394be33816d5161d21d68bdd6b58d995db0779b",
@@ -2196,6 +2301,7 @@
       "measured_weight_bytes": 11070278205,
       "model": "state-spaces/mamba-2.8b-hf",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 7164903680,
       "predicted_weight_bytes": 5536691200,
       "record": "12200ac02bfdf76a32406e83fc4d9de4a191dd9e7ed394552fcd7ce148df5f5fd64a",
@@ -2213,6 +2319,7 @@
       "measured_weight_bytes": 59989955706,
       "model": "zai-org/GLM-4.7-Flash",
       "notes": [],
+      "pending": false,
       "predicted_total_bytes": 64583083136,
       "predicted_weight_bytes": 62442977152,
       "record": "122089055d7f13395c37eac33178d384e3e999c6c15145469b473a6d6848be0202eb",
@@ -2220,6 +2327,26 @@
       "total_delta_bytes": 2531543128,
       "vllm": "v0.29.0",
       "weight_delta_bytes": 2453021446
+    },
+    {
+      "claim": "1220bf03e502a961c7087a8572feff560cd749de7a79edb4c47313e2e9b947fd9b09",
+      "gpu": "NVIDIA B200",
+      "gpu_count": 4,
+      "kv_consistency_bytes": 2800112712,
+      "measured_persistent_bytes": 84138409328,
+      "measured_weight_bytes": 83000242995,
+      "model": "zai-org/GLM-5.3-Flash",
+      "notes": [
+        "encoder startup peak not modelled for the glm5_next vision tower (not traced); activation may be under-predicted"
+      ],
+      "pending": true,
+      "predicted_total_bytes": 89878492836,
+      "predicted_weight_bytes": 82740740516,
+      "record": "1220b7a182caf10d6c88891764b5fa199b38cb72e61e57f3e08b9b17f48e2d763ae4",
+      "solution": "122042ea2f378f3800be85605c652337274ae3dd50da9aedec28d83e37f70b6384db",
+      "total_delta_bytes": 5740083508,
+      "vllm": "v0.30.0",
+      "weight_delta_bytes": -259502479
     },
     {
       "claim": "12207cebdfc7b476c0f2d5345a47fcb44fdb29e3fd459ec96b34d2d66983c9de00d7",
@@ -2233,6 +2360,7 @@
         "encoder startup peak not modelled for the glm5_next vision tower (not traced); activation may be under-predicted",
         "max_num_seqs 13: vLLM v0.30.0 defaults to 1024 on this GPU, engine/arg_utils.py:2730, but a state (Mamba) cache serves one decode sequence per KV block and the predicted 2.51 GiB of KV memory holds 106 blocks of 25,300,352 bytes, 13 after a 2.19 GiB safety buffer (the largest KV-budget error measured over the cohort's healthy boots, 2.19 GiB); vLLM refuses more sequences than blocks with full CUDA graphs and allocates one block per sequence to profile them (config/compilation.py:1535, v1/worker/gpu_model_runner.py:6550, v1/worker/gpu/cudagraph_utils.py:974)"
       ],
+      "pending": false,
       "predicted_total_bytes": 168357303356,
       "predicted_weight_bytes": 160416686204,
       "record": "12208ef6f21ef008c1cf64b94c292e15ca883f05d636ba7d857dfe8e1206ab28f395",
@@ -2252,6 +2380,7 @@
       "notes": [
         "encoder startup peak not modelled for the glm5_next vision tower (not traced); activation may be under-predicted"
       ],
+      "pending": false,
       "predicted_total_bytes": 87760533156,
       "predicted_weight_bytes": 81884381604,
       "record": "1220106dee467e37adfbd9dc70016adaf0e36982c51536fe50ece890b7e14a0e55ad",
@@ -2521,7 +2650,7 @@
       "vllm": "v0.30.0"
     },
     {
-      "accepted": null,
+      "accepted": 5,
       "before_gpu": {
         "mechanism": "layered_decode",
         "status": "planned",
@@ -2529,25 +2658,26 @@
         "total_gib_per_gpu": 62.85,
         "weight_gib_per_gpu": 58.76
       },
-      "cases": null,
-      "cost": 10.0789,
+      "cases": 5,
+      "cost": 10.3168,
       "downloads_30d": 1226891,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
       "group": "C",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 65358664826,
       "model": "Qwen/Qwen3.8-Flash-Next",
       "params_b": 180,
-      "predicted_weight_bytes": null,
+      "predicted_weight_bytes": 63096292478,
       "records": [
+        "12204fbbf9605e6259da5a66dafd5ffe243d9156cf8f4bdb3b44afccacc95e17f827",
         "122069c0258a5541e9cfc0b9a03fe7a4a61fa10438c1d822a3bac0bec5ac9212cbe3",
         "1220a2044547c634bd416353eb88f0273bdd28307fd3c5a237eb8d12a2c4c949eba3"
       ],
-      "status": "failed",
+      "status": "booted, calculator pending",
       "vllm": "v0.30.0"
     },
     {
-      "accepted": null,
+      "accepted": 4,
       "before_gpu": {
         "mechanism": "layered_decode",
         "status": "planned",
@@ -2555,21 +2685,22 @@
         "total_gib_per_gpu": 41.19,
         "weight_gib_per_gpu": 37.25
       },
-      "cases": null,
-      "cost": 10.3293,
+      "cases": 5,
+      "cost": 10.668,
       "downloads_30d": 3959727,
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
       "group": "C",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 40587440947,
       "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
       "params_b": 304.2,
-      "predicted_weight_bytes": null,
+      "predicted_weight_bytes": 39991556380,
       "records": [
         "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4",
-        "12203e94dd0600eb3eabbcda907021a0f64929527da69852cee58f9c6b5a53981bb4"
+        "12203e94dd0600eb3eabbcda907021a0f64929527da69852cee58f9c6b5a53981bb4",
+        "1220a687eae3699576bd853ab076193977f9f9ef3be109d68de612512a135cd94132"
       ],
-      "status": "failed",
+      "status": "booted, calculator pending",
       "vllm": "v0.30.0"
     },
     {
@@ -2662,7 +2793,7 @@
       "vllm": "v0.29.0"
     }
   ],
-  "record_count": 338,
+  "record_count": 353,
   "records_table": {
     "broken_on_purpose": {
       "boots": 8,
@@ -2678,7 +2809,10 @@
         "1220e27e21b0a24a5a66f510257931c98cdb3579c1fa9857e8205238875d6652a415"
       ]
     },
-    "not_rendered": [],
+    "not_rendered": [
+      "12202e4f8b140fa5819d18d3f90d9faf861859f6d59f3886af7c2ec859f9698f7e65",
+      "122084e0bedd57e6ffb2e73d0d03401a48d1076238ae546c408cab08e0e794d74610"
+    ],
     "planned": [
       {
         "gpu": "NVIDIA H200",
@@ -2720,7 +2854,7 @@
         "vllm": null
       }
     ],
-    "record_count": 338,
+    "record_count": 353,
     "rows": [
       {
         "accepted": 0,
@@ -4221,6 +4355,21 @@
     {
       "completed": 50,
       "failed": 0,
+      "gpu": "NVIDIA H200",
+      "model": "Qwen/Qwen3.8-Flash-Next",
+      "output_token_throughput": 258.9329115104631,
+      "p99_tpot_ms": 22.142502897543686,
+      "p99_ttft_ms": 2372.0293046720326,
+      "recomputed_verdict": "fail",
+      "record": "122084e0bedd57e6ffb2e73d0d03401a48d1076238ae546c408cab08e0e794d74610",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "fail",
+      "vllm": "v0.30.0"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
       "gpu": "NVIDIA A100 80GB PCIe",
       "model": "deepseek-ai/DeepSeek-V2-Lite",
       "output_token_throughput": 316.3572444177437,
@@ -4247,6 +4396,21 @@
       "slo_p99_ttft_ms": 2000.0,
       "verdict": "pass",
       "vllm": "v0.29.0"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA H200",
+      "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
+      "output_token_throughput": 187.72193834792466,
+      "p99_tpot_ms": 48.98393010016616,
+      "p99_ttft_ms": 5421.758196707811,
+      "recomputed_verdict": "fail",
+      "record": "12202e4f8b140fa5819d18d3f90d9faf861859f6d59f3886af7c2ec859f9698f7e65",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "fail",
+      "vllm": "v0.30.0"
     },
     {
       "completed": 50,
@@ -4539,7 +4703,7 @@
       "sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-29T20:56:14.262845+00:00",
+    "last_event": "2026-09-30T00:26:22.233135+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B",
@@ -5086,6 +5250,30 @@
       "vllm": "v0.30.0"
     },
     {
+      "accepted": 5,
+      "attempts": 5,
+      "cases": 5,
+      "gpu": "NVIDIA H200",
+      "model": "Qwen/Qwen3.8-Flash-Next",
+      "passed": true,
+      "records": [
+        "122006f580b132d17bef6b9d6aa71ea1edfbbc9a08ffa3d0022293fec77d596751bb",
+        "12205e0ec36542829403c9af5c4110c584a6fa61b6baa1338aeb21bb4d283f347b2a",
+        "1220608c4026bdf0c58b3daf3b2e7427430da31d04edf64c0e18e478773ae8ca0ea8",
+        "1220882c362a8c1bc5b4690d6a058a3fb9b4e2c04cdbd73165712635496737e19ae0",
+        "1220bd76dc41d57cd4feb7807d1b7e5b07b9b5e143caddc9c1b7019820a9e69c61e2"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "skipped": 0,
+      "solution": "1220d54e1c900035732da9109ac0e7788f747ad871b96f776866f512efd39aadddcc",
+      "truncated": 0,
+      "vllm": "v0.30.0"
+    },
+    {
       "accepted": 0,
       "attempts": 3,
       "cases": 3,
@@ -5149,6 +5337,30 @@
       "solution": "122092680b193723eebd180cac5873d14e819de235e03b77af29c3d76e268d1df3a9",
       "truncated": 0,
       "vllm": "v0.29.0"
+    },
+    {
+      "accepted": 4,
+      "attempts": 5,
+      "cases": 5,
+      "gpu": "NVIDIA H200",
+      "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
+      "passed": true,
+      "records": [
+        "12202fac705c3fa335d21b10ef04c8ff39c01dd11c80dba8e1cdd4d6caa1cbd7ffff",
+        "122074ab342053eefe203bec370a93f288cdda083ae2cde0c4103feda9e7de637418",
+        "1220b20c578e4f866f98c06144bbd441fcadb13d11e739d46d87223b8266dbaf6a8d",
+        "1220bf35dd82f180f4018cbfe0c285fdffa38eee53b233aa6a816d65cd442756cf4c",
+        "1220db88deaf14ed63ed9b2511ba2b9e2c393e08c11f7841e2862597a5bfd52199fc"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "skipped": 1,
+      "solution": "122021cceb19437507ca5774f4a6f8c2cb453da5e03316ab30af7e585e30550d3895",
+      "truncated": 0,
+      "vllm": "v0.30.0"
     },
     {
       "accepted": 3,

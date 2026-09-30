@@ -5,3 +5,5 @@
 {"count": 1, "gpu": "NVIDIA H100 80GB HBM3", "stock": "Low", "waited_s": 240}
 {"count": 2, "gpu": "NVIDIA B200", "stock": "Low", "waited_s": 1320}
 {"count": 4, "gpu": "NVIDIA B200", "stock": "Low", "waited_s": 600}
+{"count": 4, "gpu": "NVIDIA H200", "stock": "Low", "waited_s": 360}
+{"count": 4, "gpu": "NVIDIA H200", "stock": "Low", "waited_s": 1440}

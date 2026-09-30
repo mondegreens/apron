@@ -9,6 +9,8 @@ makes the calculator match it. Never widen a tolerance to admit one.
 | Record | What | Why it waits |
 |---|---|---|
 | `verification-reports/1220b7a182caf10d…` | GLM-5.3-Flash, 4x B200, CUDA graphs on, memory report (pod uxt0bh4pm5rhx4, 2026-09-29) | CUDA-graph estimate measured 4.28 GiB vs 2.30 predicted; torch peak 3.39 vs 2.82 GiB at 16,384 tokens; KV budget 2.61 GiB over (buffer 2.19). The per-layer-graph constant does not fit Glm5Next: ~1.2 MiB here, ~9 MiB on 2x B200 (record `12208ef6f21ef008…`). Handoff item H1. |
+| `verification-reports/12204fbbf9605e62…` | Qwen3.8-Flash-Next, 4x H200, vLLM v0.30.0, memory report (pod md3kso5eretn9o, 2026-09-29): healthy, 5/5 deployment checks | Startup (torch) peak 2.01 GiB measured vs 1.10 predicted at 8,192 tokens, TP 4. See below. |
+| `verification-reports/1220a687eae36995…` | DeepSeek-V4-Flash-0731, 4x H200, vLLM v0.30.0, memory report (pod md3kso5eretn9o, 2026-09-29): healthy, 4/4 deployment checks (image: text-only) | Startup peak 3.10 GiB vs 1.00 predicted; CUDA-graph estimate 2.43 vs 1.12; weights 37.80 vs 37.25 (-1.5%). KV budget +3.74 GiB. The breakable-graph class, below. |
 
 ## `1220b7a182caf10d…`: what was traced (2026-09-29, GPU-free)
 
@@ -47,3 +49,44 @@ not a trace.
 
 What closes it: a boot with graphs on B200 that keeps vLLM's full log, and a
 peak probe of the profile run.  Not planned (owner, 2026-09-29).
+
+## `12204fbbf9605e62…`: what was traced (2026-09-29, GPU-free)
+
+KV budget, predicted minus measured, per GPU (GiB) after the fixes below:
+weights 59.82 / 60.87, torch peak 1.10 / 2.01, non-torch 1.35 / 1.21, CUDA-graph
+estimate 1.25 / 1.49; available KV 62.30 / 60.24 (+2.06, inside the 2.19
+buffer).  The record waits only on the startup peak.
+
+Fixed while tracing (the weight check had read 82.60 GiB against 60.87):
+- the offline check did not subtract the n-gram table vLLM keeps in pinned
+  host memory (95.37 GiB): `host_bytes` in the fixture row,
+  `recorded_loaded_bytes` subtracts it, as the planner always did;
+- Qwen4Exp's replicated weights, 1.06 GiB per GPU at TP 4:
+  `plan_pipeline._QWEN4_EXP_REPLICATED` (hyper-connections, router, QSA
+  indexer projection, PLE key/value projections, each cited to vLLM);
+- its vision tower is Qwen3-VL's (`qwen4_exp/nvidia/model.py:922-926`):
+  `calculator._VISION_FAMILIES`.
+
+Not explained:
+- weights: 1.05 GiB per GPU over the plan after the replicated term.  Not the
+  MTP layer's 1.21 GiB unless vLLM loads it (not found), not the vision tower
+  (sharded, `mm_encoder_tp_mode = "weights"`), not the n-gram prefetch buffer
+  (0.04 GiB, `ngram_embedding.py:421-427`);
+- torch peak: 2.01 GiB.  The Qwen3-VL encoder moment gives 1.03 GiB at TP 4
+  (its attention is head-sharded: `qwen2_5_vl.py:411-464`), the language
+  forward 0.88.  Which tensors are live at the peak needs a memory-history
+  probe (`peak-probe/`); fitting a constant would not be a trace.
+
+## One class behind all three: vLLM v0.30's breakable CUDA graphs
+
+GLM-5.3-Flash (Glm5NextForConditionalGeneration), Qwen3.8-Flash-Next
+(Qwen4ExpForConditionalGeneration) and DeepSeek-V4-Flash-0731
+(DeepseekV4ForCausalLM) are all in `DEFAULT_BREAKABLE_CUDAGRAPH_ARCHITECTURES`
+(`config/vllm.py:77-104`): vLLM runs them uncompiled (`CompilationMode.NONE`)
+with PIECEWISE graphs for every capture size.  The calculator's startup-peak
+forward rule counts compiled (inductor) buffers, fitted on GLM-4.7-Flash, and
+its CUDA-graph rule counts FULL decode graphs per layer.  Both under-predict
+for this class: startup peak 3.39/2.82 (GLM-5.3-Flash B200), 2.01/1.10 (Qwen),
+3.10/1.00 (DeepSeek); graph estimate 4.28/2.30, 1.49/1.25, 2.43/1.12.  Closing
+it takes the peak probe (`scripts/peak_probe.py`) on one of them; the same fix
+then applies to group D (GLM-5.3 and MiniMax-M3 are in the list too).
