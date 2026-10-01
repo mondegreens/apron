@@ -576,8 +576,9 @@ class VllmEngineAdapter:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def model_dir(model_id: str) -> str:
-        return f"{MODELS_DIR}/{model_id}"
+    def model_dir(model_id: str, target: Any = None) -> str:
+        base = getattr(target, "models_dir", MODELS_DIR)
+        return f"{base}/{model_id}"
 
     def prepare_boot(self, target: Any, timeout: int = 120) -> dict[str, Any]:
         """Harness hygiene before every boot: no vLLM running, port 8000
@@ -631,8 +632,9 @@ class VllmEngineAdapter:
         if getattr(target, "weights_persist", False):
             return
         keep_q = shlex.quote(keep)
+        mdir = shlex.quote(getattr(target, "models_dir", MODELS_DIR))
         target.execute(
-            f"cd {MODELS_DIR} 2>/dev/null && for d in */*; do "
+            f"cd {mdir} 2>/dev/null && for d in */*; do "
             f'[ "$d" = {keep_q} ] || rm -rf -- "$d"; done; true'
         )
 
@@ -647,7 +649,7 @@ class VllmEngineAdapter:
         end noticing: staging waited on a finished download for four hours,
         twice (2026-09-28).  A poll that times out only costs a reconnect.
         """
-        command = download_command(model_id, self.model_dir(model_id))
+        command = download_command(model_id, self.model_dir(model_id, target))
         detached = detached_command(command)
         start = time.monotonic()
         target.execute(detached, timeout=120)
@@ -691,7 +693,7 @@ class VllmEngineAdapter:
         if not getattr(target, "weights_persist", False):
             return []
         probe = target.execute(
-            f"du -sb {shlex.quote(self.model_dir(model_id))} | cut -f1; "
+            f"du -sb {shlex.quote(self.model_dir(model_id, target))} | cut -f1; "
             "awk '/MemAvailable/ {print $2 * 1024}' /proc/meminfo"
         )
         numbers = [int(x) for x in str(probe.get("stdout", "")).split() if x.isdigit()]
@@ -720,7 +722,9 @@ class VllmEngineAdapter:
         evidence diagnosis reads.
         """
         model_id = plan.resource_allocation.get("model_id", "")
-        serve = self._build_serve_command(plan, target, model_path=self.model_dir(model_id))
+        serve = self._build_serve_command(
+            plan, target, model_path=self.model_dir(model_id, target)
+        )
         extra = self.load_args(target, model_id)
         if extra:
             serve = " ".join([serve, *(shlex.quote(a) for a in extra)])
@@ -784,7 +788,7 @@ class VllmEngineAdapter:
                 "/opt/venv/bin/vllm bench serve",
                 "--backend vllm --base-url http://localhost:8000",
                 f"--model {shlex.quote(model_id)}",
-                f"--tokenizer {shlex.quote(self.model_dir(model_id))}",
+                f"--tokenizer {shlex.quote(self.model_dir(model_id, target))}",
                 "--dataset-name random",
                 f"--random-input-len {int(input_len)} --random-output-len {int(output_len)}",
                 f"--max-concurrency {int(concurrency)}",

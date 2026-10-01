@@ -22,6 +22,8 @@ import apron.domain.mechanisms.calculator  # noqa: F401 — registers calculator
 from apron.adapters.backends.ledger_file import JsonlLedger
 from apron.adapters.backends.llm_classifier import guess_base_model
 from apron.adapters.backends.local_store import LocalRecordStore
+from apron.adapters.backends.modal_target import CLOUD_TYPE as MODAL_CLOUD_TYPE
+from apron.adapters.backends.modal_target import MODAL_GPU_SPECS, ModalTarget
 from apron.adapters.backends.rule_loader import load_rules
 from apron.adapters.backends.rule_repository import FileRuleRepository
 from apron.adapters.backends.runpod import CLOUD_TYPE, GPU_SPECS, VOLUME_GB, RunPodTarget
@@ -117,8 +119,21 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def cohort_envelope(maximum_spend: float = AUTHORIZED_USD) -> AuthorizationEnvelope:
-    """D3/D4/D5: RunPod Secure only, the owner's cap, classifier calls to Anthropic."""
+def cohort_envelope(
+    maximum_spend: float = AUTHORIZED_USD,
+    provider: str = "runpod",
+) -> AuthorizationEnvelope:
+    """D3/D4/D5: the owner's cap, classifier calls to Anthropic."""
+    if provider == "modal":
+        return AuthorizationEnvelope(
+            permitted_action_classes=("gpu_execution", "diagnosis_classification"),
+            permitted_providers=("modal",),
+            credential_scopes=("modal:sandboxes", "anthropic:messages", "huggingface:read"),
+            task_data_destinations=("api.anthropic.com",),
+            hard_target_constraints={"cloud_type": MODAL_CLOUD_TYPE},
+            maximum_spend=maximum_spend,
+            teardown_rules={"orphan_max_age_seconds": "10800", "atexit": "terminate"},
+        )
     return AuthorizationEnvelope(
         permitted_action_classes=("gpu_execution", "diagnosis_classification"),
         permitted_providers=("runpod",),
@@ -189,8 +204,9 @@ def load_seed(path: Path = SEED) -> list[CandidateSeed]:
 # ---------------------------------------------------------------------------
 
 
-def hardware_for(gpu_sku: str) -> HardwareSpec:
-    spec = GPU_SPECS[gpu_sku]
+def hardware_for(gpu_sku: str, *, provider: str = "runpod") -> HardwareSpec:
+    specs = MODAL_GPU_SPECS if provider == "modal" else GPU_SPECS
+    spec = specs[gpu_sku]
     return HardwareSpec(
         gpu_sku=gpu_sku,
         total_memory_bytes=spec["total_memory_bytes"],
@@ -226,7 +242,7 @@ def recorded_prediction(
     )
     facts = engine_facts(version)
     gpu = entry.requested_execution.gpu_sku
-    hardware = hardware_for(gpu)
+    hardware = hardware_for(gpu, provider=entry.requested_execution.provider)
     plan = entry.deployment_plan
     engine = plan.engine_configuration
     dtype = plan.dtype or runtime_dtype(config)
@@ -294,6 +310,7 @@ class CohortPlanner:
     # The pod downloads the weights (no staged volume, 2026-09-29): the cost
     # estimate counts the download.  False when a staged volume holds them.
     download_weights: bool = True
+    provider: str = "runpod"
 
     def engine(self, model_id: str) -> str | None:
         """The vLLM version a plan for *model_id* runs on: the newest one with a
@@ -395,7 +412,8 @@ class CohortPlanner:
         max_num_seqs: int | None = None,
     ) -> tuple[DeploymentPlan, Any]:
         facts = engine_facts(engine)
-        memory = hardware_for(gpu).total_memory_bytes
+        hw = hardware_for(gpu, provider=self.provider)
+        memory = hw.total_memory_bytes
         features = (
             ServingFeatures(
                 max_model_len=V3_MAX_MODEL_LEN,
@@ -410,7 +428,7 @@ class CohortPlanner:
             self.resolver,
             CalculatorPlanningSource(clock=self.clock),
             model_id,
-            hardware_for(gpu),
+            hw,
             clock=self.clock,
             id_gen=self.ids,
             tensor_parallel=tensor_parallel,
@@ -468,12 +486,12 @@ class CohortPlanner:
     ) -> SolutionPlan:
         alloc = plan.resource_allocation
         count = int(alloc.get("gpu_count", "1"))
+        cloud_type = MODAL_CLOUD_TYPE if self.provider == "modal" else CLOUD_TYPE
         requested = RequestedExecutionSpec(
-            provider="runpod",
+            provider=self.provider,
             gpu_sku=alloc["gpu_sku"],
             gpu_count=count,
-            cloud_type=CLOUD_TYPE,
-            # The engine is part of the solution's identity through its image.
+            cloud_type=cloud_type,
             image_digest=(runner_image(engine) if engine else newest_runner_image()).digest,
         )
         claim = pipeline.claim
@@ -485,7 +503,9 @@ class CohortPlanner:
         elif check_feasibility and pipeline.load_problems:
             status = "infeasible"  # the engine would refuse the checkpoint's tensors
         elif check_feasibility and not predicted_feasible(
-            claim, hardware_for(alloc["gpu_sku"]).total_memory_bytes, count
+            claim,
+            hardware_for(alloc["gpu_sku"], provider=self.provider).total_memory_bytes,
+            count,
         ):
             status = "infeasible"
         observation = pipeline.observation
@@ -881,6 +901,73 @@ def build_ports(
             max_wait_seconds=int(os.environ.get("APRON_CAPACITY_WAIT", str(2 * 3600))),
             log=JsonlLedger(run_dir / "capacity-waits.jsonl"),
         ),
+    )
+
+
+MODAL_RATES: dict[str, float] = {
+    "NVIDIA H200": 4.76,
+    "NVIDIA H100": 3.95,
+}
+
+
+def build_modal_ports(
+    run_dir: Path = RUN_DIR,
+    *,
+    authorized: float = AUTHORIZED_USD,
+    rates: dict[str, float] | None = None,
+    volume_name: str = "apron-models",
+    evaluator: Any = None,
+    timeout: int = 10800,
+) -> CohortPorts:
+    """Like ``build_ports`` but provisions Modal Sandboxes instead of RunPod pods."""
+    install_log_masking()
+    rates = rates if rates is not None else MODAL_RATES
+    clock, ids = WallClock(), UuidIdGenerator()
+    budget = BudgetTracker.replay(
+        authorized=authorized,
+        ledger=JsonlLedger(run_dir / "ledger.jsonl"),
+        clock=clock,
+    )
+
+    def target_factory(requested: RequestedExecutionSpec) -> ModalTarget:
+        return ModalTarget(
+            image=image_for_digest(requested.image_digest),
+            gpu_type=requested.gpu_sku,
+            gpu_count=requested.gpu_count,
+            timeout=timeout,
+            volume_name=volume_name,
+        )
+
+    def provision_env(sp: SolutionPlan) -> dict[str, str]:
+        env: dict[str, str] = {"VLLM_LOGGING_LEVEL": "DEBUG"}
+        hf_token = os.environ.get("HF_TOKEN")
+        if hf_token:
+            env["HF_TOKEN"] = hf_token
+        return env
+
+    def rate_for(requested: RequestedExecutionSpec) -> float:
+        return rates.get(requested.gpu_sku, 0.0) * requested.gpu_count
+
+    return CohortPorts(
+        target_factory=target_factory,
+        engine=VllmEngineAdapter(rules=load_rules(RULES_DIR, "vllm", "v0.29.0")),
+        engines={
+            version: VllmEngineAdapter(
+                engine_version=version, rules=load_rules(RULES_DIR, "vllm", version)
+            )
+            for version in RUNNER_IMAGES
+        },
+        evaluator=evaluator if evaluator is not None else DeterministicScorer(),
+        store=LocalRecordStore(run_dir / "records"),
+        budget=budget,
+        clock=clock,
+        ids=ids,
+        events=JsonlLedger(run_dir / "events.jsonl"),
+        provision_env=provision_env,
+        hourly_rate=rate_for,
+        identities=JsonlLedger(run_dir / "solutions.jsonl"),
+        pool=TargetPool(factory=target_factory, budget=budget, clock=clock, hourly_rate=rate_for),
+        boot_timeout=1800,
     )
 
 

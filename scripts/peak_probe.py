@@ -165,11 +165,17 @@ def recorded_measurements(fingerprint: str, reports: Path = REPORTS) -> list[dic
 
 
 def serve_command(
-    engine: VllmEngineAdapter, plan: DeploymentPlan, load_args: list[str], extra: tuple[str, ...]
+    engine: VllmEngineAdapter,
+    plan: DeploymentPlan,
+    load_args: list[str],
+    extra: tuple[str, ...],
+    target: Any = None,
 ) -> str:
     """``VllmEngineAdapter.boot``'s serve string (vllm_engine.py:551-555) plus variant flags."""
     model_id = plan.resource_allocation.get("model_id", "")
-    serve = engine._build_serve_command(plan, None, model_path=engine.model_dir(model_id))
+    serve = engine._build_serve_command(
+        plan, target, model_path=engine.model_dir(model_id, target)
+    )
     added = [*load_args, *extra]
     if added:
         serve = " ".join([serve, *(shlex.quote(a) for a in added)])

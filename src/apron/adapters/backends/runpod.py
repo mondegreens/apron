@@ -260,6 +260,7 @@ class RunPodTarget:
     _kind = "rented-provider"
     _operator = "apron"
     _provider = "runpod"
+    models_dir = "/runpod-volume/models"
 
     def __init__(
         self,
