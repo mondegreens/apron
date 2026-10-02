@@ -272,11 +272,14 @@ Before these three booted on H200s they had failed to start on B200 hosts that
 never started a pod, under a boot limit I have since removed, and on a host
 whose NVSwitch failed NCCL at startup. None of those was the model.
 
-### Eight GPUs: not run yet
+### Eight GPUs: two of three measured
 
-Group D, eight H200s each, is planned and waits for machines: none has been in
-stock since I started watching. GLM-5.3 (88.2 GiB per GPU), DeepSeek-V4-Pro
-(101.9) and MiniMax-M3 (99.8) all fit in the plan.
+Group D runs on eight H200s each, on Modal instead of RunPod (RunPod had no
+8×H200 stock). GLM-5.3 booted in 30 minutes (88.9 GiB weights per GPU, 30.9
+GiB KV cache, 358k tokens) and passed all five deployment checks. DeepSeek-V4-Pro
+booted in 57 minutes (102.3 GiB weights per GPU, 15.3 GiB KV cache, 55k
+tokens) and also passed all five. Both ran with CUDA graphs on enforce-eager.
+DeepGEMM JIT compilation alone took 7–10 minutes per model.
 
 ## The bug I am proudest of finding: the startup peak
 
