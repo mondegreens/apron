@@ -26,12 +26,15 @@ from pathlib import Path
 import pytest
 
 STEP = os.environ.get("APRON_COHORT_STEP", "")
+PROVIDER = os.environ.get("APRON_PROVIDER", "runpod")
 RUN_DIR = Path(__file__).parents[2] / "_dev_notes" / "cohort-run"
+
+_has_credentials = bool(os.environ.get("RUNPOD_API_KEY") or os.environ.get("MODAL_TOKEN_ID"))
 
 pytestmark = [
     pytest.mark.cohort,
     pytest.mark.integration,
-    pytest.mark.skipif(not os.environ.get("RUNPOD_API_KEY"), reason="RUNPOD_API_KEY not set"),
+    pytest.mark.skipif(not _has_credentials, reason="no GPU provider credentials set"),
 ]
 
 
@@ -41,10 +44,18 @@ SUITE = os.environ.get("APRON_TASK_SUITE")
 def _inputs():  # type: ignore[no-untyped-def]
     """The accepted inputs; ``APRON_TASK_SUITE=v2`` for the modern models,
     ``v3`` for the deployment checks."""
-    from apron.interfaces.cohort_root import TASK_SUITE_V2, TASK_SUITE_V3, load_inputs
+    from apron.interfaces.cohort_root import (
+        TASK_SUITE_V2,
+        TASK_SUITE_V3,
+        cohort_envelope,
+        load_inputs,
+    )
 
     suites = {"v2": TASK_SUITE_V2, "v3": TASK_SUITE_V3}
-    return load_inputs(task_suite=suites.get(SUITE or ""))
+    return load_inputs(
+        task_suite=suites.get(SUITE or ""),
+        envelope=cohort_envelope(provider=PROVIDER),
+    )
 
 
 def _step(name: str) -> None:
@@ -309,7 +320,9 @@ def test_cohort_run() -> None:
         ranking_record,
     )
     from apron.interfaces.cohort_root import (
+        MODAL_RATES,
         CohortPlanner,
+        build_modal_ports,
         build_ports,
         live_rates,
         load_seed,
@@ -317,22 +330,24 @@ def test_cohort_run() -> None:
         v3_evaluator,
     )
 
-    rates = live_rates(os.environ["RUNPOD_API_KEY"])
-    planner = CohortPlanner(rates=rates, deployment_checks=SUITE == "v3")
+    rates = MODAL_RATES if PROVIDER == "modal" else live_rates(os.environ["RUNPOD_API_KEY"])
+    planner = CohortPlanner(rates=rates, deployment_checks=SUITE == "v3", provider=PROVIDER)
     # A later pass names its own owner-approved list and tags its outputs
     # (cohort-ranking-<tag>.json); the first cohort's files stay as recorded.
     approved_file = os.environ.get("APRON_APPROVED", "approved-candidates.json")
     tag = f"-{os.environ['APRON_RUN_TAG']}" if os.environ.get("APRON_RUN_TAG") else ""
     approved = set(json.loads((RUN_DIR / approved_file).read_text()))
     seeds = [s for s in load_seed() if s.key in approved]
-    # Weights download on the pod (no volume): wherever stock appears first,
-    # the pod's own volume sized for the largest model (+15%, +10 GB).
-    largest = max((staged_bytes(s.model_id) for s in seeds), default=0)
-    ports = build_ports(
-        rates=rates,
-        evaluator=v3_evaluator(planner.plan_seed(s) for s in seeds) if SUITE == "v3" else None,
-        pod_volume_gb=int(largest * 1.15 / 1e9) + 10 if largest else None,
-    )
+    evaluator = v3_evaluator(planner.plan_seed(s) for s in seeds) if SUITE == "v3" else None
+    if PROVIDER == "modal":
+        ports = build_modal_ports(rates=rates, evaluator=evaluator)
+    else:
+        largest = max((staged_bytes(s.model_id) for s in seeds), default=0)
+        ports = build_ports(
+            rates=rates,
+            evaluator=evaluator,
+            pod_volume_gb=int(largest * 1.15 / 1e9) + 10 if largest else None,
+        )
     ranking = rank_candidates(
         seeds, Coverage(), measured=[], remaining_budget=ports.budget.remaining, rates=rates
     )
@@ -474,17 +489,16 @@ def test_plan_variant_run() -> None:
     recorded one (owner, 2026-09-29: GLM-5.3-Flash without CUDA graphs after
     the engine replayed moved inputs mid-suite)."""
     _step("variant")
-    from apron.adapters.backends.runpod_storage import RunPodStorage
     from apron.application.orchestration.cohort import run_cohort
     from apron.domain.schemas.solutions import DeploymentPlan
     from apron.interfaces.cohort_root import (
+        MODAL_RATES,
         CohortPlanner,
-        accrue_storage,
+        build_modal_ports,
         build_ports,
         live_rates,
         staged_bytes,
         v3_evaluator,
-        weights_site,
     )
 
     fp = os.environ["APRON_BASE_SOLUTION"]
@@ -503,23 +517,28 @@ def test_plan_variant_run() -> None:
     variant = base.model_copy(
         update={"engine_configuration": engine, "resource_allocation": alloc}
     )
-    rates = live_rates(os.environ["RUNPOD_API_KEY"])
+    rates = MODAL_RATES if PROVIDER == "modal" else live_rates(os.environ["RUNPOD_API_KEY"])
     planner = CohortPlanner(
         rates=rates,
         deployment_checks=SUITE == "v3",
         download_weights=os.environ.get("APRON_WEIGHTS") == "download",
+        provider=PROVIDER,
     )
     sp = planner.plan_for(variant, "variant")
     assert sp.solution_fp != fp, "the variant must be its own solution"
     evaluator = v3_evaluator([sp]) if SUITE == "v3" else None
     site = None
-    if os.environ.get("APRON_WEIGHTS") == "download":
-        # The pod's own volume sized for the model (+15%, +10 GB), as the cohort step.
+    if PROVIDER == "modal":
+        ports = build_modal_ports(rates=rates, evaluator=evaluator)
+    elif os.environ.get("APRON_WEIGHTS") == "download":
         size = staged_bytes(sp.model_id)
         ports = build_ports(
             rates=rates, evaluator=evaluator, pod_volume_gb=int(size * 1.15 / 1e9) + 10
         )
     else:
+        from apron.adapters.backends.runpod_storage import RunPodStorage
+        from apron.interfaces.cohort_root import weights_site
+
         storage = RunPodStorage(os.environ["RUNPOD_API_KEY"])
         site = weights_site(storage, [sp.requested], [sp.model_id])
         assert site is not None, "no volume holds the weights"
@@ -539,6 +558,8 @@ def test_plan_variant_run() -> None:
         )
     finally:
         if site is not None:
+            from apron.interfaces.cohort_root import accrue_storage
+
             record["storage_cost"] = accrue_storage(site, ports.budget)
     record["result"] = {
         "executed": {k: v.__dict__ for k, v in result.executed.items()},
