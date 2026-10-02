@@ -199,7 +199,7 @@ _DOWNLOAD_PY = (
     "t=f.read_text().strip() if f.exists() else None\n"
     f"ign={list(DOWNLOAD_IGNORE)!r}\n"
     "snapshot_download(repo_id=sys.argv[1],local_dir=sys.argv[2],token=t or None,"
-    "ignore_patterns=ign)\n"
+    "ignore_patterns=ign,max_workers=16)\n"
     # Verify: every repo file vLLM may read is on disk at its listed size.  A
     # tokenizer file missing on a reused pod was once recorded as a model
     # failure (L5, Qwen3-32B on A100); this makes it a harness failure.

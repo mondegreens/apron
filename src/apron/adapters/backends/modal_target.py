@@ -187,7 +187,7 @@ class ModalTarget:
         volume = modal.Volume.from_name(self._volume_name)
         self._volume = volume
 
-        secrets = {}
+        secrets: dict[str, str | None] = {}
         if env:
             secrets = {k: v for k, v in env.items()}
         sb = modal.Sandbox.create(
@@ -240,7 +240,7 @@ class ModalTarget:
             [
                 "printenv | grep -E '^VLLM_|^NVIDIA_|^NCCL_|^CUDA_|^PATH=|^LD_LIBRARY_PATH='"
                 " | grep -v -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)='"
-                ' | awk -F = \'{ print "export " $1 "=\\"" $2 "\\""}\''
+                " | sed \"s/^/export /; s/=/='/; s/$/'/\""
                 " > /etc/apron_environment",
                 "echo 'export VLLM_LOGGING_LEVEL=${VLLM_LOGGING_LEVEL:-DEBUG}'"
                 " >> /etc/apron_environment",

@@ -109,8 +109,9 @@ RUNNER_IMAGES_DEFAULT = "v0.29.0"
 # D4: the owner's cap for the whole Phase 1b cohort (all passes), not per day
 # or run; raising it is the owner's call.  Raised from 100 to 200 by the owner
 # on 2026-09-28 ("groups C and D are mandatory; I will add credits"), with
-# $66.51 spent and group C on 4xB200 next.
-AUTHORIZED_USD = 200.0
+# $66.51 spent and group C on 4xB200 next.  Raised to 400 on 2026-10-01 for
+# group D on Modal 8xH200 (owner's "да, запускай, поехали").
+AUTHORIZED_USD = 400.0
 
 logger = logging.getLogger(__name__)
 

@@ -331,7 +331,13 @@ def test_cohort_run() -> None:
     )
 
     rates = MODAL_RATES if PROVIDER == "modal" else live_rates(os.environ["RUNPOD_API_KEY"])
-    planner = CohortPlanner(rates=rates, deployment_checks=SUITE == "v3", provider=PROVIDER)
+    download = PROVIDER != "modal" or os.environ.get("APRON_WEIGHTS") == "download"
+    planner = CohortPlanner(
+        rates=rates,
+        deployment_checks=SUITE == "v3",
+        provider=PROVIDER,
+        download_weights=download,
+    )
     # A later pass names its own owner-approved list and tags its outputs
     # (cohort-ranking-<tag>.json); the first cohort's files stay as recorded.
     approved_file = os.environ.get("APRON_APPROVED", "approved-candidates.json")

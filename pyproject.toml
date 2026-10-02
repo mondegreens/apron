@@ -75,6 +75,7 @@ dev = [
     "hypothesis>=6",
     "paramiko>=3",
     "runpod>=1",
+    "modal>=1",
     "huggingface-hub>=1",
 ]
 docs = [
