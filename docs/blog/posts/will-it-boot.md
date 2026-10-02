@@ -18,8 +18,8 @@ running it, and you rent an H100 to try. Forty minutes and a few dollars later
 you still do not know whether it fits on that card, and if it does, with what
 flags.
 
-So I ran them: twelve of the open models people run this month, from one RTX
-4090 to four H200s, and I kept every boot, every failure and every bill, so
+So I ran them: fourteen of the open models people run this month, from one RTX
+4090 to eight H200s, and I kept every boot, every failure and every bill, so
 you do not have to pay to find out.
 
 This post is what I learned, and the tool that did it: Apron, an open-source
@@ -61,8 +61,9 @@ about what I got wrong along the way, and how I found out.
   one runner image per vLLM version, facts and diagnosis rules generated from
   that version's source. Two of the models I ran, GLM-5.3-Flash and
   DeepSeek-V4.1-Flash, do not load on v0.29 at all.
-- **All of it cost $170.86**, including every failed boot, every diagnostic
-  run, and one pod I kept to debug by hand that billed $21.57 on its own.
+- **All of it cost $225**, including every failed boot, every diagnostic
+  run, one pod I kept to debug by hand ($21.57), and two eight-GPU runs
+  on Modal ($54.81).
 
 ## The problem nobody owns
 
@@ -278,7 +279,7 @@ Group D runs on eight H200s each, on Modal instead of RunPod (RunPod had no
 8×H200 stock). GLM-5.3 booted in 30 minutes (88.9 GiB weights per GPU, 30.9
 GiB KV cache, 358k tokens) and passed all five deployment checks. DeepSeek-V4-Pro
 booted in 57 minutes (102.3 GiB weights per GPU, 15.3 GiB KV cache, 55k
-tokens) and also passed all five. Both ran with CUDA graphs on enforce-eager.
+tokens) and also passed all five. Both ran with `--enforce-eager` (no CUDA graphs).
 DeepGEMM JIT compilation alone took 7–10 minutes per model.
 
 ## The bug I am proudest of finding: the startup peak
@@ -429,17 +430,20 @@ registers a model's architecture.
 
 | | |
 |---|---|
-| Everything so far, every boot failed or not, by the ledger | $170.86 |
+| Everything so far, every boot failed or not, by the ledger | ~$225 |
 | gpt-oss-20b on an RTX 4090, the whole run | $0.13 |
 | GLM-5.3-Flash on four H200s, one run with the download | $13.62 |
 | Qwen3.8-Flash-Next on four H200s | $7.20 |
 | DeepSeek-V4-Flash on four H200s, the same pod | $8.62 |
 | DeepSeek-V4.1-Flash on four H200s, with a 510 GB download | $18.08 |
+| GLM-5.3 on eight H200s (Modal) | $19.90 |
+| DeepSeek-V4-Pro on eight H200s (Modal) | $34.91 |
 | one four-H200 pod (a faulty host), kept afterwards to debug by hand, its whole bill | $21.57 |
 | staging ~190 GB of weights with a CPU pod | $0.024 |
-| engine start (cold compile) | 104 s–28 min per model |
+| engine start (cold compile) | 104 s–57 min per model |
 
-The budget for the whole phase is $200. The most expensive single line is the
+The budget for the whole phase is $400. The most expensive single line is the
+DeepSeek-V4-Pro eight-GPU run ($34.91); the runner-up is the
 pod I kept to debug by hand: the harness settles a pod when its run ends, and
 a kept pod keeps billing. I found it only when I reconciled against RunPod's
 bill. The ledger matches RunPod's bill through 29 September; the last three
@@ -464,7 +468,7 @@ appearing elsewhere.
   largest error measured on the records kept, not a tuned margin.
 - **The task suite is a correctness check, not a benchmark.** It proves the
   endpoint answers; it says nothing about which model is better.
-- **Four models on four GPUs, none on eight yet; no speculative decoding, no
+- **Four models on four GPUs, two on eight; no speculative decoding, no
   prefill/decode split yet.** Those are where the field is; they are next, not claimed.
 
 ## Where Apron fits
@@ -503,6 +507,8 @@ without a server.
 | Qwen3.8-Flash-Next | H200 ×4 | `12204fbbf9605e62` |
 | DeepSeek-V4-Flash | H200 ×4 | `12200c5a8ae38b12` |
 | DeepSeek-V4.1-Flash | H200 ×4 | `1220400d7cc203eb` |
+| GLM-5.3 | H200 ×8 | `12208ef8aa4a3de7` |
+| DeepSeek-V4-Pro | H200 ×8 | `1220c41cc606ce68` |
 
 The startup-peak probe files are in `_dev_notes/cohort-run/peak-probe/`;
 the KV layout traces are in `_dev_notes/cohort-run/*-trace.md`. The vLLM
