@@ -6,6 +6,10 @@ import pytest
 
 from apron.application.orchestration.correction import (
     CORRECTION_BOUNDS,
+    ArtifactCandidate,
+    ArtifactSearch,
+    CatalogEntry,
+    CorrectionContext,
     compute_correction,
 )
 from apron.domain.schemas.primitives import HardwareSpec
@@ -61,22 +65,13 @@ class TestReduceMemoryPressure:
     def test_warmup_oom_halves_max_num_seqs(
         self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
     ) -> None:
+        """max_num_seqs_attempted is printed at v1/worker/gpu_model_runner.py:6373."""
         extracted = {"max_num_seqs_attempted": 256}
         result = compute_correction(
             "reduce_memory_pressure", extracted, base_plan, model_config, hardware, None
         )
         assert result is not None
         assert result.engine_configuration["max_num_seqs"] == "128"
-
-    def test_weight_oom_fallback_gpu_util(
-        self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
-    ) -> None:
-        extracted: dict = {}
-        result = compute_correction(
-            "reduce_memory_pressure", extracted, base_plan, model_config, hardware, None
-        )
-        assert result is not None
-        assert result.engine_configuration["gpu_memory_utilization"] == "0.90"
 
     def test_halved_max_num_seqs_never_zero(
         self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
@@ -87,6 +82,16 @@ class TestReduceMemoryPressure:
         )
         assert result is not None
         assert int(result.engine_configuration["max_num_seqs"]) >= 1
+
+    def test_no_extraction_is_infeasible_not_a_default(
+        self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
+    ) -> None:
+        """§10.3: the old fallback set gpu_memory_utilization=0.90, vLLM's own
+        default, so the fixed boot failed the same way.  No evidence, no fix."""
+        result = compute_correction(
+            "reduce_memory_pressure", {}, base_plan, model_config, hardware, None
+        )
+        assert result is None
 
 
 # -------------------------------------------------------------------
@@ -105,15 +110,28 @@ class TestClampMaxModelLen:
         assert result is not None
         assert result.engine_configuration["max_model_len"] == "32768"
 
-    def test_fallback_when_no_derived(
+    def test_falls_back_to_resolved_max_position_embeddings(
         self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
     ) -> None:
-        extracted: dict = {"requested": 131072}
+        """F5: the resolved config.json supplies the maximum when vLLM's text is absent."""
         result = compute_correction(
-            "clamp_max_model_len", extracted, base_plan, model_config, hardware, None
+            "clamp_max_model_len",
+            {},
+            base_plan,
+            {**model_config, "max_position_embeddings": 32768},
+            hardware,
+            None,
         )
         assert result is not None
-        assert result.engine_configuration["max_model_len"] == "4096"
+        assert result.engine_configuration["max_model_len"] == "32768"
+
+    def test_no_evidence_is_infeasible_not_4096(
+        self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
+    ) -> None:
+        result = compute_correction(
+            "clamp_max_model_len", {}, base_plan, model_config, hardware, None
+        )
+        assert result is None
 
 
 # -------------------------------------------------------------------
@@ -122,15 +140,20 @@ class TestClampMaxModelLen:
 
 
 class TestFallbackDtype:
-    def test_low_cc_falls_to_float16(self, base_plan: DeploymentPlan, model_config: dict) -> None:
+    def test_low_cc_without_bf16_falls_to_float32(
+        self, base_plan: DeploymentPlan, model_config: dict
+    ) -> None:
         low_cc = HardwareSpec(
             gpu_sku="GTX 1080",
             total_memory_bytes=8_589_934_592,
             compute_capability="6.1",
         )
-        result = compute_correction("fallback_dtype", {}, base_plan, model_config, low_cc, None)
+        extracted = {"unsupported_dtype": "float16"}
+        result = compute_correction(
+            "fallback_dtype", extracted, base_plan, model_config, low_cc, None
+        )
         assert result is not None
-        assert result.dtype == "float16"
+        assert result.dtype == "float32"
 
     def test_float16_unsupported_falls_to_bf16(
         self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
@@ -150,7 +173,31 @@ class TestFallbackDtype:
             total_memory_bytes=196_608_000_000,
             compute_capability="10.0",
         )
-        result = compute_correction("fallback_dtype", {}, base_plan, model_config, blackwell, None)
+        result = compute_correction(
+            "fallback_dtype",
+            {"unsupported_dtype": "float16"},
+            base_plan,
+            model_config,
+            blackwell,
+            None,
+        )
+        assert result is not None
+        assert result.dtype == "bfloat16"
+
+    def test_no_dtype_evidence_is_infeasible(
+        self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
+    ) -> None:
+        """§10.3: bfloat16 used to be reached by default, not by evidence."""
+        result = compute_correction("fallback_dtype", {}, base_plan, model_config, hardware, None)
+        assert result is None
+
+    def test_blocklisted_model_type_from_config_is_evidence(
+        self, base_plan: DeploymentPlan, hardware: HardwareSpec
+    ) -> None:
+        rule = {"float16_blocklist": ["gemma2"]}
+        result = compute_correction(
+            "fallback_dtype", {}, base_plan, {"model_type": "gemma2"}, hardware, None, rule=rule
+        )
         assert result is not None
         assert result.dtype == "bfloat16"
 
@@ -164,15 +211,15 @@ class TestFallbackDtype:
         assert result is not None
         assert result.dtype == "bfloat16"
 
-    def test_quant_first_supported(
+    def test_supported_list_string_is_not_read(
         self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
     ) -> None:
+        """INV-6: a free-text list is not a typed extraction; it no longer drives a fix."""
         extracted = {"supported_list": "{torch.bfloat16, torch.float32}"}
         result = compute_correction(
             "fallback_dtype", extracted, base_plan, model_config, hardware, None
         )
-        assert result is not None
-        assert result.dtype == "bfloat16"
+        assert result is None
 
 
 # -------------------------------------------------------------------
@@ -337,7 +384,12 @@ class TestCrossCutting:
         )
         vr = {"model_weight_memory": 15_000_000_000}
         result = compute_correction(
-            "reduce_memory_pressure", {}, base_plan, model_config, small_gpu, vr
+            "reduce_memory_pressure",
+            {"estimated_max_model_len": 8192},
+            base_plan,
+            model_config,
+            small_gpu,
+            vr,
         )
         assert result is None
 
@@ -346,7 +398,12 @@ class TestCrossCutting:
     ) -> None:
         vr = {"model_weight_memory": 5_000_000_000}
         result = compute_correction(
-            "reduce_memory_pressure", {}, base_plan, model_config, hardware, vr
+            "reduce_memory_pressure",
+            {"estimated_max_model_len": 8192},
+            base_plan,
+            model_config,
+            hardware,
+            vr,
         )
         assert result is not None
 
@@ -354,7 +411,12 @@ class TestCrossCutting:
         self, base_plan: DeploymentPlan, hardware: HardwareSpec, model_config: dict
     ) -> None:
         result = compute_correction(
-            "reduce_memory_pressure", {}, base_plan, model_config, hardware, None
+            "reduce_memory_pressure",
+            {"estimated_max_model_len": 8192},
+            base_plan,
+            model_config,
+            hardware,
+            None,
         )
         assert result is not None
 
@@ -372,3 +434,249 @@ class TestCrossCutting:
             "reduce_memory_pressure", {}, base_plan, model_config, small_gpu, vr
         )
         assert result is None
+
+
+# -------------------------------------------------------------------
+# retarget_memory / retarget_capability (§10.1 classes 1 and 6)
+# -------------------------------------------------------------------
+
+
+def _hw(sku: str, gib: int, cc: str) -> HardwareSpec:
+    return HardwareSpec(gpu_sku=sku, total_memory_bytes=gib << 30, compute_capability=cc)
+
+
+_CATALOG = (
+    CatalogEntry(_hw("NVIDIA GeForce RTX 4090", 24, "8.9"), 0.74),
+    CatalogEntry(_hw("NVIDIA RTX A6000", 48, "8.6"), 0.53),
+    CatalogEntry(_hw("NVIDIA L40", 45, "8.9"), 0.82),
+    CatalogEntry(_hw("NVIDIA A100 80GB PCIe", 80, "8.0"), 1.59),
+    CatalogEntry(_hw("NVIDIA H100 80GB HBM3", 80, "9.0"), 3.49),
+    CatalogEntry(_hw("NVIDIA GeForce RTX 5090", 32, "12.0"), 0.89),
+    CatalogEntry(_hw("NVIDIA B200", 179, "10.0"), 6.79),
+)
+
+
+class TestRetargetMemory:
+    def _plan(self) -> DeploymentPlan:
+        return DeploymentPlan(
+            dtype="bfloat16",
+            engine_configuration={"gpu_memory_utilization": "0.90"},
+            resource_allocation={"gpu_sku": "NVIDIA GeForce RTX 4090", "gpu_count": "1"},
+        )
+
+    def test_cheapest_gpu_that_holds_the_predicted_total(self) -> None:
+        context = CorrectionContext(catalog=_CATALOG, predicted_total_bytes=33_000_000_000)
+        result = compute_correction(
+            "retarget_memory",
+            {"tried_to_allocate_bytes": 1 << 30},
+            self._plan(),
+            {},
+            _hw("NVIDIA GeForce RTX 4090", 24, "8.9"),
+            None,
+            context=context,
+        )
+        assert result is not None
+        assert result.resource_allocation["gpu_sku"] == "NVIDIA RTX A6000"
+        assert result.engine_configuration == self._plan().engine_configuration
+        assert result.dtype == "bfloat16"
+
+    def test_retarget_changes_requested_execution_not_engine_flags(self) -> None:
+        context = CorrectionContext(catalog=_CATALOG, predicted_total_bytes=33_000_000_000)
+        result = compute_correction(
+            "retarget_memory",
+            {},
+            self._plan(),
+            {},
+            _hw("NVIDIA GeForce RTX 4090", 24, "8.9"),
+            None,
+            context=context,
+        )
+        assert result is not None
+        assert "gpu_sku" not in result.engine_configuration
+        assert result != self._plan()
+
+    def test_nothing_large_enough_is_infeasible(self) -> None:
+        context = CorrectionContext(catalog=_CATALOG, predicted_total_bytes=400 << 30)
+        result = compute_correction(
+            "retarget_memory",
+            {},
+            self._plan(),
+            {},
+            _hw("NVIDIA GeForce RTX 4090", 24, "8.9"),
+            None,
+            context=context,
+        )
+        assert result is None
+
+    def test_without_prediction_there_is_no_retarget(self) -> None:
+        result = compute_correction(
+            "retarget_memory",
+            {},
+            self._plan(),
+            {},
+            _hw("NVIDIA GeForce RTX 4090", 24, "8.9"),
+            None,
+            context=CorrectionContext(catalog=_CATALOG),
+        )
+        assert result is None
+
+
+_FP_QUANT_RULE: dict = {"kernel_architectures": {"fp_quant": ["10.0"]}}
+_FP_QUANT_CONFIG: dict = {"quantization_config": {"quant_method": "fp_quant"}}
+
+
+class TestRetargetCapability:
+    def _plan(self) -> DeploymentPlan:
+        return DeploymentPlan(resource_allocation={"gpu_sku": "NVIDIA H100 80GB HBM3"})
+
+    def test_chooses_a_built_architecture_not_merely_cc_above_min(self) -> None:
+        """An RTX 5090 (12.0) passes cc >= 100 but QuTLASS has no SM120 build."""
+        result = compute_correction(
+            "retarget_capability",
+            {"min_capability": 100, "current_capability": 90},
+            self._plan(),
+            _FP_QUANT_CONFIG,
+            _hw("NVIDIA H100 80GB HBM3", 80, "9.0"),
+            None,
+            rule=_FP_QUANT_RULE,
+            context=CorrectionContext(catalog=_CATALOG),
+        )
+        assert result is not None
+        assert result.resource_allocation["gpu_sku"] == "NVIDIA B200"
+
+    def test_without_kernel_list_there_is_no_retarget(self) -> None:
+        """§10.1: cc >= min is not enough (a 5090 would pass and crash); with no
+        recorded kernel architectures for the method there is no correction."""
+        result = compute_correction(
+            "retarget_capability",
+            {"min_capability": 100},
+            self._plan(),
+            {"quantization_config": {"quant_method": "other"}},
+            _hw("NVIDIA H100 80GB HBM3", 80, "9.0"),
+            None,
+            rule=_FP_QUANT_RULE,
+            context=CorrectionContext(catalog=_CATALOG),
+        )
+        assert result is None
+
+    def test_no_minimum_extracted_is_infeasible(self) -> None:
+        result = compute_correction(
+            "retarget_capability",
+            {},
+            self._plan(),
+            _FP_QUANT_CONFIG,
+            _hw("NVIDIA H100 80GB HBM3", 80, "9.0"),
+            None,
+            rule=_FP_QUANT_RULE,
+            context=CorrectionContext(catalog=_CATALOG),
+        )
+        assert result is None
+
+
+# -------------------------------------------------------------------
+# substitute_artifact (§10.1 class 6 fallback)
+# -------------------------------------------------------------------
+
+_QWEN_SHAPE: dict = {
+    "architectures": ["Qwen3ForCausalLM"],
+    "model_type": "qwen3",
+    "hidden_size": 1024,
+    "num_hidden_layers": 28,
+    "num_attention_heads": 16,
+    "num_key_value_heads": 8,
+    "intermediate_size": 3072,
+    "vocab_size": 151936,
+    "head_dim": 128,
+}
+_REQUESTED = "lab/Qwen3-0.6B-FPQuant-MXFP4"
+
+
+def _candidate(model_id: str, bits: int, min_cc: int = 0, **kw: object) -> ArtifactCandidate:
+    method = {16: None, 8: "fp8", 4: "compressed-tensors"}.get(bits)
+    return ArtifactCandidate(
+        model_id=model_id,
+        shape=kw.pop("shape", _QWEN_SHAPE),  # type: ignore[arg-type]
+        weight_bits=bits,
+        min_capability=min_cc,
+        quant_method=kw.pop("quant_method", method),  # type: ignore[arg-type]
+        downloads=kw.pop("downloads", 0),  # type: ignore[arg-type]
+    )
+
+
+def _search(*candidates: ArtifactCandidate) -> ArtifactSearch:
+    return ArtifactSearch(
+        requested_model_id=_REQUESTED,
+        base_model_id="Qwen/Qwen3-0.6B",
+        requested_weight_bits=4,
+        requested_shape=_QWEN_SHAPE,
+        candidates=(_candidate(_REQUESTED, 4, 100, quant_method="fp_quant"), *candidates),
+    )
+
+
+class TestSubstituteArtifact:
+    _H100 = _hw("NVIDIA H100 80GB HBM3", 80, "9.0")
+
+    def _plan(self) -> DeploymentPlan:
+        return DeploymentPlan(
+            dtype="bfloat16",
+            resource_allocation={"model_id": _REQUESTED, "gpu_sku": self._H100.gpu_sku},
+        )
+
+    def _correct(
+        self, search: ArtifactSearch | None, extracted: dict | None = None
+    ) -> DeploymentPlan | None:
+        return compute_correction(
+            "substitute_artifact",
+            {"min_capability": 100} if extracted is None else extracted,
+            self._plan(),
+            {},
+            self._H100,
+            None,
+            rule=_FP_QUANT_RULE,
+            context=CorrectionContext(artifacts=lambda: search),
+        )
+
+    def test_same_publisher_closest_precision_on_the_same_gpu(self) -> None:
+        result = self._correct(
+            _search(
+                _candidate("Qwen/Qwen3-0.6B", 16),
+                _candidate("Qwen/Qwen3-0.6B-FP8", 8, 75, downloads=300_000),
+                _candidate("Qwen/Qwen3-0.6B-GPTQ-Int8", 8, 60, downloads=800),
+                _candidate("other/Qwen3-0.6B-w4a16", 4, 70, downloads=12_000),
+            )
+        )
+        assert result is not None
+        assert result.resource_allocation["model_id"] == "Qwen/Qwen3-0.6B-FP8"
+        assert result.resource_allocation["gpu_sku"] == self._H100.gpu_sku  # GPU unchanged
+        assert result.dtype == "bfloat16" and result.engine_configuration == {}
+
+    def test_other_publishers_qualify_when_the_base_publisher_has_none(self) -> None:
+        result = self._correct(_search(_candidate("other/Qwen3-0.6B-w4a16", 4, 70)))
+        assert result is not None
+        assert result.resource_allocation["model_id"] == "other/Qwen3-0.6B-w4a16"
+
+    def test_the_unquantized_base_is_the_fallback(self) -> None:
+        result = self._correct(_search(_candidate("Qwen/Qwen3-0.6B", 16)))
+        assert result is not None
+        assert result.resource_allocation["model_id"] == "Qwen/Qwen3-0.6B"
+
+    def test_a_different_network_never_qualifies(self) -> None:
+        wider = {**_QWEN_SHAPE, "hidden_size": 2048}
+        assert self._correct(_search(_candidate("Qwen/Qwen3-1.7B", 16, shape=wider))) is None
+
+    def test_a_method_the_gpu_cannot_run_never_qualifies(self) -> None:
+        assert self._correct(_search(_candidate("Qwen/Qwen3-0.6B-NVFP4", 4, 100))) is None
+
+    def test_kernels_not_built_for_the_gpu_never_qualify(self) -> None:
+        """cc passes, but the rule records fp_quant kernels for 10.0 only."""
+        candidate = _candidate("Qwen/Qwen3-0.6B-fpq", 4, 90, quant_method="fp_quant")
+        assert self._correct(_search(candidate)) is None
+
+    def test_the_requested_checkpoint_is_never_its_own_substitute(self) -> None:
+        assert self._correct(_search()) is None
+
+    def test_no_capability_evidence_no_correction(self) -> None:
+        assert self._correct(_search(_candidate("Qwen/Qwen3-0.6B", 16)), extracted={}) is None
+
+    def test_no_lineage_found_no_correction(self) -> None:
+        assert self._correct(None) is None

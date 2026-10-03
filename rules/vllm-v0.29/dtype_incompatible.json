@@ -1,15 +1,36 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "dtype_incompatible",
+  "rule_version": 2,
+  "supersedes": "12200fc879d68b194a3eb187d92ab714892c53533bbed21b1609a74b75f98ad5885c",
   "correction_strategy": "fallback_dtype",
+  "correction_spec": {},
   "extraction_schema": {
-    "dev": "string",
-    "cap_str": "string",
-    "suggested": "string"
+    "model_type": {
+      "type": "enum",
+      "enum": [
+        "gemma2",
+        "gemma3",
+        "gemma3_text",
+        "glm4"
+      ],
+      "source": "config/model.py:2262 ('The model type {model_type!r} does not support float16.')"
+    },
+    "unsupported_dtype": {
+      "type": "enum",
+      "enum": [
+        "float16"
+      ],
+      "source": "config/model.py:2262 ('does not support float16')"
+    }
   },
   "source_sites": [
+    {
+      "file": "config/model.py",
+      "line": 2262
+    },
     {
       "file": "config/vllm.py",
       "line": 2828
@@ -31,15 +52,28 @@
       "line": 496
     }
   ],
+  "float16_blocklist": [
+    "gemma2",
+    "gemma3",
+    "gemma3_text",
+    "glm4"
+  ],
+  "float16_blocklist_source": "config/model.py:2243-2248 _FLOAT16_NOT_SUPPORTED_MODELS",
+  "kernel_architectures": {},
+  "kernel_architectures_source": null,
+  "exception_class": null,
+  "engine_callsite_module": null,
+  "status": "mechanism_verified",
+  "promoting_verification_fingerprint": "12206b393c533d0ae1e2e4c644df0af93e2bcc91115d04a0693e0f7494013333b586",
   "examples": [
+    "The model type 'gemma2' does not support float16. Reason: Numerical instability. Please use bfloat16 or float32 instead.",
     "nvfp4 KV cache is not supported with MLA (Multi-head Latent Attention) backends. Please use a different --kv-cache-dtype (e.g., 'fp8' or 'auto') for MLA models such as DeepSeek.",
     "FP8 KV cache is not supported by the Triton MLA backend on {dev} (compute capability {cap_str}); native FP8 (fp8e4nv) requires SM89+. Re-run with --kv-cache-dtype {suggested}.",
     "bfloat16 KV cache is not supported by the Triton MLA backend on {dev} (compute capability {cap_str}); bfloat16 requires SM80+. Re-run with --kv-cache-dtype float16.",
     "FP8 KV cache is not supported by the Triton attention backend on {dev} (compute capability {cap_str}); native FP8 (fp8e4nv) requires SM89+. Re-run with --kv-cache-dtype {suggested}.",
     "bfloat16 KV cache is not supported on {dev} (compute capability {cap_str}); bfloat16 requires SM80+. Re-run with --kv-cache-dtype float16."
   ],
-  "float16_blocklist": ["gemma2", "gemma3", "gemma3_text", "glm4"],
-  "float16_blocklist_source": "config/model.py:2243 _FLOAT16_NOT_SUPPORTED_MODELS",
-  "status": "hypothesis",
-  "count": 5
+  "count": 5,
+  "curation": "Hand-curated for the Phase 1b §10 fix proof: typed fields, each citing the vLLM v0.29.0 line that prints it. The source scanner must not overwrite this file.",
+  "replaces": []
 }

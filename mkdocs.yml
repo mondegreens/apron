@@ -9,6 +9,7 @@ theme:
 
 plugins:
   - search
+  - blog
   - mkdocstrings:
       handlers:
         python:
@@ -22,6 +23,7 @@ nav:
   - Target Architecture: target-architecture.md
   - Phase Plan: phase-plan.md
   - Framework Specification: framework-spec.md
+  - Fingerprint Migration (Phase 1b): fingerprint-migration-phase-1b.md
   - Development Process: development-process.md
   - Phase 0 Brief: phase-0-brief.md
   - Engineering Standards: engineering-standards.md
@@ -29,6 +31,8 @@ nav:
   - Failure Knowledge Base: failure-knowledge-base.md
   - Distribution: distribution.md
   - Architecture Dispatch Proof: architecture-dispatch-proof.md
+  - Findings:
+      - blog/index.md
   - Architecture Decision Records:
       - ADR-001 Execution Environment: adr/ADR-001-execution-environment.md
       - ADR-002 External Evidence: adr/ADR-002-external-evidence-and-interop.md

@@ -1,0 +1,8 @@
+{
+  "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+  "processes": {
+    "221": 0,
+    "389": 0
+  },
+  "token_free": true
+}

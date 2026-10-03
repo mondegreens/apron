@@ -1,33 +1,18 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "tp_divisibility",
+  "rule_version": 2,
+  "supersedes": "122066c642731418b8dad074939c96bef3823ebf548c5fe8ea810ccbe13c741499f0",
   "correction_strategy": "reduce_tensor_parallel",
+  "correction_spec": {},
   "extraction_schema": {
-    "total_num_attention_heads": "string",
-    "tensor_parallel_size": "string",
-    "num_q_per_kv": "string",
-    "decode_context_parallel_size": "string",
-    "intermediate_size_per_partition": "string",
-    "group_size": "string",
-    "w13_n": "string",
-    "packed_factor": "string",
-    "hidden_size": "string",
-    "layer_name": "string",
-    "input_size_per_partition": "string",
-    "output_size_per_partition": "string",
-    "embed_dim": "string",
-    "num_heads": "string",
-    "total_num_heads": "string",
-    "tp_size": "string",
-    "adapter_hidden_size": "string",
-    "encoder_attention_heads": "string",
-    "attention_hidden_size": "string",
-    "num_attention_heads": "string",
-    "embedding_dim": "string",
-    "ngram_heads": "string",
-    "ple_embed_dim": "string"
+    "num_heads": {
+      "type": "int",
+      "enum": [],
+      "source": "config/model.py:1415 ('Total number of attention heads ({total_num_attention_heads})', raised at :1414)"
+    }
   },
   "source_sites": [
     {
@@ -191,6 +176,14 @@
       "line": 217
     }
   ],
+  "float16_blocklist": [],
+  "float16_blocklist_source": null,
+  "kernel_architectures": {},
+  "kernel_architectures_source": null,
+  "exception_class": null,
+  "engine_callsite_module": null,
+  "status": "mechanism_verified",
+  "promoting_verification_fingerprint": "12209ac3de7807d51809acd76e127d26d804a5ec59e024150da7d0c9536599571ea5",
   "examples": [
     "Total number of attention heads ({total_num_attention_heads}) must be divisible by tensor parallel size ({tensor_parallel_size}).",
     "The model's number of query heads per KV head ({num_q_per_kv}) must be divisible by `--decode-context-parallel-size` ({decode_context_parallel_size}) for GQA/MQA.",
@@ -198,6 +191,7 @@
     "CompressedTensors WNA16 MoE with static group scales requires the MoE intermediate size per tensor-parallel partition ({intermediate_size_per_partition}) to be divisible by group_size ({self.group_siz",
     "CompressedTensors WNA16 MoE: gate+up output channels per TP rank (2 * intermediate_size_per_partition = {w13_n}) must be divisible by packed_factor ({self.packed_factor}). Use a TP size where 2 * inte"
   ],
-  "status": "hypothesis",
-  "count": 40
+  "count": 40,
+  "curation": "Hand-curated for the Phase 1b §10 fix proof: typed fields, each citing the vLLM v0.29.0 line that prints it. The source scanner must not overwrite this file. gpu_count is not printed by this error; the strategy reads it from the plan's resource_allocation (the requested execution).",
+  "replaces": []
 }

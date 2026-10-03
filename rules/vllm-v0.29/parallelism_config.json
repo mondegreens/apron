@@ -1,35 +1,85 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "parallelism_config",
   "correction_strategy": "reduce_tensor_parallel",
   "extraction_schema": {
-    "tensor_parallel_size": "string",
-    "total_num_kv_heads": "string",
-    "decode_context_parallel_size": "string",
-    "max_dcp_size": "string",
-    "data_parallel_size_local": "string",
-    "data_parallel_size": "string",
-    "tp": "string",
-    "dcp": "string",
-    "pcp": "string",
-    "sorted": "string",
-    "data_parallel_rank": "string",
-    "world_size": "string",
-    "gpu_count": "string",
-    "block_size": "string",
-    "hash_block_size": "string",
-    "workers_per_replica": "string",
-    "num_consumers": "string",
-    "c": "string",
-    "bad": "string",
-    "backend": "string",
-    "name": "string",
-    "nnodes": "string",
-    "data_parallel_backend": "string",
-    "tp_size": "string",
-    "rank": "string"
+    "tensor_parallel_size": {
+      "type": "string"
+    },
+    "total_num_kv_heads": {
+      "type": "string"
+    },
+    "decode_context_parallel_size": {
+      "type": "string"
+    },
+    "max_dcp_size": {
+      "type": "string"
+    },
+    "data_parallel_size_local": {
+      "type": "string"
+    },
+    "data_parallel_size": {
+      "type": "string"
+    },
+    "tp": {
+      "type": "string"
+    },
+    "dcp": {
+      "type": "string"
+    },
+    "pcp": {
+      "type": "string"
+    },
+    "sorted": {
+      "type": "string"
+    },
+    "data_parallel_rank": {
+      "type": "string"
+    },
+    "world_size": {
+      "type": "string"
+    },
+    "gpu_count": {
+      "type": "string"
+    },
+    "block_size": {
+      "type": "string"
+    },
+    "hash_block_size": {
+      "type": "string"
+    },
+    "workers_per_replica": {
+      "type": "string"
+    },
+    "num_consumers": {
+      "type": "string"
+    },
+    "c": {
+      "type": "string"
+    },
+    "bad": {
+      "type": "string"
+    },
+    "backend": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "nnodes": {
+      "type": "string"
+    },
+    "data_parallel_backend": {
+      "type": "string"
+    },
+    "tp_size": {
+      "type": "string"
+    },
+    "rank": {
+      "type": "string"
+    }
   },
   "source_sites": [
     {
@@ -269,5 +319,6 @@
     "enable_expert_parallel must be True to use EPLB."
   ],
   "status": "hypothesis",
-  "count": 57
+  "count": 57,
+  "rule_version": 1
 }

@@ -1,0 +1,33 @@
+{
+  "site": {
+    "volume_id": "7jiuum2nk6",
+    "data_center_id": "US-CA-2",
+    "size_gb": 3358
+  },
+  "staging": {
+    "pod_id": null,
+    "cost": 0.0,
+    "seconds": 0.0,
+    "error": null,
+    "models": [
+      {
+        "model_id": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "ok": true,
+        "seconds": 0.0,
+        "output_tail": "already staged"
+      },
+      {
+        "model_id": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "ok": true,
+        "seconds": 0.0,
+        "output_tail": "already staged"
+      },
+      {
+        "model_id": "zai-org/GLM-5.3-Flash",
+        "ok": true,
+        "seconds": 0.0,
+        "output_tail": "already staged"
+      }
+    ]
+  }
+}

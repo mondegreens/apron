@@ -229,9 +229,16 @@ def test_build_model_spec_qwen3():
 
 
 def test_build_model_spec_unknown_arch():
-    config = {"architectures": ["NovelArchForCausalLM"]}
+    config = {"architectures": ["NovelArchForCausalLM"], "num_attention_heads": 16}
     spec = build_model_spec(config)
     assert spec.components[0].mechanism == "autoregressive_decode"
+
+
+def test_build_model_spec_causal_lm_without_attention_heads_is_unknown():
+    """F8 / INV-32: no attention heads means no autoregressive_decode branch applies."""
+    config = {"architectures": ["NovelArchForCausalLM"]}
+    spec = build_model_spec(config)
+    assert spec.components[0].mechanism == "unknown"
 
 
 def test_build_model_spec_no_architectures():
@@ -344,22 +351,42 @@ def test_mla_missing_kv_lora_rank_returns_none():
 # ---------------------------------------------------------------------------
 
 
-def test_moe_activation_adjustment():
-    """DeepSeek-V3: 256 experts, 8 active → activation scaled by 8/256."""
+def test_moe_activation_is_not_scaled_by_the_routing_ratio():
+    """The old estimate scaled 10% of weights by 8/256 for DeepSeek-V3.  The
+    profiled peak tracks the output projection instead; DeepSeek-V2-Lite (MoE)
+    measured 0.41 GiB against 0.41 predicted with no routing factor (L5)."""
     result = calculate(_deepseek_input())
     assert result is not None
-    weight_bytes = 671_000_000_000
-    full_activation = int(weight_bytes * 0.10)
-    expected = int(full_activation * 8 / 256)
+    config = _deepseek_input().artifact_metadata
+    tokens, hidden = 2048, config["hidden_size"]
+    compile_peak = config["vocab_size"] * hidden * 2 + 2 * tokens * hidden * 2
+    # DeepSeek-V3's forward (MLA + MoE, the GLM-4.7-Flash probe's rule) is
+    # larger: the prefill-context dummy (16384 tokens: 4 x 256 seqs x block 16),
+    # the full fused-MoE workspace (every routed token, no routing factor) and
+    # the observed graph buffers.
+    prefill_context = 16384 * 128 * (128 + 128) * 2
+    workspace = tokens * 8 * (max(2048, hidden) + max(2 * 2048, hidden)) * 2
+    graph = 5 * tokens * 128 * 192 * 2 + 7 * tokens * hidden * 2 + 2 * tokens * 512 * 2
+    expected = max(compile_peak, prefill_context + workspace + graph)
+    assert expected > compile_peak
     assert result["activation_estimate_bytes"] == expected
 
 
-def test_non_moe_activation_unchanged():
-    """Qwen3-8B has no MoE fields — activation stays at 10% of weights."""
+def test_activation_tracks_the_output_projection_not_the_weights():
+    """Qwen3-8B measured 1.19 GiB of peak activation on an RTX 4090 (2048
+    profiled tokens); 10% of its weights would be 1.53 GiB, and its GPTQ copy
+    with a third of the weights measured the same 1.19 GiB (L5)."""
     result = calculate(_qwen3_input())
     assert result is not None
-    expected = int(16_381_470_720 * 0.10)
+    expected = 151936 * 4096 * 2 + 2 * 2048 * 4096 * 2
     assert result["activation_estimate_bytes"] == expected
+    assert abs(expected - int(1.19 * 2**30)) < 0.03 * 2**30
+
+
+def test_activation_needs_vocabulary_and_hidden_size():
+    inputs = _qwen3_input()
+    metadata = {k: v for k, v in inputs.artifact_metadata.items() if k != "vocab_size"}
+    assert calculate(inputs.model_copy(update={"artifact_metadata": metadata})) is None
 
 
 # ---------------------------------------------------------------------------
@@ -429,3 +456,75 @@ def test_build_model_spec_qwen3_stays_gqa():
     config = _load_qwen3_config()
     spec = build_model_spec(config, repository="Qwen/Qwen3-8B")
     assert spec.components[0].mechanism == "autoregressive_decode"
+
+
+# ---------------------------------------------------------------------------
+# Tensor parallelism and KV cache dtype (L5, 2026-09-27)
+# ---------------------------------------------------------------------------
+
+
+def _with(inputs: CalculatorInput, **execution: object) -> CalculatorInput:
+    return inputs.model_copy(
+        update={"execution_spec_data": {**inputs.execution_spec_data, **execution}}
+    )
+
+
+def test_tensor_parallel_predicts_per_gpu_weights_and_kv():
+    """vLLM reports memory per rank: Qwen3-8B at TP 2 measured 7.64 GiB of
+    weights per GPU, half the 15.27 GiB checkpoint (L5 class 5 proof)."""
+    one = calculate_autoregressive_decode(_qwen3_input())
+    two = calculate_autoregressive_decode(_with(_qwen3_input(), tensor_parallel=2))
+    assert one is not None and two is not None
+    assert two["tensor_parallel"] == 2
+    assert two["weight_memory_bytes"] == -(-one["weight_memory_bytes"] // 2)
+    assert two["kv_per_token_bytes"] == one["kv_per_token_bytes"] // 2  # 8 KV heads → 4
+
+
+def test_kv_heads_are_replicated_when_fewer_than_ranks():
+    one = calculate_autoregressive_decode(_qwen3_input())
+    sixteen = calculate_autoregressive_decode(_with(_qwen3_input(), tensor_parallel=16))
+    assert one is not None and sixteen is not None
+    assert sixteen["kv_per_token_bytes"] == one["kv_per_token_bytes"] // 8  # one head per rank
+
+
+def test_mla_latent_cache_is_not_split_by_tensor_parallel():
+    config = {
+        "num_hidden_layers": 27,
+        "num_attention_heads": 16,
+        "num_key_value_heads": 16,
+        "vocab_size": 102400,
+        "hidden_size": 2048,
+        "kv_lora_rank": 512,
+        "qk_rope_head_dim": 64,
+        "torch_dtype": "bfloat16",
+        "total_weight_bytes": 31_412_968_448,
+    }
+
+    def mla(tp: int) -> dict:
+        result = calculate_mla_decode(
+            CalculatorInput(
+                mechanism=ComponentMechanism(mechanism="mla_decode", role="decoder"),
+                workload=TextWorkload(kind="text", input_length=512, output_length=128),
+                artifact_metadata=config,
+                hardware=RTX_4090,
+                execution_spec_data={"max_batch_size": 4, "tensor_parallel": tp},
+            )
+        )
+        assert result is not None
+        return result
+
+    assert mla(2)["weight_memory_bytes"] == 31_412_968_448 // 2
+    assert mla(2)["kv_per_token_bytes"] == mla(1)["kv_per_token_bytes"]
+
+
+def test_fp8_kv_cache_halves_bf16_kv():
+    bf16 = calculate_autoregressive_decode(_qwen3_input())
+    fp8 = calculate_autoregressive_decode(_with(_qwen3_input(), kv_cache_dtype="fp8"))
+    assert bf16 is not None and fp8 is not None
+    assert fp8["kv_per_token_bytes"] * 2 == bf16["kv_per_token_bytes"]
+    assert DTYPE_BYTES["fp8"] == 1
+
+
+def test_unknown_kv_cache_dtype_is_refused_not_guessed():
+    with pytest.raises(KeyError):
+        calculate_autoregressive_decode(_with(_qwen3_input(), kv_cache_dtype="int3"))

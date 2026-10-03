@@ -26,6 +26,9 @@ _RECORD_TYPE_SUBDIRS: dict[str, str] = {
 
 def _subdir_for(record: dict[str, Any]) -> str:
     """Determine the storage subdirectory from record content."""
+    # PlanningClaims share claim_scope values with reports; their shape tells them apart.
+    if "producer" in record and "proposed_configuration" in record:
+        return "planning-claims"
     for key, subdir in _RECORD_TYPE_SUBDIRS.items():
         if key in str(record.get("claim_scope", "")) or key in str(record.get("__type__", "")):
             return subdir

@@ -17,6 +17,12 @@ if TYPE_CHECKING:
     from apron.domain.schemas.tasks import ServingWorkloadSpec
 
 
+#: The ``gpu_memory_utilization`` every plan the planner builds sets; the
+#: plan pipeline predicts the KV budget at it.  vLLM's own default is 0.92
+#: (config/cache.py:111 in v0.29.0, :103 in v0.30.0).
+PLAN_GPU_MEMORY_UTILIZATION = 0.90
+
+
 def build_plan(
     claim: PlanningClaim,
     model_spec: ModelSpec,
@@ -41,7 +47,7 @@ def build_plan(
     tp = _derive_tensor_parallel(total_required, hardware_spec, config)
     batch_size = _derive_batch_size(available_kv, config, tp)
 
-    gpu_util = 0.90
+    gpu_util = PLAN_GPU_MEMORY_UTILIZATION
     max_model_len = _derive_max_model_len(workload)
 
     engine_configuration: dict[str, str] = {
@@ -54,6 +60,8 @@ def build_plan(
         "gpu_count": str(tp),
         "weight_bytes": str(weight_bytes),
     }
+    if model_spec.repository:
+        resource_allocation["model_id"] = model_spec.repository
 
     return DeploymentPlan(
         tensor_parallel=tp,
@@ -65,12 +73,20 @@ def build_plan(
     )
 
 
+def served_dtype(stored: str | None) -> str:
+    """The dtype vLLM serves a checkpoint in with dtype=auto: a float32
+    checkpoint in 16 bits (config/model.py:2285-2287).  The plan names it
+    explicitly, so plan and prediction agree: Mamba-2.8B's plan passed float32
+    and loaded 10.31 GiB against a 16-bit prediction of 5.16 (2026-09-27)."""
+    return "bfloat16" if not stored or stored == "float32" else stored
+
+
 def _derive_dtype(model_spec: ModelSpec) -> str:
     dtypes = model_spec.component_bytes_dtype
     if "decoder" in dtypes:
-        return dtypes["decoder"]
+        return served_dtype(dtypes["decoder"])
     if dtypes:
-        return next(iter(dtypes.values()))
+        return served_dtype(next(iter(dtypes.values())))
     return "bfloat16"
 
 
@@ -102,10 +118,7 @@ def _derive_batch_size(
     isl = config.get("isl", 512)
     osl = config.get("osl", 128)
 
-    if kv_per_token <= 0:
-        return 4
-
-    per_sequence = kv_per_token * (isl + osl)
+    per_sequence = config.get("state_per_sequence_bytes") or kv_per_token * (isl + osl)
     if per_sequence <= 0:
         return 4
 

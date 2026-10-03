@@ -1,0 +1,13 @@
+[
+  "JunHowie/Qwen3-8B-GPTQ-Int4@NVIDIA GeForce RTX 4090x1",
+  "Qwen/Qwen3-0.6B@NVIDIA GeForce RTX 4090x1",
+  "Qwen/Qwen3-0.6B-FP8@NVIDIA GeForce RTX 4090x1",
+  "Qwen/Qwen3-1.7B@NVIDIA GeForce RTX 4090x1",
+  "Qwen/Qwen3-8B@NVIDIA GeForce RTX 4090x1",
+  "google/gemma-2-2b-it@NVIDIA GeForce RTX 4090x1",
+  "meta-llama/Llama-3.1-8B-Instruct@NVIDIA GeForce RTX 4090x1",
+  "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA GeForce RTX 4090x1",
+  "Qwen/Qwen3-14B@NVIDIA RTX A6000x1",
+  "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1",
+  "deepseek-ai/DeepSeek-V2-Lite-Chat@NVIDIA A100 80GB PCIex1"
+]

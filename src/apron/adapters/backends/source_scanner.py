@@ -240,10 +240,11 @@ def classify_error(entry: dict[str, Any]) -> str:
     msg = entry["message"].lower()
     file_path = entry["file"].lower()
 
-    if "out of memory" in msg or "outofmemoryerror" in msg:
-        return "oom"
+    # KV-cache capacity before allocator OOM: the KV check's text also says "memory".
     if "kv cache" in msg and ("memory" in msg or "available" in msg):
-        return "oom"
+        return "oom_kv_cache"
+    if "out of memory" in msg or "outofmemoryerror" in msg:
+        return "oom_weight_load"
     if "max_model_len" in msg or "max_seq_len" in msg:
         return "max_model_len"
     if "divisible" in msg and ("tensor" in msg or "parallel" in msg or "head" in msg):
@@ -344,6 +345,19 @@ def derive_correction_spec(entry: dict[str, Any]) -> dict[str, Any]:
     return {"action": "fallback", "description": "manual review needed"}
 
 
+def _must_keep(rule_path: Path) -> bool:
+    """A curated or promoted rule is never overwritten by a scan.
+
+    Curated rules carry typed extraction fields and cited source lines; a
+    promoted rule cites the boot that proved it.  A scan only proposes
+    ``hypothesis`` rules for families nobody has curated yet.
+    """
+    if not rule_path.exists():
+        return False
+    existing = json.loads(rule_path.read_text(encoding="utf-8"))
+    return bool(existing.get("curation")) or existing.get("status", "hypothesis") != "hypothesis"
+
+
 def scan_and_export(
     source_dir: Path,
     output_dir: Path,
@@ -372,13 +386,15 @@ def scan_and_export(
     }
 
     named_strategies = {
-        "oom": "reduce_memory_pressure",
+        "oom_weight_load": "retarget_memory",
+        "oom_kv_cache": "reduce_memory_pressure",
         "max_model_len": "clamp_max_model_len",
         "dtype_incompatible": "fallback_dtype",
         "tp_divisibility": "reduce_tensor_parallel",
-        "quant_compute_capability": "remove_quantization",
+        "quant_compute_capability": "retarget_capability",
         "lora_config": "fallback_engine_config",
     }
+    summary["kept"] = []
 
     for cls, class_entries in sorted(by_class.items()):
         extraction_fields: dict[str, str] = {}
@@ -420,6 +436,9 @@ def scan_and_export(
         }
 
         rule_path = rules_dir / f"{cls}.json"
+        if _must_keep(rule_path):
+            summary["kept"].append(cls)
+            continue
         rule_path.write_text(
             json.dumps(rule, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",

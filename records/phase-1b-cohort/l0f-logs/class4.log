@@ -1,0 +1,80 @@
+DEBUG 09-26 23:30:59 [plugins/__init__.py:44] No plugins for group vllm.platform_plugins found.
+DEBUG 09-26 23:30:59 [platforms/__init__.py:36] Checking if TPU platform is available.
+DEBUG 09-26 23:30:59 [platforms/__init__.py:55] TPU platform is not available because: No module named 'libtpu'
+DEBUG 09-26 23:30:59 [platforms/__init__.py:61] Checking if CUDA platform is available.
+DEBUG 09-26 23:30:59 [platforms/__init__.py:84] Confirmed CUDA platform is available.
+DEBUG 09-26 23:30:59 [platforms/__init__.py:112] Checking if ROCm platform is available.
+DEBUG 09-26 23:30:59 [platforms/__init__.py:126] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 09-26 23:30:59 [platforms/__init__.py:147] Checking if XPU platform is available.
+DEBUG 09-26 23:30:59 [platforms/__init__.py:177] Checking if CPU platform is available.
+DEBUG 09-26 23:30:59 [platforms/__init__.py:61] Checking if CUDA platform is available.
+DEBUG 09-26 23:30:59 [platforms/__init__.py:84] Confirmed CUDA platform is available.
+DEBUG 09-26 23:30:59 [platforms/__init__.py:280] Automatically detected platform cuda.
+/opt/venv/lib/python3.12/site-packages/huggingface_hub/constants.py:302: FutureWarning: The `HF_HUB_ENABLE_HF_TRANSFER` environment variable is deprecated as 'hf_transfer' is not used anymore. Please use `HF_XET_HIGH_PERFORMANCE` instead to enable high performance transfer with Xet. Visit https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfxethighperformance for more details.
+  warnings.warn(
+DEBUG 09-26 23:31:14 [entrypoints/.../utils/api_utils.py:165] Setting VLLM_WORKER_MULTIPROC_METHOD to 'spawn'
+DEBUG 09-26 23:31:14 [plugins/__init__.py:52] Available plugins for group vllm.general_plugins:
+DEBUG 09-26 23:31:14 [plugins/__init__.py:54] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+DEBUG 09-26 23:31:14 [plugins/__init__.py:54] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+DEBUG 09-26 23:31:14 [plugins/__init__.py:57] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+(APIServer pid=277) INFO 09-26 23:31:14 [entrypoints/.../utils/api_utils.py:347] 
+(APIServer pid=277) INFO 09-26 23:31:14 [entrypoints/.../utils/api_utils.py:347]        █     █     █▄   ▄█
+(APIServer pid=277) INFO 09-26 23:31:14 [entrypoints/.../utils/api_utils.py:347]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.29.0
+(APIServer pid=277) INFO 09-26 23:31:14 [entrypoints/.../utils/api_utils.py:347]   █▄█▀ █     █     █     █  model   /workspace/models/google/gemma-2-2b-it
+(APIServer pid=277) INFO 09-26 23:31:14 [entrypoints/.../utils/api_utils.py:347]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=277) INFO 09-26 23:31:14 [entrypoints/.../utils/api_utils.py:347] 
+(APIServer pid=277) INFO 09-26 23:31:14 [entrypoints/.../utils/api_utils.py:286] non-default args: {'model_tag': '/workspace/models/google/gemma-2-2b-it', 'model': '/workspace/models/google/gemma-2-2b-it', 'dtype': 'float16', 'served_model_name': ['google/gemma-2-2b-it']}
+(APIServer pid=277) DEBUG 09-26 23:31:14 [model_executor/models/registry.py:967] Cached model info file for class vllm.model_executor.models.gemma2.Gemma2ForCausalLM not found
+(APIServer pid=277) DEBUG 09-26 23:31:14 [model_executor/models/registry.py:1038] Cache model info for class vllm.model_executor.models.gemma2.Gemma2ForCausalLM miss. Loading model instead.
+(APIServer pid=277) DEBUG 09-26 23:31:23 [model_executor/models/registry.py:1048] Loaded model info for class vllm.model_executor.models.gemma2.Gemma2ForCausalLM
+(APIServer pid=277) DEBUG 09-26 23:31:23 [logging_utils/log_time.py:29] Registry inspect model class: Elapsed time 9.0281097 secs
+(APIServer pid=277) INFO 09-26 23:31:23 [config/model.py:684] Resolved architecture: Gemma2ForCausalLM
+(APIServer pid=277) Traceback (most recent call last):
+(APIServer pid=277)   File "/opt/venv/bin/vllm", line 10, in <module>
+(APIServer pid=277)     sys.exit(main())
+(APIServer pid=277)              ^^^^^^
+(APIServer pid=277)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/cli/main.py", line 97, in main
+(APIServer pid=277)     args.dispatch_function(args)
+(APIServer pid=277)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/cli/serve.py", line 153, in cmd
+(APIServer pid=277)     uvloop.run(run_server(args))
+(APIServer pid=277)   File "/opt/venv/lib/python3.12/site-packages/uvloop/__init__.py", line 96, in run
+(APIServer pid=277)     return __asyncio.run(
+(APIServer pid=277)            ^^^^^^^^^^^^^^
+(APIServer pid=277)   File "/usr/lib/python3.12/asyncio/runners.py", line 195, in run
+(APIServer pid=277)     return runner.run(main)
+(APIServer pid=277)            ^^^^^^^^^^^^^^^^
+(APIServer pid=277)   File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+(APIServer pid=277)     return self._loop.run_until_complete(task)
+(APIServer pid=277)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=277)   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+(APIServer pid=277)   File "/opt/venv/lib/python3.12/site-packages/uvloop/__init__.py", line 48, in wrapper
+(APIServer pid=277)     return await main
+(APIServer pid=277)            ^^^^^^^^^^
+(APIServer pid=277)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 176, in run_server
+(APIServer pid=277)     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)
+(APIServer pid=277)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 190, in run_server_worker
+(APIServer pid=277)     async with build_async_engine_client(
+(APIServer pid=277)                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=277)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=277)     return await anext(self.gen)
+(APIServer pid=277)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=277)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 58, in build_async_engine_client
+(APIServer pid=277)     async with build_async_engine_client_from_engine_args(
+(APIServer pid=277)                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=277)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=277)     return await anext(self.gen)
+(APIServer pid=277)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=277)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 82, in build_async_engine_client_from_engine_args
+(APIServer pid=277)     vllm_config = engine_args.create_engine_config(usage_context=usage_context)
+(APIServer pid=277)                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=277)   File "/opt/venv/lib/python3.12/site-packages/vllm/engine/arg_utils.py", line 2053, in create_engine_config
+(APIServer pid=277)     model_config = self.create_model_config()
+(APIServer pid=277)                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=277)   File "/opt/venv/lib/python3.12/site-packages/vllm/engine/arg_utils.py", line 1809, in create_model_config
+(APIServer pid=277)     return ModelConfig(
+(APIServer pid=277)            ^^^^^^^^^^^^
+(APIServer pid=277)   File "/opt/venv/lib/python3.12/site-packages/pydantic/_internal/_dataclasses.py", line 121, in __init__
+(APIServer pid=277)     s.__pydantic_validator__.validate_python(ArgsKwargs(args, kwargs), self_instance=s)
+(APIServer pid=277) pydantic_core._pydantic_core.ValidationError: 1 validation error for ModelConfig
+(APIServer pid=277)   Value error, The model type 'gemma2' does not support float16. Reason: Numerical instability. Please use bfloat16 or float32 instead. [type=value_error, input_value=ArgsKwargs((), {'model': ...nderer_num_workers': 1}), input_type=ArgsKwargs]
+(APIServer pid=277)     For further information visit https://errors.pydantic.dev/2.13/v/value_error

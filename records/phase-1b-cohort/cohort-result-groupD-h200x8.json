@@ -1,0 +1,37 @@
+{
+  "executed": {},
+  "prediction_errors": {},
+  "skipped": {},
+  "stopped": null,
+  "budget": {
+    "authorized": 200.0,
+    "spent": 170.85665,
+    "held": 0,
+    "remaining": 29.14335,
+    "open_holds": [],
+    "flags": [
+      "l0a3-run1:replayed:estimate",
+      "stage:Qwen/Qwen3-32B:replayed:estimate",
+      "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1:interrupted_in_provision:tvuknutqxlhbxz:23s_at_3.49_per_h",
+      "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1:interrupted_by_owner_stop:uv3q4ny9qmnsiz:377s_at_3.49_per_h",
+      "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3:stopped_to_fix_download_hang:ia4lxog3zt7yvq:~450s_at_0.24_per_h",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:replayed:provider_reported",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:settled_by_owner",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x2:interrupted_start: rate x rental 14:55:32-15:15:54, reconcile to the bill",
+      "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4:replayed:estimate",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x4:replayed:estimate",
+      "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H200x4:replayed:provider_reported",
+      "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H200x4:settled_by_owner"
+    ],
+    "overruns": []
+  },
+  "decision_report": {
+    "schema_version": 1,
+    "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+    "candidates": [],
+    "outcome_economics": null,
+    "uncertainty": null,
+    "disclosed_comparable_set": [],
+    "exclusions": []
+  }
+}

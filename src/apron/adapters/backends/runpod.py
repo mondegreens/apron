@@ -10,60 +10,142 @@ Data plane: HTTPS proxy ``https://{pod_id}-8000.proxy.runpod.net``.
 
 from __future__ import annotations
 
+import atexit
 import contextlib
 import json
 import logging
 import os
 import time
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 
+from apron.adapters.backends.runpod_logs import LogLine, PodLogReader, StartWatch
+from apron.adapters.runner_image import RUNNER_HOST_CUDA_VERSIONS, RUNNER_IMAGE
+from apron.application.orchestration.errors import PodLeakError
+from apron.application.sanitization import mask_secrets
 from apron.domain.canonical import canonicalize, digest_hex
 from apron.domain.schemas.primitives import HardwareSpec
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 logger = logging.getLogger(__name__)
 
 GRAPHQL_URL = "https://api.runpod.io/graphql"
-DEFAULT_IMAGE = "ghcr.io/mondegreens/apron-runner:v0.29.0-rc7"
+BILLING_URL = "https://rest.runpod.io/v1/billing/pods"
+DEFAULT_IMAGE = RUNNER_IMAGE
 DEFAULT_MAX_UPTIME = 3600
+POD_NAME_PREFIX = "apron-run"
+# Model weights go on the pod volume (vllm_engine.MODELS_DIR), sized for the
+# largest seed model (Qwen3-32B, 65.5 GB) with room to spare.
+VOLUME_GB = 100
+VOLUME_MOUNT = "/runpod-volume"
+CLOUD_TYPE = "SECURE"  # D4: RunPod Secure only; Community is never used
+TEARDOWN_BACKOFF_SECONDS = (2, 4, 8)
+# Pods rented for one start before giving up.  RunPod does not say which host a
+# pod lands on; a host that never begins is left and another pod rented
+# (``PodStartAbandoned``).  Each abandoned host costs at most
+# runpod_logs.FIRST_LINE_WITHIN seconds of rent.
+START_ATTEMPTS = 3
+DEFAULT_LEAK_LOG = Path("records/phase-1b-cohort/leaked_pods.json")
 
+# ``total_memory_bytes`` is the memory CUDA reports for one GPU
+# (``torch.cuda.get_device_properties(0).total_memory``), not the nominal size:
+# vLLM requests ``ceil(total x gpu_memory_utilization)`` of it
+# (v1/worker/utils.py:521-523 in v0.29.0 and v0.30.0).  Where a cohort pod
+# detected the GPU, the value is the byte count it detected: every stored
+# verification report's ``detected_hardware_fingerprint`` hashes a HardwareSpec
+# with that count, and the count is the one whose hash matches (search within
+# +-0.0051 GiB of the startup log's rounded total; ``docs/traces/
+# kv-budget-residuals.md``).  The nominal sizes (80, 48, 24 GiB) over-stated the
+# requested memory by 0.44-1.77 GiB per GPU.  SKUs no pod has detected keep a
+# nominal or reported figure and say so.
 GPU_SPECS: dict[str, dict[str, Any]] = {
     "NVIDIA GeForce RTX 4090": {
-        "total_memory_bytes": 25_769_803_776,
+        "total_memory_bytes": 25_250_627_584,  # detected (24,080.875 MiB)
         "compute_capability": "8.9",
     },
     "NVIDIA RTX A5000": {
-        "total_memory_bytes": 25_769_803_776,
+        "total_memory_bytes": 25_769_803_776,  # nominal 24 GiB: never detected
         "compute_capability": "8.6",
     },
     "NVIDIA L4": {
-        "total_memory_bytes": 25_769_803_776,
+        "total_memory_bytes": 23_659_151_360,  # detected (22,563.125 MiB)
         "compute_capability": "8.9",
     },
     "NVIDIA RTX A6000": {
-        "total_memory_bytes": 51_539_607_552,
+        "total_memory_bytes": 50_899_648_512,  # detected (48,541.6875 MiB)
         "compute_capability": "8.6",
     },
     "NVIDIA A100 80GB PCIe": {
-        "total_memory_bytes": 85_899_345_920,
+        # Detected 81,151.75 MiB on one pod, 81,152.75 on another (another
+        # driver): the smaller, so the requested memory is never over-stated.
+        "total_memory_bytes": 85_093_777_408,
         "compute_capability": "8.0",
     },
     "NVIDIA A100-SXM4-80GB": {
-        "total_memory_bytes": 85_899_345_920,
+        "total_memory_bytes": 85_093_777_408,  # detected (81,151.75 MiB)
         "compute_capability": "8.0",
     },
     "NVIDIA H100 80GB HBM3": {
-        "total_memory_bytes": 85_899_345_920,
+        "total_memory_bytes": 85_017_493_504,  # detected (81,079 MiB)
         "compute_capability": "9.0",
     },
+    # Phase 1b additions (§6.2).  Type IDs and memory are re-checked against
+    # runpod.get_gpus() and the detected hardware at L0.
+    "NVIDIA GeForce RTX 3090": {
+        "total_memory_bytes": 25_769_803_776,  # nominal 24 GiB: never detected
+        "compute_capability": "8.6",
+    },
+    "NVIDIA L40": {
+        # 48 GB nominal; 46,068 MiB usable as reported by the driver
+        "total_memory_bytes": 48_305_799_168,
+        "compute_capability": "8.9",
+    },
+    "NVIDIA H200": {
+        # Detected (143,156.0625 MiB) on the 4x H200 GLM-5.3-Flash boots,
+        # EUR-IS, 2026-09-29: the count whose hash is the reports'
+        # detected_hardware_fingerprint.  The 143,771 MiB guessed before was
+        # 0.60 GiB high.
+        "total_memory_bytes": 150_110_011_392,
+        "compute_capability": "9.0",
+    },
+    "NVIDIA B200": {
+        # class 6 retarget target: SM100 (compute capability 10.0).  Detected
+        # (182,624.3125 MiB) on the 2x B200 GLM-5.3-Flash boot, 2026-09-28.
+        "total_memory_bytes": 191_495_471_104,
+        "compute_capability": "10.0",
+    },
 }
+
+_POD_COST_QUERY = """query Pod {{
+  pod(input: {{podId: "{pod_id}"}}) {{
+    id
+    costPerHr
+    lastStartedAt
+    runtime {{ uptimeInSeconds }}
+  }}
+}}"""
+
+_STOCK_QUERY = """query Stock {{
+  gpuTypes(input: {{id: "{gpu}"}}) {{
+    id
+    lowestPrice(input: {{
+      gpuCount: {count}, secureCloud: true, allowedCudaVersions: [{cuda}]{dc}
+    }}) {{
+      stockStatus
+    }}
+  }}
+}}"""
 
 _POD_STATUS_QUERY = """query Pod {{
   pod(input: {{podId: "{pod_id}"}}) {{
     id
     name
+    machineId
+    machine {{ dataCenterId }}
     runtime {{
       uptimeInSeconds
       ports {{ ip isIpPublic privatePort publicPort type }}
@@ -71,6 +153,11 @@ _POD_STATUS_QUERY = """query Pod {{
     }}
   }}
 }}"""
+
+
+def _default_leak_log() -> Path:
+    # Read at call time so tests can redirect it (tests/conftest.py).
+    return DEFAULT_LEAK_LOG
 
 
 class _EphemeralHostKeyPolicy:
@@ -84,12 +171,96 @@ class _EphemeralHostKeyPolicy:
         logger.info("Ephemeral host key %s for %s", key.get_fingerprint().hex(), hostname)
 
 
+_POD_AGE_QUERY = """query PodAge {{
+  pod(input: {{podId: "{pod_id}"}}) {{
+    lastStartedAt
+    runtime {{ uptimeInSeconds }}
+  }}
+}}"""
+
+
+def _drain(channel: Any, deadline: float, poll: float = 0.05) -> tuple[str, str, int | None]:
+    """Read a command's stdout and stderr while it runs; its exit code, or None
+    past *deadline* seconds (the channel is then closed).
+
+    Output is read as it arrives, not after the exit: the SSH channel window
+    is 2 MiB, and a command writing more blocks until it is read.  Waiting for
+    the exit first deadlocked on a 12.7 MB vLLM log (Qwen3.6 boot, group B,
+    2026-09-28: ``cat`` stopped at exactly 2,097,152 bytes and the read timed
+    out after 600 s on a healthy, billed pod).
+    """
+    out, err = bytearray(), bytearray()
+    end = time.monotonic() + deadline
+    while True:
+        busy = False
+        while channel.recv_ready():
+            out += channel.recv(1 << 16)
+            busy = True
+        while channel.recv_stderr_ready():
+            err += channel.recv_stderr(1 << 16)
+            busy = True
+        if (
+            channel.exit_status_ready()
+            and channel.eof_received
+            and not channel.recv_ready()
+            and not channel.recv_stderr_ready()
+        ):
+            code = channel.recv_exit_status()
+            return out.decode(errors="replace"), err.decode(errors="replace"), code
+        if time.monotonic() > end:
+            channel.close()
+            return out.decode(errors="replace"), err.decode(errors="replace"), None
+        if not busy:
+            time.sleep(poll)
+
+
+def _age_from(pod: dict[str, Any], now: float) -> int:
+    """Seconds since the pod was rented (``lastStartedAt``), else its runtime uptime.
+
+    ``runpod.get_pods()`` is no age source: its ``uptimeSeconds`` read 0 for a
+    pod up 810 s (L0-A3, 2026-09-26) and its ``runtime`` holds only ports.
+    ``lastStartedAt`` is set when the pod is rented, so a pod still pulling
+    its image (no runtime yet) is aged too — it bills from then.
+    """
+    started = pod.get("lastStartedAt")
+    if started:
+        from datetime import datetime
+
+        stamp = datetime.fromisoformat(str(started).replace("Z", "+00:00"))
+        return max(0, int(now - stamp.timestamp()))
+    return int((pod.get("runtime") or {}).get("uptimeInSeconds") or 0)
+
+
+class PodStartAbandoned(RuntimeError):
+    """A rented pod whose logs showed its start was not progressing."""
+
+    def __init__(self, pod_id: str, verdict: str, report: dict[str, Any]) -> None:
+        super().__init__(f"Pod {pod_id} abandoned: {verdict} ({report})")
+        self.pod_id = pod_id
+        self.verdict = verdict
+        self.report = report
+
+
+class PodStartError(RuntimeError):
+    """Every pod rented for one start was abandoned (``PodStartAbandoned``)."""
+
+    def __init__(self, attempts: list[dict[str, Any]]) -> None:
+        verdicts = ", ".join(f"{a.get('pod_id')}: {a.get('outcome')}" for a in attempts)
+        super().__init__(f"no pod started after {len(attempts)} rentals ({verdicts})")
+        self.attempts = attempts
+
+
+class RemoteCommandTimeout(RuntimeError):
+    """A remote command ran past its deadline (not a connection loss: never retried)."""
+
+
 class RunPodTarget:
     """ExecutionTarget for RunPod Secure Cloud GPUs."""
 
     _kind = "rented-provider"
     _operator = "apron"
     _provider = "runpod"
+    models_dir = "/runpod-volume/models"
 
     def __init__(
         self,
@@ -98,9 +269,16 @@ class RunPodTarget:
         ssh_key_path: str | None = None,
         image: str = DEFAULT_IMAGE,
         gpu_type: str | None = None,
+        gpu_count: int = 1,
         max_uptime: int = DEFAULT_MAX_UPTIME,
         ssh_timeout: int = 30,
         command_timeout: int = 600,
+        leak_log: Path | None = None,
+        network_volume_id: str | None = None,
+        data_center_id: str | None = None,
+        volume_gb: int = VOLUME_GB,
+        pod_log_dir: Path | None = None,
+        start_attempts: int = START_ATTEMPTS,
     ) -> None:
         self._api_key = api_key or os.environ.get("RUNPOD_API_KEY")
         self._ssh_key_path = ssh_key_path or os.environ.get(
@@ -109,9 +287,32 @@ class RunPodTarget:
         )
         self._image = image
         self._gpu_type = gpu_type
+        if gpu_count < 1:
+            raise ValueError(f"gpu_count must be >= 1, got {gpu_count}")
+        self._gpu_count = gpu_count
         self._max_uptime = max_uptime
+        self._leak_log = leak_log or _default_leak_log()
+        self._atexit_guard: Callable[[], None] | None = None
         self._ssh_timeout = ssh_timeout
         self._command_timeout = command_timeout
+        # Pre-staged weights (runpod_storage): the volume replaces the pod
+        # volume at the same mount, and pins the pod to its datacenter.
+        if network_volume_id and not data_center_id:
+            raise ValueError("a network volume needs its data_center_id")
+        self._network_volume_id = network_volume_id
+        # The pod's own volume when weights download on the pod: sized for the
+        # model (a 360 GB checkpoint does not fit the 100 GB default).
+        self._volume_gb = volume_gb
+        self._data_center_id = data_center_id
+        # Where each pod's system and container log lines are kept (None: not kept).
+        self._pod_log_dir = pod_log_dir
+        if start_attempts < 1:
+            raise ValueError(f"start_attempts must be >= 1, got {start_attempts}")
+        self._start_attempts = start_attempts
+        # The last pod start, as the logs showed it (``_wait_for_running``),
+        # and every pod rented for the current start.
+        self.start_report: dict[str, Any] = {}
+        self.start_attempts: list[dict[str, Any]] = []
 
         self._pod_id: str | None = None
         self._ssh: Any | None = None
@@ -143,6 +344,26 @@ class RunPodTarget:
         if self._execution_fingerprint_hex is None:
             raise RuntimeError("execution fingerprint not built — call provision() first")
         return self._execution_fingerprint_hex
+
+    @property
+    def gpu_count(self) -> int:
+        return self._gpu_count
+
+    @property
+    def pod_id(self) -> str | None:
+        return self._pod_id
+
+    @property
+    def weights_persist(self) -> bool:
+        """True when the weights live on a volume that outlives the pod (never evicted)."""
+        return self._network_volume_id is not None
+
+    @property
+    def weights_source(self) -> str:
+        """Where the pod reads model weights from, for the record."""
+        if self._network_volume_id:
+            return f"runpod network volume {self._network_volume_id} in {self._data_center_id}"
+        return "downloaded to the pod volume"
 
     @property
     def proxy_url(self) -> str | None:
@@ -182,17 +403,16 @@ class RunPodTarget:
                 gpu = _runpod.get_gpu(gpu_id)
             except Exception:
                 continue
+            # D4: Secure only.  A GPU without a Secure price is unavailable;
+            # the Community price is never used, not even as a fallback.
             secure_price = gpu.get("securePrice") or 0
-            community_price = gpu.get("communityPrice") or 0
-            price = secure_price or community_price
-            if not price:
+            if not secure_price:
                 continue
             available.append(
                 {
                     "gpu_type_id": gpu_id,
-                    "hourly_rate_usd": float(price),
+                    "hourly_rate_usd": float(secure_price),
                     "secure_price": float(secure_price),
-                    "community_price": float(community_price),
                     "hardware_spec": HardwareSpec(
                         gpu_sku=gpu_id,
                         total_memory_bytes=specs["total_memory_bytes"],
@@ -212,25 +432,55 @@ class RunPodTarget:
         if not self._gpu_type:
             raise RuntimeError("No gpu_type set — call select_gpu() or pass gpu_type")
 
+        if self._pod_id is not None:
+            # Never orphan a live pod by overwriting its ID and guard.
+            logger.warning("provision() with live pod %s — tearing it down first", self._pod_id)
+            self.teardown()
+
         import runpod as _runpod  # type: ignore[import-untyped]
 
         _runpod.api_key = self._api_key
 
-        pod = _runpod.create_pod(
-            name="apron-run",
-            image_name=self._image,
-            gpu_type_id=self._gpu_type,
-            gpu_count=1,
-            cloud_type="SECURE",
-            ports="22/tcp,8000/http",
-            volume_in_gb=100,
-            container_disk_in_gb=50,
-            env=env or {},
+        placement: dict[str, Any] = (
+            {
+                "network_volume_id": self._network_volume_id,
+                "data_center_id": self._data_center_id,
+                "volume_in_gb": 0,  # the network volume is the pod's volume
+            }
+            if self._network_volume_id
+            else {"volume_in_gb": self._volume_gb}
         )
-        self._pod_id = pod["id"]
-        logger.info("Pod created: %s", self._pod_id)
-
-        pod_info = self._wait_for_running(wait_timeout)
+        self.start_attempts = []
+        pod_info: dict[str, Any] | None = None
+        for _ in range(self._start_attempts):
+            pod = _runpod.create_pod(
+                name=POD_NAME_PREFIX,
+                image_name=self._image,
+                gpu_type_id=self._gpu_type,
+                gpu_count=self._gpu_count,
+                cloud_type=CLOUD_TYPE,
+                allowed_cuda_versions=list(RUNNER_HOST_CUDA_VERSIONS),
+                ports="22/tcp,8000/http",
+                volume_mount_path=VOLUME_MOUNT,  # explicit: model weights live here
+                container_disk_in_gb=50,
+                env=env or {},
+                **placement,
+            )
+            self._pod_id = pod["id"]
+            logger.info("Pod created: %s", self._pod_id)
+            self._register_teardown_guard()
+            try:
+                pod_info = self._wait_for_running(wait_timeout)
+            except PodStartAbandoned as exc:
+                # The host is not starting this pod: leave it, rent another.
+                logger.warning("%s; terminating it", exc)
+                self.start_attempts.append(exc.report)
+                self.teardown()
+                continue
+            self.start_attempts.append(dict(self.start_report))
+            break
+        if pod_info is None:
+            raise PodStartError(self.start_attempts)
 
         self._establish_ssh(pod_info)
 
@@ -247,22 +497,220 @@ class RunPodTarget:
             "status": "provisioned",
             "pod_id": self._pod_id,
             "hardware": self._hardware.model_dump(mode="json"),
+            "detected_gpu_count": hw_info.get("gpu_count", 1),
+            "start_attempts": list(self.start_attempts),
         }
 
-    def execute(self, command: str, retries: int = 2) -> dict[str, Any]:
+    # ------------------------------------------------------------------
+    # Pod safety net (§6.2)
+    # ------------------------------------------------------------------
+
+    def _register_teardown_guard(self) -> None:
+        """Terminate the pod at interpreter exit if teardown never ran.
+
+        Captures the pod ID and key by value (H14): the guard must not
+        depend on ``self``, which may be mid-teardown or gone.  SIGKILL is
+        not covered — the next start's ``cleanup_orphaned_pods`` is.
+        """
+        import runpod as _sdk  # type: ignore[import-untyped]
+
+        pod_id, api_key = self._pod_id, self._api_key
+
+        # The SDK module is captured too: importing during interpreter
+        # shutdown can fail, and the guard runs exactly then.
+        def _teardown_guard(
+            pid: str | None = pod_id, key: str | None = api_key, _rp: Any = _sdk
+        ) -> None:
+            _rp.api_key = key
+            try:
+                _rp.terminate_pod(pid)
+                logger.warning("atexit: terminated pod %s", pid)
+            except Exception as exc:
+                logger.error("atexit: failed to terminate pod %s: %s", pid, mask_secrets(str(exc)))
+
+        self._atexit_guard = _teardown_guard
+        atexit.register(_teardown_guard)
+
+    def _unregister_teardown_guard(self) -> None:
+        if self._atexit_guard is not None:
+            atexit.unregister(self._atexit_guard)
+            self._atexit_guard = None
+
+    def _record_leaked_pod(self, pod_id: str, error: str) -> None:
+        path = self._leak_log
+        path.parent.mkdir(parents=True, exist_ok=True)
+        leaked: list[dict[str, Any]] = []
+        if path.exists():
+            leaked = json.loads(path.read_text() or "[]")
+        leaked.append({"pod_id": pod_id, "error": mask_secrets(error), "at": time.time()})
+        path.write_text(json.dumps(leaked, indent=2) + "\n")
+
+    def cleanup_orphaned_pods(self, max_age_seconds: int = 3600) -> list[str]:
+        """Terminate Apron pods older than *max_age_seconds* (H10).
+
+        Runs at orchestrator start: a pod whose process was SIGKILLed has no
+        atexit guard.  Only pods named ``apron-run*`` whose uptime reaches the
+        age are touched (``max_age_seconds=0``: every Apron pod).  Returns the
+        terminated pod IDs.
+        """
+        if not self._api_key:
+            return []
+        import runpod as _runpod  # type: ignore[import-untyped]
+
+        _runpod.api_key = self._api_key
+        terminated: list[str] = []
+        for pod in _runpod.get_pods() or []:
+            name = str(pod.get("name") or "")
+            if not name.startswith(POD_NAME_PREFIX):
+                continue
+            uptime = self._pod_age(pod["id"])
+            if uptime < max_age_seconds:
+                continue
+            try:
+                _runpod.terminate_pod(pod["id"])
+                terminated.append(pod["id"])
+                logger.warning("Orphan cleanup: terminated %s (uptime %ds)", pod["id"], uptime)
+            except Exception as exc:
+                logger.error("Orphan cleanup failed for %s: %s", pod["id"], mask_secrets(str(exc)))
+                self._record_leaked_pod(pod["id"], str(exc))
+        return terminated
+
+    def _pod_age(self, pod_id: str | None) -> int:
+        """Age of one pod from the single-pod query (see ``_age_from``); 0 if unknown."""
+        if not pod_id:
+            return 0
+        try:
+            data = self._gql_status(_POD_AGE_QUERY.format(pod_id=pod_id))
+        except Exception:
+            logger.warning("pod age query failed for %s", pod_id)
+            return 0
+        return _age_from(data.get("pod") or {}, time.time())
+
+    def list_apron_pods(self) -> list[dict[str, Any]]:
+        """Pods named ``apron-run*`` on the account — the before/after session check."""
+        if not self._api_key:
+            return []
+        import runpod as _runpod  # type: ignore[import-untyped]
+
+        _runpod.api_key = self._api_key
+        return [
+            {
+                "id": pod.get("id"),
+                "name": pod.get("name"),
+                "uptime_seconds": self._pod_age(pod.get("id")),
+            }
+            for pod in _runpod.get_pods() or []
+            if str(pod.get("name") or "").startswith(POD_NAME_PREFIX)
+        ]
+
+    def pod_reported_cost(self, pod_id: str | None = None) -> float | None:
+        """Cost of a pod at RunPod's rate (default: the current one), for the M3 reconcile.
+
+        costPerHr x time since the pod was rented (``lastStartedAt``): the image
+        pull is billed, and container uptime leaves it out (L0-A3 showed ~5x
+        less than the local clock on a short pod).
+
+        Read before teardown, or by ledger replay for a pod a crashed run left
+        behind; ``None`` when the API does not answer.
+        """
+        pod_id = pod_id or self._pod_id
+        if pod_id is None:
+            return None
+        try:
+            data = self._gql_status(_POD_COST_QUERY.format(pod_id=pod_id))
+        except Exception:
+            logger.debug("pod cost query failed", exc_info=True)
+            return None
+        pod = data.get("pod") or {}
+        rate = pod.get("costPerHr")
+        if rate is None or not (pod.get("lastStartedAt") or pod.get("runtime")):
+            # A terminated pod is gone from the pod API; its bill is not
+            # (L0-A3: a crash replay fell back to a 2x estimate, 2026-09-27).
+            return self.billed_cost(pod_id)
+        return round(float(rate) * _age_from(pod, time.time()) / 3600, 6)
+
+    def billed_cost(self, pod_id: str) -> float | None:
+        """What RunPod billed for a pod (its billing API; running or terminated).
+
+        ``None`` when the API does not answer or has not posted the pod yet
+        (billing lags termination by minutes).
+        """
+        rows = self.billing()
+        amounts = [float(r["amount"]) for r in rows if r.get("podId") == pod_id]
+        return round(sum(amounts), 6) if amounts else None
+
+    def billing(self, start: str | None = None, end: str | None = None) -> list[dict[str, Any]]:
+        """Per-pod, per-day billing rows (``podId``, ``amount``, ``timeBilledMs``,
+        ``time``); ``[]`` when the API does not answer."""
+        params = {"bucketSize": "day", "grouping": "podId"}
+        if start:
+            params["startTime"] = start
+        if end:
+            params["endTime"] = end
+        try:
+            resp = httpx.get(
+                BILLING_URL,
+                params=params,
+                headers={"Authorization": f"Bearer {self._api_key}"},
+                timeout=30,
+            )
+            resp.raise_for_status()
+            rows = resp.json()
+        except Exception:
+            logger.debug("billing query failed", exc_info=True)
+            return []
+        return rows if isinstance(rows, list) else []
+
+    def stock_status(
+        self, gpu_type: str | None = None, gpu_count: int | None = None
+    ) -> str | None:
+        """Secure stock for a GPU on hosts that can run the image (read-only, free).
+
+        RunPod's ``lowestPrice.stockStatus`` ("High"/"Medium"/"Low") under the
+        same Secure and CUDA filters ``provision`` uses; ``None`` means no
+        stock.  Stock is a hint, not a reservation: creation can still be
+        refused.  The GPU price listing is no capacity signal at all (L0-A).
+        """
+        gpu = gpu_type or self._gpu_type
+        count = gpu_count or self._gpu_count
+        cuda = ", ".join(f'"{v}"' for v in RUNNER_HOST_CUDA_VERSIONS)
+        # A pod with a network volume can only start in the volume's datacenter.
+        dc = f', dataCenterId: "{self._data_center_id}"' if self._data_center_id else ""
+        query = _STOCK_QUERY.format(gpu=gpu, count=int(count), cuda=cuda, dc=dc)
+        data = self._gql_status(query)
+        types = data.get("gpuTypes") or []
+        lowest = (types[0].get("lowestPrice") or {}) if types else {}
+        status = lowest.get("stockStatus")
+        return str(status) if status else None
+
+    def execute(
+        self, command: str, retries: int = 2, timeout: int | None = None
+    ) -> dict[str, Any]:
+        """Run *command* over SSH; raise RemoteCommandTimeout past the deadline.
+
+        paramiko's ``recv_exit_status`` ignores the channel timeout, so a command
+        whose channel never closes would block forever on a billed pod (L0-A3).
+        """
         import paramiko as _paramiko
 
+        deadline = timeout or self._command_timeout
         for attempt in range(retries + 1):
             try:
                 self._ensure_ssh()
                 assert self._ssh is not None
-                _, stdout, stderr = self._ssh.exec_command(command, timeout=self._command_timeout)
-                exit_code = stdout.channel.recv_exit_status()
-                return {
-                    "stdout": stdout.read().decode(),
-                    "stderr": stderr.read().decode(),
-                    "exit_code": exit_code,
-                }
+                _, stdout, _ = self._ssh.exec_command(command, timeout=deadline)
+                out, err, exit_code = _drain(stdout.channel, deadline)
+                if exit_code is None:
+                    # A channel that never finished may sit on a connection the
+                    # provider's proxy already dropped: reconnect next time.
+                    with contextlib.suppress(Exception):
+                        self._ssh.close()
+                    self._ssh = None
+                    raise RemoteCommandTimeout(
+                        f"remote command did not finish in {deadline}s: "
+                        f"{mask_secrets(command[:120])}"
+                    )
+                return {"stdout": out, "stderr": err, "exit_code": exit_code}
             except (_paramiko.SSHException, OSError, EOFError):
                 if attempt == retries:
                     raise
@@ -316,21 +764,49 @@ class RunPodTarget:
         return results
 
     def teardown(self) -> None:
+        """Terminate the pod: 3 attempts with 2/4/8 s backoff, then record a leak.
+
+        Idempotent.  On final failure the pod ID is logged at ERROR, appended
+        to the leaked-pods list and ``PodLeakError`` is raised so the caller
+        stops (a pod that cannot be terminated is an owner stop condition).
+        The atexit guard is unregistered either way (it would retry the same
+        failing call).
+        """
         if self._ssh is not None:
             with contextlib.suppress(Exception):
                 self._ssh.close()
             self._ssh = None
 
-        if self._pod_id is not None:
-            try:
-                import runpod as _runpod  # type: ignore[import-untyped]
+        if self._pod_id is None:
+            self._unregister_teardown_guard()
+            return
 
-                _runpod.api_key = self._api_key
-                _runpod.terminate_pod(self._pod_id)
-                logger.info("Pod %s terminated", self._pod_id)
+        pod_id = self._pod_id
+        import runpod as _runpod  # type: ignore[import-untyped]
+
+        _runpod.api_key = self._api_key
+        last_error = ""
+        for attempt, delay in enumerate(TEARDOWN_BACKOFF_SECONDS, start=1):
+            try:
+                _runpod.terminate_pod(pod_id)
+                logger.info("Pod %s terminated", pod_id)
+                break
             except Exception as exc:
-                logger.warning("Pod termination failed (maxUptime safety net active): %s", exc)
+                last_error = mask_secrets(str(exc))
+                logger.warning(
+                    "Pod %s termination attempt %d failed: %s", pod_id, attempt, last_error
+                )
+                if attempt < len(TEARDOWN_BACKOFF_SECONDS):
+                    time.sleep(delay)
+        else:
+            logger.error("Pod %s could not be terminated: %s", pod_id, last_error)
+            self._record_leaked_pod(pod_id, last_error)
             self._pod_id = None
+            self._unregister_teardown_guard()
+            # Owner stop condition: the orchestrator must see this and stop.
+            raise PodLeakError(pod_id, last_error)
+        self._pod_id = None
+        self._unregister_teardown_guard()
 
     # ------------------------------------------------------------------
     # Environment variable builder for apron runner image
@@ -338,28 +814,48 @@ class RunPodTarget:
 
     @staticmethod
     def build_env(
-        model_id: str,
+        model_id: str | None = None,
         dtype: str = "bfloat16",
         gpu_memory_utilization: float = 0.90,
         max_model_len: int = 640,
         tensor_parallel: int = 1,
         trust_remote_code: bool = False,
         ssh_public_key: str | None = None,
+        hf_token: str | None = None,
     ) -> dict[str, str]:
-        """Build env vars for the apron runner image."""
-        env: dict[str, str] = {
-            "VLLM_MODEL": model_id,
-            "VLLM_TOKENIZER": model_id,
-            "VLLM_DTYPE": dtype,
-            "VLLM_GPU_MEMORY_UTILIZATION": str(gpu_memory_utilization),
-            "VLLM_MAX_MODEL_LEN": str(max_model_len),
-            "VLLM_TENSOR_PARALLEL_SIZE": str(tensor_parallel),
-            "VLLM_LOGGING_LEVEL": "DEBUG",
-        }
-        if trust_remote_code:
-            env["VLLM_TRUST_REMOTE_CODE"] = "1"
+        """Build env vars for the apron runner image.
+
+        With ``model_id`` the image boots vLLM itself at container start.
+        Without it the container waits and the orchestrator boots vLLM over
+        SSH from a rendered DeploymentPlan (the cohort path).
+
+        ``hf_token`` (from the caller's environment, never from code or
+        files) reaches only the image's download step: ``start.sh`` moves it
+        into a root-only file and unsets it before anything else runs (F7).
+        """
+        # DEBUG: vLLM's memory-profiling line, and its CUDA-graph input-address
+        # check, which runs only at DEBUG (breakable_cudagraph.py:288,
+        # cuda_graph.py:191 in v0.30.0) and turns a replay on moved inputs
+        # into an error instead of silently wrong outputs.  It caught exactly
+        # that in GLM-5.3-Flash on B200 and H200 (2026-09-29).
+        env: dict[str, str] = {"VLLM_LOGGING_LEVEL": "DEBUG"}
+        if model_id:
+            env.update(
+                {
+                    "VLLM_MODEL": model_id,
+                    "VLLM_TOKENIZER": model_id,
+                    "VLLM_DTYPE": dtype,
+                    "VLLM_GPU_MEMORY_UTILIZATION": str(gpu_memory_utilization),
+                    "VLLM_MAX_MODEL_LEN": str(max_model_len),
+                    "VLLM_TENSOR_PARALLEL_SIZE": str(tensor_parallel),
+                }
+            )
+            if trust_remote_code:
+                env["VLLM_TRUST_REMOTE_CODE"] = "1"
         if ssh_public_key:
             env["PUBLIC_KEY"] = ssh_public_key
+        if hf_token:
+            env["HF_TOKEN"] = hf_token
         return env
 
     # ------------------------------------------------------------------
@@ -374,31 +870,65 @@ class RunPodTarget:
             headers={"Content-Type": "application/json"},
             timeout=30,
         )
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            # The message embeds the request URL, which carries the key.
+            raise RuntimeError(mask_secrets(str(exc))) from None
         data = resp.json()
         if "errors" in data:
             raise RuntimeError(f"GraphQL errors: {json.dumps(data['errors'])}")
         return data.get("data", {})
 
     def _wait_for_running(self, timeout: int = 0) -> dict[str, Any]:
-        """Poll until pod reaches RUNNING. No timeout by default — image
-        pulls and model downloads can take arbitrarily long."""
+        """Poll until the pod's container runs, reading the pod's own logs.
+
+        The host's system log (image pull, container create) and the
+        container's log decide (``runpod_logs.StartWatch``): a start that
+        keeps logging is waited on without limit; a host that writes no
+        line, or goes silent, is abandoned with ``PodStartAbandoned``.
+        ``timeout`` (0: none) is an outer bound on top.
+        """
         start = time.monotonic()
+        pod_id = str(self._pod_id)
+        reader = self._log_reader_factory(pod_id)
+        watch = StartWatch(rented_at=start)
+        self.start_report = {"pod_id": pod_id}
         while True:
-            if timeout > 0 and time.monotonic() - start > timeout:
-                raise TimeoutError(f"Pod {self._pod_id} did not reach RUNNING within {timeout}s")
-            query = _POD_STATUS_QUERY.format(pod_id=self._pod_id)
-            data = self._gql_status(query)
+            now = time.monotonic()
+            if timeout > 0 and now - start > timeout:
+                raise TimeoutError(f"Pod {pod_id} did not reach RUNNING within {timeout}s")
+            data = self._gql_status(_POD_STATUS_QUERY.format(pod_id=pod_id))
             pod = data.get("pod")
-            if pod is None:
-                time.sleep(10)
-                continue
-            runtime = pod.get("runtime")
+            if pod is not None and pod.get("machineId"):
+                self.start_report["machine_id"] = pod["machineId"]
+                self.start_report["data_center"] = (pod.get("machine") or {}).get("dataCenterId")
+            system, error = reader.read("system")
+            container, container_error = reader.read("container")
+            self._keep_pod_log(pod_id, [*system, *container])
+            watch.observe(time.monotonic(), system, container, error or container_error)
+            self.start_report.update(watch.report(time.monotonic()))
+            runtime = (pod or {}).get("runtime")
             if runtime and runtime.get("uptimeInSeconds", 0) > 0:
-                return pod
+                self.start_report["outcome"] = "started"
+                return pod  # type: ignore[return-value]
+            verdict = watch.verdict(time.monotonic())
+            if verdict is not None:
+                self.start_report["outcome"] = verdict
+                raise PodStartAbandoned(pod_id, verdict, dict(self.start_report))
             time.sleep(10)
 
-        raise TimeoutError(f"Pod {self._pod_id} did not reach RUNNING within {timeout}s")
+    def _log_reader_factory(self, pod_id: str) -> PodLogReader:
+        return PodLogReader(str(self._api_key), pod_id)
+
+    def _keep_pod_log(self, pod_id: str, lines: list[LogLine]) -> None:
+        """Append the pod's log lines to ``<pod_log_dir>/<pod_id>.log``."""
+        if self._pod_log_dir is None or not lines:
+            return
+        self._pod_log_dir.mkdir(parents=True, exist_ok=True)
+        with (self._pod_log_dir / f"{pod_id}.log").open("a") as fh:
+            for ln in lines:
+                fh.write(f"{ln.ts} [{ln.source}] {mask_secrets(ln.line)}\n")
 
     # ------------------------------------------------------------------
     # Internal — SSH management
@@ -489,7 +1019,8 @@ class RunPodTarget:
             "'compute_capability': f'{props.major}.{props.minor}',"
             "'driver_version': nvsmi.stdout.strip(),"
             "'cuda_version': torch.version.cuda,"
-            "'pytorch_version': torch.__version__"
+            "'pytorch_version': torch.__version__,"
+            "'gpu_count': torch.cuda.device_count()"
             "}))"
         )
         result = self.execute(
@@ -510,6 +1041,7 @@ class RunPodTarget:
             "pytorch_version": hw_info.get("pytorch_version", ""),
             "image": self._image,
             "provider": self._provider,
+            "gpu_count": hw_info.get("gpu_count", self._gpu_count),
         }
         canonical = canonicalize(fp_data)
         self._execution_fingerprint_hex = digest_hex(canonical)

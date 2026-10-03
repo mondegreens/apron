@@ -11,6 +11,11 @@ import json
 import logging
 from typing import TYPE_CHECKING, Any
 
+from pydantic import ValidationError
+
+from apron.domain.schemas.migrations import load_record
+from apron.domain.schemas.records import DiagnosisRule
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -61,6 +66,12 @@ def load_rules(rules_dir: Path, engine: str, version: str) -> list[dict[str, Any
             msg = f"Rule {path.name} missing required fields: {sorted(missing)}"
             raise ValueError(msg)
 
-        rules.append(data)
+        # Strict, through the migration path: an unknown key is an error.
+        try:
+            rule = load_record(DiagnosisRule, data)
+        except (ValidationError, KeyError) as exc:
+            msg = f"Rule {path.name} is not a valid DiagnosisRule: {exc}"
+            raise ValueError(msg) from exc
+        rules.append(rule.model_dump(mode="json"))
 
     return rules

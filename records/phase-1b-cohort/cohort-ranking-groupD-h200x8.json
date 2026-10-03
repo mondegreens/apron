@@ -1,0 +1,131 @@
+{
+  "inputs": {
+    "candidates": [
+      {
+        "model_id": "zai-org/GLM-5.3",
+        "gpu_sku": "NVIDIA H200",
+        "size_class": "large",
+        "hardware_class": "datacenter",
+        "mechanism": "layered_decode",
+        "weight_gb": 755.7,
+        "gpu_count": 8,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "moe",
+          "sparse_mla"
+        ]
+      },
+      {
+        "model_id": "deepseek-ai/DeepSeek-V4-Pro-0813",
+        "gpu_sku": "NVIDIA H200",
+        "size_class": "large",
+        "hardware_class": "datacenter",
+        "mechanism": "layered_decode",
+        "weight_gb": 892.8,
+        "gpu_count": 8,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "moe",
+          "compressed_kv"
+        ]
+      },
+      {
+        "model_id": "MiniMaxAI/MiniMax-M3",
+        "gpu_sku": "NVIDIA H200",
+        "size_class": "large",
+        "hardware_class": "datacenter",
+        "mechanism": "layered_decode",
+        "weight_gb": 854.2,
+        "gpu_count": 8,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "moe",
+          "sparse_attention",
+          "vision"
+        ]
+      }
+    ],
+    "existing": {
+      "sizes": [],
+      "hardware": [],
+      "mechanisms": [],
+      "features": [],
+      "quantized": false,
+      "prediction_error": false,
+      "models": [],
+      "gpus": []
+    },
+    "measured": [],
+    "remaining_budget": 29.143350000000055,
+    "rates": {
+      "NVIDIA H200": 4.76,
+      "NVIDIA H100": 3.95
+    },
+    "download": true,
+    "cost_model": {
+      "image_pull_minutes": 13.0,
+      "download_gb_per_minute": 12.5,
+      "boot_minutes_small": 25.0,
+      "boot_minutes_mid": 35.0,
+      "boot_minutes_large": 45.0,
+      "load_gb_per_minute": 11.5,
+      "evaluation_minutes": 5.0
+    }
+  },
+  "ranked": [],
+  "skipped": [
+    {
+      "key": "MiniMaxAI/MiniMax-M3@NVIDIA H200x8",
+      "reason": "estimate $101.94 exceeds remaining $29.14"
+    },
+    {
+      "key": "zai-org/GLM-5.3@NVIDIA H200x8",
+      "reason": "estimate $91.50 exceeds remaining $29.14"
+    },
+    {
+      "key": "deepseek-ai/DeepSeek-V4-Pro-0813@NVIDIA H200x8",
+      "reason": "estimate $106.03 exceeds remaining $29.14"
+    }
+  ],
+  "authorization": {
+    "schema_version": 1,
+    "permitted_action_classes": [
+      "gpu_execution",
+      "diagnosis_classification"
+    ],
+    "permitted_providers": [
+      "modal"
+    ],
+    "permitted_accounts": [],
+    "credential_scopes": [
+      "modal:sandboxes",
+      "anthropic:messages",
+      "huggingface:read"
+    ],
+    "task_data_destinations": [
+      "api.anthropic.com"
+    ],
+    "hard_target_constraints": {
+      "cloud_type": "SANDBOX"
+    },
+    "maximum_spend": 200.0,
+    "baseline_allocation_digest": null,
+    "contributed_pool_digest": null,
+    "runtime_rules": {},
+    "lifecycle_rules": {},
+    "teardown_rules": {
+      "orphan_max_age_seconds": "10800",
+      "atexit": "terminate"
+    },
+    "security_rules": {},
+    "data_rules": {},
+    "publication_scope": null,
+    "adaptation_rules": {}
+  }
+}

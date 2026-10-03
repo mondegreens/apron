@@ -16,11 +16,17 @@ from __future__ import annotations
 import json
 import logging
 import re
+import shlex
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from apron.adapters.renderers.engine_flags import engine_flag_args
+
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from apron.domain.schemas.solutions import DeploymentPlan
 
 logger = logging.getLogger(__name__)
@@ -29,6 +35,15 @@ _RE_VLLM_VERSION = re.compile(r"vLLM\s+v?(\d+\.\d+\.\d+)")
 
 # vLLM startup log patterns (from vllm/v1/worker/gpu_worker.py)
 _RE_AVAILABLE_KV = re.compile(r"Available KV cache memory:\s*([\d.]+)\s*GiB")
+# v1/core/kv_cache_utils.py:2031-2036: the pool in tokens and how many
+# max-length requests it holds at once.  With the available memory this gives
+# the bytes one sequence reserves (a Mamba state, 2026-09-27).
+_RE_KV_CAPACITY = re.compile(
+    r"GPU KV cache size:\s*([\d,]+)\s*tokens,\s*"
+    r"Maximum concurrency for\s*([\d,]+)\s*tokens per request:\s*([\d.]+)x"
+)
+# vllm/config/scheduler.py:277 — the profile run's token count (gpu_model_runner.py:6574)
+_RE_MAX_BATCHED_TOKENS = re.compile(r"max_num_batched_tokens=(\d+)")
 _RE_CUDA_GRAPH = re.compile(
     r"CUDA graph pool memory:\s*([\d.]+)\s*GiB \(actual\),\s*([\d.]+)\s*GiB \(estimated\)"
 )
@@ -40,6 +55,10 @@ _RE_STARTUP_MSG = re.compile(
     r"([\d.]+) GiB for CUDAGraph memory",
     re.DOTALL,
 )
+# INFO (v1/worker/gpu/model_runner.py:428-431 in v0.30.0): the weights as
+# loaded, the same number as MemoryProfilingResult's weights_memory
+# (gpu_worker.py:570 reads model_runner.model_memory_usage).
+_RE_MODEL_LOADING = re.compile(r"Model loading took ([\d.]+) GiB memory")
 _RE_PROFILING_RESULT = re.compile(
     r"Memory profiling takes [\d.]+ seconds\.\s*"
     r"Total non KV cache memory:\s*([\d.]+)GiB;\s*"
@@ -49,6 +68,243 @@ _RE_PROFILING_RESULT = re.compile(
 )
 
 GIB = 1 << 30
+
+# On the pod's volume, not the 50 GB container disk: RunPod mounts the volume
+# at /runpod-volume, and /workspace is the container disk.  A 65 GB model
+# filled that disk and left a partial download (L5, Qwen3-32B, 2026-09-27).
+MODELS_DIR = "/runpod-volume/models"
+VLLM_LOG = "/var/log/vllm.log"
+# Appended to a boot's log tail when vLLM stopped writing to its log (``boot``).
+BOOT_STALLED = "apron: boot stalled"
+TOKEN_VARS = ("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN")
+# vLLM API server and its engine-core children.  The bracket keeps the
+# pattern from matching the shell that runs pgrep/pkill with it.
+_WAITING = re.compile(r"Waiting for \d+ local, \d+ remote core engine proc")
+
+
+def collapse_repeats(log: str) -> str:
+    """Fold the API server's 10-second "waiting for core engine" heartbeat.
+
+    On a slow boot those lines filled the whole stored tail (L0-A3), hiding
+    what the engine core last did.  Consecutive heartbeats become the first
+    one plus a count; every other line is kept.
+    """
+    out: list[str] = []
+    run = 0
+    for line in log.splitlines():
+        if _WAITING.search(line):
+            run += 1
+            if run == 1:
+                out.append(line)
+            continue
+        if run > 1:
+            out.append(f"[... {run - 1} more 'waiting for core engine' lines]")
+        run = 0
+        out.append(line)
+    if run > 1:
+        out.append(f"[... {run - 1} more 'waiting for core engine' lines]")
+    return "\n".join(out)
+
+
+# The container's main process output: what the provider console shows.
+CONTAINER_CONSOLE = "/proc/1/fd/1"
+MIRROR_PATTERN = "tail -n [+]1 -F"
+
+
+def _profiling_from_info(parsed: dict[str, Any]) -> dict[str, Any]:
+    """MemoryProfilingResult's numbers from vLLM's INFO lines, for a boot
+    whose log lacks the DEBUG line (pods log at DEBUG; a log cut short or a
+    boot at INFO still yields the terms).
+
+    v1/worker/gpu_worker.py in v0.30.0: peak activation = torch peak + the
+    applied CUDA-graph estimate (616-618); available KV = requested - non-KV
+    - the applied estimate (621-625), so non-KV = requested - available -
+    estimate; the estimate is applied by default (VLLM_MEMORY_PROFILER_
+    ESTIMATE_CUDAGRAPHS=1) and logged when it is above zero (820-834).
+    """
+    need = ("model_loading_gib", "peak_activation_gib", "requested_gib", "available_kv_cache_gib")
+    if not all(k in parsed for k in need):
+        return {}
+    graph = parsed.get("cuda_graph_estimate_gib", 0.0)
+    return {
+        "weights_memory": int(parsed["model_loading_gib"] * GIB),
+        "torch_peak_increase": int(max(0.0, parsed["peak_activation_gib"] - graph) * GIB),
+        "non_kv_cache_memory": int(
+            (parsed["requested_gib"] - parsed["available_kv_cache_gib"] - graph) * GIB
+        ),
+        **(
+            {"total_consumed": int(parsed["consumed_gib"] * GIB)}
+            if "consumed_gib" in parsed
+            else {}
+        ),
+        "profiling_source": "info",
+    }
+
+
+def launch_command(
+    serve: str,
+    *,
+    env: Mapping[str, str] | None = None,
+    env_file: str | None = None,
+    log: str | None = None,
+    bin_dir: str = "/opt/venv/bin/",
+    console: str = CONTAINER_CONSOLE,
+) -> str:
+    """The detached ``vllm serve`` launch sent over SSH.
+
+    - The container environment is loaded first: a non-interactive SSH command
+      gets sshd's default environment, and without PATH/CUDA_HOME FlashInfer's
+      JIT cannot find ninja or nvcc (L0-A3).  The export holds no token, and
+      ``env -u`` removes the tokens after it anyway (F7).
+    - The whole group's stdin/stdout/stderr are redirected and vLLM is exec'd:
+      otherwise a background subshell keeps the SSH channel's output open and
+      the command never returns while vLLM runs (L0-A3 hung on exactly that).
+    - A detached ``tail -F`` mirrors the log to the container's own output, so
+      the provider console shows the model loading and the requests.  It is a
+      separate process: if the console cannot be written, only the mirror
+      fails, never vLLM.
+    """
+    env_file = env_file or CONTAINER_ENV
+    log = log or VLLM_LOG
+    # NCCL's warnings name a host fault in the log (an NVSwitch that cannot
+    # bind NVLS showed only "unhandled cuda error" without them, 2026-09-29).
+    settings = {"NCCL_DEBUG": "WARN", **(env or {})}
+    assigns = " ".join(f"{k}={shlex.quote(str(v))}" for k, v in settings.items())
+    return (
+        f"( . {env_file} && cd /workspace && "
+        f"exec env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN HF_HUB_OFFLINE=1 {assigns} "
+        f"{bin_dir}{serve} ) > {log} 2>&1 < /dev/null & "
+        f"( exec tail -n +1 -F {log} > {console} ) 2>/dev/null < /dev/null &"
+    )
+
+
+# The container environment start.sh exports for SSH sessions (PATH, CUDA_*, ...).
+CONTAINER_ENV = "/etc/apron_environment"
+VLLM_PROCESS_PATTERN = "bin/[v]llm serve|[V]LLM::"
+
+# Same logic as docker/apron-download: the only process that reads the token
+# file (F7).  The file is written by the runner image's start.sh; an image
+# without F7 support never writes it (see runner_supports_token_isolation).
+#
+# Native duplicates are skipped: Mistral repos ship consolidated.safetensors
+# beside the HF shards (Mistral-7B-Instruct-v0.3: 29 GB instead of 14.5) and
+# Llama repos ship original/*.pth (16 GB); gpt-oss repos ship the same weights
+# twice more, as original/ and as Apple's metal/ (65 GB each for gpt-oss-120b,
+# Hub listing 2026-09-27).  vLLM loads the HF-format files at the repo root.
+DOWNLOAD_IGNORE = ("original/*", "metal/*", "consolidated*", "*.pth", "*.pt", "*.gguf")
+_DOWNLOAD_PY = (
+    "import fnmatch,pathlib,sys\n"
+    "from huggingface_hub import HfApi,snapshot_download\n"
+    "f=pathlib.Path('/run/apron/hf_token')\n"
+    "t=f.read_text().strip() if f.exists() else None\n"
+    f"ign={list(DOWNLOAD_IGNORE)!r}\n"
+    "snapshot_download(repo_id=sys.argv[1],local_dir=sys.argv[2],token=t or None,"
+    "ignore_patterns=ign,max_workers=16)\n"
+    # Verify: every repo file vLLM may read is on disk at its listed size.  A
+    # tokenizer file missing on a reused pod was once recorded as a model
+    # failure (L5, Qwen3-32B on A100); this makes it a harness failure.
+    "info=HfApi().model_info(sys.argv[1],files_metadata=True,token=t or None)\n"
+    "bad=[]\n"
+    "for s in info.siblings:\n"
+    "  if any(fnmatch.fnmatch(s.rfilename,g) for g in ign): continue\n"
+    "  p=pathlib.Path(sys.argv[2])/s.rfilename\n"
+    "  if not p.exists(): bad.append(f'missing {s.rfilename}')\n"
+    # Smaller than listed = truncated.  Larger is legitimate: a git-linked file
+    # (Mistral's tokenizer.model, listed at 130 bytes) is written as its target.
+    "  elif s.size is not None and p.stat().st_size<s.size:"
+    " bad.append(f'short {s.rfilename} {p.stat().st_size}<{s.size}')\n"
+    "print('DOWNLOAD_INCOMPLETE: '+'; '.join(bad) if bad else 'DOWNLOAD_VERIFIED')\n"
+    "sys.exit(3 if bad else 0)\n"
+)
+
+
+# A download that stops growing is restarted rather than waited on until the
+# overall deadline: staging group C (2026-09-28) finished GLM-5.3-Flash's 328 GB
+# and then held the command open for four hours (the 14,520 s deadline) with
+# nothing left to fetch.  snapshot_download resumes, so a restart only
+# re-checks what is on disk.
+DOWNLOAD_STALL_SECONDS = 600
+DOWNLOAD_ATTEMPTS = 5
+DOWNLOAD_LOG = "/tmp/apron-download.log"
+DOWNLOAD_RC = "/tmp/apron-download.rc"
+
+
+def download_command(
+    model_id: str,
+    dest: str,
+    *,
+    python: str = "/opt/venv/bin/python3",
+    stall_seconds: int = DOWNLOAD_STALL_SECONDS,
+    attempts: int = DOWNLOAD_ATTEMPTS,
+    poll_seconds: int = 30,
+    log: str = DOWNLOAD_LOG,
+) -> str:
+    """The staging download, run with a stall watchdog.
+
+    Each attempt runs the download in the background and polls the size of
+    *dest* every *poll_seconds*; if it has not grown for *stall_seconds* the
+    attempt is killed and the next one resumes.  The token is read from the
+    token file by the script, never passed on the command line.
+    """
+    q = shlex.quote
+    run = (
+        f"env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN {q(python)} -c {q(_DOWNLOAD_PY)} "
+        f"{q(model_id)} {q(dest)} >> {q(log)} 2>&1 &"
+    )
+    watchdog = (
+        f"pid=$!; last=-1; still=0; "
+        f"while kill -0 $pid 2>/dev/null; do sleep {poll_seconds}; "
+        f"now=$(du -sb {q(dest)} 2>/dev/null | cut -f1); "
+        'if [ "$now" = "$last" ]; then still=$((still+' + str(poll_seconds) + ")); "
+        'else still=0; last="$now"; fi; '
+        f"if [ $still -ge {stall_seconds} ]; then "
+        f'echo "stalled ${{still}}s: restarting (attempt $a)" >> {q(log)}; '
+        "kill $pid 2>/dev/null; sleep 5; kill -9 $pid 2>/dev/null; break; fi; done; "
+        "wait $pid; rc=$?"
+    )
+    # What the pod's memory limit did (cgroup v2): a download the kernel
+    # OOM-killed ended in a bare "Killed" and read as a failed download
+    # (2026-09-28, 11 kills in a 4 GB stager); the log now says so.
+    memory = (
+        'echo "memory: max=$(cat /sys/fs/cgroup/memory.max 2>/dev/null) '
+        "peak=$(cat /sys/fs/cgroup/memory.peak 2>/dev/null) "
+        f'$(grep oom_kill /sys/fs/cgroup/memory.events 2>/dev/null)" >> {q(log)}; '
+    )
+    return (
+        f"mkdir -p {q(dest)} && : > {q(log)}; rc=1; "
+        f"for a in $(seq 1 {attempts}); do {run} {watchdog}; "
+        '[ "$rc" -eq 0 ] && break; done; '
+        f"{memory}tail -20 {q(log)}; exit $rc"
+    )
+
+
+def detached_command(
+    command: str, rc_path: str = DOWNLOAD_RC, out_path: str = "/tmp/apron-download.out"
+) -> str:
+    """Run *command* on the pod with nothing tied to the SSH channel; its exit
+    code lands in *rc_path*.
+
+    The command runs in a subshell because the download command ends in
+    ``exit`` (without one, the code after it never ran and the rc file never
+    appeared, 2026-09-28).  The code is written to a temporary file and moved,
+    so a poll never reads it half-written.
+    """
+    finish = f"; echo $? > {rc_path}.tmp && mv {rc_path}.tmp {rc_path}"
+    inner = f"( {command} ){finish}"
+    return (
+        f"rm -f {rc_path}; nohup bash -c {shlex.quote(inner)} "
+        f"> {out_path} 2>&1 < /dev/null & echo started"
+    )
+
+
+@dataclass(frozen=True)
+class BootResult:
+    """Outcome of one vLLM boot from a rendered plan."""
+
+    healthy: bool
+    log_tail: str
+    command: str
+    seconds: float
 
 
 class VllmEngineAdapter:
@@ -91,9 +347,11 @@ class VllmEngineAdapter:
         errors: list[str] = []
 
         if plan.tensor_parallel > 1:
-            engine_config = plan.engine_configuration
-            num_heads = int(engine_config.get("num_attention_heads", "0"))
-            num_kv_heads = int(engine_config.get("num_kv_heads", str(num_heads)))
+            # Head counts are plan metadata (resource_allocation), not engine
+            # flags; engine_configuration is rendered onto the command line.
+            meta = {**plan.engine_configuration, **plan.resource_allocation}
+            num_heads = int(meta.get("num_attention_heads", "0"))
+            num_kv_heads = int(meta.get("num_kv_heads", str(num_heads)))
             if num_heads > 0 and num_heads % plan.tensor_parallel != 0:
                 errors.append(
                     f"TP={plan.tensor_parallel} does not divide num_attention_heads={num_heads}"
@@ -118,9 +376,8 @@ class VllmEngineAdapter:
             args.extend(["--dtype", plan.dtype])
         if plan.tensor_parallel > 1:
             args.extend(["--tensor-parallel-size", str(plan.tensor_parallel)])
-        for key, value in plan.engine_configuration.items():
-            args.extend([f"--{key.replace('_', '-')}", str(value)])
-        return {"args": args, "engine": self._engine_name}
+        args.extend(engine_flag_args(plan.engine_configuration))
+        return {"args": args, "engine": self._engine_name, "tp": plan.tensor_parallel}
 
     def verify(
         self,
@@ -165,25 +422,35 @@ class VllmEngineAdapter:
             "failure_class": result.get("failure_class", "unknown"),
             "confidence": result.get("confidence", 0.0),
             "evidence_span": result.get("evidence_span", ""),
+            "classifier_model_id": result.get("classifier_model_id"),
+            "classifier_input_digest": result.get("classifier_input_digest"),
+            "classifier_cost_usd": result.get("classifier_cost_usd"),
             "_full_extraction": result,
         }
 
     def extract(self, error: str, failure_class: str) -> dict[str, int | float | str]:
         """Extract typed values — delegates to LLM classifier."""
         from apron.adapters.backends.llm_classifier import classify_and_extract
-        from apron.domain.diagnosis import build_extraction_schemas
+        from apron.domain.diagnosis import build_extraction_enums, build_extraction_schemas
 
         full = classify_and_extract(error, rules=self._rules)
         schemas = build_extraction_schemas(self._rules)
+        enums = build_extraction_enums(self._rules).get(failure_class, {})
         schema = schemas.get(failure_class, [])
         result: dict[str, int | float | str] = {}
         for field_name, field_type in schema:
             value = full.get(field_name)
             if value is not None:
                 try:
-                    result[field_name] = field_type(value)
+                    typed = field_type(value)
                 except (ValueError, TypeError):
                     continue
+                if field_name in enums and typed not in enums[field_name]:
+                    logger.warning(
+                        "Rejecting %s=%r: not in enum %s", field_name, typed, enums[field_name]
+                    )
+                    continue
+                result[field_name] = typed
         return result
 
     def detect_engine_version(self, output: str) -> str | None:
@@ -230,15 +497,30 @@ class VllmEngineAdapter:
             parsed["peak_activation_gib"] = float(m.group(6))
             parsed["cudagraph_gib"] = float(m.group(7))
 
+        m = _RE_KV_CAPACITY.search(log_text)
+        if m:
+            parsed["kv_cache_tokens"] = int(m.group(1).replace(",", ""))
+            parsed["max_concurrency"] = float(m.group(3))
+
         m = _RE_AVAILABLE_KV.search(log_text)
         if m:
             parsed["available_kv_cache_gib"] = float(m.group(1))
+
+        m = _RE_MAX_BATCHED_TOKENS.search(log_text)
+        if m:
+            parsed["max_num_batched_tokens"] = int(m.group(1))
 
         m = _RE_CUDA_GRAPH.search(log_text)
         if m:
             parsed["cuda_graph_actual_gib"] = float(m.group(1))
             parsed["cuda_graph_estimate_gib"] = float(m.group(2))
 
+        m = _RE_MODEL_LOADING.search(log_text)
+        if m:
+            parsed["model_loading_gib"] = float(m.group(1))
+
+        if "non_kv_cache_memory" not in parsed:
+            parsed.update(_profiling_from_info(parsed))
         return parsed
 
     # ------------------------------------------------------------------
@@ -263,23 +545,309 @@ class VllmEngineAdapter:
             return extract_task_registry(tasks_file)
         return ["generate"]
 
-    def _build_serve_command(self, plan: DeploymentPlan, target: Any) -> str:
+    def _build_serve_command(
+        self, plan: DeploymentPlan, target: Any, *, model_path: str | None = None
+    ) -> str:
+        """Render ``vllm serve`` from a DeploymentPlan — never from raw flags.
+
+        With ``model_path`` the weights are served from local disk under the
+        plan's model id (``--served-model-name``), so no token is needed.
+        """
         resource = plan.resource_allocation
         model_id = resource.get("model_id", "")
 
-        parts = ["vllm", "serve", model_id]
+        parts = ["vllm", "serve", model_path or model_id]
+        if model_path:
+            parts.extend(["--served-model-name", model_id])
         if plan.dtype:
             parts.extend(["--dtype", plan.dtype])
         if plan.tensor_parallel > 1:
             parts.extend(["--tensor-parallel-size", str(plan.tensor_parallel)])
 
-        for key, value in plan.engine_configuration.items():
-            parts.extend([f"--{key.replace('_', '-')}", str(value)])
+        parts.extend(engine_flag_args(plan.engine_configuration))
 
         if resource.get("remote_code_required") == "true":
             parts.append("--trust-remote-code")
 
-        return " ".join(parts)
+        return " ".join(shlex.quote(p) for p in parts)
+
+    # ------------------------------------------------------------------
+    # Boot from a plan (§9.1 steps 0 and 3; F7)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def model_dir(model_id: str, target: Any = None) -> str:
+        base = getattr(target, "models_dir", MODELS_DIR)
+        return f"{base}/{model_id}"
+
+    def prepare_boot(self, target: Any, timeout: int = 120) -> dict[str, Any]:
+        """Harness hygiene before every boot: no vLLM running, port 8000
+        free, GPU memory used below 1 GiB (the Part 1 dtype evidence was a
+        port collision from a previous vLLM)."""
+        target.execute(f"pkill -9 -f '{VLLM_PROCESS_PATTERN}' || true")
+        target.execute(f"pkill -f '{MIRROR_PATTERN}' || true")  # the previous boot's mirror
+        deadline = time.monotonic() + timeout
+        last: dict[str, Any] = {}
+        while time.monotonic() < deadline:
+            # bash /dev/tcp: no dependency on ss/netstat being in the image
+            port = target.execute(
+                "bash -c '(exec 3<>/dev/tcp/127.0.0.1/8000) 2>/dev/null && echo 1 || echo 0'"
+            )
+            mem = target.execute(
+                "nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits"
+            )
+            port_busy = str(port.get("stdout", "0")).strip() not in ("", "0")
+            used = [int(x) for x in str(mem.get("stdout", "")).split() if x.strip().isdigit()]
+            last = {"port_8000_busy": port_busy, "gpu_memory_used_mib": used}
+            if not port_busy and used and max(used) < 1024:
+                return {"clean": True, **last}
+            time.sleep(3)
+        return {"clean": False, **last}
+
+    @staticmethod
+    def runner_supports_token_isolation(target: Any) -> bool:
+        """True if the runner image has the F7 download step.
+
+        An older image exports the HF token into every SSH session, so a
+        gated download there either gets no token or leaks it.  The cohort
+        refuses to boot on such an image.
+        """
+        result = target.execute("test -x /usr/local/bin/apron-download && echo yes || echo no")
+        return "yes" in str(result.get("stdout", ""))
+
+    def log_tail(self, target: Any, lines: int = 400) -> str:
+        """The last *lines* of the engine log, repeats collapsed ('' when unreadable)."""
+        try:
+            got = target.execute(f"tail -{int(lines)} {VLLM_LOG}")
+        except Exception:
+            return ""
+        return collapse_repeats(str(got.get("stdout", "")))
+
+    def evict_models(self, target: Any, *, keep: str) -> None:
+        """Remove every downloaded model except *keep* (a reused pod's disk).
+
+        Never on staged weights: a network volume holds the weights of the
+        models still to run, and it outlives the pod.
+        """
+        if getattr(target, "weights_persist", False):
+            return
+        keep_q = shlex.quote(keep)
+        mdir = shlex.quote(getattr(target, "models_dir", MODELS_DIR))
+        target.execute(
+            f"cd {mdir} 2>/dev/null && for d in */*; do "
+            f'[ "$d" = {keep_q} ] || rm -rf -- "$d"; done; true'
+        )
+
+    def download_weights(
+        self, target: Any, model_id: str, timeout: int = 3600, poll_seconds: int = 30
+    ) -> dict[str, Any]:
+        """Fetch weights in a separate step — the only one that reads the token.
+
+        The download runs detached on the pod and is polled with short
+        commands.  One SSH channel held open for the whole download went
+        silent for minutes and RunPod's TCP proxy dropped it without either
+        end noticing: staging waited on a finished download for four hours,
+        twice (2026-09-28).  A poll that times out only costs a reconnect.
+        """
+        command = download_command(model_id, self.model_dir(model_id, target))
+        detached = detached_command(command)
+        start = time.monotonic()
+        target.execute(detached, timeout=120)
+        deadline = start + timeout + 120
+        rc: int | None = None
+        while rc is None and time.monotonic() < deadline:
+            try:
+                got = target.execute(f"cat {DOWNLOAD_RC} 2>/dev/null || echo RUNNING", timeout=120)
+                text = str(got.get("stdout", "")).strip()
+                if text.lstrip("-").isdigit():
+                    rc = int(text)
+                elif text != "RUNNING":
+                    # Not a shell that ran the poll (a test double): its own exit
+                    # code is the only answer there is.
+                    rc = int(got.get("exit_code", 1))
+            except Exception as exc:  # a dropped connection: reconnect on the next poll
+                logger.warning("download poll failed (%s); retrying", type(exc).__name__)
+            if rc is None:
+                time.sleep(poll_seconds)
+        tail = target.execute(f"tail -20 {DOWNLOAD_LOG}", timeout=120) if rc is not None else {}
+        return {
+            "ok": rc == 0,
+            "seconds": round(time.monotonic() - start, 1),
+            "output_tail": str(tail.get("stdout", ""))[-2000:]
+            or ("" if rc is not None else f"no exit code within {timeout}s"),
+        }
+
+    def load_args(self, target: Any, model_id: str) -> list[str]:
+        """How vLLM should read weights on this target — not part of the plan.
+
+        Staged weights sit on network storage, where vLLM's default lazy
+        memory-map pays the network latency tensor by tensor.  Reading every
+        file ahead into host memory (``--safetensors-load-strategy prefetch``,
+        ``model_loader/weight_utils.py:871``) is what vLLM itself does on a
+        network filesystem it recognises when the checkpoint fits in 90% of
+        free host memory; RunPod's volume may not be recognised, so the same
+        rule is applied here.  A larger checkpoint keeps the default (a
+        prefetch past host memory can run the host out of memory, same file
+        :903).  Memory measurements do not change: this is host-side I/O.
+        """
+        if not getattr(target, "weights_persist", False):
+            return []
+        probe = target.execute(
+            f"du -sb {shlex.quote(self.model_dir(model_id, target))} | cut -f1; "
+            "awk '/MemAvailable/ {print $2 * 1024}' /proc/meminfo"
+        )
+        numbers = [int(x) for x in str(probe.get("stdout", "")).split() if x.isdigit()]
+        if len(numbers) == 2 and 0 < numbers[0] <= 0.9 * numbers[1]:
+            return ["--safetensors-load-strategy", "prefetch"]
+        return []
+
+    def boot(
+        self,
+        plan: DeploymentPlan,
+        target: Any,
+        *,
+        health_timeout: int = 600,
+        env: Mapping[str, str] | None = None,
+    ) -> BootResult:
+        """Boot vLLM from the rendered plan with no token in its environment.
+
+        Returns when ``/health`` passes or the process exits.  There is no
+        limit on how long a boot may take: loading 150-500 GB of weights from
+        a network volume took 8 to 35 minutes (2026-09-28), and a fixed 30
+        minutes cut a loading DeepSeek-V4-Flash off at shard 42 of 48.  The
+        wait ends only when vLLM stops writing to its log for
+        ``health_timeout`` seconds (a hung engine; loading prints each shard,
+        compilation and warmup print progress), and the log tail then says so
+        (``BOOT_STALLED``).  A failed boot returns the log tail — the
+        evidence diagnosis reads.
+        """
+        model_id = plan.resource_allocation.get("model_id", "")
+        serve = self._build_serve_command(
+            plan, target, model_path=self.model_dir(model_id, target)
+        )
+        extra = self.load_args(target, model_id)
+        if extra:
+            serve = " ".join([serve, *(shlex.quote(a) for a in extra)])
+        command = launch_command(serve, env=env)
+        start = time.monotonic()
+        target.execute(command)
+        last_size, last_change, stalled = None, start, False
+        while True:
+            if target.execute("curl -sf http://localhost:8000/health").get("exit_code") == 0:
+                return BootResult(True, "", serve, round(time.monotonic() - start, 1))
+            alive = target.execute(
+                f"pgrep -f '{VLLM_PROCESS_PATTERN}' >/dev/null && echo up || echo down"
+            )
+            if "down" in str(alive.get("stdout", "")):
+                break
+            size = str(target.execute(f"stat -c %s {VLLM_LOG}").get("stdout", "")).strip()
+            now = time.monotonic()
+            if size != last_size:
+                last_size, last_change = size, now
+            elif now - last_change >= health_timeout:
+                stalled = True
+                break
+            time.sleep(10)
+        tail = collapse_repeats(str(target.execute(f"tail -400 {VLLM_LOG}").get("stdout", "")))
+        if stalled:
+            tail += (
+                f"\n{BOOT_STALLED}: no new vLLM log output for {health_timeout} s after "
+                f"{round(time.monotonic() - start)} s; boot abandoned\n"
+            )
+        return BootResult(False, tail, serve, round(time.monotonic() - start, 1))
+
+    # ------------------------------------------------------------------
+    # Serving measurement (§9.1 step 5; measurement only, D2)
+    # ------------------------------------------------------------------
+
+    SERVING_PERCENTILES = (50, 90, 95, 99)
+    SERVING_METRICS = ("ttft", "tpot", "itl", "e2el")
+
+    def benchmark_serving(
+        self,
+        target: Any,
+        *,
+        model_id: str,
+        input_len: int,
+        output_len: int,
+        concurrency: int,
+        num_prompts: int = 50,
+        num_warmups: int = 5,
+    ) -> dict[str, Any]:
+        """Run ``vllm bench serve`` (random dataset) against the running endpoint.
+
+        ISL, OSL and concurrency come from the accepted ServingWorkloadSpec.
+        ``--ignore-eos`` makes every request produce the declared OSL, so the
+        measured TPOT is over the workload the spec declares.  Returns the
+        saved result JSON; raises if the run produced none.
+        """
+        name = f"bench-{int(time.time())}.json"
+        command = " ".join(
+            [
+                f". {CONTAINER_ENV} && cd /workspace && HF_HUB_OFFLINE=1",
+                "/opt/venv/bin/vllm bench serve",
+                "--backend vllm --base-url http://localhost:8000",
+                f"--model {shlex.quote(model_id)}",
+                f"--tokenizer {shlex.quote(self.model_dir(model_id, target))}",
+                "--dataset-name random",
+                f"--random-input-len {int(input_len)} --random-output-len {int(output_len)}",
+                f"--max-concurrency {int(concurrency)}",
+                f"--num-prompts {int(num_prompts)} --num-warmups {int(num_warmups)}",
+                "--ignore-eos",
+                "--percentile-metrics " + ",".join(self.SERVING_METRICS),
+                "--metric-percentiles " + ",".join(str(p) for p in self.SERVING_PERCENTILES),
+                f"--save-result --result-dir /workspace/bench --result-filename {name}",
+                "> /workspace/bench.log 2>&1; tail -5 /workspace/bench.log",
+            ]
+        )
+        run = target.execute(command)
+        result = target.execute(f"cat /workspace/bench/{name}")
+        parsed = _parse_json_output(result)
+        if not parsed:
+            raise RuntimeError(f"vllm bench serve produced no result: {run.get('stdout', '')}")
+        return {**parsed, "_command": command}
+
+    @classmethod
+    def build_serving_report(cls, bench: dict[str, Any]) -> dict[str, Any]:
+        """Map a ``vllm bench serve`` result to VerificationReport serving fields."""
+        latency: dict[str, float] = {}
+        for metric in cls.SERVING_METRICS:
+            for pct in cls.SERVING_PERCENTILES:
+                key = f"p{pct}_{metric}_ms"
+                if bench.get(key) is not None:
+                    latency[key] = float(bench[key])
+        return {
+            "serving_num_prompts": bench.get("num_prompts"),
+            "serving_concurrency": bench.get("max_concurrency"),
+            "serving_completed": bench.get("completed"),
+            "serving_failed": bench.get("failed"),
+            "serving_latency_ms": latency or None,
+            "serving_request_throughput": bench.get("request_throughput"),
+            "serving_output_token_throughput": bench.get("output_throughput"),
+        }
+
+    def token_environ_check(self, target: Any) -> dict[str, Any]:
+        """INV-13 evidence: which token variables the vLLM processes carry.
+
+        Reads ``/proc/<pid>/environ`` of every ``vllm serve`` process and
+        reports variable *names* only — values never leave the pod.
+        """
+        names = "|".join(TOKEN_VARS)
+        command = (
+            f"for p in $(pgrep -f '{VLLM_PROCESS_PATTERN}'); do "
+            f"n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^({names})$'); "
+            'echo "$p $n"; done'
+        )
+        result = target.execute(command)
+        rows = [
+            line.split() for line in str(result.get("stdout", "")).splitlines() if line.strip()
+        ]
+        processes = {int(pid): int(count) for pid, count in rows if pid.isdigit()}
+        return {
+            "command": command,
+            "processes": processes,
+            "token_free": bool(processes) and all(c == 0 for c in processes.values()),
+        }
 
     def _wait_for_health(self, target: Any, timeout: int = 300, poll_interval: int = 10) -> None:
         deadline = time.monotonic() + timeout
@@ -349,11 +917,34 @@ class VllmEngineAdapter:
             "cuda_graph_applied": cuda_graph_actual > 0,
             "cuda_graph_actual": cuda_graph_actual,
             "available_kv_cache_memory": available_kv_cache,
+            "kv_cache_tokens": parsed_logs.get("kv_cache_tokens"),
+            "max_concurrency": parsed_logs.get("max_concurrency"),
             "safety_buffer": safety_buffer,
-            "profiling_shape": {"batch_size": 1, "seq_len": 1},
+            "profiling_shape": profiling_shape(parsed_logs, plan),
             "execution_fingerprint": target.execution_fingerprint,
             "target_kind": target.kind,
         }
+
+
+def profiling_shape(parsed_logs: dict[str, Any], plan: DeploymentPlan) -> dict[str, int] | None:
+    """The shape vLLM's memory profile run used, or ``None`` when unknown.
+
+    vLLM v0.29 profiles one dummy forward of ``max_num_batched_tokens`` tokens
+    (``v1/worker/gpu_model_runner.py:6574``) spread over at most
+    ``max_num_seqs`` requests (``_dummy_run``).  The token count is read from
+    vLLM's own log (``config/scheduler.py:277``) or the plan; ``max_num_seqs``
+    is not logged, so it is recorded only when the plan sets it.
+    """
+    shape: dict[str, int] = {}
+    tokens = parsed_logs.get("max_num_batched_tokens") or plan.engine_configuration.get(
+        "max_num_batched_tokens"
+    )
+    if tokens is not None:
+        shape["max_num_batched_tokens"] = int(tokens)
+    seqs = plan.engine_configuration.get("max_num_seqs")
+    if seqs is not None:
+        shape["max_num_seqs"] = int(seqs)
+    return shape or None
 
 
 def _extract_architecture(model_spec: Any) -> str:

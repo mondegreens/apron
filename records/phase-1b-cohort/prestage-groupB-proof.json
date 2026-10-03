@@ -1,0 +1,167 @@
+{
+  "site": {
+    "volume_id": "7jiuum2nk6",
+    "data_center_id": "US-CA-2",
+    "size_gb": 3358
+  },
+  "staging": {
+    "pod_id": null,
+    "cost": 0.0,
+    "seconds": 0.0,
+    "error": null,
+    "models": [
+      {
+        "model_id": "Qwen/Qwen3.8-27B",
+        "ok": true,
+        "seconds": 0.0,
+        "output_tail": "already staged"
+      },
+      {
+        "model_id": "meta-models/Muse-Glimmer-30B",
+        "ok": true,
+        "seconds": 0.0,
+        "output_tail": "already staged"
+      },
+      {
+        "model_id": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+        "ok": true,
+        "seconds": 0.0,
+        "output_tail": "already staged"
+      }
+    ]
+  },
+  "storage_cost": 0.242524,
+  "result": {
+    "executed": {
+      "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1": {
+        "solution_fp": "1220f79c6a7fd6c76fe8ced9a159a5ff87df4df60a3473fe5f767d22d1e537fc767d",
+        "healthy": true,
+        "boot_report_digest": "1220f20079fa79b1a0a51f6320c035b4a744f80896d23157ac9754195fac1dd1df30",
+        "failed_boot_digests": [],
+        "attempt_digests": [
+          "12207ec2d71b17a00b1b5e07b2c27a8e989306fe09369df05675f477b460ee1ed167",
+          "1220ecab45b6f28ee4d0a2dc177ef9311b56d20e1d0cf1e42c699eff2a6ec25a3033",
+          "12206d89ea1ec7babefd93e604cefe6fbb51e30f1c404c8906ddb9d9f3365a3afc42"
+        ],
+        "serving_digest": "1220446b680c5d23797b59f3564f2fe383b27d5e14555fde471917567170b14539fd",
+        "log_tail": "",
+        "harness_failures": [],
+        "cost": 0.539108,
+        "provider_reported_cost": null,
+        "token_check": {
+          "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+          "processes": {
+            "452": 0,
+            "1330": 0
+          },
+          "token_free": true
+        }
+      },
+      "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1": {
+        "solution_fp": "1220cf5cc8099fd5f855ec0056093d3b89865f9ad4f18eff0c2ef56f2691b7ee49af",
+        "healthy": true,
+        "boot_report_digest": "1220bf6b162c43180f199a86f397319a5b06d51e8e2f7f8f8bd482b22e8258b3b1ed",
+        "failed_boot_digests": [],
+        "attempt_digests": [
+          "12205285c266fbeab15a2d9e78282fed4b26a281d53b3f67d042e7e3df418155b1cf",
+          "122053c7f33fb74fde2a7ecf22faf82e93c542d78b4130fd83fd4816b53f7a3b9443",
+          "12209429b65ae390a8032a606b1f7196d1792f1de29ea61ef0c0017a40b4dbdfaf50"
+        ],
+        "serving_digest": "1220b9feee0aa38439d8c35ef1ae31a458cf7eb95c6d896ce4692167bd195f40ae2d",
+        "log_tail": "",
+        "harness_failures": [],
+        "cost": 0.258293,
+        "provider_reported_cost": null,
+        "token_check": {
+          "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+          "processes": {
+            "3754": 0,
+            "4256": 0
+          },
+          "token_free": true
+        }
+      },
+      "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16@NVIDIA H100 80GB HBM3x1": {
+        "solution_fp": "1220ada0c50607ee0c761749dbd31d903a1fbfdc085de11aa7007585f0bc5efd7965",
+        "healthy": true,
+        "boot_report_digest": "12208228a1874270fa2f9bdb214d951c18ce192291b5a384edc2fb7dc73a3f325225",
+        "failed_boot_digests": [],
+        "attempt_digests": [
+          "1220ebba4ee2987202c2e7f719501c633f4adad25e260967c901e9d46ca8d258961a",
+          "1220d835d0df49343ddfb339873077e8c71898cab265064963113e233049f2d61168",
+          "122021a7038d14bc34b741dc419cda1be78c3c96e6fc96a4af8f8f1c5dbcbf90d301"
+        ],
+        "serving_digest": "12200c4a135f78a6207e67fa822d95116513063d1460c70c2f767a5e4cb6c645bd69",
+        "log_tail": "",
+        "harness_failures": [],
+        "cost": 0.186117,
+        "provider_reported_cost": null,
+        "token_check": {
+          "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+          "processes": {
+            "6528": 0,
+            "7015": 0
+          },
+          "token_free": true
+        }
+      }
+    },
+    "skipped": {},
+    "stopped": null,
+    "budget": {
+      "authorized": 100.0,
+      "spent": 25.213246,
+      "held": 0,
+      "remaining": 74.786754,
+      "open_holds": [],
+      "flags": [
+        "l0a3-run1:replayed:estimate",
+        "stage:Qwen/Qwen3-32B:replayed:estimate",
+        "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1:interrupted_in_provision:tvuknutqxlhbxz:23s_at_3.49_per_h",
+        "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1:interrupted_by_owner_stop:uv3q4ny9qmnsiz:377s_at_3.49_per_h",
+        "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3:stopped_to_fix_download_hang:ia4lxog3zt7yvq:~450s_at_0.24_per_h"
+      ],
+      "overruns": []
+    },
+    "decision_report": {
+      "schema_version": 1,
+      "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+      "candidates": [
+        {
+          "solution_fingerprint": "1220f79c6a7fd6c76fe8ced9a159a5ff87df4df60a3473fe5f767d22d1e537fc767d",
+          "qualification_status": "serving_verified",
+          "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"122016d80b4e85f8\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"12206d89ea1ec7babefd93e604cefe6fbb51e30f1c404c8906ddb9d9f3365a3afc42\", \"12207ec2d71b17a00b1b5e07b2c27a8e989306fe09369df05675f477b460ee1ed167\", \"1220ecab45b6f28ee4d0a2dc177ef9311b56d20e1d0cf1e42c699eff2a6ec25a3033\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"1220446b680c5d23797b59f3564f2fe383b27d5e14555fde471917567170b14539fd\"], \"detail\": [\"pass\", \"p99_ttft_ms 191.2 within SLO 2000.0\", \"p99_tpot_ms 21.8 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+          "rejection_reason": null,
+          "evidence_state": null,
+          "evaluation_coverage": null,
+          "economics": null,
+          "trade_off": null
+        },
+        {
+          "solution_fingerprint": "1220cf5cc8099fd5f855ec0056093d3b89865f9ad4f18eff0c2ef56f2691b7ee49af",
+          "qualification_status": "serving_verified",
+          "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220d06438ca3163\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"12205285c266fbeab15a2d9e78282fed4b26a281d53b3f67d042e7e3df418155b1cf\", \"122053c7f33fb74fde2a7ecf22faf82e93c542d78b4130fd83fd4816b53f7a3b9443\", \"12209429b65ae390a8032a606b1f7196d1792f1de29ea61ef0c0017a40b4dbdfaf50\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"1220b9feee0aa38439d8c35ef1ae31a458cf7eb95c6d896ce4692167bd195f40ae2d\"], \"detail\": [\"pass\", \"p99_ttft_ms 175.0 within SLO 2000.0\", \"p99_tpot_ms 22.4 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+          "rejection_reason": null,
+          "evidence_state": null,
+          "evaluation_coverage": null,
+          "economics": null,
+          "trade_off": null
+        },
+        {
+          "solution_fingerprint": "1220ada0c50607ee0c761749dbd31d903a1fbfdc085de11aa7007585f0bc5efd7965",
+          "qualification_status": "serving_verified",
+          "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220794121355bd4\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"122021a7038d14bc34b741dc419cda1be78c3c96e6fc96a4af8f8f1c5dbcbf90d301\", \"1220d835d0df49343ddfb339873077e8c71898cab265064963113e233049f2d61168\", \"1220ebba4ee2987202c2e7f719501c633f4adad25e260967c901e9d46ca8d258961a\"], \"detail\": [\"accepted 3/3\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"12200c4a135f78a6207e67fa822d95116513063d1460c70c2f767a5e4cb6c645bd69\"], \"detail\": [\"pass\", \"p99_ttft_ms 615.0 within SLO 2000.0\", \"p99_tpot_ms 6.3 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+          "rejection_reason": null,
+          "evidence_state": null,
+          "evaluation_coverage": null,
+          "economics": null,
+          "trade_off": null
+        }
+      ],
+      "outcome_economics": null,
+      "uncertainty": null,
+      "disclosed_comparable_set": [],
+      "exclusions": []
+    }
+  }
+}

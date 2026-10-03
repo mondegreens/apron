@@ -38,7 +38,7 @@ Engine, artifact source, render target, evaluation, execution target, planning s
 
 ### Challenging a design decision
 
-Read the full [ADR set](docs/adr/). Open a challenge in [Discussions](../../discussions). Amendments pass by lazy consensus with a stated window.
+Read the full [ADR set](docs/adr/). Open a challenge in [Discussions](https://github.com/mondegreens/apron/discussions). Amendments pass by lazy consensus with a stated window.
 
 ## How acceptance works
 

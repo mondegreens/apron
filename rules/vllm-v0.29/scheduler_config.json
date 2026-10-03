@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "scheduler_config",
@@ -8,10 +8,18 @@
     "description": "manual review needed"
   },
   "extraction_schema": {
-    "max_num_batched_tokens": "string",
-    "max_num_seqs": "string",
-    "retention_interval": "string",
-    "scheduler_block_size": "string"
+    "max_num_batched_tokens": {
+      "type": "string"
+    },
+    "max_num_seqs": {
+      "type": "string"
+    },
+    "retention_interval": {
+      "type": "string"
+    },
+    "scheduler_block_size": {
+      "type": "string"
+    }
   },
   "source_sites": [
     {
@@ -28,5 +36,6 @@
     "prefix_cache_retention_interval ({retention_interval}) must be non-negative and a multiple of scheduler_block_size ({scheduler_block_size})."
   ],
   "status": "hypothesis",
-  "count": 2
+  "count": 2,
+  "rule_version": 1
 }

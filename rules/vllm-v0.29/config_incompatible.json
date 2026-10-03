@@ -1,44 +1,112 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "config_incompatible",
   "correction_strategy": "fallback_engine_config",
   "extraction_schema": {
-    "indexer_kv_dtype": "string",
-    "value": "string",
-    "encoder_cudagraph_token_budgets": "string",
-    "op": "string",
-    "get_args": "string",
-    "runner_type": "string",
-    "tokenizer": "string",
-    "convert_option": "string",
-    "quantization": "string",
-    "supported_quantization": "string",
-    "otel_import_error_traceback": "string",
-    "offload_num_in_group": "string",
-    "offload_group_size": "string",
-    "offload_prefetch_step": "string",
-    "communicator": "string",
-    "num_redundant_experts": "string",
-    "cpuset": "string",
-    "target_layer_ids": "string",
-    "suffix_decoding_max_tree_depth": "string",
-    "suffix_decoding_max_cached_requests": "string",
-    "suffix_decoding_max_spec_factor": "string",
-    "suffix_decoding_min_token_prob": "string",
-    "prompt_lookup_min": "string",
-    "prompt_lookup_max": "string",
-    "field_path": "string",
-    "expected_type_name": "string",
-    "join": "string",
-    "architecture": "string",
-    "load_format": "string",
-    "model": "string",
-    "remote_physical_per_logical": "string",
-    "reason": "string",
-    "input_quant": "string",
-    "moe_backend": "string"
+    "indexer_kv_dtype": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string"
+    },
+    "encoder_cudagraph_token_budgets": {
+      "type": "string"
+    },
+    "op": {
+      "type": "string"
+    },
+    "get_args": {
+      "type": "string"
+    },
+    "runner_type": {
+      "type": "string"
+    },
+    "tokenizer": {
+      "type": "string"
+    },
+    "convert_option": {
+      "type": "string"
+    },
+    "quantization": {
+      "type": "string"
+    },
+    "supported_quantization": {
+      "type": "string"
+    },
+    "otel_import_error_traceback": {
+      "type": "string"
+    },
+    "offload_num_in_group": {
+      "type": "string"
+    },
+    "offload_group_size": {
+      "type": "string"
+    },
+    "offload_prefetch_step": {
+      "type": "string"
+    },
+    "communicator": {
+      "type": "string"
+    },
+    "num_redundant_experts": {
+      "type": "string"
+    },
+    "cpuset": {
+      "type": "string"
+    },
+    "target_layer_ids": {
+      "type": "string"
+    },
+    "suffix_decoding_max_tree_depth": {
+      "type": "string"
+    },
+    "suffix_decoding_max_cached_requests": {
+      "type": "string"
+    },
+    "suffix_decoding_max_spec_factor": {
+      "type": "string"
+    },
+    "suffix_decoding_min_token_prob": {
+      "type": "string"
+    },
+    "prompt_lookup_min": {
+      "type": "string"
+    },
+    "prompt_lookup_max": {
+      "type": "string"
+    },
+    "field_path": {
+      "type": "string"
+    },
+    "expected_type_name": {
+      "type": "string"
+    },
+    "join": {
+      "type": "string"
+    },
+    "architecture": {
+      "type": "string"
+    },
+    "load_format": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "remote_physical_per_logical": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "input_quant": {
+      "type": "string"
+    },
+    "moe_backend": {
+      "type": "string"
+    }
   },
   "source_sites": [
     {
@@ -346,5 +414,6 @@
     "All encoder_cudagraph_token_budgets must be positive, got {self.encoder_cudagraph_token_budgets}"
   ],
   "status": "hypothesis",
-  "count": 74
+  "count": 74,
+  "rule_version": 1
 }

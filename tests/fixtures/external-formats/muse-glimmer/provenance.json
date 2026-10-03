@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "source_name": "muse-glimmer",
+  "locations": [
+    {
+      "repository": "meta-models/Muse-Glimmer-30B",
+      "revision": "a4e59da52a7bc87ae7251dd5545c0dd437c44b68",
+      "retrieval_method": "huggingface_hub_api"
+    }
+  ],
+  "retrieval_date": "2026-09-27",
+  "license": "Apache-2.0",
+  "has_formal_schema": false,
+  "formal_schema_file": null,
+  "schema_description": "Hugging Face Hub model repository files: the chat template (ATEM channels: to=self reasoning, to=user answer, to=<tool> calls), the tokenizer config with its response_template (the model's declared output fields), and the model config.",
+  "pinned_files": [
+    {
+      "source_path": "meta-models/Muse-Glimmer-30B/chat_template.jinja",
+      "local_path": "chat_template.jinja",
+      "sha256": "cfc67e5f349f37690dfd31ed1f18bc4442a9dd32fe39a648f993cb4eb3cae678",
+      "size_bytes": 9992,
+      "role": "representative_content"
+    },
+    {
+      "source_path": "meta-models/Muse-Glimmer-30B/tokenizer_config.json",
+      "local_path": "tokenizer_config.json",
+      "sha256": "781e6c74f571642c71202167b67d9255b28cc439bdda1582ff31346182f5a9c5",
+      "size_bytes": 79936,
+      "role": "representative_content"
+    },
+    {
+      "source_path": "meta-models/Muse-Glimmer-30B/config.json",
+      "local_path": "config.json",
+      "sha256": "5a9df2d8a385b3d361ab6ae68d73586f4e775033933bd0cd863fb7f3820e6a14",
+      "size_bytes": 5109,
+      "role": "representative_content"
+    }
+  ],
+  "notes": "A reasoning-channel model. Its first cohort run (vLLM v0.30.0, no --reasoning-parser, 2026-09-28) answered every case right and scored every case wrong: vLLM returned the whole generation as content with the channel markers stripped. The planner reads these files to name the engine's muse_glimmer reasoning parser and the request's reasoning_strength."
+}

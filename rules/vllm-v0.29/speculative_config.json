@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "speculative_config",
@@ -8,20 +8,48 @@
     "field": "speculative_model"
   },
   "extraction_schema": {
-    "draft_input_vocab_size": "string",
-    "target_vocab_size": "string",
-    "draft_output_vocab_size": "string",
-    "n_predict": "string",
-    "draft_vocab_size": "string",
-    "num_speculative_tokens": "string",
-    "flag": "string",
-    "key": "string",
-    "layer_idx": "string",
-    "range_start": "string",
-    "range_end": "string",
-    "backend": "string",
-    "min_cg_attn_backend": "string",
-    "min_cg_support": "string"
+    "draft_input_vocab_size": {
+      "type": "string"
+    },
+    "target_vocab_size": {
+      "type": "string"
+    },
+    "draft_output_vocab_size": {
+      "type": "string"
+    },
+    "n_predict": {
+      "type": "string"
+    },
+    "draft_vocab_size": {
+      "type": "string"
+    },
+    "num_speculative_tokens": {
+      "type": "string"
+    },
+    "flag": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string"
+    },
+    "layer_idx": {
+      "type": "string"
+    },
+    "range_start": {
+      "type": "string"
+    },
+    "range_end": {
+      "type": "string"
+    },
+    "backend": {
+      "type": "string"
+    },
+    "min_cg_attn_backend": {
+      "type": "string"
+    },
+    "min_cg_support": {
+      "type": "string"
+    }
   },
   "source_sites": [
     {
@@ -205,5 +233,6 @@
     "'tensor_parallel_size' is not a valid argument in the speculative_config. Please pass 'draft_tensor_parallel_size' instead."
   ],
   "status": "hypothesis",
-  "count": 43
+  "count": 43,
+  "rule_version": 1
 }

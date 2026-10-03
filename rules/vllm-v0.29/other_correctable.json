@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "other_correctable",
@@ -8,93 +8,267 @@
     "field": "device_ids"
   },
   "extraction_schema": {
-    "options": "string",
-    "ids": "string",
-    "node_rank": "string",
-    "i": "string",
-    "device_control_env_var": "string",
-    "cvd": "string",
-    "supervisor_port": "string",
-    "child_port_min": "string",
-    "child_port_max": "string",
-    "local_rank": "string",
-    "start": "string",
-    "stop": "string",
-    "n": "string",
-    "max_tokens_check": "string",
-    "pooling_task": "string",
-    "name": "string",
-    "provider": "string",
-    "vocab_size": "string",
-    "invalid_token_ids": "string",
-    "megakernel": "string",
-    "expert_dtype": "string",
-    "moe_backend": "string",
-    "adapter_type": "string",
-    "window_size": "string",
-    "num_experts": "string",
-    "ep_size": "string",
-    "m": "string",
-    "max_m": "string",
-    "hidden_size": "string",
-    "group_size": "string",
-    "ngram_size": "string",
-    "heads_per_ngram": "string",
-    "hc_lowrank": "string",
-    "ple_embed_dim": "string",
-    "ple_conv_kernel_size": "string",
-    "values": "string",
-    "total_bytes": "string",
-    "filepath": "string",
-    "allowed_local_media_path": "string",
-    "allowed_local_media_path_": "string",
-    "w": "string",
-    "h": "string",
-    "max_pixels": "string",
-    "total_num_frames": "string",
-    "total": "string",
-    "capitalize": "string",
-    "idx_str": "string",
-    "ndim": "string",
-    "tuple": "string",
-    "idx": "string",
-    "item_count": "string",
-    "modality": "string",
-    "cohere_only_key": "string",
-    "config_file_name": "string",
-    "model": "string",
-    "log_zero_guard_type": "string",
-    "rescale_image_frac": "string",
-    "rescale_image_max_upscaled_long_edge": "string",
-    "extension": "string",
-    "cache_dtype": "string",
-    "block_size": "string",
-    "kv_block_size": "string",
-    "kv_cache_dtype": "string",
-    "max_num_tokens": "string",
-    "heads_per_rank": "string",
-    "head_dim": "string",
-    "max_gathered_tokens": "string",
-    "token_dim": "string",
-    "block_stride": "string",
-    "dense_page_size": "string",
-    "ratio": "string",
-    "kernel_block_size": "string",
-    "offset": "string",
-    "total_len": "string",
-    "device": "string",
-    "range_start": "string",
-    "range_end": "string",
-    "numa_node": "string",
-    "format_gib": "string",
-    "gpu_memory_utilization": "string",
-    "min_budget": "string",
-    "max_budget": "string",
-    "dtype": "string",
-    "supported_dtypes": "string",
-    "sorted": "string",
-    "list": "string",
-    "num_lanes": "string"
+    "options": {
+      "type": "string"
+    },
+    "ids": {
+      "type": "string"
+    },
+    "node_rank": {
+      "type": "string"
+    },
+    "i": {
+      "type": "string"
+    },
+    "device_control_env_var": {
+      "type": "string"
+    },
+    "cvd": {
+      "type": "string"
+    },
+    "supervisor_port": {
+      "type": "string"
+    },
+    "child_port_min": {
+      "type": "string"
+    },
+    "child_port_max": {
+      "type": "string"
+    },
+    "local_rank": {
+      "type": "string"
+    },
+    "start": {
+      "type": "string"
+    },
+    "stop": {
+      "type": "string"
+    },
+    "n": {
+      "type": "string"
+    },
+    "max_tokens_check": {
+      "type": "string"
+    },
+    "pooling_task": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "vocab_size": {
+      "type": "string"
+    },
+    "invalid_token_ids": {
+      "type": "string"
+    },
+    "megakernel": {
+      "type": "string"
+    },
+    "expert_dtype": {
+      "type": "string"
+    },
+    "moe_backend": {
+      "type": "string"
+    },
+    "adapter_type": {
+      "type": "string"
+    },
+    "window_size": {
+      "type": "string"
+    },
+    "num_experts": {
+      "type": "string"
+    },
+    "ep_size": {
+      "type": "string"
+    },
+    "m": {
+      "type": "string"
+    },
+    "max_m": {
+      "type": "string"
+    },
+    "hidden_size": {
+      "type": "string"
+    },
+    "group_size": {
+      "type": "string"
+    },
+    "ngram_size": {
+      "type": "string"
+    },
+    "heads_per_ngram": {
+      "type": "string"
+    },
+    "hc_lowrank": {
+      "type": "string"
+    },
+    "ple_embed_dim": {
+      "type": "string"
+    },
+    "ple_conv_kernel_size": {
+      "type": "string"
+    },
+    "values": {
+      "type": "string"
+    },
+    "total_bytes": {
+      "type": "string"
+    },
+    "filepath": {
+      "type": "string"
+    },
+    "allowed_local_media_path": {
+      "type": "string"
+    },
+    "allowed_local_media_path_": {
+      "type": "string"
+    },
+    "w": {
+      "type": "string"
+    },
+    "h": {
+      "type": "string"
+    },
+    "max_pixels": {
+      "type": "string"
+    },
+    "total_num_frames": {
+      "type": "string"
+    },
+    "total": {
+      "type": "string"
+    },
+    "capitalize": {
+      "type": "string"
+    },
+    "idx_str": {
+      "type": "string"
+    },
+    "ndim": {
+      "type": "string"
+    },
+    "tuple": {
+      "type": "string"
+    },
+    "idx": {
+      "type": "string"
+    },
+    "item_count": {
+      "type": "string"
+    },
+    "modality": {
+      "type": "string"
+    },
+    "cohere_only_key": {
+      "type": "string"
+    },
+    "config_file_name": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "log_zero_guard_type": {
+      "type": "string"
+    },
+    "rescale_image_frac": {
+      "type": "string"
+    },
+    "rescale_image_max_upscaled_long_edge": {
+      "type": "string"
+    },
+    "extension": {
+      "type": "string"
+    },
+    "cache_dtype": {
+      "type": "string"
+    },
+    "block_size": {
+      "type": "string"
+    },
+    "kv_block_size": {
+      "type": "string"
+    },
+    "kv_cache_dtype": {
+      "type": "string"
+    },
+    "max_num_tokens": {
+      "type": "string"
+    },
+    "heads_per_rank": {
+      "type": "string"
+    },
+    "head_dim": {
+      "type": "string"
+    },
+    "max_gathered_tokens": {
+      "type": "string"
+    },
+    "token_dim": {
+      "type": "string"
+    },
+    "block_stride": {
+      "type": "string"
+    },
+    "dense_page_size": {
+      "type": "string"
+    },
+    "ratio": {
+      "type": "string"
+    },
+    "kernel_block_size": {
+      "type": "string"
+    },
+    "offset": {
+      "type": "string"
+    },
+    "total_len": {
+      "type": "string"
+    },
+    "device": {
+      "type": "string"
+    },
+    "range_start": {
+      "type": "string"
+    },
+    "range_end": {
+      "type": "string"
+    },
+    "numa_node": {
+      "type": "string"
+    },
+    "format_gib": {
+      "type": "string"
+    },
+    "gpu_memory_utilization": {
+      "type": "string"
+    },
+    "min_budget": {
+      "type": "string"
+    },
+    "max_budget": {
+      "type": "string"
+    },
+    "dtype": {
+      "type": "string"
+    },
+    "supported_dtypes": {
+      "type": "string"
+    },
+    "sorted": {
+      "type": "string"
+    },
+    "list": {
+      "type": "string"
+    },
+    "num_lanes": {
+      "type": "string"
+    }
   },
   "source_sites": [
     {
@@ -790,5 +964,6 @@
     "Non-MoE models do not support external data parallel mode. For external load balancing, launch independent vLLM instances without --data-parallel-* arguments."
   ],
   "status": "hypothesis",
-  "count": 171
+  "count": 171,
+  "rule_version": 1
 }

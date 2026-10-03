@@ -1,0 +1,85 @@
+DEBUG 09-26 22:26:40 [plugins/__init__.py:44] No plugins for group vllm.platform_plugins found.
+DEBUG 09-26 22:26:40 [platforms/__init__.py:36] Checking if TPU platform is available.
+DEBUG 09-26 22:26:40 [platforms/__init__.py:55] TPU platform is not available because: No module named 'libtpu'
+DEBUG 09-26 22:26:40 [platforms/__init__.py:61] Checking if CUDA platform is available.
+DEBUG 09-26 22:26:40 [platforms/__init__.py:84] Confirmed CUDA platform is available.
+DEBUG 09-26 22:26:40 [platforms/__init__.py:112] Checking if ROCm platform is available.
+DEBUG 09-26 22:26:40 [platforms/__init__.py:126] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 09-26 22:26:40 [platforms/__init__.py:147] Checking if XPU platform is available.
+DEBUG 09-26 22:26:40 [platforms/__init__.py:177] Checking if CPU platform is available.
+DEBUG 09-26 22:26:40 [platforms/__init__.py:61] Checking if CUDA platform is available.
+DEBUG 09-26 22:26:40 [platforms/__init__.py:84] Confirmed CUDA platform is available.
+DEBUG 09-26 22:26:40 [platforms/__init__.py:280] Automatically detected platform cuda.
+/opt/venv/lib/python3.12/site-packages/huggingface_hub/constants.py:302: FutureWarning: The `HF_HUB_ENABLE_HF_TRANSFER` environment variable is deprecated as 'hf_transfer' is not used anymore. Please use `HF_XET_HIGH_PERFORMANCE` instead to enable high performance transfer with Xet. Visit https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfxethighperformance for more details.
+  warnings.warn(
+DEBUG 09-26 22:26:53 [entrypoints/.../utils/api_utils.py:165] Setting VLLM_WORKER_MULTIPROC_METHOD to 'spawn'
+DEBUG 09-26 22:26:53 [plugins/__init__.py:52] Available plugins for group vllm.general_plugins:
+DEBUG 09-26 22:26:53 [plugins/__init__.py:54] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+DEBUG 09-26 22:26:53 [plugins/__init__.py:54] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+DEBUG 09-26 22:26:53 [plugins/__init__.py:57] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+(APIServer pid=648) INFO 09-26 22:26:53 [entrypoints/.../utils/api_utils.py:347] 
+(APIServer pid=648) INFO 09-26 22:26:53 [entrypoints/.../utils/api_utils.py:347]        █     █     █▄   ▄█
+(APIServer pid=648) INFO 09-26 22:26:53 [entrypoints/.../utils/api_utils.py:347]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.29.0
+(APIServer pid=648) INFO 09-26 22:26:53 [entrypoints/.../utils/api_utils.py:347]   █▄█▀ █     █     █     █  model   /workspace/models/ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4
+(APIServer pid=648) INFO 09-26 22:26:53 [entrypoints/.../utils/api_utils.py:347]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=648) INFO 09-26 22:26:53 [entrypoints/.../utils/api_utils.py:347] 
+(APIServer pid=648) INFO 09-26 22:26:53 [entrypoints/.../utils/api_utils.py:286] non-default args: {'model_tag': '/workspace/models/ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4', 'model': '/workspace/models/ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4', 'dtype': 'bfloat16', 'served_model_name': ['ISTA-DASLab/Qwen3-0.6B-FPQuant-RTN-MXFP4']}
+(APIServer pid=648) DEBUG 09-26 22:26:53 [model_executor/models/registry.py:967] Cached model info file for class vllm.model_executor.models.qwen3.Qwen3ForCausalLM not found
+(APIServer pid=648) DEBUG 09-26 22:26:53 [model_executor/models/registry.py:1038] Cache model info for class vllm.model_executor.models.qwen3.Qwen3ForCausalLM miss. Loading model instead.
+(APIServer pid=648) DEBUG 09-26 22:27:01 [model_executor/models/registry.py:1048] Loaded model info for class vllm.model_executor.models.qwen3.Qwen3ForCausalLM
+(APIServer pid=648) DEBUG 09-26 22:27:01 [logging_utils/log_time.py:29] Registry inspect model class: Elapsed time 7.6810831 secs
+(APIServer pid=648) INFO 09-26 22:27:01 [config/model.py:684] Resolved architecture: Qwen3ForCausalLM
+(APIServer pid=648) INFO 09-26 22:27:01 [config/model.py:2021] Using max model len 40960
+(APIServer pid=648) DEBUG 09-26 22:27:01 [utils/import_utils.py:73] Loading module triton_kernels from /opt/venv/lib/python3.12/site-packages/vllm/third_party/triton_kernels/__init__.py.
+(APIServer pid=648) DEBUG 09-26 22:27:02 [compilation/decorators.py:223] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.qwen3_dflash.DFlashQwen3Model'>: ['input_ids', 'positions', 'input_embeds']
+(APIServer pid=648) DEBUG 09-26 22:27:02 [compilation/decorators.py:223] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_v2.DeepseekV2Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+(APIServer pid=648) DEBUG 09-26 22:27:02 [compilation/decorators.py:223] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_mtp.DeepSeekMTP'>: ['input_ids', 'positions', 'hidden_states', 'intermediate_tensors', 'inputs_embeds']
+(APIServer pid=648) Traceback (most recent call last):
+(APIServer pid=648)   File "/opt/venv/bin/vllm", line 10, in <module>
+(APIServer pid=648)     sys.exit(main())
+(APIServer pid=648)              ^^^^^^
+(APIServer pid=648)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/cli/main.py", line 97, in main
+(APIServer pid=648)     args.dispatch_function(args)
+(APIServer pid=648)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/cli/serve.py", line 153, in cmd
+(APIServer pid=648)     uvloop.run(run_server(args))
+(APIServer pid=648)   File "/opt/venv/lib/python3.12/site-packages/uvloop/__init__.py", line 96, in run
+(APIServer pid=648)     return __asyncio.run(
+(APIServer pid=648)            ^^^^^^^^^^^^^^
+(APIServer pid=648)   File "/usr/lib/python3.12/asyncio/runners.py", line 195, in run
+(APIServer pid=648)     return runner.run(main)
+(APIServer pid=648)            ^^^^^^^^^^^^^^^^
+(APIServer pid=648)   File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+(APIServer pid=648)     return self._loop.run_until_complete(task)
+(APIServer pid=648)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=648)   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+(APIServer pid=648)   File "/opt/venv/lib/python3.12/site-packages/uvloop/__init__.py", line 48, in wrapper
+(APIServer pid=648)     return await main
+(APIServer pid=648)            ^^^^^^^^^^
+(APIServer pid=648)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 176, in run_server
+(APIServer pid=648)     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)
+(APIServer pid=648)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 190, in run_server_worker
+(APIServer pid=648)     async with build_async_engine_client(
+(APIServer pid=648)                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=648)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=648)     return await anext(self.gen)
+(APIServer pid=648)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=648)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 58, in build_async_engine_client
+(APIServer pid=648)     async with build_async_engine_client_from_engine_args(
+(APIServer pid=648)                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=648)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=648)     return await anext(self.gen)
+(APIServer pid=648)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=648)   File "/opt/venv/lib/python3.12/site-packages/vllm/entrypoints/launchers/api_server/entry.py", line 82, in build_async_engine_client_from_engine_args
+(APIServer pid=648)     vllm_config = engine_args.create_engine_config(usage_context=usage_context)
+(APIServer pid=648)                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=648)   File "/opt/venv/lib/python3.12/site-packages/vllm/engine/arg_utils.py", line 2053, in create_engine_config
+(APIServer pid=648)     model_config = self.create_model_config()
+(APIServer pid=648)                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=648)   File "/opt/venv/lib/python3.12/site-packages/vllm/engine/arg_utils.py", line 1809, in create_model_config
+(APIServer pid=648)     return ModelConfig(
+(APIServer pid=648)            ^^^^^^^^^^^^
+(APIServer pid=648)   File "/opt/venv/lib/python3.12/site-packages/pydantic/_internal/_dataclasses.py", line 121, in __init__
+(APIServer pid=648)     s.__pydantic_validator__.validate_python(ArgsKwargs(args, kwargs), self_instance=s)
+(APIServer pid=648) pydantic_core._pydantic_core.ValidationError: 1 validation error for ModelConfig
+(APIServer pid=648)   Value error, ('The quantization method %s is deprecated and will be removed in future versions of vLLM. To bypass, set `--allow-deprecated-quantization`.', 'fp_quant') [type=value_error, input_value=ArgsKwargs((), {'model': ...nderer_num_workers': 1}), input_type=ArgsKwargs]
+(APIServer pid=648)     For further information visit https://errors.pydantic.dev/2.13/v/value_error

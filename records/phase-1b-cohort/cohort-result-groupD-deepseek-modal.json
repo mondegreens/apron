@@ -1,0 +1,85 @@
+{
+  "executed": {
+    "deepseek-ai/DeepSeek-V4-Pro-0813@NVIDIA H200x8": {
+      "solution_fp": "1220a5271a627bf20542c997ca3f23eb8a470ab49f1c93de683f2c73d9deed00286b",
+      "healthy": true,
+      "boot_report_digest": "1220c41cc606ce686252ee314ad676f9df62c88bf5878326239ff9105a6ff11d0d9a",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "12200bae1a1c3479856201def297f4dcb0f1d14ad22cee99b51a6bb6f4904a062958",
+        "122098baa04aa8f68a02eb2257a63df28da19e8235bbe1e4f296429606b714bd5c7e",
+        "1220c3c79be1f11594d56b17bd514bff7c22caccac2fd6efb5627e68aeffd4b3f018",
+        "1220727b64e91e6d06bf87121a523db5b1ab8403b249b3d590ccd89ea1fe6bac9cb1",
+        "12202ca6131375638f8dabe00757fbf68020071eda3fdf504b25b2bf4a6d47796693"
+      ],
+      "serving_digest": "122055f48d02066d0b669b1dc750092e981c0fc00adc3d86dd4e8df22755a8c34ee9",
+      "log_tail": "",
+      "serving_log": "",
+      "harness_failures": [],
+      "cost": 34.910742,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "79": 0,
+          "300": 0,
+          "338": 0,
+          "339": 0,
+          "340": 0,
+          "341": 0,
+          "342": 0,
+          "343": 0,
+          "344": 0,
+          "345": 0
+        },
+        "token_free": true
+      }
+    }
+  },
+  "prediction_errors": {},
+  "skipped": {},
+  "stopped": null,
+  "budget": {
+    "authorized": 400.0,
+    "spent": 284.768315,
+    "held": 0,
+    "remaining": 115.231685,
+    "open_holds": [],
+    "flags": [
+      "l0a3-run1:replayed:estimate",
+      "stage:Qwen/Qwen3-32B:replayed:estimate",
+      "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1:interrupted_in_provision:tvuknutqxlhbxz:23s_at_3.49_per_h",
+      "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1:interrupted_by_owner_stop:uv3q4ny9qmnsiz:377s_at_3.49_per_h",
+      "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3:stopped_to_fix_download_hang:ia4lxog3zt7yvq:~450s_at_0.24_per_h",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:replayed:provider_reported",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:settled_by_owner",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x2:interrupted_start: rate x rental 14:55:32-15:15:54, reconcile to the bill",
+      "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4:replayed:estimate",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x4:replayed:estimate",
+      "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H200x4:replayed:provider_reported",
+      "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H200x4:settled_by_owner",
+      "MiniMaxAI/MiniMax-M3@NVIDIA H200x8:replayed:estimate"
+    ],
+    "overruns": []
+  },
+  "decision_report": {
+    "schema_version": 1,
+    "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+    "candidates": [
+      {
+        "solution_fingerprint": "1220a5271a627bf20542c997ca3f23eb8a470ab49f1c93de683f2c73d9deed00286b",
+        "qualification_status": "task_evaluated",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"122001410ab90961\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"12200bae1a1c3479856201def297f4dcb0f1d14ad22cee99b51a6bb6f4904a062958\", \"12202ca6131375638f8dabe00757fbf68020071eda3fdf504b25b2bf4a6d47796693\", \"1220727b64e91e6d06bf87121a523db5b1ab8403b249b3d590ccd89ea1fe6bac9cb1\", \"122098baa04aa8f68a02eb2257a63df28da19e8235bbe1e4f296429606b714bd5c7e\", \"1220c3c79be1f11594d56b17bd514bff7c22caccac2fd6efb5627e68aeffd4b3f018\"], \"detail\": [\"accepted 4/4\", \"skipped image-1\"]}, \"serving_verified\": {\"passed\": false, \"evidence\": [\"122055f48d02066d0b669b1dc750092e981c0fc00adc3d86dd4e8df22755a8c34ee9\"], \"detail\": [\"fail\", \"p99_ttft_ms 8864.2 exceeds SLO 2000.0\"], \"reason\": \"p99_ttft_ms 8864.2 exceeds SLO 2000.0\"}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": "p99_ttft_ms 8864.2 exceeds SLO 2000.0",
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      }
+    ],
+    "outcome_economics": null,
+    "uncertainty": null,
+    "disclosed_comparable_set": [],
+    "exclusions": []
+  }
+}

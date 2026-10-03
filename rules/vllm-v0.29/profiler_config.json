@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "engine": "vllm",
   "engine_version": "v0.29.0",
   "error_family": "profiler_config",
@@ -8,7 +8,9 @@
     "field": "enforce_eager"
   },
   "extraction_schema": {
-    "options": "string"
+    "options": {
+      "type": "string"
+    }
   },
   "source_sites": [
     {
@@ -52,5 +54,6 @@
     "proton_profiler_dir must be set when profiler is 'proton'"
   ],
   "status": "hypothesis",
-  "count": 8
+  "count": 8,
+  "rule_version": 1
 }

@@ -10,7 +10,21 @@ from __future__ import annotations
 
 from typing import Any
 
-_TYPE_MAP = {"string": str, "integer": int, "number": float, "float": float, "int": int}
+_TYPE_MAP = {
+    "string": str,
+    "integer": int,
+    "number": float,
+    "float": float,
+    "int": int,
+    "enum": str,
+}
+
+
+def _field_type(spec: Any) -> str:
+    """A field spec is a type name (legacy) or an ExtractionField dict."""
+    if isinstance(spec, dict):
+        return str(spec.get("type", "string"))
+    return str(spec)
 
 
 def build_extraction_schemas(
@@ -29,12 +43,25 @@ def build_extraction_schemas(
         if not family or not raw_schema:
             continue
         fields = [
-            (name, _TYPE_MAP.get(type_str, str))
-            for name, type_str in raw_schema.items()
+            (name, _TYPE_MAP.get(_field_type(spec), str))
+            for name, spec in raw_schema.items()
             if name and not name.startswith("_")
         ]
         schemas[family] = fields
     return schemas
+
+
+def build_extraction_enums(
+    rules: list[dict[str, Any]],
+) -> dict[str, dict[str, tuple[str, ...]]]:
+    """Allowed values per enum field, per failure class (INV-6)."""
+    enums: dict[str, dict[str, tuple[str, ...]]] = {}
+    for rule in rules:
+        family = rule.get("error_family", "")
+        for name, spec in (rule.get("extraction_schema") or {}).items():
+            if isinstance(spec, dict) and spec.get("type") == "enum":
+                enums.setdefault(family, {})[name] = tuple(spec.get("enum") or ())
+    return enums
 
 
 def build_failure_classes(rules: list[dict[str, Any]]) -> list[str]:

@@ -18,7 +18,7 @@ from apron.domain.fingerprints import (
 
 
 class ArtifactIdentity(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     content_digest: Annotated[str, IDENTITY]

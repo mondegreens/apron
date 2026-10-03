@@ -1,0 +1,746 @@
+"""Staged weights: a network volume, a CPU stager, and GPU pods that only load.
+
+Phase plan, GPU dollar protection rule 1: never download on GPU-billed time.
+RunPod facts used here were read on 2026-09-27: network volumes via
+``rest.runpod.io/v1/networkvolumes``; CPU pods accept ``networkVolumeId``
+(docs.runpod.io/api-reference/pods/POST/pods); ``dataCenters.storageSupport``
+and ``lowestPrice(dataCenterId)`` answer read-only GraphQL (probed live).
+"""
+
+from __future__ import annotations
+
+import json
+import sys
+from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
+from typing import TYPE_CHECKING, Any
+from unittest.mock import patch
+
+import pytest
+
+from apron.adapters.backends.runpod import VOLUME_MOUNT, RunPodTarget
+from apron.adapters.backends.runpod_storage import (
+    RunPodStagerPod,
+    RunPodStorage,
+    storage_cost,
+)
+from apron.adapters.backends.vllm_engine import MODELS_DIR, VllmEngineAdapter
+from apron.application.orchestration.budget import BudgetTracker, PhaseTiming
+from apron.application.orchestration.staging import stage_weights
+
+# GB of RAM per vCPU, as RunPod's cpuFlavors list them (ramMultiplier, 2026-09-28).
+RAM = {"cpu3c": 2, "cpu3g": 4, "cpu3m": 8, "cpu5c": 2, "cpu5g": 4, "cpu5m": 8}
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+
+class _Clock:
+    def __init__(self) -> None:
+        self.t = datetime(2026, 9, 27, tzinfo=UTC)
+
+    def now(self) -> datetime:
+        return self.t
+
+
+class _Ledger:
+    def __init__(self) -> None:
+        self.entries: list[dict[str, Any]] = []
+
+    def append(self, entry: dict[str, Any]) -> None:
+        self.entries.append(dict(entry))
+
+    def read_all(self) -> list[dict[str, Any]]:
+        return [dict(e) for e in self.entries]
+
+
+def _budget(clock: _Clock | None = None) -> BudgetTracker:
+    return BudgetTracker(authorized=500.0, ledger=_Ledger(), clock=clock or _Clock())
+
+
+# ---------------------------------------------------------------------------
+# The GPU pod attaches the volume where the engine reads weights
+# ---------------------------------------------------------------------------
+
+
+def test_gpu_pod_attaches_the_volume_in_its_datacenter() -> None:
+    created: list[dict[str, Any]] = []
+    sdk = SimpleNamespace(api_key=None, create_pod=lambda **kw: created.append(kw) or {"id": "p"})
+    target = RunPodTarget(
+        api_key="k",
+        ssh_key_path="/tmp/k",
+        gpu_type="NVIDIA H100 80GB HBM3",
+        network_volume_id="vol1",
+        data_center_id="US-NE-1",
+    )
+    with (
+        patch.dict(sys.modules, {"runpod": sdk}),
+        patch.object(target, "_register_teardown_guard"),
+        patch.object(target, "_wait_for_running", side_effect=RuntimeError("stop")),
+        pytest.raises(RuntimeError),
+    ):
+        target.provision()
+    assert created[0]["network_volume_id"] == "vol1"
+    assert created[0]["data_center_id"] == "US-NE-1"
+    assert created[0]["volume_in_gb"] == 0  # the network volume is the pod volume
+    # same path as a downloaded model: the engine finds staged weights unchanged
+    assert created[0]["volume_mount_path"] == VOLUME_MOUNT
+    assert MODELS_DIR.startswith(VOLUME_MOUNT + "/")
+    assert target.weights_persist
+    assert "vol1" in target.weights_source and "US-NE-1" in target.weights_source
+
+
+def test_a_volume_without_its_datacenter_is_refused() -> None:
+    with pytest.raises(ValueError, match="data_center_id"):
+        RunPodTarget(api_key="k", ssh_key_path="/tmp/k", network_volume_id="vol1")
+
+
+def test_plain_pod_keeps_its_own_volume() -> None:
+    target = RunPodTarget(api_key="k", ssh_key_path="/tmp/k")
+    assert not target.weights_persist
+    assert target.weights_source == "downloaded to the pod volume"
+
+
+def test_stock_is_asked_in_the_volumes_datacenter() -> None:
+    target = RunPodTarget(
+        api_key="k",
+        ssh_key_path="/tmp/k",
+        gpu_type="NVIDIA H100 80GB HBM3",
+        network_volume_id="vol1",
+        data_center_id="EU-RO-1",
+    )
+    queries: list[str] = []
+
+    def gql(query: str) -> dict[str, Any]:
+        queries.append(query)
+        return {"gpuTypes": [{"lowestPrice": {"stockStatus": "Low"}}]}
+
+    with patch.object(target, "_gql_status", side_effect=gql):
+        assert target.stock_status() == "Low"
+    assert 'dataCenterId: "EU-RO-1"' in queries[0]
+    assert "allowedCudaVersions" in queries[0]
+
+
+# ---------------------------------------------------------------------------
+# The CPU stager
+# ---------------------------------------------------------------------------
+
+
+def test_stager_is_a_cpu_pod_on_the_volume() -> None:
+    bodies: list[dict[str, Any]] = []
+
+    def rest(self: RunPodStorage, method: str, path: str, body: Any = None) -> Any:
+        bodies.append({"method": method, "path": path, "body": body})
+        return {"id": "stager1"}
+
+    stager = RunPodStagerPod(
+        api_key="k", ssh_key_path="/tmp/k", network_volume_id="vol1", data_center_id="US-NE-1"
+    )
+    with (
+        patch.object(RunPodStorage, "_rest", rest),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
+        patch.object(stager, "_register_teardown_guard"),
+        patch.object(stager, "_wait_for_running", side_effect=RuntimeError("stop")),
+        pytest.raises(RuntimeError),
+    ):
+        stager.provision()
+    body = bodies[0]["body"]
+    assert (bodies[0]["method"], bodies[0]["path"]) == ("POST", "/pods")
+    assert body["computeType"] == "CPU"
+    assert body["cpuFlavorIds"] == ["cpu3c"] and body["vcpuCount"] == 8
+    assert body["networkVolumeId"] == "vol1"
+    assert body["dataCenterIds"] == ["US-NE-1"]
+    assert body["volumeMountPath"] == VOLUME_MOUNT
+    assert body["cloudType"] == "SECURE"
+    assert body["name"].startswith("apron-run")  # the orphan cleanup covers it
+    assert stager.pod_id == "stager1"
+    with pytest.raises(RuntimeError, match="does not execute"):
+        _ = stager.execution_fingerprint
+
+
+# ---------------------------------------------------------------------------
+# Choosing the datacenter and the volume
+# ---------------------------------------------------------------------------
+
+
+def test_datacenter_prefers_an_existing_volume_with_stock() -> None:
+    storage = RunPodStorage("k")
+    stock = {"EU-RO-1": "Low", "US-NE-1": "High", "EU-FR-1": None}
+    with (
+        patch.object(storage, "storage_datacenters", return_value=sorted(stock)),
+        patch.object(storage, "stock_in", side_effect=lambda dc, g, n: stock[dc]),
+        patch.object(storage, "cpu_stock", return_value=["cpu3c"]),
+    ):
+        assert storage.choose_datacenter("H100", 1) == "US-NE-1"  # best stocked
+        assert storage.choose_datacenter("H100", 1, prefer=("EU-RO-1",)) == "EU-RO-1"
+        assert storage.choose_datacenter("H100", 1, prefer=("EU-FR-1",)) == "US-NE-1"
+    with (
+        patch.object(storage, "storage_datacenters", return_value=["EU-FR-1"]),
+        patch.object(storage, "stock_in", return_value=None),
+    ):
+        assert storage.choose_datacenter("H100", 1) is None
+
+
+def test_ensure_volume_reuses_grows_or_creates() -> None:
+    storage = RunPodStorage("k")
+    calls: list[tuple[str, str, Any]] = []
+    existing = [
+        {"id": "v1", "name": "apron-weights-us-ne-1", "dataCenterId": "US-NE-1", "size": 50}
+    ]
+
+    def rest(method: str, path: str, body: Any = None) -> Any:
+        calls.append((method, path, body))
+        if method == "GET":
+            return existing
+        return {"id": "v1" if method == "PATCH" else "v2", **(body or {})}
+
+    with patch.object(storage, "_rest", side_effect=rest):
+        assert storage.ensure_volume("US-NE-1", 40)["id"] == "v1"
+        assert [c[0] for c in calls] == ["GET"]
+        calls.clear()
+        grown = storage.ensure_volume("US-NE-1", 120)
+        assert grown["size"] == 120 and calls[-1][:2] == ("PATCH", "/networkvolumes/v1")
+        calls.clear()
+        made = storage.ensure_volume("EU-RO-1", 80)
+        assert made["id"] == "v2"
+        assert calls[-1] == (
+            "POST",
+            "/networkvolumes",
+            {"name": "apron-weights-eu-ro-1", "size": 80, "dataCenterId": "EU-RO-1"},
+        )
+
+
+def test_storage_cost_is_the_standard_tier_rate() -> None:
+    assert storage_cost(730, 730.0) == pytest.approx(730 * 0.07)
+    assert storage_cost(100, 1.0) == pytest.approx(100 * 0.07 / 730, abs=1e-6)  # micro-dollars
+
+
+def test_high_performance_datacenters_bill_their_own_rate() -> None:
+    """US-CA-2 volumes are high-performance by default: 480 GB = $67.20/mo
+    in the console (2026-09-28), not the $33.60 the standard rate gives."""
+    assert storage_cost(480, 730.0, "US-CA-2") == pytest.approx(67.20)
+    assert storage_cost(480, 730.0, "EU-RO-1") == pytest.approx(480 * 0.07)
+
+
+# ---------------------------------------------------------------------------
+# The engine on staged weights
+# ---------------------------------------------------------------------------
+
+
+class _Target:
+    def __init__(self, persist: bool, stdout: str = "") -> None:
+        self.weights_persist = persist
+        self.commands: list[str] = []
+        self._stdout = stdout
+
+    def execute(self, command: str, **_: Any) -> dict[str, Any]:
+        self.commands.append(command)
+        return {"stdout": self._stdout, "exit_code": 0}
+
+
+def test_staged_weights_are_never_evicted() -> None:
+    staged = _Target(persist=True)
+    VllmEngineAdapter().evict_models(staged, keep="Qwen/Qwen3-32B")
+    assert staged.commands == []
+    plain = _Target(persist=False)
+    VllmEngineAdapter().evict_models(plain, keep="Qwen/Qwen3-32B")
+    assert any("rm -rf" in c for c in plain.commands)
+
+
+def test_prefetch_when_the_checkpoint_fits_host_memory() -> None:
+    engine = VllmEngineAdapter()
+    fits = _Target(persist=True, stdout=f"{60 * 10**9}\n{200 * 10**9}\n")
+    assert engine.load_args(fits, "Qwen/Qwen3-32B") == [
+        "--safetensors-load-strategy",
+        "prefetch",
+    ]
+    too_big = _Target(persist=True, stdout=f"{700 * 10**9}\n{200 * 10**9}\n")
+    assert engine.load_args(too_big, "zai-org/GLM-5.3") == []
+    unreadable = _Target(persist=True, stdout="du: cannot access\n")
+    assert engine.load_args(unreadable, "x/y") == []
+    local = _Target(persist=False, stdout=f"{1}\n{10**12}\n")
+    assert engine.load_args(local, "x/y") == []
+    assert local.commands == []  # nothing probed for weights on the pod's own disk
+
+
+# ---------------------------------------------------------------------------
+# Staging: paid through the budget, torn down on every path
+# ---------------------------------------------------------------------------
+
+
+class _Stager:
+    def __init__(self, clock: _Clock, fail: bool = False) -> None:
+        self.pod_id: str | None = None
+        self.torn_down = False
+        self._clock, self._fail = clock, fail
+
+    def provision(self, env: dict[str, str] | None = None) -> dict[str, Any]:
+        if self._fail:
+            raise RuntimeError("no CPU capacity")
+        self.pod_id = "cpu1"
+        return {"status": "provisioned"}
+
+    def pod_reported_cost(self) -> float | None:
+        return 0.12 if self.pod_id else None
+
+    def teardown(self) -> None:
+        self.torn_down = True
+
+
+class _Engine:
+    def __init__(self, clock: _Clock) -> None:
+        self._clock = clock
+        self.downloaded: list[str] = []
+
+    def runner_supports_token_isolation(self, target: Any) -> bool:
+        return True
+
+    def download_weights(self, target: Any, model_id: str, timeout: int = 0) -> dict[str, Any]:
+        self._clock.t += timedelta(minutes=5)
+        self.downloaded.append(model_id)
+        ok = model_id != "broken/model"
+        return {"ok": ok, "seconds": 300.0, "output_tail": "DOWNLOAD_VERIFIED" if ok else "short"}
+
+
+def test_staging_downloads_settles_and_tears_down() -> None:
+    clock = _Clock()
+    budget = _budget(clock)
+    stager, engine = _Stager(clock), _Engine(clock)
+    events: list[dict[str, Any]] = []
+    result = stage_weights(
+        ["Qwen/Qwen3-32B", "broken/model"],
+        stager=stager,
+        engine=engine,
+        budget=budget,
+        clock=clock,
+        hourly_rate=0.3,
+        estimate=0.5,
+        event=events.append,
+    )
+    assert engine.downloaded == ["Qwen/Qwen3-32B", "broken/model"]
+    assert [m.ok for m in result.models] == [True, False]
+    assert not result.ok  # a failed download is reported, not hidden
+    assert stager.torn_down
+    assert result.cost == 0.12  # the pod's reported cost, not the estimate
+    assert budget.spent == pytest.approx(0.12)
+    assert not budget.holds
+    assert [e["model_id"] for e in events] == ["Qwen/Qwen3-32B", "broken/model"]
+    assert result.seconds == 600.0
+
+
+def test_staging_failure_still_settles_and_tears_down() -> None:
+    clock = _Clock()
+    budget = _budget(clock)
+    stager = _Stager(clock, fail=True)
+    result = stage_weights(
+        ["Qwen/Qwen3-32B"],
+        stager=stager,
+        engine=_Engine(clock),
+        budget=budget,
+        clock=clock,
+        hourly_rate=0.3,
+        estimate=0.5,
+    )
+    assert result.error and "no CPU capacity" in result.error
+    assert stager.torn_down
+    assert not budget.holds  # the hold was settled (at the rate: no reported cost)
+
+
+# ---------------------------------------------------------------------------
+# Records: where pod time went, and where weights came from
+# ---------------------------------------------------------------------------
+
+
+def test_phase_seconds_split_weights_and_engine_start() -> None:
+    timing = PhaseTiming(
+        provision_start=0.0, teardown_end=1000.0, weights=120.0, engine_start=90.5
+    )
+    seconds = timing.seconds()
+    assert seconds["weights"] == 120.0 and seconds["engine_start"] == 90.5
+    assert seconds["total"] == 1000.0  # parts of provision_boot_teardown, not extra time
+    assert "weights" not in PhaseTiming(provision_start=0.0, teardown_end=1.0).seconds()
+
+
+def test_storage_accrues_once_per_window(tmp_path: Path) -> None:
+    from apron.interfaces.cohort_root import WeightsSite, accrue_storage
+
+    clock = _Clock()
+    budget = _budget(clock)
+    site = WeightsSite(volume_id="vol1", data_center_id="US-NE-1", size_gb=100)
+    assert accrue_storage(site, budget, tmp_path) == 0.0  # created now
+    clock.t += timedelta(hours=10)
+    assert accrue_storage(site, budget, tmp_path) == pytest.approx(storage_cost(100, 10.0))
+    assert accrue_storage(site, budget, tmp_path) == 0.0  # nothing new since
+    state = json.loads((tmp_path / "volumes.json").read_text())
+    assert state["vol1"]["data_center_id"] == "US-NE-1"
+    assert budget.spent == pytest.approx(storage_cost(100, 10.0))
+
+
+def test_stager_steps_down_until_a_cpu_pod_is_free() -> None:
+    tried: list[tuple[str, int]] = []
+
+    def rest(self: RunPodStorage, method: str, path: str, body: Any = None) -> Any:
+        tried.append((body["cpuFlavorIds"][0], body["vcpuCount"]))
+        if (body["cpuFlavorIds"][0], body["vcpuCount"]) != ("cpu3g", 4):
+            raise RuntimeError("HTTP 500 There are no longer any instances available with ...")
+        return {"id": "stager2"}
+
+    stager = RunPodStagerPod(
+        api_key="k", ssh_key_path="/tmp/k", network_volume_id="vol1", data_center_id="AP-JP-1"
+    )
+    with (
+        patch.object(RunPodStorage, "_rest", rest),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c", "cpu3g"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
+        patch.object(stager, "_register_teardown_guard"),
+        patch.object(stager, "_wait_for_running", side_effect=RuntimeError("stop")),
+        pytest.raises(RuntimeError, match="stop"),
+    ):
+        stager.provision()
+    # Only sizes with STAGER_MIN_RAM_GB: cpu3c (2 GB/vCPU) x 4 or x 2 is never asked for.
+    assert tried == [("cpu3c", 8), ("cpu3g", 8), ("cpu3g", 4)]
+    assert stager.pod_id == "stager2"
+    assert stager.size == "cpu3g x 4 vCPU, 16 GB RAM"
+
+
+def test_stager_reports_every_refusal_and_other_errors_stop() -> None:
+    def full(self: RunPodStorage, method: str, path: str, body: Any = None) -> Any:
+        raise RuntimeError("There are no longer any instances available")
+
+    stager = RunPodStagerPod(
+        api_key="k", ssh_key_path="/tmp/k", network_volume_id="vol1", data_center_id="AP-JP-1"
+    )
+    with (
+        patch.object(RunPodStorage, "_rest", full),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c", "cpu3m"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
+        pytest.raises(RuntimeError, match=r"16 GB RAM or more.*cpu3cx8.*cpu3mx2"),
+    ):
+        stager.provision()
+
+    def bad(self: RunPodStorage, method: str, path: str, body: Any = None) -> Any:
+        raise RuntimeError("HTTP 401 unauthorized")
+
+    with (
+        patch.object(RunPodStorage, "_rest", bad),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c", "cpu5c"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
+        pytest.raises(RuntimeError, match="401"),
+    ):
+        stager.provision()
+
+
+def test_us_datacenters_come_first_then_europe_then_asia() -> None:
+    from apron.adapters.backends.runpod_storage import region_rank
+
+    ids = ["AP-JP-1", "EUR-IS-1", "US-NE-1", "EU-RO-1", "CA-MTL-3", "XX-1"]
+    assert sorted(ids, key=region_rank)[:2] == ["US-NE-1", "CA-MTL-3"]
+    assert sorted(ids, key=region_rank)[-2:] == ["AP-JP-1", "XX-1"]
+    storage = RunPodStorage("k")
+    stock = {"AP-JP-1": "High", "EUR-IS-1": "High", "US-NE-1": "Low"}
+    with (
+        patch.object(storage, "storage_datacenters", return_value=sorted(stock)),
+        patch.object(storage, "stock_in", side_effect=lambda dc, g, n: stock[dc]),
+        patch.object(storage, "cpu_stock", return_value=["cpu3c"]),
+    ):
+        # a US datacenter with low stock beats a better-stocked European or Asian one
+        assert storage.choose_datacenter("H100", 1) == "US-NE-1"
+
+
+def test_a_stager_stopped_mid_provision_is_still_named_and_paid() -> None:
+    clock = _Clock()
+    budget = _budget(clock)
+
+    class _Half(_Stager):
+        def provision(self, env: dict[str, str] | None = None) -> dict[str, Any]:
+            self.pod_id = "cpu9"  # created, then the wait for SSH is interrupted
+            raise RuntimeError("interrupted while the image pulled")
+
+    stager = _Half(clock)
+    result = stage_weights(
+        ["Qwen/Qwen3-32B"],
+        stager=stager,
+        engine=_Engine(clock),
+        budget=budget,
+        clock=clock,
+        hourly_rate=0.3,
+        estimate=0.5,
+    )
+    assert stager.torn_down and result.pod_id == "cpu9"
+    annotated = [e for e in budget.ledger.read_all() if e["op"] == "annotate"]
+    assert annotated and annotated[0]["pod_id"] == "cpu9"  # reconcile can find its bill
+    assert not budget.holds
+
+
+def test_hybrid_architectures_are_an_explicit_unknown() -> None:
+    from apron.adapters.backends.vllm_quantization import HYBRID_ARCHITECTURES
+    from apron.domain.mechanisms.model_spec_builder import UNKNOWN_MECHANISM, build_model_spec
+
+    # generated from the pinned source's IsHybrid classes
+    assert {"NemotronHForCausalLM", "Qwen3_5MoeForConditionalGeneration"} <= HYBRID_ARCHITECTURES
+    config = {
+        "architectures": ["NemotronHForCausalLM"],
+        "num_hidden_layers": 52,
+        "num_attention_heads": 32,
+        "hidden_size": 2688,
+    }
+    plain = build_model_spec(config)
+    assert plain.components[0].mechanism == "autoregressive_decode"  # the old, wrong reading
+    hybrid = build_model_spec(config, unmodelled_architectures=HYBRID_ARCHITECTURES)
+    assert hybrid.components[0].mechanism == UNKNOWN_MECHANISM
+
+
+def test_the_volume_is_sized_for_earlier_groups_weights_too(tmp_path: Path) -> None:
+    """Group B filled the volume group A left 190 GB on (2026-09-28): the size
+    counts every model earlier staging runs wrote there, not only the new ones."""
+    from apron.interfaces import cohort_root
+
+    (tmp_path / "prestage-groupA.json").write_text(
+        json.dumps(
+            {
+                "site": {"volume_id": "v1"},
+                "staging": {"models": [{"model_id": "a", "ok": True}]},
+            }
+        )
+    )
+    (tmp_path / "prestage-other.json").write_text(
+        json.dumps({"site": {"volume_id": "v9"}, "staging": {"models": [{"model_id": "z"}]}})
+    )
+    assert cohort_root.staged_on("v1", tmp_path) == {"a"}
+
+    storage = RunPodStorage("k")
+    sizes: list[int] = []
+
+    def ensure(dc: str, size_gb: int) -> dict[str, Any]:
+        sizes.append(size_gb)
+        return {"id": "v1", "size": size_gb}
+
+    execution = SimpleNamespace(gpu_sku="H100", gpu_count=1)
+    with (
+        patch.object(storage, "list_volumes", return_value=[]),
+        patch.object(storage, "storage_datacenters", return_value=["US-CA-2"]),
+        patch.object(storage, "stock_in", return_value="High"),
+        patch.object(storage, "cpu_stock", return_value=["cpu3c"]),
+        patch.object(storage, "ensure_volume", side_effect=ensure),
+        patch.object(cohort_root, "staged_bytes", side_effect=lambda m: 100_000_000_000),
+        patch.object(cohort_root, "RUN_DIR", tmp_path),
+    ):
+        site = cohort_root.weights_site(storage, [execution], ["b"], headroom=1.0)  # type: ignore[list-item]
+    assert site is not None
+    assert sizes == [110, 210]  # b alone, then a + b (+10 GB)
+    assert site.size_gb == 210
+
+
+def test_a_stalled_download_is_restarted_not_waited_on(tmp_path: Path) -> None:
+    """Group C staging (2026-09-28) held a finished download open for the whole
+    four-hour deadline.  The watchdog kills an attempt whose destination stops
+    growing and the next attempt resumes; here the first attempt hangs and the
+    second writes the file and exits 0."""
+    import os
+    import subprocess
+    import textwrap
+
+    from apron.adapters.backends.vllm_engine import download_command
+
+    dest, marker = tmp_path / "dest", tmp_path / "attempts"
+    fake_python = tmp_path / "python"
+    fake_python.write_text(
+        textwrap.dedent(
+            f"""\
+            #!/bin/sh
+            n=$(cat {marker} 2>/dev/null || echo 0); n=$((n+1)); echo $n > {marker}
+            if [ $n -eq 1 ]; then sleep 600; fi
+            echo data > "$4/model.safetensors"; echo DOWNLOAD_VERIFIED; exit 0
+            """
+        )
+    )
+    fake_python.chmod(0o755)
+    bin_dir = tmp_path / "bin"  # GNU du -sb is not on every CI host
+    bin_dir.mkdir()
+    (bin_dir / "du").write_text(
+        '#!/bin/sh\npython3 -c "import os,sys; p=sys.argv[2]; '
+        "print(sum(os.path.getsize(os.path.join(r,f)) for r,_,fs in os.walk(p) for f in fs),"
+        ' p, sep=chr(9))" "$@"\n'
+    )
+    (bin_dir / "du").chmod(0o755)
+    command = download_command(
+        "org/model",
+        str(dest),
+        python=str(fake_python),
+        stall_seconds=2,
+        poll_seconds=1,
+        log=str(tmp_path / "download.log"),
+    )
+    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"}
+    done = subprocess.run(
+        ["bash", "-c", command], env=env, capture_output=True, text=True, timeout=60
+    )
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert marker.read_text().strip() == "2"  # one stalled attempt, one resumed
+    assert "stalled" in done.stdout and "DOWNLOAD_VERIFIED" in done.stdout
+    assert (dest / "model.safetensors").exists()
+
+
+def test_a_volume_past_runpods_limit_is_refused_with_a_reason() -> None:
+    """RunPod caps a network volume at 4000 GB; asking for more used to fail as
+    an opaque HTTP 400 from the REST schema validator."""
+    from apron.adapters.backends.runpod_storage import MAX_VOLUME_GB
+
+    storage = RunPodStorage("k")
+    with (
+        patch.object(storage, "_rest", side_effect=AssertionError("no request")),
+        pytest.raises(ValueError, match="4000 GB network-volume limit"),
+    ):
+        storage.ensure_volume("US-CA-2", MAX_VOLUME_GB + 1)
+
+
+class _DetachedPod:
+    """A pod whose detached download finishes after a few polls; one poll's
+    connection drops (RunPod's proxy closing a silent channel, 2026-09-28)."""
+
+    def __init__(self, rc: int, polls_before_done: int = 3) -> None:
+        self.rc, self.left, self.commands = rc, polls_before_done, []
+        self.dropped = False
+
+    def execute(self, command: str, timeout: int | None = None) -> dict[str, Any]:
+        self.commands.append(command)
+        if command.startswith("cat /tmp/apron-download.rc"):
+            if not self.dropped:
+                self.dropped = True
+                from apron.adapters.backends.runpod import RemoteCommandTimeout
+
+                raise RemoteCommandTimeout("remote command did not finish in 120s")
+            self.left -= 1
+            return {"stdout": "RUNNING\n" if self.left > 0 else f"{self.rc}\n", "exit_code": 0}
+        if command.startswith("tail -20"):
+            return {"stdout": "DOWNLOAD_VERIFIED\n", "exit_code": 0}
+        return {"stdout": "started\n", "exit_code": 0}
+
+
+@pytest.mark.parametrize(("rc", "ok"), [(0, True), (3, False)])
+def test_the_download_runs_detached_and_survives_a_dropped_poll(rc: int, ok: bool) -> None:
+    pod = _DetachedPod(rc)
+    got = VllmEngineAdapter().download_weights(pod, "org/model", timeout=60, poll_seconds=0)
+    assert got["ok"] is ok
+    assert pod.commands[0].startswith("rm -f /tmp/apron-download.rc; nohup bash -c")
+    assert "< /dev/null &" in pod.commands[0]  # nothing holds the SSH channel open
+    assert pod.dropped  # the timed-out poll did not end the download
+    assert "DOWNLOAD_VERIFIED" in got["output_tail"]
+
+
+@pytest.mark.parametrize("code", [0, 3])
+def test_the_detached_command_records_the_exit_code_of_a_command_that_exits(
+    tmp_path: Path, code: int
+) -> None:
+    """The download command ends in ``exit``; run bare, it skipped the line
+    that writes the exit code and the poll waited for a file that never came."""
+    import subprocess
+    import time
+
+    from apron.adapters.backends.vllm_engine import detached_command
+
+    rc = tmp_path / "rc"
+    command = detached_command(
+        f"echo working; exit {code}", rc_path=str(rc), out_path=str(tmp_path / "out")
+    )
+    subprocess.run(["bash", "-c", command], check=True, timeout=10, capture_output=True)
+    deadline = time.monotonic() + 10
+    while not rc.exists() and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert rc.read_text().strip() == str(code)
+    assert not (tmp_path / "rc.tmp").exists()
+
+
+def test_models_already_staged_need_no_cpu_pod(tmp_path: Path) -> None:
+    """2026-09-28: no CPU pod in US-CA-2 held back a GPU run whose weights were
+    all on the volume.  Verified models neither need CPU stock nor a stager."""
+    from apron.interfaces import cohort_root
+
+    (tmp_path / "events.jsonl").write_text(
+        "\n".join(
+            json.dumps({"event": "staged", "location": dc, "model_id": m, "ok": ok})
+            for dc, m, ok in [
+                ("US-CA-2", "a", True),
+                ("US-CA-2", "b", False),
+                ("EU-RO-1", "c", True),
+            ]
+        )
+        + "\n"
+    )
+    assert cohort_root.staged_ok_on("US-CA-2", tmp_path) == {"a"}
+    site = cohort_root.WeightsSite("v1", "US-CA-2", 100)
+    result = cohort_root.stage_site(site, ["a"], SimpleNamespace(), tmp_path)  # type: ignore[arg-type]
+    assert result.ok and result.pod_id is None and result.cost == 0.0
+
+
+def test_a_stager_below_the_ram_floor_is_never_requested() -> None:
+    """A 4 GB stager OOM-killed the download 11 times (2026-09-28): with only
+    cpu3c (2 GB per vCPU) in stock, 8 vCPUs is the one size asked for."""
+    from apron.adapters.backends.runpod_storage import STAGER_MIN_RAM_GB
+
+    asked: list[int] = []
+
+    def full(self: RunPodStorage, method: str, path: str, body: Any = None) -> Any:
+        asked.append(RAM[body["cpuFlavorIds"][0]] * body["vcpuCount"])
+        raise RuntimeError("There are no longer any instances available")
+
+    stager = RunPodStagerPod(
+        api_key="k", ssh_key_path="/tmp/k", network_volume_id="vol1", data_center_id="US-CA-2"
+    )
+    with (
+        patch.object(RunPodStorage, "_rest", full),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu3c", "cpu3g", "cpu3m"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
+        pytest.raises(RuntimeError, match="16 GB RAM or more"),
+    ):
+        stager.provision()
+    assert asked and min(asked) >= STAGER_MIN_RAM_GB
+    # A flavor whose RAM RunPod does not report is not guessed at.
+    asked.clear()
+    with (
+        patch.object(RunPodStorage, "_rest", full),
+        patch.object(RunPodStorage, "cpu_stock", return_value=["cpu9x"]),
+        patch.object(RunPodStorage, "cpu_flavor_ram", return_value=RAM),
+        pytest.raises(RuntimeError),
+    ):
+        stager.provision()
+    assert asked == []
+
+
+def test_the_download_log_says_what_the_memory_limit_did() -> None:
+    """The command ends with the cgroup's limit, peak and OOM kills in the log
+    it tails, so an OOM-killed download is named, not a bare "Killed"."""
+    from apron.adapters.backends.vllm_engine import download_command
+
+    command = download_command("org/m", "/dest")
+    assert "/sys/fs/cgroup/memory.max" in command
+    assert "oom_kill /sys/fs/cgroup/memory.events" in command
+    assert command.index("memory: max=") < command.index("tail -20")
+
+
+def test_with_no_stock_the_run_waits_where_the_weights_are(tmp_path: Path) -> None:
+    """No 2xB200 anywhere at launch (2026-09-28): the datacenter whose volume
+    holds every model is chosen and the run's stock waiter waits there; a
+    datacenter without the weights is never chosen without stock."""
+    from apron.interfaces import cohort_root
+
+    (tmp_path / "events.jsonl").write_text(
+        json.dumps({"event": "staged", "location": "US-CA-2", "model_id": "a", "ok": True}) + "\n"
+    )
+    storage = RunPodStorage("k")
+    execution = SimpleNamespace(gpu_sku="NVIDIA B200", gpu_count=2)
+    volume = {"id": "v1", "dataCenterId": "US-CA-2", "size": 500}
+    with (
+        patch.object(storage, "list_volumes", return_value=[volume]),
+        patch.object(storage, "storage_datacenters", return_value=["US-CA-2", "US-GA-2"]),
+        patch.object(storage, "stock_in", return_value=None),
+        patch.object(storage, "cpu_stock", return_value=["cpu3c"]),
+        patch.object(storage, "ensure_volume", return_value=volume),
+        patch.object(cohort_root, "staged_bytes", side_effect=lambda m: 100_000_000_000),
+        patch.object(cohort_root, "RUN_DIR", tmp_path),
+    ):
+        site = cohort_root.weights_site(storage, [execution], ["a"])  # type: ignore[list-item]
+        missing = cohort_root.weights_site(storage, [execution], ["a", "b"])  # type: ignore[list-item]
+    assert site is not None and site.data_center_id == "US-CA-2"
+    assert missing is None  # b is not staged anywhere and nothing is in stock

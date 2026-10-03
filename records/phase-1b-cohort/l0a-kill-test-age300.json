@@ -1,0 +1,11 @@
+{
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "pod": "bdjkw5nbsj625z",
+  "max_age_seconds": 300,
+  "pod_age_seconds": 521,
+  "before": [],
+  "terminated": [
+    "bdjkw5nbsj625z"
+  ],
+  "after": []
+}

@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "name": "modern-models-deployment-checks",
+  "version": "3",
+  "required_capabilities": [
+    {
+      "schema_version": 1,
+      "operation": "text_generation",
+      "required_inputs": [
+        "text"
+      ],
+      "output_representation": "generated_text",
+      "streaming": false
+    }
+  ],
+  "cases": [
+    {
+      "id": "needle-1",
+      "check": "long_context_needle",
+      "filler": "The grass is green. The sky is blue. The sun is yellow. Here we go. There and back again. ",
+      "needle": "The pass key is 71432. Remember it. 71432 is the pass key.",
+      "question": "What is the pass key? Answer with just the number.",
+      "expected": "71432",
+      "depth": "0.5",
+      "max_tokens": "512"
+    },
+    {
+      "id": "tool-1",
+      "check": "tool_call",
+      "prompt": "What is the weather in Paris right now? Use the get_weather tool.",
+      "tools": "[{\"function\": {\"description\": \"Get the current weather in a city.\", \"name\": \"get_weather\", \"parameters\": {\"additionalProperties\": false, \"properties\": {\"city\": {\"description\": \"The city name, e.g. Paris.\", \"type\": \"string\"}, \"unit\": {\"enum\": [\"celsius\", \"fahrenheit\"], \"type\": \"string\"}}, \"required\": [\"city\"], \"type\": \"object\"}}, \"type\": \"function\"}]",
+      "expected_tool": "get_weather",
+      "max_tokens": "1024"
+    },
+    {
+      "id": "json-1",
+      "check": "json_output",
+      "prompt": "Give the capital of France and the country it is in, as a JSON object with the keys city and country.",
+      "schema": "{\"additionalProperties\": false, \"properties\": {\"city\": {\"type\": \"string\"}, \"country\": {\"type\": \"string\"}}, \"required\": [\"city\", \"country\"], \"type\": \"object\"}",
+      "schema_name": "capital",
+      "max_tokens": "1024"
+    },
+    {
+      "id": "image-1",
+      "check": "image_input",
+      "prompt": "What color is this image? Answer with one word.",
+      "image": "solid:224x224:255,0,0",
+      "expected": "red",
+      "extra_checks": "casefold",
+      "max_tokens": "512"
+    },
+    {
+      "id": "reasoning-1",
+      "check": "reasoning_split",
+      "prompt": "What is 17 + 25? Answer with just the number.",
+      "expected": "42",
+      "max_tokens": "4096"
+    }
+  ],
+  "task_categories": [
+    "long_context",
+    "tool_calling",
+    "structured_output",
+    "image_input",
+    "reasoning_split"
+  ],
+  "representativeness_claims": [
+    "Deployment checks: they test the serving configuration a plan starts, not model quality."
+  ]
+}

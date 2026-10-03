@@ -74,7 +74,7 @@ class TestPipelinePerClass:
             "the estimated maximum model length is 8192."
         )
         result = run_diagnosis_pipeline(error, engine, base_plan, model_config, hardware, rules)
-        assert result.failure_class == "oom"
+        assert result.failure_class == "oom_kv_cache"
         assert result.rule_matched
         assert result.corrected_plan is not None
         assert result.corrected_plan.engine_configuration["max_model_len"] == "8192"
@@ -90,7 +90,7 @@ class TestPipelinePerClass:
     ) -> None:
         error = "CUDA out of memory occurred when warming up sampler with 256 dummy requests."
         result = run_diagnosis_pipeline(error, engine, base_plan, model_config, hardware, rules)
-        assert result.failure_class == "oom"
+        assert result.failure_class == "oom_kv_cache"
         assert result.corrected_plan is not None
         assert result.corrected_plan.engine_configuration["max_num_seqs"] == "128"
 
@@ -152,18 +152,54 @@ class TestPipelinePerClass:
         model_config: dict,
         rules: list[dict],
     ) -> None:
+        from apron.application.orchestration.correction import (
+            ArtifactCandidate,
+            ArtifactSearch,
+            CorrectionContext,
+        )
+
+        requested = "lab/Model-FPQuant"
         plan = DeploymentPlan(
-            engine_configuration={"quantization": "gptq", "max_model_len": "4096"},
+            engine_configuration={"max_model_len": "4096"},
+            resource_allocation={
+                "model_id": requested,
+                "gpu_sku": hardware.gpu_sku,
+                "gpu_count": "1",
+            },
         )
         error = (
-            "The quantization method gptq "
+            "The quantization method fp_quant "
             "is not supported for the current GPU. Minimum "
-            "capability: 80. Current capability: 75."
+            "capability: 100. Current capability: 89."
         )
-        result = run_diagnosis_pipeline(error, engine, plan, model_config, hardware, rules)
+        shape = {"architectures": ["LlamaForCausalLM"], "hidden_size": 4096}
+        search = ArtifactSearch(
+            requested_model_id=requested,
+            base_model_id="org/Model",
+            requested_weight_bits=4,
+            requested_shape=shape,
+            candidates=(
+                ArtifactCandidate("org/Model", shape, 16, 0),
+                ArtifactCandidate("org/Model-FP8", shape, 8, 75, "fp8"),
+            ),
+        )
+        result = run_diagnosis_pipeline(
+            error,
+            engine,
+            plan,
+            {**model_config, "quantization_config": {"quant_method": "fp_quant"}},
+            hardware,
+            rules,
+            correction_context=CorrectionContext(artifacts=lambda: search),
+        )
         assert result.failure_class == "quant_compute_capability"
         assert result.corrected_plan is not None
-        assert "quantization" not in result.corrected_plan.engine_configuration
+        # substitute_artifact serves the same network in a format this GPU runs;
+        # the GPU and the engine flags stay (v1's B200 retarget did not load).
+        allocation = result.corrected_plan.resource_allocation
+        assert allocation["model_id"] == "org/Model-FP8"
+        assert allocation["gpu_sku"] == hardware.gpu_sku
+        assert result.corrected_plan.engine_configuration == plan.engine_configuration
 
 
 # -------------------------------------------------------------------
@@ -246,9 +282,24 @@ class TestPipelineEdgeCases:
         )
         plan = DeploymentPlan(engine_configuration={"max_model_len": "4096"})
         vr = {"model_weight_memory": 20_000_000_000}
+        from apron.application.orchestration.correction import CatalogEntry, CorrectionContext
+
         error = "torch.cuda.OutOfMemoryError: CUDA error: out of memory"
-        result = run_diagnosis_pipeline(error, engine, plan, model_config, small_gpu, rules, vr)
-        assert result.failure_class == "oom"
+        no_gpu_large_enough = CorrectionContext(
+            catalog=(CatalogEntry(small_gpu, 0.3),),
+            predicted_total_bytes=400 << 30,
+        )
+        result = run_diagnosis_pipeline(
+            error,
+            engine,
+            plan,
+            model_config,
+            small_gpu,
+            rules,
+            vr,
+            correction_context=no_gpu_large_enough,
+        )
+        assert result.failure_class == "oom_weight_load"
         assert result.rule_matched
         assert result.corrected_plan is None
         assert result.result_label == "Correction infeasible"

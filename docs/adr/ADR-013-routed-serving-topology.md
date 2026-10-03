@@ -90,7 +90,7 @@ The architecture is open to accelerators and execution backends, but architectur
 - <https://github.com/vllm-project/semantic-router/issues/2349>
 - <https://github.com/kubernetes-sigs/gateway-api-inference-extension>
 - <https://github.com/llm-d/llm-d-router>
-- <https://docs.ray.io/en/latest/serve/llm/user-guides/request-routing.html>
+- <https://docs.ray.io/en/latest/serve/llm/architecture/routing-policies.html>
 - <https://github.com/exo-explore/exo>
 - <https://kserve.github.io/website/docs/model-serving/generative-inference/llmisvc/llmisvc-overview>
 - <https://github.com/vllm-project/aibrix> (source-reviewed at `5c77915f74d00a4dcdd6034615f0eba47b0af66f`, 2026-09-09)
