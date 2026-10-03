@@ -1,4 +1,4 @@
 # Findings
 
-Results of Apron's evidence runs. Every number in a post is generated from
-stored records and cites the digest of the record it came from.
+What Apron's evidence runs found: models booted on real GPUs, predictions
+checked against what the engine measured.

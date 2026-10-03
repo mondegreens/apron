@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 674" width="760" height="674" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" role="img">
+<title>Weights: predicted before renting, then measured</title>
+
+<style>
+  .s { fill: #fcfcfb } .t1 { fill: #0b0b0b } .t2 { fill: #52514e } .t3 { fill: #8a8984 }
+  .grid { stroke: #e6e5e1 } .axis { stroke: #c9c8c2 } .band { fill: #f0efec }
+  .c1 { fill: #2a78d6 } .c2 { fill: #eb6834 } .c3 { fill: #1baf7a } .free { fill: #e6e5e1 }
+  .l1 { stroke: #2a78d6 } .l2 { stroke: #eb6834 } .ring { stroke: #fcfcfb }
+  @media (prefers-color-scheme: dark) {
+    .s { fill: #1a1a19 } .t1 { fill: #ffffff } .t2 { fill: #c3c2b7 } .t3 { fill: #8f8e86 }
+    .grid { stroke: #2e2e2c } .axis { stroke: #4a4a46 } .band { fill: #262624 }
+    .c1 { fill: #3987e5 } .c2 { fill: #d95926 } .c3 { fill: #199e70 } .free { fill: #383835 }
+    .l1 { stroke: #3987e5 } .l2 { stroke: #d95926 } .ring { stroke: #1a1a19 }
+  }
+</style>
+<rect width="760" height="674" rx="8" class="s"/>
+<text x="24.0" y="34.0" class="t1" font-size="19" font-weight="650" text-anchor="start">Weights: predicted before renting, then measured</text>
+<text x="24.0" y="56.0" class="t2" font-size="13" font-weight="400" text-anchor="start">11 of 14 models within ±2%. Prediction recorded before each boot; measured = vLLM&#x27;s own memory report, per GPU.</text>
+<rect x="322.5" y="84" width="84.3" height="520" class="band"/>
+<line x1="196.0" x2="196.0" y1="84" y2="604" class="grid" stroke-width="1"/>
+<text x="196.0" y="622.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">-8%</text>
+<line x1="238.2" x2="238.2" y1="84" y2="604" class="grid" stroke-width="1"/>
+<text x="238.2" y="622.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">-6%</text>
+<line x1="280.3" x2="280.3" y1="84" y2="604" class="grid" stroke-width="1"/>
+<text x="280.3" y="622.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">-4%</text>
+<line x1="322.5" x2="322.5" y1="84" y2="604" class="grid" stroke-width="1"/>
+<text x="322.5" y="622.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">-2%</text>
+<line x1="364.6" x2="364.6" y1="84" y2="604" class="axis" stroke-width="1"/>
+<text x="364.6" y="622.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">0</text>
+<line x1="406.8" x2="406.8" y1="84" y2="604" class="grid" stroke-width="1"/>
+<text x="406.8" y="622.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">+2%</text>
+<line x1="448.9" x2="448.9" y1="84" y2="604" class="grid" stroke-width="1"/>
+<text x="448.9" y="622.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">+4%</text>
+<text x="326.5" y="78.0" class="t3" font-size="11" font-weight="400" text-anchor="start">±2%</text>
+<text x="196.0" y="640.0" class="t3" font-size="11.5" font-weight="400" text-anchor="start">← predicted less than measured</text>
+<text x="470.0" y="640.0" class="t3" font-size="11.5" font-weight="400" text-anchor="end">predicted more →</text>
+<text x="24.0" y="106.0" class="t2" font-size="12" font-weight="600" text-anchor="start">1 × RTX 4090 (24 GB)</text>
+<text x="184.0" y="134.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">gpt-oss-20b</text>
+<circle cx="214.4" cy="130.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="134.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">12.82 → 13.80 GiB  (-7.1%)</text>
+<text x="484.0" y="149.0" class="t3" font-size="11" font-weight="400" text-anchor="start">Marlin pads the experts on this GPU; counted now</text>
+<text x="24.0" y="180.0" class="t2" font-size="12" font-weight="600" text-anchor="start">1 × H100 80 GB</text>
+<text x="184.0" y="208.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">gpt-oss-120b</text>
+<circle cx="341.9" cy="204.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="208.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">60.77 → 61.43 GiB  (-1.1%)</text>
+<text x="184.0" y="232.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Gemma 4 31B</text>
+<circle cx="345.5" cy="228.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="232.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">58.46 → 58.99 GiB  (-0.9%)</text>
+<text x="184.0" y="256.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Muse-Glimmer-30B</text>
+<circle cx="350.8" cy="252.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="256.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">55.46 → 55.83 GiB  (-0.7%)</text>
+<text x="184.0" y="280.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">GLM-4.7-Flash</text>
+<circle cx="450.8" cy="276.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="280.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">58.15 → 55.87 GiB  (+4.1%)</text>
+<text x="484.0" y="295.0" class="t3" font-size="11" font-weight="400" text-anchor="start">counted an MTP layer vLLM skips; fixed</text>
+<text x="184.0" y="318.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Qwen3.8-27B</text>
+<circle cx="358.7" cy="314.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="318.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">50.96 → 51.10 GiB  (-0.3%)</text>
+<text x="184.0" y="342.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Qwen3.6-35B-A3B FP8</text>
+<circle cx="404.8" cy="338.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="342.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">34.88 → 34.23 GiB  (+1.9%)</text>
+<text x="184.0" y="366.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Nemotron-3.5-Lightning</text>
+<circle cx="361.0" cy="362.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="366.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">58.82 → 58.92 GiB  (-0.2%)</text>
+<text x="24.0" y="398.0" class="t2" font-size="12" font-weight="600" text-anchor="start">4 × H200, per GPU</text>
+<text x="184.0" y="426.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">GLM-5.3-Flash</text>
+<circle cx="361.6" cy="422.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="426.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">76.26 → 76.37 GiB  (-0.1%)</text>
+<text x="184.0" y="450.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Qwen3.8-Flash-Next</text>
+<circle cx="291.7" cy="446.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="450.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">58.76 → 60.87 GiB  (-3.5%)</text>
+<text x="484.0" y="465.0" class="t3" font-size="11" font-weight="400" text-anchor="start">layers kept whole per GPU; ~1 GiB unexplained</text>
+<text x="184.0" y="488.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">DeepSeek-V4-Flash</text>
+<circle cx="333.7" cy="484.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="488.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">37.25 → 37.80 GiB  (-1.5%)</text>
+<text x="184.0" y="512.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">DeepSeek-V4.1-Flash</text>
+<circle cx="335.6" cy="508.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="512.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">77.98 → 79.07 GiB  (-1.4%)</text>
+<text x="24.0" y="544.0" class="t2" font-size="12" font-weight="600" text-anchor="start">8 × H200, per GPU</text>
+<text x="184.0" y="572.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">GLM-5.3</text>
+<circle cx="347.7" cy="568.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="572.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">88.20 → 88.91 GiB  (-0.8%)</text>
+<text x="184.0" y="596.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">DeepSeek-V4-Pro</text>
+<circle cx="357.0" cy="592.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="484.0" y="596.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">101.94 → 102.31 GiB  (-0.4%)</text>
+<text x="24.0" y="658.0" class="t3" font-size="11.5" font-weight="400" text-anchor="start">Source: Apron&#x27;s stored boot records, one per model.</text>
+</svg>

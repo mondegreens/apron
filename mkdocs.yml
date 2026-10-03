@@ -1,11 +1,12 @@
 site_name: Apron
-site_url: https://apron.dev
+site_url: https://mondegreens.github.io/apron/
 site_description: Decision and evidence system for LLM inference deployment
 repo_url: https://github.com/mondegreens/apron
 repo_name: mondegreens/apron
 
 theme:
   name: material
+  custom_dir: overrides
 
 plugins:
   - search
