@@ -39,7 +39,11 @@ CLOUD_TYPE = "SANDBOX"
 
 MODAL_GPU_SPECS: dict[str, dict[str, Any]] = {
     "NVIDIA H200": {
-        "total_memory_bytes": 143_771 * 1024 * 1024,  # 143771 MiB from nvidia-smi
+        # The H200 count RunPod detected (runpod.GPU_SPECS): the Modal 8x H200
+        # records report the same initial total as the RunPod 4x H200 ones
+        # (150,109,106,995 B).  The 143,771 MiB nvidia-smi figure used before
+        # was 0.60 GiB high and put the KV budget 0.54 GiB high per GPU.
+        "total_memory_bytes": 150_110_011_392,
         "compute_capability": "9.0",
     },
     "NVIDIA H100": {

@@ -12,6 +12,7 @@ makes the calculator match it. Never widen a tolerance to admit one.
 | `verification-reports/12204fbbf9605e62…` | Qwen3.8-Flash-Next, 4x H200, vLLM v0.30.0, memory report (pod md3kso5eretn9o, 2026-09-29): healthy, 5/5 deployment checks | Startup (torch) peak 2.01 GiB measured vs 1.10 predicted at 8,192 tokens, TP 4. See below. |
 | `verification-reports/1220a687eae36995…` | DeepSeek-V4-Flash-0731, 4x H200, vLLM v0.30.0, memory report (pod md3kso5eretn9o, 2026-09-29): healthy, 4/4 deployment checks (image: text-only) | Startup peak 3.10 GiB vs 1.00 predicted; CUDA-graph estimate 2.43 vs 1.12; weights 37.80 vs 37.25 (-1.5%). KV budget +3.74 GiB. The breakable-graph class, below. |
 | `verification-reports/1220e81e9ab66dca…` | DeepSeek-V4.1-Flash, 4x H200, vLLM v0.30.0, memory report (pod yzczq…, 2026-09-30): healthy, 5/5 deployment checks, serving SLO passes | Startup peak 3.45 GiB vs 1.30 predicted; CUDA-graph estimate 1.89 vs 1.05; weights 79.07 vs 77.98 (-1.4%). KV budget +4.20 GiB. The breakable-graph class, below. |
+| `verification-reports/1220c41cc606ce68…` | DeepSeek-V4-Pro-0813, 8x H200 on Modal, vLLM v0.30.0, memory report (2026-10-01): healthy, 4/4 deployment checks (image: text-only) | Startup peak 4.14 GiB vs 1.66 predicted; CUDA-graph estimate 3.05 vs 1.59; weights 102.31 vs 101.94 (-0.4%). KV budget +4.46 GiB (buffer 2.19): startup peak +2.48, CUDA-graph estimate +1.46, weights +0.37, non-torch +0.15. Moved here on 2026-10-02, when its config was first recorded and the test could compare it (the same commit corrects Modal's H200 memory to the detected count, which had put every Modal plan 0.54 GiB high). The breakable-graph class, below. |
 
 ## `1220b7a182caf10d…`: what was traced (2026-09-29, GPU-free)
 
@@ -78,7 +79,7 @@ Not explained:
   forward 0.88.  Which tensors are live at the peak needs a memory-history
   probe (`peak-probe/`); fitting a constant would not be a trace.
 
-## One class behind all three: vLLM v0.30's breakable CUDA graphs
+## One class behind all of them: vLLM v0.30's breakable CUDA graphs
 
 GLM-5.3-Flash (Glm5NextForConditionalGeneration), Qwen3.8-Flash-Next
 (Qwen4ExpForConditionalGeneration), DeepSeek-V4-Flash-0731
@@ -88,7 +89,7 @@ with PIECEWISE graphs for every capture size.  The calculator's startup-peak
 forward rule counts compiled (inductor) buffers, fitted on GLM-4.7-Flash, and
 its CUDA-graph rule counts FULL decode graphs per layer.  Both under-predict
 for this class: startup peak 3.39/2.82 (GLM-5.3-Flash B200), 2.01/1.10 (Qwen),
-3.10/1.00 (DeepSeek V4), 3.45/1.30 (V4.1); graph estimate 4.28/2.30,
-1.49/1.25, 2.43/1.12, 1.89/1.05.  Closing
+3.10/1.00 (DeepSeek V4), 3.45/1.30 (V4.1), 4.14/1.66 (V4-Pro, TP 8); graph estimate
+4.28/2.30, 1.49/1.25, 2.43/1.12, 1.89/1.05, 3.05/1.59.  Closing
 it takes the peak probe (`scripts/peak_probe.py`) on one of them; the same fix
 then applies to group D (GLM-5.3 and MiniMax-M3 are in the list too).

@@ -14,9 +14,9 @@ prose is written on the findings-article branch as the runs land; the owner
 rewrites it. This post stays `draft: true` until the owner publishes it. -->
 
 <!-- findings:headline -->
-- Models measured: 23 on 8 GPU types
+- Models measured: 24 on 8 GPU types
 - Failure classes fixed and re-verified: 6 of 6
-- Total cost: $170.86 of the $200 cap (failed boots included: $45.06)
+- Total cost: $299.94 of the $400 cap (failed boots included: $119.32)
 <!-- /findings:headline -->
 
 <!-- more -->
@@ -38,9 +38,9 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | C | deepseek-ai/DeepSeek-V4.1-Flash | 763 | 651,078 | NVIDIA H200 x4 | v0.30.0 | fits: 81.29 GiB per GPU | booted, calculator pending | 77.98 / 79.07 | 5 / 5 | 19.4405 | `1220400d7cc203eb` +2 |
 | C | Qwen/Qwen3.8-Flash-Next | 180 | 1,226,891 | NVIDIA H200 x4 | v0.30.0 | fits: 62.85 GiB per GPU | booted, calculator pending | 58.76 / 60.87 | 5 / 5 | 17.2836 | `12204fbbf9605e62` +2 |
 | C | deepseek-ai/DeepSeek-V4-Flash-0731 | 304.2 | 3,959,727 | NVIDIA H200 x4 | v0.30.0 | fits: 41.19 GiB per GPU | booted, calculator pending | 37.25 / 37.80 | 4 / 5 | 18.9532 | `12200c5a8ae38b12` +2 |
-| D | zai-org/GLM-5.3 | 753.3 | 1,351,716 | NVIDIA H200 x8 | — | fits: 94.15 GiB per GPU | not run yet | — | — | — | — |
-| D | deepseek-ai/DeepSeek-V4-Pro-0813 | 1650 | 116,119 | NVIDIA H200 x8 | — | fits: 107.44 GiB per GPU | not run yet | — | — | — | — |
-| D | MiniMaxAI/MiniMax-M3 | 427 | 164,729 | NVIDIA H200 x8 | — | fits: 103.72 GiB per GPU | not run yet | — | — | — | — |
+| D | zai-org/GLM-5.3 | 753.3 | 1,351,716 | NVIDIA H200 x8 | v0.30.0 | fits: 94.15 GiB per GPU | booted | 88.20 / 88.91 | 4 / 5 | 20.3538 | `122042e498d45e64` +2 |
+| D | deepseek-ai/DeepSeek-V4-Pro-0813 | 1650 | 116,119 | NVIDIA H200 x8 | v0.30.0 | fits: 107.44 GiB per GPU | booted, calculator pending | 101.94 / 102.31 | 4 / 5 | 34.9803 | `12207f6671480aac` +1 |
+| D | MiniMaxAI/MiniMax-M3 | 427 | 164,729 | NVIDIA H200 x8 | v0.30.0 | fits: 103.72 GiB per GPU | failed | — | — | 73.7329 | `12200498294136f2` +2 |
 <!-- /findings:modern_models -->
 
 ## Not paying a GPU to download
@@ -78,7 +78,8 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 <!-- findings:failed_spend -->
 | Why the boot failed | Boots | Cost $ | Records |
 |---|---|---|---|
-| the model | 5 | 17.4890 | `122001a0c3f97733`, `12200c5a8ae38b12`, `122069c0258a5541`, `1220a2044547c634`, `1220be1b1f6ceab3` |
+| the harness: harness:download | 2 | 73.7329 | `12200498294136f2`, `122056e8ee68e3d6` |
+| the model | 6 | 17.9440 | `122001a0c3f97733`, `12200c5a8ae38b12`, `122069c0258a5541`, `1220a2044547c634`, `1220a3545d0dc9c2`, `1220be1b1f6ceab3` |
 | the harness: harness:exception:TimeoutError | 3 | 13.7203 | `12203e94dd0600eb`, `12205bcd73a59449`, `1220ab75c9b71ae7` |
 | the harness: NCCL failed on the host before the model loaded (classified from the log) | 1 | 4.2317 | `1220652c702972d0` |
 | the harness: harness:exception:PodStartError | 1 | 2.0933 | `12208366db6d2559` |
@@ -90,6 +91,8 @@ rewrites it. This post stays `draft: true` until the owner publishes it. -->
 | the harness: a full disk cut the download short (a tokenizer error) (classified from the log) | 2 | 0.7782 | `122076c27e44225e`, `1220efb427f64eff` |
 | the harness: engine still starting when the harness gave up (classified from the log) | 1 | 0.3595 | `1220348ef02b049d` |
 | the harness: compiler missing from the engine's environment (classified from the log) | 1 | 0.1332 | `1220c680fcc992dd` |
+| the harness: harness:exception:ConflictError | 1 | 0.0695 | `12207f6671480aac` |
 | the harness: download check flagged a complete file | 2 | 0.0041 | `1220c29b41840303`, `1220c4ab40df7487` |
 | the harness: GPU provider API error | 2 | 0.0003 | `122016a268314541`, `1220763a9b91627f` |
+| the harness: harness:exception:ModuleNotFoundError | 2 | 0.0000 | `122042e498d45e64`, `12206a2c5a63d1d0` |
 <!-- /findings:failed_spend -->

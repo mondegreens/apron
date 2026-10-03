@@ -241,6 +241,21 @@
       "weights_now": 161357908984
     },
     {
+      "activation_at_run": 2969567232,
+      "activation_measured": 2813203578,
+      "activation_now": 2969567232,
+      "dtype": "bfloat16",
+      "gpu": "NVIDIA H200",
+      "model": "zai-org/GLM-5.3",
+      "profiled_tokens": 8192,
+      "record": "12208ef8aa4a3de74e08ddb9ad562482d2dee791404bfe4fb3c484a796406c979607",
+      "tensor_parallel": 8,
+      "vllm": "v0.30.0",
+      "weights_at_run": 94699576704,
+      "weights_measured": 95466385571,
+      "weights_now": 94699576704
+    },
+    {
       "activation_at_run": 1638147072,
       "activation_measured": 225485783,
       "activation_now": 211255296,
@@ -437,16 +452,16 @@
     }
   ],
   "cost": {
-    "authorized": 200.0,
-    "failed_boot_total": 45.059356,
+    "authorized": 400.0,
+    "failed_boot_total": 119.316662,
     "ledger_abandoned": 2.075099,
     "ledger_classifier": 0.193358,
     "ledger_corrected": -110.699995,
-    "ledger_pod_idle": 0.250586,
+    "ledger_pod_idle": 0.269331,
     "ledger_probe": 1.397938,
     "ledger_reconciled": 20.835354,
-    "ledger_settled": 238.450881,
-    "ledger_spent": 170.85665,
+    "ledger_settled": 367.517845,
+    "ledger_spent": 299.942359,
     "ledger_staging": 2.064608,
     "ledger_storage": 16.288821,
     "per_solution": [
@@ -521,6 +536,21 @@
           "1220c820cfbd67b7b000b8f64cc08045b19029896d326e424ea24d8c521c0e7fff77"
         ],
         "vllm": "v0.29.0"
+      },
+      {
+        "cost": 73.73287,
+        "failed_boot_cost": 73.73287,
+        "failed_boots": 3,
+        "gpu": "NVIDIA H200",
+        "gpu_count": 8,
+        "label": "MiniMaxAI/MiniMax-M3@NVIDIA H200x8",
+        "model": "MiniMaxAI/MiniMax-M3",
+        "records": [
+          "12200498294136f25f4b600bf5cbcbad450e87d48585d19472cabce90b6f8da04957",
+          "122056e8ee68e3d6473f2b3b9e1578b48ccd3438ace388da849e3ac4903fff40efe1",
+          "12206a2c5a63d1d0c23a3f3f6142de931065c8b2948bad18fa09d3aa0f8da67cc7fc"
+        ],
+        "vllm": "v0.30.0"
       },
       {
         "cost": 0.023107,
@@ -962,6 +992,26 @@
         "vllm": "v0.30.0"
       },
       {
+        "cost": 34.980272,
+        "failed_boot_cost": 0.069527,
+        "failed_boots": 1,
+        "gpu": "NVIDIA H200",
+        "gpu_count": 8,
+        "label": "deepseek-ai/DeepSeek-V4-Pro-0813@NVIDIA H200x8",
+        "model": "deepseek-ai/DeepSeek-V4-Pro-0813",
+        "records": [
+          "12200bae1a1c3479856201def297f4dcb0f1d14ad22cee99b51a6bb6f4904a062958",
+          "12202ca6131375638f8dabe00757fbf68020071eda3fdf504b25b2bf4a6d47796693",
+          "122055f48d02066d0b669b1dc750092e981c0fc00adc3d86dd4e8df22755a8c34ee9",
+          "1220727b64e91e6d06bf87121a523db5b1ab8403b249b3d590ccd89ea1fe6bac9cb1",
+          "12207f6671480aacfd99edab93d9c5f21b3910d71427332d92de95b2daa1775b7208",
+          "122098baa04aa8f68a02eb2257a63df28da19e8235bbe1e4f296429606b714bd5c7e",
+          "1220c3c79be1f11594d56b17bd514bff7c22caccac2fd6efb5627e68aeffd4b3f018",
+          "1220c41cc606ce686252ee314ad676f9df62c88bf5878326239ff9105a6ff11d0d9a"
+        ],
+        "vllm": "v0.30.0"
+      },
+      {
         "cost": 0.015631,
         "failed_boot_cost": 0.015631,
         "failed_boots": 1,
@@ -1324,6 +1374,27 @@
         "vllm": "v0.29.0"
       },
       {
+        "cost": 20.353826,
+        "failed_boot_cost": 0.454909,
+        "failed_boots": 2,
+        "gpu": "NVIDIA H200",
+        "gpu_count": 8,
+        "label": "zai-org/GLM-5.3@NVIDIA H200x8",
+        "model": "zai-org/GLM-5.3",
+        "records": [
+          "122030b6a09ab12621b7b048163917b77cfda84ba7be68c7a53b1d373713184b5f4a",
+          "122042e498d45e645f8470260e3cbfdf7cc276e313c7802fa965a52ce5392562ba10",
+          "122046eed2fbbb26e036a285bd851fea4961dedcb9fe6d52e73be3038e3784fac972",
+          "122048e239b9e5f0946a473d03fed36813a3519b0b3ba6c292da1798f88a57c137e7",
+          "122087a2d78f66c838160dce0a8ef8a6ac05b9d5d7338accf0add9dbd4c12b3160e1",
+          "12208ef8aa4a3de74e08ddb9ad562482d2dee791404bfe4fb3c484a796406c979607",
+          "1220a3545d0dc9c29881b270783088e5a6bc99021be24d5903b860afa85aa1f949d3",
+          "1220ca5f1837491f457ba3b2ca4c8da6ab0c17867802246eed4cee8e48d791f3e3a8",
+          "1220fec5b935262af36322b061618da01967f1b5a960991886c7064455b84a0132c9"
+        ],
+        "vllm": "v0.30.0"
+      },
+      {
         "cost": 10.263575,
         "failed_boot_cost": 3.428332,
         "failed_boots": 1,
@@ -1423,18 +1494,28 @@
       "up4ntxcks0bzuh",
       "wgm6rh8g0tvdhb"
     ],
-    "records_total": 119.266912
+    "records_total": 248.33388
   },
   "failed_spend": [
     {
-      "boots": 5,
+      "boots": 2,
+      "cause": "the harness: harness:download",
+      "cost": 73.732868,
+      "records": [
+        "12200498294136f25f4b600bf5cbcbad450e87d48585d19472cabce90b6f8da04957",
+        "122056e8ee68e3d6473f2b3b9e1578b48ccd3438ace388da849e3ac4903fff40efe1"
+      ]
+    },
+    {
+      "boots": 6,
       "cause": "the model",
-      "cost": 17.489042,
+      "cost": 17.94395,
       "records": [
         "122001a0c3f97733ee6d51ffe8ccaee59436958639635746c7ee38526274849dbfcc",
         "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4",
         "122069c0258a5541e9cfc0b9a03fe7a4a61fa10438c1d822a3bac0bec5ac9212cbe3",
         "1220a2044547c634bd416353eb88f0273bdd28307fd3c5a237eb8d12a2c4c949eba3",
+        "1220a3545d0dc9c29881b270783088e5a6bc99021be24d5903b860afa85aa1f949d3",
         "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
       ]
     },
@@ -1537,6 +1618,14 @@
       ]
     },
     {
+      "boots": 1,
+      "cause": "the harness: harness:exception:ConflictError",
+      "cost": 0.069527,
+      "records": [
+        "12207f6671480aacfd99edab93d9c5f21b3910d71427332d92de95b2daa1775b7208"
+      ]
+    },
+    {
       "boots": 2,
       "cause": "the harness: download check flagged a complete file",
       "cost": 0.004076,
@@ -1552,6 +1641,15 @@
       "records": [
         "122016a2683145411b02d0b4db83379a2ef5c446c8727b73edd254490dbcd9fb0003",
         "1220763a9b91627f8634f8a16f911359ad08e5d8782695ddc29c57219d096b0bf31f"
+      ]
+    },
+    {
+      "boots": 2,
+      "cause": "the harness: harness:exception:ModuleNotFoundError",
+      "cost": 3e-06,
+      "records": [
+        "122042e498d45e645f8470260e3cbfdf7cc276e313c7802fa965a52ce5392562ba10",
+        "12206a2c5a63d1d0c23a3f3f6142de931065c8b2948bad18fa09d3aa0f8da67cc7fc"
       ]
     }
   ],
@@ -2080,6 +2178,24 @@
       "weight_delta_bytes": -595884567
     },
     {
+      "claim": "122063fd6fec6d6241c09f17b212f8dc99c45d40faf72f74f870a9d9cefe97975995",
+      "gpu": "NVIDIA H200",
+      "gpu_count": 8,
+      "kv_consistency_bytes": 5366758685,
+      "measured_persistent_bytes": 112334869626,
+      "measured_weight_bytes": 109854526013,
+      "model": "deepseek-ai/DeepSeek-V4-Pro-0813",
+      "notes": [],
+      "pending": true,
+      "predicted_total_bytes": 123609584484,
+      "predicted_weight_bytes": 109457016548,
+      "record": "1220c41cc606ce686252ee314ad676f9df62c88bf5878326239ff9105a6ff11d0d9a",
+      "solution": "1220a5271a627bf20542c997ca3f23eb8a470ab49f1c93de683f2c73d9deed00286b",
+      "total_delta_bytes": 11274714858,
+      "vllm": "v0.30.0",
+      "weight_delta_bytes": -397509465
+    },
+    {
       "claim": "122073ece7a703fb864359ea58155691398c229a2eb1d1c5ec198003d72e52a3f68b",
       "gpu": "NVIDIA H200",
       "gpu_count": 4,
@@ -2371,6 +2487,24 @@
       "total_delta_bytes": 2531543128,
       "vllm": "v0.29.0",
       "weight_delta_bytes": 2453021446
+    },
+    {
+      "claim": "1220573ba182e2894341771b23a8dc0df381c1fc7da8529db7ed120b27a08d51cdee",
+      "gpu": "NVIDIA H200",
+      "gpu_count": 8,
+      "kv_consistency_bytes": 1605217061,
+      "measured_persistent_bytes": 98236639477,
+      "measured_weight_bytes": 95466385571,
+      "model": "zai-org/GLM-5.3",
+      "notes": [],
+      "pending": false,
+      "predicted_total_bytes": 103887783296,
+      "predicted_weight_bytes": 94699576704,
+      "record": "12208ef8aa4a3de74e08ddb9ad562482d2dee791404bfe4fb3c484a796406c979607",
+      "solution": "1220d76a47982424e695cbdc927653bd35c47fd3ca3291ae1c7cabf489e8ac16a336",
+      "total_delta_bytes": 5651143819,
+      "vllm": "v0.30.0",
+      "weight_delta_bytes": -766808867
     },
     {
       "claim": "1220bf03e502a961c7087a8572feff560cd749de7a79edb4c47313e2e9b947fd9b09",
@@ -2749,7 +2883,7 @@
       "vllm": "v0.30.0"
     },
     {
-      "accepted": null,
+      "accepted": 4,
       "before_gpu": {
         "mechanism": "layered_decode",
         "status": "planned",
@@ -2757,22 +2891,26 @@
         "total_gib_per_gpu": 94.15,
         "weight_gib_per_gpu": 88.2
       },
-      "cases": null,
-      "cost": null,
+      "cases": 5,
+      "cost": 20.3538,
       "downloads_30d": 1351716,
       "gpu": "NVIDIA H200",
       "gpu_count": 8,
       "group": "D",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 95466385571,
       "model": "zai-org/GLM-5.3",
       "params_b": 753.3,
-      "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet",
-      "vllm": null
+      "predicted_weight_bytes": 94699576704,
+      "records": [
+        "122042e498d45e645f8470260e3cbfdf7cc276e313c7802fa965a52ce5392562ba10",
+        "12208ef8aa4a3de74e08ddb9ad562482d2dee791404bfe4fb3c484a796406c979607",
+        "1220a3545d0dc9c29881b270783088e5a6bc99021be24d5903b860afa85aa1f949d3"
+      ],
+      "status": "booted",
+      "vllm": "v0.30.0"
     },
     {
-      "accepted": null,
+      "accepted": 4,
       "before_gpu": {
         "mechanism": "layered_decode",
         "status": "planned",
@@ -2780,19 +2918,22 @@
         "total_gib_per_gpu": 107.44,
         "weight_gib_per_gpu": 101.94
       },
-      "cases": null,
-      "cost": null,
+      "cases": 5,
+      "cost": 34.9803,
       "downloads_30d": 116119,
       "gpu": "NVIDIA H200",
       "gpu_count": 8,
       "group": "D",
-      "measured_weight_bytes": null,
+      "measured_weight_bytes": 109854526013,
       "model": "deepseek-ai/DeepSeek-V4-Pro-0813",
       "params_b": 1650,
-      "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet",
-      "vllm": null
+      "predicted_weight_bytes": 109457016548,
+      "records": [
+        "12207f6671480aacfd99edab93d9c5f21b3910d71427332d92de95b2daa1775b7208",
+        "1220c41cc606ce686252ee314ad676f9df62c88bf5878326239ff9105a6ff11d0d9a"
+      ],
+      "status": "booted, calculator pending",
+      "vllm": "v0.30.0"
     },
     {
       "accepted": null,
@@ -2804,7 +2945,7 @@
         "weight_gib_per_gpu": 99.79
       },
       "cases": null,
-      "cost": null,
+      "cost": 73.7329,
       "downloads_30d": 164729,
       "gpu": "NVIDIA H200",
       "gpu_count": 8,
@@ -2813,9 +2954,13 @@
       "model": "MiniMaxAI/MiniMax-M3",
       "params_b": 427,
       "predicted_weight_bytes": null,
-      "records": [],
-      "status": "not run yet",
-      "vllm": null
+      "records": [
+        "12200498294136f25f4b600bf5cbcbad450e87d48585d19472cabce90b6f8da04957",
+        "122056e8ee68e3d6473f2b3b9e1578b48ccd3438ace388da849e3ac4903fff40efe1",
+        "12206a2c5a63d1d0c23a3f3f6142de931065c8b2948bad18fa09d3aa0f8da67cc7fc"
+      ],
+      "status": "failed",
+      "vllm": "v0.30.0"
     }
   ],
   "prediction_errors": [
@@ -2838,7 +2983,7 @@
       "vllm": "v0.29.0"
     }
   ],
-  "record_count": 359,
+  "record_count": 381,
   "records_table": {
     "broken_on_purpose": {
       "boots": 8,
@@ -2859,48 +3004,8 @@
       "122084e0bedd57e6ffb2e73d0d03401a48d1076238ae546c408cab08e0e794d74610",
       "1220d2dff8b0341410264b8b7ce965f9754b37778cc01f8691b74b176af2ec1feb94"
     ],
-    "planned": [
-      {
-        "gpu": "NVIDIA H200",
-        "gpu_count": 8,
-        "model": "zai-org/GLM-5.3",
-        "predicted": {
-          "mechanism": "layered_decode",
-          "status": "planned",
-          "tensor_parallel": 8,
-          "total_gib_per_gpu": 94.15,
-          "weight_gib_per_gpu": 88.2
-        },
-        "vllm": null
-      },
-      {
-        "gpu": "NVIDIA H200",
-        "gpu_count": 8,
-        "model": "deepseek-ai/DeepSeek-V4-Pro-0813",
-        "predicted": {
-          "mechanism": "layered_decode",
-          "status": "planned",
-          "tensor_parallel": 8,
-          "total_gib_per_gpu": 107.44,
-          "weight_gib_per_gpu": 101.94
-        },
-        "vllm": null
-      },
-      {
-        "gpu": "NVIDIA H200",
-        "gpu_count": 8,
-        "model": "MiniMaxAI/MiniMax-M3",
-        "predicted": {
-          "mechanism": "layered_decode",
-          "status": "planned",
-          "tensor_parallel": 8,
-          "total_gib_per_gpu": 103.72,
-          "weight_gib_per_gpu": 99.79
-        },
-        "vllm": null
-      }
-    ],
-    "record_count": 359,
+    "planned": [],
+    "record_count": 381,
     "rows": [
       {
         "accepted": 0,
@@ -2989,6 +3094,39 @@
         "records": [
           "12200c5a8ae38b12988133acec2645319a699f836d5cc173d3cdfd605afcddb40ba4",
           "12203e94dd0600eb3eabbcda907021a0f64929527da69852cee58f9c6b5a53981bb4"
+        ],
+        "slo_p99_ttft_ms": null,
+        "slo_verdict": null,
+        "tasks_passed": null,
+        "vllm": "v0.30.0"
+      },
+      {
+        "accepted": null,
+        "boot": "failed",
+        "cases": null,
+        "cold_start_seconds": null,
+        "cost": 1.051882,
+        "error": "ConflictError: Sandbox was cancelled by user",
+        "failed_boots": 1,
+        "failure": "the harness: harness:exception:ConflictError",
+        "gpu": "NVIDIA H200",
+        "gpu_count": 8,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": null,
+        "measured_weight_bytes": null,
+        "model": "deepseek-ai/DeepSeek-V4-Pro-0813",
+        "p99_ttft_ms": null,
+        "predicted_peak_bytes": 1778384896,
+        "predicted_weight_bytes": 109457016548,
+        "record": "12207f6671480aacfd99edab93d9c5f21b3910d71427332d92de95b2daa1775b7208",
+        "records": [
+          "12200bae1a1c3479856201def297f4dcb0f1d14ad22cee99b51a6bb6f4904a062958",
+          "12202ca6131375638f8dabe00757fbf68020071eda3fdf504b25b2bf4a6d47796693",
+          "122055f48d02066d0b669b1dc750092e981c0fc00adc3d86dd4e8df22755a8c34ee9",
+          "1220727b64e91e6d06bf87121a523db5b1ab8403b249b3d590ccd89ea1fe6bac9cb1",
+          "12207f6671480aacfd99edab93d9c5f21b3910d71427332d92de95b2daa1775b7208",
+          "122098baa04aa8f68a02eb2257a63df28da19e8235bbe1e4f296429606b714bd5c7e",
+          "1220c3c79be1f11594d56b17bd514bff7c22caccac2fd6efb5627e68aeffd4b3f018"
         ],
         "slo_p99_ttft_ms": null,
         "slo_verdict": null,
@@ -3251,6 +3389,35 @@
         "slo_p99_ttft_ms": 2000.0,
         "slo_verdict": "pass",
         "tasks_passed": true,
+        "vllm": "v0.30.0"
+      },
+      {
+        "accepted": null,
+        "boot": "failed",
+        "cases": null,
+        "cold_start_seconds": null,
+        "cost": 73.73287,
+        "error": "ModuleNotFoundError: No module named 'modal'",
+        "failed_boots": 3,
+        "failure": "the harness: harness:exception:ModuleNotFoundError",
+        "gpu": "NVIDIA H200",
+        "gpu_count": 8,
+        "kv_cache_tokens": null,
+        "measured_peak_bytes": null,
+        "measured_weight_bytes": null,
+        "model": "MiniMaxAI/MiniMax-M3",
+        "p99_ttft_ms": null,
+        "predicted_peak_bytes": 1124073472,
+        "predicted_weight_bytes": 107150251008,
+        "record": "12206a2c5a63d1d0c23a3f3f6142de931065c8b2948bad18fa09d3aa0f8da67cc7fc",
+        "records": [
+          "12200498294136f25f4b600bf5cbcbad450e87d48585d19472cabce90b6f8da04957",
+          "122056e8ee68e3d6473f2b3b9e1578b48ccd3438ace388da849e3ac4903fff40efe1",
+          "12206a2c5a63d1d0c23a3f3f6142de931065c8b2948bad18fa09d3aa0f8da67cc7fc"
+        ],
+        "slo_p99_ttft_ms": null,
+        "slo_verdict": null,
+        "tasks_passed": null,
         "vllm": "v0.30.0"
       },
       {
@@ -4045,6 +4212,41 @@
         "vllm": "v0.29.0"
       },
       {
+        "accepted": 4,
+        "boot": "booted",
+        "cases": 5,
+        "cold_start_seconds": 1778.3,
+        "cost": 20.353826,
+        "error": null,
+        "failed_boots": 2,
+        "failure": null,
+        "gpu": "NVIDIA H200",
+        "gpu_count": 8,
+        "kv_cache_tokens": 358592,
+        "measured_peak_bytes": 2813203578,
+        "measured_weight_bytes": 95466385571,
+        "model": "zai-org/GLM-5.3",
+        "p99_ttft_ms": 1534.6426428399445,
+        "predicted_peak_bytes": 2969567232,
+        "predicted_weight_bytes": 94699576704,
+        "record": "12208ef8aa4a3de74e08ddb9ad562482d2dee791404bfe4fb3c484a796406c979607",
+        "records": [
+          "122030b6a09ab12621b7b048163917b77cfda84ba7be68c7a53b1d373713184b5f4a",
+          "122042e498d45e645f8470260e3cbfdf7cc276e313c7802fa965a52ce5392562ba10",
+          "122046eed2fbbb26e036a285bd851fea4961dedcb9fe6d52e73be3038e3784fac972",
+          "122048e239b9e5f0946a473d03fed36813a3519b0b3ba6c292da1798f88a57c137e7",
+          "122087a2d78f66c838160dce0a8ef8a6ac05b9d5d7338accf0add9dbd4c12b3160e1",
+          "12208ef8aa4a3de74e08ddb9ad562482d2dee791404bfe4fb3c484a796406c979607",
+          "1220a3545d0dc9c29881b270783088e5a6bc99021be24d5903b860afa85aa1f949d3",
+          "1220ca5f1837491f457ba3b2ca4c8da6ab0c17867802246eed4cee8e48d791f3e3a8",
+          "1220fec5b935262af36322b061618da01967f1b5a960991886c7064455b84a0132c9"
+        ],
+        "slo_p99_ttft_ms": 2000.0,
+        "slo_verdict": "pass",
+        "tasks_passed": true,
+        "vllm": "v0.30.0"
+      },
+      {
         "accepted": 0,
         "boot": "booted",
         "cases": 5,
@@ -4462,6 +4664,21 @@
       "completed": 50,
       "failed": 0,
       "gpu": "NVIDIA H200",
+      "model": "deepseek-ai/DeepSeek-V4-Pro-0813",
+      "output_token_throughput": 195.13001427130988,
+      "p99_tpot_ms": 48.361784915196836,
+      "p99_ttft_ms": 8864.208024650006,
+      "recomputed_verdict": "fail",
+      "record": "122055f48d02066d0b669b1dc750092e981c0fc00adc3d86dd4e8df22755a8c34ee9",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "fail",
+      "vllm": "v0.30.0"
+    },
+    {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA H200",
       "model": "deepseek-ai/DeepSeek-V4.1-Flash",
       "output_token_throughput": 192.72930228303986,
       "p99_tpot_ms": 21.958449092495627,
@@ -4699,6 +4916,21 @@
       "vllm": "v0.29.0"
     },
     {
+      "completed": 50,
+      "failed": 0,
+      "gpu": "NVIDIA H200",
+      "model": "zai-org/GLM-5.3",
+      "output_token_throughput": 236.41595786807542,
+      "p99_tpot_ms": 19.523789497873203,
+      "p99_ttft_ms": 1534.6426428399445,
+      "recomputed_verdict": "pass",
+      "record": "122087a2d78f66c838160dce0a8ef8a6ac05b9d5d7338accf0add9dbd4c12b3160e1",
+      "slo_p99_tpot_ms": 100.0,
+      "slo_p99_ttft_ms": 2000.0,
+      "verdict": "pass",
+      "vllm": "v0.30.0"
+    },
+    {
       "completed": 0,
       "failed": 50,
       "gpu": "NVIDIA B200",
@@ -4745,8 +4977,9 @@
     }
   ],
   "setup": {
-    "authorized": 200.0,
+    "authorized": 400.0,
     "cloud_types": [
+      "SANDBOX",
       "SECURE"
     ],
     "first_event": "2026-09-26T21:48:08.665977+00:00",
@@ -4764,7 +4997,7 @@
       "sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
       "sha256:faed210cbc55187206ce07533652780ba090762eaac82a5d0d27020131e7f336"
     ],
-    "last_event": "2026-09-30T01:24:59.249801+00:00",
+    "last_event": "2026-10-02T04:58:25.329745+00:00",
     "models_measured": [
       "JunHowie/Qwen3-8B-GPTQ-Int4",
       "Qwen/Qwen3-0.6B",
@@ -4788,9 +5021,11 @@
       "openai/gpt-oss-20b",
       "state-spaces/mamba-2.8b-hf",
       "zai-org/GLM-4.7-Flash",
+      "zai-org/GLM-5.3",
       "zai-org/GLM-5.3-Flash"
     ],
     "providers": [
+      "modal",
       "runpod"
     ],
     "serving_workload": {
@@ -5424,6 +5659,30 @@
       "vllm": "v0.30.0"
     },
     {
+      "accepted": 4,
+      "attempts": 5,
+      "cases": 5,
+      "gpu": "NVIDIA H200",
+      "model": "deepseek-ai/DeepSeek-V4-Pro-0813",
+      "passed": true,
+      "records": [
+        "12200bae1a1c3479856201def297f4dcb0f1d14ad22cee99b51a6bb6f4904a062958",
+        "12202ca6131375638f8dabe00757fbf68020071eda3fdf504b25b2bf4a6d47796693",
+        "1220727b64e91e6d06bf87121a523db5b1ab8403b249b3d590ccd89ea1fe6bac9cb1",
+        "122098baa04aa8f68a02eb2257a63df28da19e8235bbe1e4f296429606b714bd5c7e",
+        "1220c3c79be1f11594d56b17bd514bff7c22caccac2fd6efb5627e68aeffd4b3f018"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "skipped": 1,
+      "solution": "1220a5271a627bf20542c997ca3f23eb8a470ab49f1c93de683f2c73d9deed00286b",
+      "truncated": 0,
+      "vllm": "v0.30.0"
+    },
+    {
       "accepted": 5,
       "attempts": 5,
       "cases": 5,
@@ -5905,6 +6164,30 @@
       "solution": "1220786d044867dc848053584aad58e539e772ccf63c7084d202ebc34786b1880a95",
       "truncated": 0,
       "vllm": "v0.29.0"
+    },
+    {
+      "accepted": 4,
+      "attempts": 5,
+      "cases": 5,
+      "gpu": "NVIDIA H200",
+      "model": "zai-org/GLM-5.3",
+      "passed": true,
+      "records": [
+        "122030b6a09ab12621b7b048163917b77cfda84ba7be68c7a53b1d373713184b5f4a",
+        "122046eed2fbbb26e036a285bd851fea4961dedcb9fe6d52e73be3038e3784fac972",
+        "122048e239b9e5f0946a473d03fed36813a3519b0b3ba6c292da1798f88a57c137e7",
+        "1220ca5f1837491f457ba3b2ca4c8da6ab0c17867802246eed4cee8e48d791f3e3a8",
+        "1220fec5b935262af36322b061618da01967f1b5a960991886c7064455b84a0132c9"
+      ],
+      "retries": 0,
+      "scoring": [
+        "whitespace_normalized_exact_match",
+        "strip_terminal_punctuation"
+      ],
+      "skipped": 1,
+      "solution": "1220d76a47982424e695cbdc927653bd35c47fd3ca3291ae1c7cabf489e8ac16a336",
+      "truncated": 0,
+      "vllm": "v0.30.0"
     },
     {
       "accepted": 1,
