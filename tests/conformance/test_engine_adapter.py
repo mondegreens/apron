@@ -27,16 +27,14 @@ def test_resolve_support_returns_typed_dict(engine_adapter):
     assert isinstance(result["tasks"], list)
 
 
-def test_validate_returns_empty_for_valid_config(engine_adapter):
-    plan = DeploymentPlan(tensor_parallel=2)
-    errors = engine_adapter.validate(plan, None)
+def test_validate_returns_empty_for_valid_config(engine_adapter, valid_plan):
+    errors = engine_adapter.validate(valid_plan, None)
     assert isinstance(errors, list)
     assert errors == []
 
 
-def test_validate_returns_nonempty_for_incompatible_tp(engine_adapter):
-    plan = DeploymentPlan(tensor_parallel=3)
-    errors = engine_adapter.validate(plan, None)
+def test_validate_returns_nonempty_for_incompatible_tp(engine_adapter, incompatible_plan):
+    errors = engine_adapter.validate(incompatible_plan, None)
     assert isinstance(errors, list)
     assert len(errors) > 0
 
@@ -49,9 +47,9 @@ def test_render_returns_nonempty_dict(engine_adapter):
     assert rendered.get("tp") == 4
 
 
-def test_verify_returns_dict_with_memory_keys(engine_adapter):
+def test_verify_returns_dict_with_memory_keys(engine_adapter, engine_verify_target):
     plan = DeploymentPlan(tensor_parallel=1)
-    result = engine_adapter.verify(plan, None)
+    result = engine_adapter.verify(plan, engine_verify_target)
     assert isinstance(result, dict)
     assert len(result) >= 15
     expected_keys = {

@@ -1,0 +1,9 @@
+{
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "pod": "pcx46p9oe2n3cz",
+  "before": [],
+  "terminated": [
+    "pcx46p9oe2n3cz"
+  ],
+  "after": []
+}

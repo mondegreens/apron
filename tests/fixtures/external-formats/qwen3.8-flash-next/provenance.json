@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "source_name": "qwen3.8-flash-next",
+  "locations": [
+    {
+      "repository": "Qwen/Qwen3.8-Flash-Next",
+      "revision": "de4b8e4d43b917e7706784d8bb445c9af86a3540",
+      "retrieval_method": "huggingface_hub_api"
+    }
+  ],
+  "retrieval_date": "2026-09-28",
+  "license": "Qwen Community License 1.0 (qwen-community-1.0)",
+  "has_formal_schema": false,
+  "formal_schema_file": null,
+  "schema_description": "Hugging Face Hub model repository file: the chat template (thinking switch enable_thinking, tools, reasoning_content).",
+  "pinned_files": [
+    {
+      "source_path": "Qwen/Qwen3.8-Flash-Next/chat_template.jinja",
+      "local_path": "chat_template.jinja",
+      "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+      "size_bytes": 8952,
+      "role": "representative_content"
+    }
+  ],
+  "notes": "A thinking-switch template of an architecture (Qwen4Exp) the v0.30.0 test registry has no example checkpoint of: its parsers come from its own vllm-project recipe (qwen3, qwen3_xml)."
+}

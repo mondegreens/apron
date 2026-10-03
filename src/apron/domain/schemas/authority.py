@@ -16,7 +16,7 @@ from apron.domain.fingerprints import DISPLAY, IDENTITY, FingerprintHex
 
 
 class DecisionRequest(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     objective: Annotated[str, IDENTITY]
@@ -42,7 +42,7 @@ class DecisionRequest(BaseModel):
 
 
 class ActionRequest(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     action_type: Annotated[str, IDENTITY]
@@ -56,7 +56,7 @@ class ActionRequest(BaseModel):
 
 
 class AuthorityContribution(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     source_type: Annotated[str, IDENTITY]
@@ -74,7 +74,7 @@ class AuthorityContribution(BaseModel):
 
 
 class AuthorizationDecision(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     action_request_digest: Annotated[str, IDENTITY]
@@ -90,7 +90,7 @@ class AuthorizationDecision(BaseModel):
 
 
 class AuthorizationEnvelope(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     permitted_action_classes: Annotated[tuple[str, ...], IDENTITY] = ()
@@ -129,7 +129,7 @@ def evaluate_authorization(
 
 
 class OrchestrationDecision(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     job_id: Annotated[str, IDENTITY]
@@ -146,21 +146,21 @@ class OrchestrationDecision(BaseModel):
 
 
 class EvaluationAttempt(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     attempt_type: Annotated[Literal["evaluation"], IDENTITY]
     protocol_fingerprint: Annotated[FingerprintHex, IDENTITY]
     status: Annotated[str, IDENTITY]
 
 
 class ExecutionAttempt(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     attempt_type: Annotated[Literal["execution"], IDENTITY]
     target_fingerprint: Annotated[str, IDENTITY]
     status: Annotated[str, IDENTITY]
 
 
 class PublicationAttempt(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     attempt_type: Annotated[Literal["publication"], IDENTITY]
     destination: Annotated[str, IDENTITY]
     status: Annotated[str, IDENTITY]
@@ -178,7 +178,7 @@ ActionAttempt = Annotated[
 
 
 class AnomalyCase(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     case_type: Annotated[str, IDENTITY]
@@ -193,7 +193,7 @@ class AnomalyCase(BaseModel):
 
 
 class ProposedExternalAction(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     rendered_record: Annotated[dict[str, str], IDENTITY]

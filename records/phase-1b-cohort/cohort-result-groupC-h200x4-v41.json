@@ -1,0 +1,79 @@
+{
+  "executed": {
+    "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA H200x4": {
+      "solution_fp": "12205147b2a2c7697d0557d37394d9d3690521682447f9fb94ffecba1f44a013be01",
+      "healthy": true,
+      "boot_report_digest": "1220e81e9ab66dcaf0e33bb83d9304386e14383b9a2fd460bb7c03692d89769ffe0e",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "1220607ea3025edd10b18cb710c6deffb76c764f8ccc1aad848b5e70793a8fd6e8a1",
+        "12202b1d60061a1176460f1e03586c463de73c8285857da40e3d3672aa871f4d8d3b",
+        "1220253051c8f266693109adc006799022f9f955f546e699d6daa3d5dd566602e119",
+        "12201e6e4570fadc74a35ddbb20be71d76b9e05c151b4bd570978e6ddbd52cd81292",
+        "12204c513d27810138e3810f8573953712be53cdb9a519d7d7cfcfe9c7d21e318461"
+      ],
+      "serving_digest": "1220d2dff8b0341410264b8b7ce965f9754b37778cc01f8691b74b176af2ec1feb94",
+      "log_tail": "",
+      "serving_log": "",
+      "harness_failures": [],
+      "cost": 18.077723,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "5279": 0,
+          "5943": 0,
+          "6258": 0,
+          "6259": 0,
+          "6260": 0,
+          "6261": 0
+        },
+        "token_free": true
+      }
+    }
+  },
+  "prediction_errors": {},
+  "skipped": {},
+  "stopped": null,
+  "budget": {
+    "authorized": 200.0,
+    "spent": 171.200828,
+    "held": 0,
+    "remaining": 28.799172,
+    "open_holds": [],
+    "flags": [
+      "l0a3-run1:replayed:estimate",
+      "stage:Qwen/Qwen3-32B:replayed:estimate",
+      "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1:interrupted_in_provision:tvuknutqxlhbxz:23s_at_3.49_per_h",
+      "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1:interrupted_by_owner_stop:uv3q4ny9qmnsiz:377s_at_3.49_per_h",
+      "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3:stopped_to_fix_download_hang:ia4lxog3zt7yvq:~450s_at_0.24_per_h",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:replayed:provider_reported",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:settled_by_owner",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x2:interrupted_start: rate x rental 14:55:32-15:15:54, reconcile to the bill",
+      "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4:replayed:estimate",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x4:replayed:estimate",
+      "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H200x4:replayed:provider_reported"
+    ],
+    "overruns": []
+  },
+  "decision_report": {
+    "schema_version": 1,
+    "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+    "candidates": [
+      {
+        "solution_fingerprint": "12205147b2a2c7697d0557d37394d9d3690521682447f9fb94ffecba1f44a013be01",
+        "qualification_status": "serving_verified",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"12208acd50dc0c13\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"12201e6e4570fadc74a35ddbb20be71d76b9e05c151b4bd570978e6ddbd52cd81292\", \"1220253051c8f266693109adc006799022f9f955f546e699d6daa3d5dd566602e119\", \"12202b1d60061a1176460f1e03586c463de73c8285857da40e3d3672aa871f4d8d3b\", \"12204c513d27810138e3810f8573953712be53cdb9a519d7d7cfcfe9c7d21e318461\", \"1220607ea3025edd10b18cb710c6deffb76c764f8ccc1aad848b5e70793a8fd6e8a1\"], \"detail\": [\"accepted 5/5\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"1220d2dff8b0341410264b8b7ce965f9754b37778cc01f8691b74b176af2ec1feb94\"], \"detail\": [\"pass\", \"p99_ttft_ms 747.1 within SLO 2000.0\", \"p99_tpot_ms 22.0 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      }
+    ],
+    "outcome_economics": null,
+    "uncertainty": null,
+    "disclosed_comparable_set": [],
+    "exclusions": []
+  }
+}

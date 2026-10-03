@@ -196,3 +196,45 @@ def test_oversized_model_gets_tp_greater_than_1():
         id_gen=_FixedIdGen(),
     )
     assert plan.tensor_parallel == 2
+
+
+def test_calculator_claim_carries_what_the_tp_choice_reads():
+    """The real claim used to hold only byte totals, so the TP choice saw one
+    attention head and always returned TP 1 (L5 review, 2026-09-27)."""
+    import json
+    from pathlib import Path
+
+    from apron.adapters.planning.calculator_source import CalculatorPlanningSource
+
+    fixture = Path(__file__).parent.parent / "fixtures" / "external-formats" / "huggingface-hub"
+    config = json.loads((fixture / "config.json").read_bytes())
+    config["total_weight_bytes"] = 40_000_000_000
+    config["components"] = [
+        {"mechanism": "autoregressive_decode", "role": "decoder"},
+    ]
+    claim = CalculatorPlanningSource(clock=_FixedClock()).predict(
+        config, RTX_4090, {"isl": 512, "osl": 128, "max_batch_size": 4}
+    )
+    proposed = claim.proposed_configuration
+    assert proposed["num_attention_heads"] == 32 and proposed["num_kv_heads"] == 8
+    plan = build_plan(
+        claim,
+        _qwen3_model_spec(),
+        RTX_4090,
+        None,
+        None,
+        clock=_FixedClock(),
+        id_gen=_FixedIdGen(),
+    )
+    assert plan.tensor_parallel == 2
+
+
+def test_a_float32_checkpoint_is_planned_in_16_bits():
+    """vLLM's dtype=auto serves float32 checkpoints in 16 bits; the plan used
+    to name float32 and doubled Mamba-2.8B's weights (10.31 GiB measured)."""
+    from apron.application.orchestration.plan_builder import served_dtype
+
+    assert served_dtype("float32") == "bfloat16"
+    assert served_dtype("bfloat16") == "bfloat16"
+    assert served_dtype("float16") == "float16"
+    assert served_dtype(None) == "bfloat16"

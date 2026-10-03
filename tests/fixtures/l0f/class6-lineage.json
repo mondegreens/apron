@@ -1,0 +1,1900 @@
+{
+  "evidence": {
+    "base_model": {
+      "confirmed": true,
+      "id": "Qwen/Qwen3-8B",
+      "proposal": {
+        "base_model_id": "Qwen/Qwen3-8B",
+        "classifier_cost_usd": 0.001712,
+        "classifier_input_digest": "122099cbf274c3d8bf7e45b676c1a9fb4e9645d9108aeecacb32a5e77b55c71c9167",
+        "classifier_model_id": "claude-haiku-4-5-20251001",
+        "classifier_usage": {
+          "input_tokens": 1087,
+          "output_tokens": 125
+        },
+        "reason": "The checkpoint uses Qwen3 architecture with model_type \"qwen3\" and standard Qwen3-8B configuration (36 layers, 32 attention heads, 4096 hidden size), quantized using FPQuant with MXFP4 precision."
+      },
+      "same_final_norm": true,
+      "source": "proposed"
+    },
+    "considered": [
+      {
+        "bits": 4,
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "Qwen/Qwen3-8B-AWQ"
+      },
+      {
+        "bits": 8,
+        "method": "fp8",
+        "min_capability": 75,
+        "model_id": "Qwen/Qwen3-8B-FP8"
+      },
+      {
+        "bits": 4,
+        "method": "modelopt",
+        "min_capability": 75,
+        "model_id": "nvidia/Qwen3-8B-NVFP4"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "RedHatAI/Qwen3-8B-quantized.w4a16"
+      },
+      {
+        "bits": 8,
+        "method": "modelopt",
+        "min_capability": 80,
+        "model_id": "nvidia/Qwen3-8B-FP8"
+      },
+      {
+        "bits": 8,
+        "method": "compressed-tensors",
+        "min_capability": 89,
+        "model_id": "RedHatAI/Qwen3-8B-FP8-dynamic"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "nm-testing/convert_modelopt_nvfp4-e2e"
+      },
+      {
+        "bits": 8,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "nytopop/Qwen3-8B.w8a8"
+      },
+      {
+        "bits": 4,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "JunHowie/Qwen3-8B-GPTQ-Int4"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "RedHatAI/Qwen3-8B-NVFP4"
+      },
+      {
+        "bits": 8,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "JunHowie/Qwen3-8B-GPTQ-Int8"
+      },
+      {
+        "bits": 4,
+        "method": "modelopt",
+        "min_capability": 75,
+        "model_id": "raoashish10/Qwen3-8B-NVFP4"
+      },
+      {
+        "bits": 8,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "shawnw3i/Qwen3-8B-INT8"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "yw223/Qwen3-8B-AWQ-4bit"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "qtum/Qwen3-8B-GPTQ"
+      },
+      {
+        "bits": 8,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "nm-testing/Qwen3-8B-W8A8-INT8"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "cortecs/Qwen3-8B-NVFP4"
+      },
+      {
+        "bits": 4,
+        "method": "modelopt",
+        "min_capability": 75,
+        "model_id": "raoashish10/Qwen3-8B-NVFP4-W4A16"
+      },
+      {
+        "bits": 4,
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "Orion-zhen/Qwen3-8B-AWQ"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "inference-optimization/Qwen3-8B-DFlash-Gauss-NVFP4-W4A4"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "inference-optimization/Qwen3-8B-DFlash-PerfectBlend-NVFP4-W4A4"
+      },
+      {
+        "bits": 8,
+        "dropped": "final-norm weights differ from the base: another model",
+        "method": "fp8",
+        "min_capability": 75,
+        "model_id": "Gorilla4X/Quacken-8B-FP8"
+      },
+      {
+        "bits": 4,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "kaitchup/Qwen3-8B-autoround-4bit-gptq"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "cortecs/Qwen3-8B-NVFP4A16"
+      },
+      {
+        "bits": 2,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "kaitchup/Qwen3-8B-autoround-2bit-gptq"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "Danny-Dasilva/Qwen3-8B-antidoom-W4A16-GPTQ-g32-DSpark"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "llmat/Qwen3-8B-NVFP4"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "ELVISIO/Qwen3-8B-NVFP4A16"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "simaai/Qwen3-8B-GPTQ-Safetensors"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "murilonwt/Qwen3-8B-NVFP4"
+      },
+      {
+        "bits": 8,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "vistralis/Qwen3-8B-INT8"
+      },
+      {
+        "bits": 4,
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "drawais/Qwen3-8B-AWQ-INT4"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "drawais/Qwen3-8B-SpinQuant-NVFP4"
+      },
+      {
+        "bits": 8,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "ramblingpolymath/Qwen3-8B-W8A8"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "kaitchup/Qwen3-8B-NVFP4"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "glenic/Qwen3-8B-AWQ"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "Rodder5/Qwen3-8B-NVFP4"
+      },
+      {
+        "bits": 4,
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "np-deploys/Qwen3-8B-AWQ"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "6block/Qwen3-8B-AWQ"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "Rodder5/Qwen3-8B-W4A16-GPTQ"
+      },
+      {
+        "bits": 4,
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "stelterlab/Qwen3-8B-AWQ"
+      },
+      {
+        "bits": 4,
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "hymmmm/qwen3-8b-emt-qlora-awq"
+      },
+      {
+        "bits": 4,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "yw223/Qwen3-8B-GPTQ-4bit"
+      },
+      {
+        "bits": 8,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "hyper-accel/Qwen3-8B-FP8-OC"
+      },
+      {
+        "bits": 4,
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "hymmmm/qwen3-8b-emt-qlora-awq-v2"
+      },
+      {
+        "bits": 4,
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "CobraMamba/Qwen3-8B-AWQ"
+      },
+      {
+        "bits": 8,
+        "method": "compressed-tensors",
+        "min_capability": 89,
+        "model_id": "Civitai/YuFeng-XGuard-Reason-8B-FP8"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "qtum/Qwen3-8B-AWQ"
+      },
+      {
+        "bits": 4,
+        "dropped": "final-norm weights differ from the base: another model",
+        "method": "modelopt",
+        "min_capability": 75,
+        "model_id": "ericlewis/Nemotron-Orchestrator-8B-NVFP4"
+      },
+      {
+        "bits": 8,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "vastai-ais/Qwen3-8B-GPTQ-Int8"
+      },
+      {
+        "bits": 8,
+        "dropped": "another architecture than the requested checkpoint",
+        "method": "compressed-tensors",
+        "min_capability": 89,
+        "model_id": "inference-optimization/Qwen3-8B-DFlash-FP8-DYNAMIC"
+      },
+      {
+        "bits": 4,
+        "dropped": "final-norm weights differ from the base: another model",
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "Abdullahdadata/qwen3-8b-awq-mirror"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "nicklas373/Qwen3-8B-AWQ"
+      },
+      {
+        "bits": null,
+        "dropped": "scheme not recognised",
+        "method": "modelopt",
+        "min_capability": 80,
+        "model_id": "BareMetalAI/Qwen3-8B-W4A16-AWQ"
+      },
+      {
+        "bits": 3,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "yw223/Qwen3-8B-AWQ-3bit"
+      },
+      {
+        "bits": 8,
+        "method": "compressed-tensors",
+        "min_capability": 89,
+        "model_id": "qtum/Qwen3-8B-FP8"
+      },
+      {
+        "bits": 8,
+        "method": "fp8",
+        "min_capability": 75,
+        "model_id": "product-a456/Qwen3-8B-FP8"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "cortecs/Qwen3-8B-clean-sparse-finetuned-0.1-nvfp4a16"
+      },
+      {
+        "bits": 4,
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "FenomAI/Qwen3-8B-AWQ"
+      },
+      {
+        "bits": 8,
+        "method": "compressed-tensors",
+        "min_capability": 89,
+        "model_id": "6block/Qwen3-8B-FP8"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "karuko24/Qwen3-8B-W4A16"
+      },
+      {
+        "bits": 8,
+        "method": "compressed-tensors",
+        "min_capability": 89,
+        "model_id": "inference-optimization/Qwen3-8B-FP8-Dynamic"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "6block/Qwen3-8B-GPTQ"
+      },
+      {
+        "bits": 4,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "namgyu-youn/Qwen3-8B-tenary"
+      },
+      {
+        "bits": 2,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "yw223/Qwen3-8B-GPTQ-2bit"
+      },
+      {
+        "bits": 8,
+        "method": "fp8",
+        "min_capability": 75,
+        "model_id": "qwen-community/Qwen3-8B-FP8"
+      },
+      {
+        "bits": 8,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "lancew/Qwen3-8B-GPTQ-INT8"
+      },
+      {
+        "bits": 4,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "namgyu-youn/Qwen3-8B-greedy"
+      },
+      {
+        "bits": 4,
+        "method": "modelopt",
+        "min_capability": 75,
+        "model_id": "hungtrieu07/Qwen3-8B-NVFP4"
+      },
+      {
+        "bits": 2,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "yw223/Qwen3-8B-AWQ-2bit"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "haofue2i1z3/Qwen3-8B-Legal-AWQ"
+      },
+      {
+        "bits": 8,
+        "dropped": "another architecture than the requested checkpoint",
+        "method": "compressed-tensors",
+        "min_capability": 89,
+        "model_id": "inference-optimization/Qwen3-8B-DFlash-Gauss-FP8-W8A8"
+      },
+      {
+        "bits": 8,
+        "dropped": "another architecture than the requested checkpoint",
+        "method": "compressed-tensors",
+        "min_capability": 89,
+        "model_id": "inference-optimization/Qwen3-8B-DFlash-PerfectBlend-FP8-W8A8"
+      },
+      {
+        "bits": 8,
+        "method": "fp8",
+        "min_capability": 75,
+        "model_id": "EliovpAI/Qwen3-8B-FP8-KV"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "cortecs/Qwen3-8B-clean-sparse-finetuned-0.01-nvfp4a16"
+      },
+      {
+        "bits": 4,
+        "method": "modelopt",
+        "min_capability": 75,
+        "model_id": "surogate/Qwen3-8B-NVFP4"
+      },
+      {
+        "bits": 8,
+        "method": "fp8",
+        "min_capability": 75,
+        "model_id": "surogate/Qwen3-8B-FP8"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "tatsuyaaaaaaa/Qwen3-8B-GPTQ-W4A16"
+      },
+      {
+        "bits": 4,
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "shantipriya/Qwen3-8B-AWQ-4bit"
+      },
+      {
+        "bits": 4,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "AlphaGaO/UIGEN-X-8B-GPTQ"
+      },
+      {
+        "bits": 4,
+        "method": "compressed-tensors",
+        "min_capability": 75,
+        "model_id": "Rodder5/Qwen3-8B-W4A16-AWQ"
+      },
+      {
+        "bits": 4,
+        "method": "awq",
+        "min_capability": 75,
+        "model_id": "abhishekchohan/Qwen3-8B-AWQ"
+      },
+      {
+        "bits": null,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "cortecs/Qwen3-8B-clean-sparse"
+      },
+      {
+        "bits": 4,
+        "dropped": "scheme not recognised",
+        "method": "compressed-tensors",
+        "min_capability": null,
+        "model_id": "cortecs/Qwen3-8B-clean-sparse-nvfp4a16"
+      },
+      {
+        "bits": 8,
+        "method": "compressed-tensors",
+        "min_capability": 89,
+        "model_id": "tatsuyaaaaaaa/Qwen3-8B-FP8"
+      },
+      {
+        "bits": 3,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "yw223/Qwen3-8B-GPTQ-3bit"
+      },
+      {
+        "bits": 8,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "EkmekE/Qwen3-8B-autoround-8bit-gptq_sym_g128"
+      },
+      {
+        "bits": 4,
+        "method": "modelopt",
+        "min_capability": 75,
+        "model_id": "hackerwasii/Qwen3-8B-NVFP4"
+      },
+      {
+        "bits": 4,
+        "method": "gptq",
+        "min_capability": 60,
+        "model_id": "AlphaGaO/UIGEN-T3-8B-Preview-GPTQ"
+      }
+    ],
+    "dropped_by_format": {
+      "format not loadable by vLLM v0.29.0: aqlm": 3,
+      "format not loadable by vLLM v0.29.0: auto-round": 3,
+      "format not loadable by vLLM v0.29.0: bitsandbytes": 14,
+      "format not loadable by vLLM v0.29.0: bpdq": 1,
+      "format not loadable by vLLM v0.29.0: exl3": 5,
+      "format not loadable by vLLM v0.29.0: gguf": 1,
+      "format not loadable by vLLM v0.29.0: none": 303,
+      "format not loadable by vLLM v0.29.0: olive": 1,
+      "format not loadable by vLLM v0.29.0: paroquant": 1,
+      "format not loadable by vLLM v0.29.0: quark": 1,
+      "format not loadable by vLLM v0.29.0: torchao": 17
+    },
+    "requested_model_id": "ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4",
+    "requested_weight_bits": 4,
+    "result": "64 candidates"
+  },
+  "recorded_at": "2026-09-27T18:46:20.530417+00:00",
+  "search": {
+    "base_model_id": "Qwen/Qwen3-8B",
+    "candidates": [
+      {
+        "downloads": 12315567,
+        "min_capability": 0,
+        "model_id": "Qwen/Qwen3-8B",
+        "quant_method": null,
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 16
+      },
+      {
+        "downloads": 2024783,
+        "min_capability": 75,
+        "model_id": "Qwen/Qwen3-8B-AWQ",
+        "quant_method": "awq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 627736,
+        "min_capability": 75,
+        "model_id": "Qwen/Qwen3-8B-FP8",
+        "quant_method": "fp8",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 137399,
+        "min_capability": 75,
+        "model_id": "nvidia/Qwen3-8B-NVFP4",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 11836,
+        "min_capability": 75,
+        "model_id": "RedHatAI/Qwen3-8B-quantized.w4a16",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 3880,
+        "min_capability": 80,
+        "model_id": "nvidia/Qwen3-8B-FP8",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 3862,
+        "min_capability": 89,
+        "model_id": "RedHatAI/Qwen3-8B-FP8-dynamic",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 2112,
+        "min_capability": 75,
+        "model_id": "nytopop/Qwen3-8B.w8a8",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 1985,
+        "min_capability": 60,
+        "model_id": "JunHowie/Qwen3-8B-GPTQ-Int4",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 545,
+        "min_capability": 60,
+        "model_id": "JunHowie/Qwen3-8B-GPTQ-Int8",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 399,
+        "min_capability": 75,
+        "model_id": "raoashish10/Qwen3-8B-NVFP4",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 205,
+        "min_capability": 75,
+        "model_id": "shawnw3i/Qwen3-8B-INT8",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 199,
+        "min_capability": 75,
+        "model_id": "yw223/Qwen3-8B-AWQ-4bit",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 192,
+        "min_capability": 75,
+        "model_id": "qtum/Qwen3-8B-GPTQ",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 172,
+        "min_capability": 75,
+        "model_id": "nm-testing/Qwen3-8B-W8A8-INT8",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 152,
+        "min_capability": 75,
+        "model_id": "raoashish10/Qwen3-8B-NVFP4-W4A16",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 138,
+        "min_capability": 75,
+        "model_id": "Orion-zhen/Qwen3-8B-AWQ",
+        "quant_method": "awq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 74,
+        "min_capability": 60,
+        "model_id": "kaitchup/Qwen3-8B-autoround-4bit-gptq",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 61,
+        "min_capability": 60,
+        "model_id": "kaitchup/Qwen3-8B-autoround-2bit-gptq",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 2
+      },
+      {
+        "downloads": 60,
+        "min_capability": 75,
+        "model_id": "Danny-Dasilva/Qwen3-8B-antidoom-W4A16-GPTQ-g32-DSpark",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 51,
+        "min_capability": 75,
+        "model_id": "simaai/Qwen3-8B-GPTQ-Safetensors",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 45,
+        "min_capability": 75,
+        "model_id": "vistralis/Qwen3-8B-INT8",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 45,
+        "min_capability": 75,
+        "model_id": "drawais/Qwen3-8B-AWQ-INT4",
+        "quant_method": "awq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 44,
+        "min_capability": 75,
+        "model_id": "ramblingpolymath/Qwen3-8B-W8A8",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 39,
+        "min_capability": 75,
+        "model_id": "glenic/Qwen3-8B-AWQ",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 34,
+        "min_capability": 75,
+        "model_id": "np-deploys/Qwen3-8B-AWQ",
+        "quant_method": "awq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 33,
+        "min_capability": 75,
+        "model_id": "6block/Qwen3-8B-AWQ",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 32,
+        "min_capability": 75,
+        "model_id": "Rodder5/Qwen3-8B-W4A16-GPTQ",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 29,
+        "min_capability": 75,
+        "model_id": "stelterlab/Qwen3-8B-AWQ",
+        "quant_method": "awq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 29,
+        "min_capability": 75,
+        "model_id": "hymmmm/qwen3-8b-emt-qlora-awq",
+        "quant_method": "awq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 27,
+        "min_capability": 60,
+        "model_id": "yw223/Qwen3-8B-GPTQ-4bit",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 25,
+        "min_capability": 75,
+        "model_id": "hymmmm/qwen3-8b-emt-qlora-awq-v2",
+        "quant_method": "awq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 22,
+        "min_capability": 75,
+        "model_id": "CobraMamba/Qwen3-8B-AWQ",
+        "quant_method": "awq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 22,
+        "min_capability": 89,
+        "model_id": "Civitai/YuFeng-XGuard-Reason-8B-FP8",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 20,
+        "min_capability": 75,
+        "model_id": "qtum/Qwen3-8B-AWQ",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 19,
+        "min_capability": 60,
+        "model_id": "vastai-ais/Qwen3-8B-GPTQ-Int8",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 18,
+        "min_capability": 75,
+        "model_id": "nicklas373/Qwen3-8B-AWQ",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 18,
+        "min_capability": 89,
+        "model_id": "qtum/Qwen3-8B-FP8",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 17,
+        "min_capability": 75,
+        "model_id": "product-a456/Qwen3-8B-FP8",
+        "quant_method": "fp8",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 16,
+        "min_capability": 75,
+        "model_id": "FenomAI/Qwen3-8B-AWQ",
+        "quant_method": "awq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 16,
+        "min_capability": 89,
+        "model_id": "6block/Qwen3-8B-FP8",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 15,
+        "min_capability": 75,
+        "model_id": "karuko24/Qwen3-8B-W4A16",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 15,
+        "min_capability": 89,
+        "model_id": "inference-optimization/Qwen3-8B-FP8-Dynamic",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 15,
+        "min_capability": 75,
+        "model_id": "6block/Qwen3-8B-GPTQ",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 14,
+        "min_capability": 60,
+        "model_id": "namgyu-youn/Qwen3-8B-tenary",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 14,
+        "min_capability": 60,
+        "model_id": "yw223/Qwen3-8B-GPTQ-2bit",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 2
+      },
+      {
+        "downloads": 13,
+        "min_capability": 75,
+        "model_id": "qwen-community/Qwen3-8B-FP8",
+        "quant_method": "fp8",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 13,
+        "min_capability": 60,
+        "model_id": "lancew/Qwen3-8B-GPTQ-INT8",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 13,
+        "min_capability": 60,
+        "model_id": "namgyu-youn/Qwen3-8B-greedy",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 13,
+        "min_capability": 75,
+        "model_id": "hungtrieu07/Qwen3-8B-NVFP4",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 13,
+        "min_capability": 75,
+        "model_id": "haofue2i1z3/Qwen3-8B-Legal-AWQ",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 12,
+        "min_capability": 75,
+        "model_id": "EliovpAI/Qwen3-8B-FP8-KV",
+        "quant_method": "fp8",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 12,
+        "min_capability": 75,
+        "model_id": "surogate/Qwen3-8B-NVFP4",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 12,
+        "min_capability": 75,
+        "model_id": "surogate/Qwen3-8B-FP8",
+        "quant_method": "fp8",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 12,
+        "min_capability": 75,
+        "model_id": "tatsuyaaaaaaa/Qwen3-8B-GPTQ-W4A16",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 12,
+        "min_capability": 75,
+        "model_id": "shantipriya/Qwen3-8B-AWQ-4bit",
+        "quant_method": "awq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 10,
+        "min_capability": 60,
+        "model_id": "AlphaGaO/UIGEN-X-8B-GPTQ",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 10,
+        "min_capability": 75,
+        "model_id": "Rodder5/Qwen3-8B-W4A16-AWQ",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 9,
+        "min_capability": 75,
+        "model_id": "abhishekchohan/Qwen3-8B-AWQ",
+        "quant_method": "awq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 9,
+        "min_capability": 89,
+        "model_id": "tatsuyaaaaaaa/Qwen3-8B-FP8",
+        "quant_method": "compressed-tensors",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 9,
+        "min_capability": 60,
+        "model_id": "yw223/Qwen3-8B-GPTQ-3bit",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 3
+      },
+      {
+        "downloads": 8,
+        "min_capability": 60,
+        "model_id": "EkmekE/Qwen3-8B-autoround-8bit-gptq_sym_g128",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 8
+      },
+      {
+        "downloads": 7,
+        "min_capability": 75,
+        "model_id": "hackerwasii/Qwen3-8B-NVFP4",
+        "quant_method": "modelopt",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      },
+      {
+        "downloads": 6,
+        "min_capability": 60,
+        "model_id": "AlphaGaO/UIGEN-T3-8B-Preview-GPTQ",
+        "quant_method": "gptq",
+        "shape": {
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "head_dim": 128,
+          "hidden_size": 4096,
+          "intermediate_size": 12288,
+          "model_type": "qwen3",
+          "num_attention_heads": 32,
+          "num_hidden_layers": 36,
+          "num_key_value_heads": 8,
+          "vocab_size": 151936
+        },
+        "weight_bits": 4
+      }
+    ],
+    "requested_model_id": "ISTA-DASLab/Qwen3-8B-FPQuant-RTN-MXFP4",
+    "requested_shape": {
+      "architectures": [
+        "Qwen3ForCausalLM"
+      ],
+      "head_dim": 128,
+      "hidden_size": 4096,
+      "intermediate_size": 12288,
+      "model_type": "qwen3",
+      "num_attention_heads": 32,
+      "num_hidden_layers": 36,
+      "num_key_value_heads": 8,
+      "vocab_size": 151936
+    },
+    "requested_weight_bits": 4
+  }
+}

@@ -37,6 +37,15 @@ repos:
         pass_filenames: false
         files: '(src/apron/domain/.*|tests/unit/test_ports\.py)'
 
+      - id: tests
+        name: tests
+        # Keys stripped: a local check must never create pods or call paid APIs,
+        # even from a shell that has them (opt-in GPU/LLM tests then skip).
+        entry: env -u RUNPOD_API_KEY -u ANTHROPIC_API_KEY -u HF_TOKEN uv run pytest tests -q
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: supply-chain
         name: supply-chain
         entry: bash -c 'uv export --format pylock.toml --no-hashes -o pylock.toml && git diff --exit-code pylock.toml'

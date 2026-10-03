@@ -7,25 +7,25 @@ def test_satisfies_protocol(evaluation_adapter):
     assert isinstance(evaluation_adapter, EvaluationAdapter)
 
 
-def test_accepts_returns_bool(evaluation_adapter):
-    result = evaluation_adapter.accepts({"harness": "inspect_ai"})
-    assert isinstance(result, bool)
+def test_accepts_returns_bool(evaluation_adapter, evaluation_input):
+    result = evaluation_adapter.accepts(evaluation_input)
+    assert result is True
 
 
-def test_accepts_rejects_unknown_harness(evaluation_adapter):
-    result = evaluation_adapter.accepts({"harness": "nonexistent_harness"})
+def test_accepts_rejects_unknown_harness(evaluation_adapter, unknown_evaluation_input):
+    result = evaluation_adapter.accepts(unknown_evaluation_input)
     assert result is False
 
 
-def test_prepare_returns_nonempty_dict(evaluation_adapter):
-    result = evaluation_adapter.prepare({"harness": "inspect_ai", "scorer": "exact_match"})
+def test_prepare_returns_nonempty_dict(evaluation_adapter, evaluation_input):
+    result = evaluation_adapter.prepare(evaluation_input)
     assert isinstance(result, dict)
     assert len(result) > 0
 
 
-def test_execute_returns_list_of_dicts_with_score(evaluation_adapter):
+def test_execute_returns_list_of_dicts_with_score(evaluation_adapter, evaluation_input):
     results = evaluation_adapter.execute(
-        {"harness": "inspect_ai"},
+        evaluation_adapter.prepare(evaluation_input),
         "http://localhost:8000",
     )
     assert isinstance(results, list)
@@ -34,9 +34,9 @@ def test_execute_returns_list_of_dicts_with_score(evaluation_adapter):
         assert "score" in r
 
 
-def test_failed_attempt_is_preserved(evaluation_adapter):
+def test_failed_attempt_is_preserved(evaluation_adapter, evaluation_input):
     results = evaluation_adapter.execute(
-        {"harness": "inspect_ai"},
+        evaluation_adapter.prepare(evaluation_input),
         "http://localhost:8000",
     )
     failed = [r for r in results if not r.get("accepted", True)]

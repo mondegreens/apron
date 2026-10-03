@@ -1,0 +1,53 @@
+{
+  "schema_version": 4,
+  "engine": "vllm",
+  "engine_version": "v0.30.0",
+  "error_family": "oom_weight_load",
+  "rule_version": 1,
+  "supersedes": null,
+  "correction_strategy": "retarget_memory",
+  "correction_spec": {},
+  "extraction_schema": {
+    "tried_to_allocate_bytes": {
+      "type": "int",
+      "enum": [],
+      "source": "model_executor/layers/linear.py:192 (the torch.empty weight allocation in load_model, v1/worker/gpu/model_runner.py:400; PyTorch's allocator prints 'Tried to allocate X MiB')"
+    },
+    "total_capacity_bytes": {
+      "type": "int",
+      "enum": [],
+      "source": "model_executor/layers/linear.py:192 (the torch.empty weight allocation in load_model, v1/worker/gpu/model_runner.py:400; PyTorch's allocator prints 'GPU 0 has a total capacity of X GiB')"
+    },
+    "free_bytes": {
+      "type": "int",
+      "enum": [],
+      "source": "model_executor/layers/linear.py:192 (the torch.empty weight allocation in load_model, v1/worker/gpu/model_runner.py:400; PyTorch's allocator prints 'of which X MiB is free')"
+    }
+  },
+  "source_sites": [
+    {
+      "file": "model_executor/layers/linear.py",
+      "line": 192
+    },
+    {
+      "file": "v1/worker/gpu/model_runner.py",
+      "line": 400
+    }
+  ],
+  "float16_blocklist": [],
+  "float16_blocklist_source": null,
+  "kernel_architectures": {},
+  "kernel_architectures_source": null,
+  "exception_class": "torch.OutOfMemoryError",
+  "engine_callsite_module": null,
+  "status": "hypothesis",
+  "promoting_verification_fingerprint": null,
+  "examples": [
+    "torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 70.00 MiB. GPU 0 has a total capacity of 23.52 GiB of which 57.69 MiB is free. Process 1697959 has 23.45 GiB memory in use."
+  ],
+  "count": 0,
+  "curation": "Ported from rules/vllm-v0.29/oom_weight_load.json (rule_version 2, mechanism_verified) to vLLM v0.30.0: every cited line re-found in the pinned v0.30.0 source. A hypothesis on v0.30.0 until a v0.30.0 boot proves it; the v0.29.0 proof does not carry over. The source scanner must not overwrite this file. v0.30.0 still defaults to the v2 model runner on CUDA (config/vllm.py:675), whose load_model (v1/worker/gpu/model_runner.py:388) has no OOM wrapper; the legacy 'Failed to load model' handler is at v1/worker/gpu_model_runner.py:5405. Carried over from the v0.29.0 rule: L0-F (2026-09-26, Qwen3-14B BF16 on an RTX 4090) showed v0.29.0 loads through the v2 model runner, which has no OOM wrapper: the legacy 'Failed to load model' handler (v1/worker/gpu_model_runner.py:5460) is not on this path.",
+  "replaces": [
+    "oom"
+  ]
+}

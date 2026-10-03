@@ -1,0 +1,37 @@
+{
+  "schema_version": 4,
+  "engine": "vllm",
+  "engine_version": "v0.30.0",
+  "error_family": "mamba_cache_blocks",
+  "rule_version": 1,
+  "correction_spec": {
+    "action": "set_field",
+    "field": "max_num_seqs",
+    "source": "extracted.mamba_cache_blocks"
+  },
+  "extraction_schema": {
+    "max_num_seqs": {
+      "type": "int",
+      "enum": [],
+      "source": "config/compilation.py:1536 ('max_num_seqs ({max_num_reqs}) exceeds available Mamba cache')"
+    },
+    "mamba_cache_blocks": {
+      "type": "int",
+      "enum": [],
+      "source": "config/compilation.py:1537 ('blocks ({kv_cache_config.num_blocks})')"
+    }
+  },
+  "source_sites": [
+    {
+      "file": "config/compilation.py",
+      "line": 1535
+    }
+  ],
+  "status": "hypothesis",
+  "examples": [
+    "max_num_seqs ({max_num_reqs}) exceeds available Mamba cache blocks ({kv_cache_config.num_blocks}). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most {kv_cache_config.num_blocks} or increase gpu_memory_utilization.",
+    "max_num_seqs (1024) exceeds available Mamba cache blocks (733). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 733 or increase gpu_memory_utilization."
+  ],
+  "count": 1,
+  "curation": "Hand-curated; the source scanner must not overwrite this file. vLLM v0.30.0 raises this at config/compilation.py:1535 when full CUDA graphs are on, the KV cache has Mamba (state) layers and max_num_seqs exceeds the pool's blocks: each decode sequence needs one state block. Correction: max_num_seqs set to the block count the message names (the check is strict, so that many sequences pass it); a hypothesis until a corrected boot is healthy. Source observation: verification report 1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6 (records/phase-1b-cohort/records/verification-reports/), nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16 on one H100 80GB HBM3, vLLM v0.30.0 defaults (max_num_seqs 1024): 733 blocks."
+}

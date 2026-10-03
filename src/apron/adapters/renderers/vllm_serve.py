@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from apron.adapters.renderers.engine_flags import engine_flag_args
 from apron.domain.schemas.solutions import RenderContext
 
 
@@ -15,8 +16,7 @@ class VllmServeRenderer:
         args.extend(["--dtype", context.plan.dtype or "auto"])
         if context.plan.tensor_parallel > 1:
             args.extend(["--tensor-parallel-size", str(context.plan.tensor_parallel)])
-        for key, value in context.plan.engine_configuration.items():
-            args.extend([f"--{key.replace('_', '-')}", str(value)])
+        args.extend(engine_flag_args(context.plan.engine_configuration))
         return {
             "format": "vllm_serve",
             "command": "vllm serve " + " ".join(args),

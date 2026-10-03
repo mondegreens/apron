@@ -1,0 +1,5 @@
+[
+  "Qwen/Qwen3-0.6B@NVIDIA GeForce RTX 4090x1",
+  "Qwen/Qwen3-0.6B-FP8@NVIDIA GeForce RTX 4090x1",
+  "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1"
+]

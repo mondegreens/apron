@@ -1,0 +1,94 @@
+{
+  "inputs": {
+    "candidates": [
+      {
+        "model_id": "state-spaces/mamba-2.8b-hf",
+        "gpu_sku": "NVIDIA GeForce RTX 4090",
+        "size_class": "mid",
+        "hardware_class": "consumer",
+        "mechanism": "ssm_decode",
+        "weight_gb": 11.07,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "ssm"
+        ]
+      }
+    ],
+    "existing": {
+      "sizes": [],
+      "hardware": [],
+      "mechanisms": [],
+      "features": [],
+      "quantized": false,
+      "prediction_error": false,
+      "models": [],
+      "gpus": []
+    },
+    "measured": [],
+    "remaining_budget": 89.930433,
+    "rates": {
+      "NVIDIA RTX A5000": 0.27,
+      "NVIDIA L4": 0.49,
+      "NVIDIA GeForce RTX 3090": 0.5,
+      "NVIDIA RTX A6000": 0.53,
+      "NVIDIA GeForce RTX 4090": 0.74,
+      "NVIDIA L40": 0.82,
+      "NVIDIA A100 80GB PCIe": 1.59,
+      "NVIDIA A100-SXM4-80GB": 1.59,
+      "NVIDIA H100 80GB HBM3": 3.49,
+      "NVIDIA B200": 6.79
+    }
+  },
+  "ranked": [
+    {
+      "key": "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1",
+      "cost": 0.6148,
+      "obligations": [
+        "size:mid",
+        "hardware:consumer",
+        "mechanism:ssm_decode",
+        "new_model",
+        "new_gpu"
+      ]
+    }
+  ],
+  "skipped": [],
+  "authorization": {
+    "schema_version": 1,
+    "permitted_action_classes": [
+      "gpu_execution",
+      "diagnosis_classification"
+    ],
+    "permitted_providers": [
+      "runpod"
+    ],
+    "permitted_accounts": [],
+    "credential_scopes": [
+      "runpod:pods",
+      "anthropic:messages",
+      "huggingface:read"
+    ],
+    "task_data_destinations": [
+      "api.anthropic.com"
+    ],
+    "hard_target_constraints": {
+      "cloud_type": "SECURE"
+    },
+    "maximum_spend": 100.0,
+    "baseline_allocation_digest": null,
+    "contributed_pool_digest": null,
+    "runtime_rules": {},
+    "lifecycle_rules": {},
+    "teardown_rules": {
+      "orphan_max_age_seconds": "3600",
+      "atexit": "terminate"
+    },
+    "security_rules": {},
+    "data_rules": {},
+    "publication_scope": null,
+    "adaptation_rules": {}
+  }
+}

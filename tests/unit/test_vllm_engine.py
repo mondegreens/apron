@@ -1,19 +1,97 @@
 """Unit tests for vLLM EngineAdapter.
 
-Collects the EngineAdapter conformance suite via pytest_plugins.
+Collects the EngineAdapter conformance suite via pytest_plugins: the suite's
+tests are imported below and run against the real ``VllmEngineAdapter``.
+Only network I/O is mocked — the Anthropic API behind ``classify`` and the
+SSH channel behind ``verify``.
 """
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
+from conformance.test_engine_adapter import *  # noqa: F403 — the shared suite, on the real adapter
 
+from apron.adapters.backends.rule_loader import load_rules
 from apron.adapters.backends.vllm_engine import VllmEngineAdapter
 from apron.domain.protocols import EngineAdapter
 from apron.domain.schemas.primitives import HardwareSpec
 from apron.domain.schemas.solutions import DeploymentPlan
+
+pytest_plugins = ["conformance.plugin"]
+
+RULES_DIR = Path(__file__).parents[2] / "rules"
+
+# vLLM v0.29 startup lines the verify path parses (gpu_worker.py / scheduler.py).
+_VLLM_LOG = """\
+INFO Chunked prefill is enabled with max_num_batched_tokens=8192.
+DEBUG Memory profiling takes 3.21 seconds. Total non KV cache memory: 17.10GiB; \
+torch peak memory increase: 1.25GiB; total consumed (from mem_get_info): 17.60GiB; \
+weights memory: 15.27GiB
+INFO Available KV cache memory: 3.86 GiB
+INFO CUDA graph pool memory: 0.45 GiB (actual), 0.52 GiB (estimated)
+"""
+
+
+class _SshLogTarget:
+    """An ExecutionTarget whose command channel returns a real-shaped vLLM log."""
+
+    kind = "rented-provider"
+    execution_fingerprint = "1220" + "ee" * 32
+
+    def execute(self, command: str, timeout: int | None = None) -> dict[str, Any]:
+        if "curl" in command:
+            return {"stdout": "", "stderr": "", "exit_code": 0}
+        if "mem_get_info" in command:
+            return {"stdout": '{"post_free": 1073741824, "post_total": 25769803776}\n'}
+        return {"stdout": _VLLM_LOG, "stderr": "", "exit_code": 0}
+
+
+@pytest.fixture()
+def engine_adapter(monkeypatch: pytest.MonkeyPatch) -> VllmEngineAdapter:
+    """The real adapter; the Anthropic client is the only fake (network)."""
+    from apron.adapters.backends import llm_classifier
+
+    class _Messages:
+        def create(self, **kwargs: Any) -> Any:
+            block = SimpleNamespace(
+                type="tool_use",
+                input={"failure_class": "unknown", "confidence": 0.1, "evidence_span": ""},
+            )
+            return SimpleNamespace(content=[block])
+
+    fake = SimpleNamespace(Anthropic=lambda: SimpleNamespace(messages=_Messages()))
+    monkeypatch.setitem(sys.modules, "anthropic", fake)
+    llm_classifier._classification_cache.clear()
+    return VllmEngineAdapter(rules=load_rules(RULES_DIR, "vllm", "v0.29"))
+
+
+@pytest.fixture()
+def engine_verify_target() -> _SshLogTarget:
+    return _SshLogTarget()
+
+
+def test_real_profiling_shape_comes_from_the_log(engine_adapter: VllmEngineAdapter) -> None:
+    report = engine_adapter.verify(DeploymentPlan(), _SshLogTarget())
+    assert report["profiling_shape"] == {"max_num_batched_tokens": 8192}
+    assert report["model_weight_memory"] == int(15.27 * (1 << 30))
+
+
+def test_profiling_shape_unknown_without_evidence() -> None:
+    from apron.adapters.backends.vllm_engine import profiling_shape
+
+    assert profiling_shape({}, DeploymentPlan()) is None
+    plan = DeploymentPlan(engine_configuration={"max_num_seqs": "16"})
+    assert profiling_shape({"max_num_batched_tokens": 2048}, plan) == {
+        "max_num_batched_tokens": 2048,
+        "max_num_seqs": 16,
+    }
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -42,7 +120,7 @@ class FakeTarget:
             compute_capability="8.9",
         )
 
-    def execute(self, command: str) -> dict[str, Any]:
+    def execute(self, command: str, timeout: int | None = None) -> dict[str, Any]:
         return {"stdout": "", "stderr": "", "exit_code": 0}
 
     def collect(self, paths: list[str] | None = None) -> dict[str, Any]:
@@ -58,11 +136,11 @@ def test_satisfies_engine_adapter_protocol(engine: VllmEngineAdapter) -> None:
     assert isinstance(engine, EngineAdapter)
 
 
-def test_has_engine_name(engine: VllmEngineAdapter) -> None:
+def test_engine_name_is_vllm(engine: VllmEngineAdapter) -> None:
     assert engine.engine_name == "vllm"
 
 
-def test_has_engine_version(engine: VllmEngineAdapter) -> None:
+def test_engine_version_is_pinned(engine: VllmEngineAdapter) -> None:
     assert isinstance(engine.engine_version, str)
     assert engine.engine_version
 
@@ -127,42 +205,6 @@ def test_validate_dtype_compute_capability(engine: VllmEngineAdapter) -> None:
     )
     errors = engine.validate(plan, low_cc_target)
     assert any("compute capability" in e for e in errors)
-
-
-# ---------------------------------------------------------------------------
-# classify
-# ---------------------------------------------------------------------------
-
-
-def test_classify_oom(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("torch.OutOfMemoryError: CUDA out of memory")
-    assert result["failure_class"] == "oom"
-
-
-def test_classify_engine_init(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("RuntimeError: Failed to initialize engine")
-    assert result["failure_class"] == "engine_init"
-
-
-def test_classify_max_model_len(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("ValueError: max_model_len exceeds maximum")
-    assert result["failure_class"] == "max_model_len"
-
-
-def test_classify_dtype(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("BFloat16 is not supported on this GPU")
-    assert result["failure_class"] == "dtype_incompatible"
-
-
-def test_classify_tp_divisibility(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("num_heads is not divisible by tensor_parallel")
-    assert result["failure_class"] == "tp_divisibility"
-
-
-def test_classify_unknown(engine: VllmEngineAdapter) -> None:
-    result = engine.classify("something completely different happened")
-    assert result["failure_class"] == "unknown"
-    assert "raw_error" in result
 
 
 # ---------------------------------------------------------------------------
@@ -292,3 +334,190 @@ def test_parse_profiling_logs_extracts_vllm_output(engine: VllmEngineAdapter) ->
 def test_parse_profiling_logs_empty(engine: VllmEngineAdapter) -> None:
     parsed = engine.parse_profiling_logs("")
     assert parsed == {}
+
+
+# ---------------------------------------------------------------------------
+# extraction_confidence
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_confidence_full() -> None:
+    from apron.adapters.backends.rule_loader import load_rules
+    from apron.domain.diagnosis import build_extraction_schemas, extraction_confidence
+
+    rules = load_rules(Path(__file__).parents[2] / "rules", "vllm", "v0.29")
+    schemas = build_extraction_schemas(rules)
+    tp_fields = {k for k, _ in schemas.get("tp_divisibility", [])}
+    extracted = {k: 1 for k in tp_fields}
+    assert extraction_confidence("tp_divisibility", extracted, schemas) == 1.0
+
+
+def test_extraction_confidence_partial() -> None:
+    from apron.adapters.backends.rule_loader import load_rules
+    from apron.domain.diagnosis import build_extraction_schemas, extraction_confidence
+
+    rules = load_rules(Path(__file__).parents[2] / "rules", "vllm", "v0.29")
+    schemas = build_extraction_schemas(rules)
+    fields = [k for k, _ in schemas["oom_weight_load"]]
+    assert len(fields) == 3
+    conf = extraction_confidence("oom_weight_load", {fields[0]: 1}, schemas)
+    assert 0.0 < conf < 1.0
+
+
+def test_extraction_confidence_empty() -> None:
+    from apron.adapters.backends.rule_loader import load_rules
+    from apron.domain.diagnosis import build_extraction_schemas, extraction_confidence
+
+    rules = load_rules(Path(__file__).parents[2] / "rules", "vllm", "v0.29")
+    schemas = build_extraction_schemas(rules)
+    assert extraction_confidence("tp_divisibility", {}, schemas) == 0.0
+
+
+def test_extraction_confidence_unknown() -> None:
+    from apron.domain.diagnosis import extraction_confidence
+
+    assert extraction_confidence("unknown", {}) == 1.0
+
+
+# ---------------------------------------------------------------------------
+# detect_engine_version
+# ---------------------------------------------------------------------------
+
+
+def test_detect_version_from_output(engine: VllmEngineAdapter) -> None:
+    output = "INFO 09-18 vLLM v0.29.0 starting on http://0.0.0.0:8000"
+    assert engine.detect_engine_version(output) == "0.29.0"
+
+
+def test_detect_version_missing(engine: VllmEngineAdapter) -> None:
+    assert engine.detect_engine_version("no version info here") is None
+
+
+def test_detect_version_different(engine: VllmEngineAdapter) -> None:
+    output = "vLLM 0.30.1 loaded"
+    assert engine.detect_engine_version(output) == "0.30.1"
+
+
+def test_waiting_heartbeat_is_folded_so_the_tail_keeps_the_cause() -> None:
+    from apron.adapters.backends.vllm_engine import collapse_repeats
+
+    beat = (
+        "(APIServer pid=338) DEBUG 09-26 22:5{i}:16 [v1/engine/utils.py:1295] "
+        "Waiting for 1 local, 0 remote core engine proc(s) to start."
+    )
+    log = "\n".join(
+        ["(EngineCore pid=820) INFO graph capture finished"]
+        + [beat.format(i=i) for i in range(5)]
+        + ["(APIServer pid=338) RuntimeError: Engine core initialization failed."]
+    )
+    folded = collapse_repeats(log).splitlines()
+    assert folded[0].endswith("graph capture finished")
+    assert sum("Waiting for 1 local" in line for line in folded) == 1
+    assert "[... 4 more 'waiting for core engine' lines]" in folded
+    assert folded[-1].endswith("Engine core initialization failed.")
+
+
+def test_launch_detaches_so_the_ssh_command_returns(tmp_path: Path) -> None:
+    """L0-A3 hung: a background subshell held the SSH channel open while vLLM ran.
+
+    A pipe behaves like sshd's channel (both wait for every holder of stdout to
+    close), so the launch must return at once while the server keeps running.
+    """
+    import subprocess
+    import time
+
+    from apron.adapters.backends.vllm_engine import launch_command
+
+    env_file = tmp_path / "env.sh"
+    env_file.write_text("export APRON_TEST=1\n")
+    console = tmp_path / "console.out"
+    command = launch_command(
+        "sh -c 'echo loaded; sleep 5'",
+        env_file=str(env_file),
+        log=str(tmp_path / "v.log"),
+        bin_dir="",
+        console=str(console),
+    ).replace("cd /workspace", f"cd {tmp_path}")
+    start = time.monotonic()
+    proc = subprocess.Popen(
+        ["bash", "-c", command],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    proc.communicate(timeout=10)
+    assert time.monotonic() - start < 2, "the launch held the channel open"
+    time.sleep(1.5)
+    assert "loaded" in (tmp_path / "v.log").read_text()
+    assert "loaded" in console.read_text(), "the log is mirrored to the console"
+    subprocess.run(["pkill", "-f", f"tail -n [+]1 -F {tmp_path}"], check=False)
+
+
+def test_kv_cache_capacity_is_parsed() -> None:
+    """v1/core/kv_cache_utils.py:2031-2036; with the available memory it gives
+    the bytes one sequence reserves (the Mamba state check, 2026-09-27)."""
+    from apron.adapters.backends.vllm_engine import _RE_KV_CAPACITY
+
+    line = (
+        "INFO [kv_cache_utils.py:2036] GPU KV cache size: 1,583,104 tokens, "
+        "Maximum concurrency for 2,048 tokens per request: 773.00x"
+    )
+    m = _RE_KV_CAPACITY.search(line)
+    assert m is not None
+    assert int(m.group(1).replace(",", "")) == 1_583_104
+    assert float(m.group(3)) == 773.0
+
+
+def test_launch_turns_on_nccl_warnings_and_takes_extra_env() -> None:
+    """NCCL's warnings name a host fault in the vLLM log; a retry can add env."""
+    from apron.adapters.backends.vllm_engine import launch_command
+
+    plain = launch_command("vllm serve /m")
+    assert "HF_HUB_OFFLINE=1 NCCL_DEBUG=WARN /opt/venv/bin/vllm serve /m" in plain
+    retry = launch_command("vllm serve /m", env={"NCCL_NVLS_ENABLE": "0"})
+    assert "NCCL_DEBUG=WARN NCCL_NVLS_ENABLE=0 /opt/venv/bin/vllm serve /m" in retry
+    assert retry.index("-u HF_TOKEN") < retry.index("NCCL_NVLS_ENABLE=0")
+
+
+# A boot's lines as vLLM v0.30.0 prints them, numbers consistent with its
+# formulas: weights 15.30, torch peak 1.20, non-torch 0.70, CUDA-graph
+# estimate 0.80, requested 20.25 GiB -> non-KV 17.20, available KV 2.25,
+# peak activation (torch peak + estimate) 2.00, consumed (weights + non-torch)
+# 16.00.
+_INFO_LINES = (
+    "INFO [v1/worker/gpu/model_runner.py:428] Model loading took 15.30 GiB memory and "
+    "31.5 seconds\n"
+    "INFO [v1/worker/gpu_worker.py:640] Available KV cache memory: 2.25 GiB\n"
+    "INFO [v1/worker/gpu_worker.py:825] CUDA graph pool memory: 0.50 GiB (actual), "
+    "0.80 GiB (estimated), difference: 0.30 GiB (37.5%).\n"
+    "INFO [v1/worker/gpu_worker.py:888] Free memory on device (22.50/24.00 GiB) on "
+    "startup. Desired GPU memory utilization is (0.9, 20.25 GiB). Actual usage is 16.00 "
+    "GiB for consumed memory (weights + non-torch), 2.00 GiB for peak activation, and "
+    "0.50 GiB for CUDAGraph memory.\n"
+)
+_DEBUG_LINE = (
+    "DEBUG [v1/worker/gpu_worker.py:639] Memory profiling takes 2.50 seconds. Total non "
+    "KV cache memory: 17.20GiB; torch peak memory increase: 1.20GiB; total consumed (from "
+    "mem_get_info): 16.00GiB; weights memory: 15.30GiB.\n"
+)
+
+
+def test_an_info_logged_boot_gives_the_debug_profiling_numbers() -> None:
+    """A boot logged without the DEBUG profiling line still yields the memory
+    terms: the INFO lines carry the same numbers."""
+    info = VllmEngineAdapter.parse_profiling_logs(_INFO_LINES)
+    debug = VllmEngineAdapter.parse_profiling_logs(_DEBUG_LINE + _INFO_LINES)
+    assert info["profiling_source"] == "info" and "profiling_source" not in debug
+    for key in ("weights_memory", "torch_peak_increase", "non_kv_cache_memory", "total_consumed"):
+        assert abs(info[key] - debug[key]) <= 2, key  # int() of the same GiB figures
+
+
+def test_pods_log_vllm_at_debug() -> None:
+    """DEBUG keeps vLLM's CUDA-graph input-address check on: a replay on moved
+    inputs fails loudly instead of answering wrong (GLM-5.3-Flash, 2026-09-29)."""
+    from apron.adapters.backends.runpod import RunPodTarget
+
+    assert (
+        RunPodTarget.build_env(ssh_public_key="ssh-ed25519 AAAA test")["VLLM_LOGGING_LEVEL"]
+        == "DEBUG"
+    )

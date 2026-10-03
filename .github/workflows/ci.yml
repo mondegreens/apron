@@ -68,6 +68,24 @@ jobs:
       - run: uv tool install prek
       - run: prek run identity --all-files
 
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      - run: uv python install ${{ matrix.python-version }}
+      - run: uv sync --frozen --group dev
+      - run: uv tool install prek
+      # No provider or model keys here: GPU and paid-API tests skip themselves.
+      - run: prek run tests --all-files
+      - name: exit gate over the committed cohort records
+        run: APRON_COHORT_GATE=1 uv run pytest tests/test_exit_gate_1b_cohort.py -m cohort -q
+
   determinism:
     name: determinism
     runs-on: ubuntu-latest

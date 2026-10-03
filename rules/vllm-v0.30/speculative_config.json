@@ -1,0 +1,257 @@
+{
+  "schema_version": 4,
+  "engine": "vllm",
+  "engine_version": "v0.30.0",
+  "error_family": "speculative_config",
+  "correction_spec": {
+    "action": "remove_field",
+    "field": "speculative_model"
+  },
+  "extraction_schema": {
+    "draft_input_vocab_size": {
+      "type": "string"
+    },
+    "target_vocab_size": {
+      "type": "string"
+    },
+    "draft_output_vocab_size": {
+      "type": "string"
+    },
+    "n_predict": {
+      "type": "string"
+    },
+    "draft_vocab_size": {
+      "type": "string"
+    },
+    "num_speculative_tokens": {
+      "type": "string"
+    },
+    "algorithm": {
+      "type": "string"
+    },
+    "flag": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string"
+    },
+    "layer_idx": {
+      "type": "string"
+    },
+    "range_start": {
+      "type": "string"
+    },
+    "range_end": {
+      "type": "string"
+    },
+    "backend": {
+      "type": "string"
+    },
+    "min_cg_attn_backend": {
+      "type": "string"
+    },
+    "min_cg_support": {
+      "type": "string"
+    }
+  },
+  "source_sites": [
+    {
+      "file": "config/speculative.py",
+      "line": 159
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 317
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 329
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 368
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1569
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1779
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1785
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1825
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 657
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1844
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1130
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1483
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1511
+    },
+    {
+      "file": "config/speculative.py",
+      "line": 1349
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1518
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1180
+    },
+    {
+      "file": "engine/arg_utils.py",
+      "line": 1943
+    },
+    {
+      "file": "model_executor/models/bailing_moe_mtp.py",
+      "line": 383
+    },
+    {
+      "file": "model_executor/models/bailing_moe_v3_mtp.py",
+      "line": 438
+    },
+    {
+      "file": "model_executor/models/deepseek_mtp.py",
+      "line": 521
+    },
+    {
+      "file": "model_executor/models/llama_eagle3.py",
+      "line": 451
+    },
+    {
+      "file": "model_executor/models/qwen3_5_mtp.py",
+      "line": 232
+    },
+    {
+      "file": "model_executor/models/qwen3_eagle3.py",
+      "line": 424
+    },
+    {
+      "file": "model_executor/models/qwen3_next_mtp.py",
+      "line": 192
+    },
+    {
+      "file": "models/deepseek_v4/amd/mtp.py",
+      "line": 488
+    },
+    {
+      "file": "models/deepseek_v4/nvidia/mtp.py",
+      "line": 502
+    },
+    {
+      "file": "models/deepseek_v4/xpu/mtp.py",
+      "line": 480
+    },
+    {
+      "file": "models/kimi_k3/amd/mtp.py",
+      "line": 363
+    },
+    {
+      "file": "models/kimi_k3/nvidia/kda.py",
+      "line": 587
+    },
+    {
+      "file": "models/kimi_k3/nvidia/mtp.py",
+      "line": 417
+    },
+    {
+      "file": "models/qwen4_exp/amd/mtp.py",
+      "line": 129
+    },
+    {
+      "file": "models/qwen4_exp/amd/mtp.py",
+      "line": 404
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/mtp.py",
+      "line": 128
+    },
+    {
+      "file": "models/qwen4_exp/nvidia/mtp.py",
+      "line": 384
+    },
+    {
+      "file": "transformers_utils/configs/speculators/base.py",
+      "line": 55
+    },
+    {
+      "file": "v1/attention/backends/hpc_attn.py",
+      "line": 132
+    },
+    {
+      "file": "v1/spec_decode/dynamic/utils.py",
+      "line": 22
+    },
+    {
+      "file": "v1/spec_decode/dynamic/utils.py",
+      "line": 92
+    },
+    {
+      "file": "v1/spec_decode/dynamic/utils.py",
+      "line": 32
+    },
+    {
+      "file": "v1/spec_decode/dynamic/utils.py",
+      "line": 48
+    },
+    {
+      "file": "v1/spec_decode/dynamic/utils.py",
+      "line": 53
+    },
+    {
+      "file": "v1/spec_decode/extract_hidden_states.py",
+      "line": 67
+    },
+    {
+      "file": "v1/watermarking/spec_decode.py",
+      "line": 76
+    },
+    {
+      "file": "v1/worker/gpu/spec_decode/adaptive_verification.py",
+      "line": 471
+    },
+    {
+      "file": "v1/worker/gpu/spec_decode/adaptive_verification.py",
+      "line": 490
+    },
+    {
+      "file": "v1/worker/gpu/spec_decode/extract_hidden_states.py",
+      "line": 46
+    },
+    {
+      "file": "v1/worker/gpu/spec_decode/speculator.py",
+      "line": 244
+    }
+  ],
+  "examples": [
+    "Qwen3-Omni DSpark requires a standalone draft checkpoint with architectures=['{_QWEN3_OMNI_DSPARK_ARCHITECTURE}']; generic Qwen3DSparkModel checkpoints must be converted first.",
+    "Qwen3-Omni DSpark input vocab_size must be a positive integer; got {draft_input_vocab_size}.",
+    "Qwen3-Omni DSpark draft_vocab_size must be a positive integer no larger than target vocab_size ({target_vocab_size}); got {draft_output_vocab_size}.",
+    "Qwen3-Omni DSpark draft checkpoints must use logical 1-D RoPE and must not define mrope_section.",
+    "Adaptive verification estimates per-position acceptance from the draft logits, which use_local_argmax_reduction never materializes. Disable one of them."
+  ],
+  "status": "hypothesis",
+  "count": 0,
+  "rule_version": 1
+}

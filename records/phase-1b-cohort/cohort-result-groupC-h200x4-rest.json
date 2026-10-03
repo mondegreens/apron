@@ -1,0 +1,119 @@
+{
+  "executed": {
+    "Qwen/Qwen3.8-Flash-Next@NVIDIA H200x4": {
+      "solution_fp": "1220d54e1c900035732da9109ac0e7788f747ad871b96f776866f512efd39aadddcc",
+      "healthy": true,
+      "boot_report_digest": "12204fbbf9605e6259da5a66dafd5ffe243d9156cf8f4bdb3b44afccacc95e17f827",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "122006f580b132d17bef6b9d6aa71ea1edfbbc9a08ffa3d0022293fec77d596751bb",
+        "1220608c4026bdf0c58b3daf3b2e7427430da31d04edf64c0e18e478773ae8ca0ea8",
+        "1220882c362a8c1bc5b4690d6a058a3fb9b4e2c04cdbd73165712635496737e19ae0",
+        "1220bd76dc41d57cd4feb7807d1b7e5b07b9b5e143caddc9c1b7019820a9e69c61e2",
+        "12205e0ec36542829403c9af5c4110c584a6fa61b6baa1338aeb21bb4d283f347b2a"
+      ],
+      "serving_digest": "122084e0bedd57e6ffb2e73d0d03401a48d1076238ae546c408cab08e0e794d74610",
+      "log_tail": "",
+      "serving_log": "",
+      "harness_failures": [],
+      "cost": 7.204681,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "2496": 0,
+          "3171": 0,
+          "3352": 0,
+          "3353": 0,
+          "3354": 0,
+          "3355": 0
+        },
+        "token_free": true
+      }
+    },
+    "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H200x4": {
+      "solution_fp": "122021cceb19437507ca5774f4a6f8c2cb453da5e03316ab30af7e585e30550d3895",
+      "healthy": true,
+      "boot_report_digest": "1220a687eae3699576bd853ab076193977f9f9ef3be109d68de612512a135cd94132",
+      "failed_boot_digests": [],
+      "attempt_digests": [
+        "122074ab342053eefe203bec370a93f288cdda083ae2cde0c4103feda9e7de637418",
+        "1220db88deaf14ed63ed9b2511ba2b9e2c393e08c11f7841e2862597a5bfd52199fc",
+        "1220bf35dd82f180f4018cbfe0c285fdffa38eee53b233aa6a816d65cd442756cf4c",
+        "1220b20c578e4f866f98c06144bbd441fcadb13d11e739d46d87223b8266dbaf6a8d",
+        "12202fac705c3fa335d21b10ef04c8ff39c01dd11c80dba8e1cdd4d6caa1cbd7ffff"
+      ],
+      "serving_digest": "12202e4f8b140fa5819d18d3f90d9faf861859f6d59f3886af7c2ec859f9698f7e65",
+      "log_tail": "",
+      "serving_log": "",
+      "harness_failures": [],
+      "cost": 8.623924,
+      "provider_reported_cost": null,
+      "token_check": {
+        "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+        "processes": {
+          "9515": 0,
+          "10265": 0,
+          "10602": 0,
+          "10603": 0,
+          "10604": 0,
+          "10605": 0
+        },
+        "token_free": true
+      }
+    }
+  },
+  "prediction_errors": {},
+  "skipped": {},
+  "stopped": null,
+  "budget": {
+    "authorized": 200.0,
+    "spent": 152.775761,
+    "held": 0,
+    "remaining": 47.224239,
+    "open_holds": [],
+    "flags": [
+      "l0a3-run1:replayed:estimate",
+      "stage:Qwen/Qwen3-32B:replayed:estimate",
+      "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1:interrupted_in_provision:tvuknutqxlhbxz:23s_at_3.49_per_h",
+      "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1:interrupted_by_owner_stop:uv3q4ny9qmnsiz:377s_at_3.49_per_h",
+      "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3:stopped_to_fix_download_hang:ia4lxog3zt7yvq:~450s_at_0.24_per_h",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:replayed:provider_reported",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:settled_by_owner",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x2:interrupted_start: rate x rental 14:55:32-15:15:54, reconcile to the bill",
+      "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4:replayed:estimate",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x4:replayed:estimate"
+    ],
+    "overruns": []
+  },
+  "decision_report": {
+    "schema_version": 1,
+    "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+    "candidates": [
+      {
+        "solution_fingerprint": "1220d54e1c900035732da9109ac0e7788f747ad871b96f776866f512efd39aadddcc",
+        "qualification_status": "task_evaluated",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"12207843aaa913ff\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"122006f580b132d17bef6b9d6aa71ea1edfbbc9a08ffa3d0022293fec77d596751bb\", \"12205e0ec36542829403c9af5c4110c584a6fa61b6baa1338aeb21bb4d283f347b2a\", \"1220608c4026bdf0c58b3daf3b2e7427430da31d04edf64c0e18e478773ae8ca0ea8\", \"1220882c362a8c1bc5b4690d6a058a3fb9b4e2c04cdbd73165712635496737e19ae0\", \"1220bd76dc41d57cd4feb7807d1b7e5b07b9b5e143caddc9c1b7019820a9e69c61e2\"], \"detail\": [\"accepted 5/5\"]}, \"serving_verified\": {\"passed\": false, \"evidence\": [\"122084e0bedd57e6ffb2e73d0d03401a48d1076238ae546c408cab08e0e794d74610\"], \"detail\": [\"fail\", \"p99_ttft_ms 2372.0 exceeds SLO 2000.0\"], \"reason\": \"p99_ttft_ms 2372.0 exceeds SLO 2000.0\"}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": "p99_ttft_ms 2372.0 exceeds SLO 2000.0",
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "122021cceb19437507ca5774f4a6f8c2cb453da5e03316ab30af7e585e30550d3895",
+        "qualification_status": "task_evaluated",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"12201e827772aa96\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"12202fac705c3fa335d21b10ef04c8ff39c01dd11c80dba8e1cdd4d6caa1cbd7ffff\", \"122074ab342053eefe203bec370a93f288cdda083ae2cde0c4103feda9e7de637418\", \"1220b20c578e4f866f98c06144bbd441fcadb13d11e739d46d87223b8266dbaf6a8d\", \"1220bf35dd82f180f4018cbfe0c285fdffa38eee53b233aa6a816d65cd442756cf4c\", \"1220db88deaf14ed63ed9b2511ba2b9e2c393e08c11f7841e2862597a5bfd52199fc\"], \"detail\": [\"accepted 4/4\", \"skipped image-1\"]}, \"serving_verified\": {\"passed\": false, \"evidence\": [\"12202e4f8b140fa5819d18d3f90d9faf861859f6d59f3886af7c2ec859f9698f7e65\"], \"detail\": [\"fail\", \"p99_ttft_ms 5421.8 exceeds SLO 2000.0\"], \"reason\": \"p99_ttft_ms 5421.8 exceeds SLO 2000.0\"}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": "p99_ttft_ms 5421.8 exceeds SLO 2000.0",
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      }
+    ],
+    "outcome_economics": null,
+    "uncertainty": null,
+    "disclosed_comparable_set": [],
+    "exclusions": []
+  }
+}

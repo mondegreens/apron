@@ -1,0 +1,66 @@
+{
+  "executed": {
+    "zai-org/GLM-5.3@NVIDIA H200x8": {
+      "solution_fp": "1220d76a47982424e695cbdc927653bd35c47fd3ca3291ae1c7cabf489e8ac16a336",
+      "healthy": false,
+      "boot_report_digest": null,
+      "failed_boot_digests": [
+        "1220a3545d0dc9c29881b270783088e5a6bc99021be24d5903b860afa85aa1f949d3"
+      ],
+      "attempt_digests": [],
+      "serving_digest": null,
+      "log_tail": "/etc/apron_environment: line 12: unexpected EOF while looking for matching `\"'\n/etc/apron_environment: line 16: syntax error: unexpected end of file",
+      "serving_log": "",
+      "harness_failures": [],
+      "cost": 0.454908,
+      "provider_reported_cost": null,
+      "token_check": null
+    }
+  },
+  "prediction_errors": {},
+  "skipped": {},
+  "stopped": null,
+  "budget": {
+    "authorized": 400.0,
+    "spent": 229.949022,
+    "held": 0,
+    "remaining": 170.050978,
+    "open_holds": [],
+    "flags": [
+      "l0a3-run1:replayed:estimate",
+      "stage:Qwen/Qwen3-32B:replayed:estimate",
+      "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1:interrupted_in_provision:tvuknutqxlhbxz:23s_at_3.49_per_h",
+      "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1:interrupted_by_owner_stop:uv3q4ny9qmnsiz:377s_at_3.49_per_h",
+      "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3:stopped_to_fix_download_hang:ia4lxog3zt7yvq:~450s_at_0.24_per_h",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:replayed:provider_reported",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:settled_by_owner",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x2:interrupted_start: rate x rental 14:55:32-15:15:54, reconcile to the bill",
+      "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4:replayed:estimate",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x4:replayed:estimate",
+      "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H200x4:replayed:provider_reported",
+      "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H200x4:settled_by_owner",
+      "MiniMaxAI/MiniMax-M3@NVIDIA H200x8:replayed:estimate"
+    ],
+    "overruns": []
+  },
+  "decision_report": {
+    "schema_version": 1,
+    "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+    "candidates": [
+      {
+        "solution_fingerprint": "1220d76a47982424e695cbdc927653bd35c47fd3ca3291ae1c7cabf489e8ac16a336",
+        "qualification_status": "identity_resolved",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"12203754893e9419\"}, \"stopped_at\": \"identity_resolved\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      }
+    ],
+    "outcome_economics": null,
+    "uncertainty": null,
+    "disclosed_comparable_set": [],
+    "exclusions": []
+  }
+}

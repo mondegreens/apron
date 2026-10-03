@@ -1,0 +1,79 @@
+{
+  "schema_version": 4,
+  "engine": "vllm",
+  "engine_version": "v0.30.0",
+  "error_family": "dtype_incompatible",
+  "rule_version": 1,
+  "supersedes": null,
+  "correction_strategy": "fallback_dtype",
+  "correction_spec": {},
+  "extraction_schema": {
+    "model_type": {
+      "type": "enum",
+      "enum": [
+        "gemma2",
+        "gemma3",
+        "gemma3_text",
+        "glm4"
+      ],
+      "source": "config/model.py:2271 ('The model type {model_type!r} does not support float16.')"
+    },
+    "unsupported_dtype": {
+      "type": "enum",
+      "enum": [
+        "float16"
+      ],
+      "source": "config/model.py:2271 ('does not support float16')"
+    }
+  },
+  "source_sites": [
+    {
+      "file": "config/model.py",
+      "line": 2271
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 3188
+    },
+    {
+      "file": "v1/attention/backends/mla/triton_mla.py",
+      "line": 240
+    },
+    {
+      "file": "v1/attention/backends/mla/triton_mla.py",
+      "line": 249
+    },
+    {
+      "file": "v1/attention/backends/triton_attn.py",
+      "line": 492
+    },
+    {
+      "file": "v1/attention/backends/triton_attn.py",
+      "line": 500
+    }
+  ],
+  "float16_blocklist": [
+    "gemma2",
+    "gemma3",
+    "gemma3_text",
+    "glm4"
+  ],
+  "float16_blocklist_source": "config/model.py:2252-2257 _FLOAT16_NOT_SUPPORTED_MODELS",
+  "kernel_architectures": {},
+  "kernel_architectures_source": null,
+  "exception_class": null,
+  "engine_callsite_module": null,
+  "status": "hypothesis",
+  "promoting_verification_fingerprint": null,
+  "examples": [
+    "The model type 'gemma2' does not support float16. Reason: Numerical instability. Please use bfloat16 or float32 instead.",
+    "nvfp4 KV cache is not supported with MLA (Multi-head Latent Attention) backends. Please use a different --kv-cache-dtype (e.g., 'fp8', 'auto', or 'nvfp4_ds_mla' with a sparse MLA backend) for MLA mode",
+    "FP8 KV cache is not supported by the Triton MLA backend on {dev} (compute capability {cap_str}); native FP8 (fp8e4nv) requires SM89+. Re-run with --kv-cache-dtype {suggested}.",
+    "bfloat16 KV cache is not supported by the Triton MLA backend on {dev} (compute capability {cap_str}); bfloat16 requires SM80+. Re-run with --kv-cache-dtype float16.",
+    "FP8 KV cache is not supported by the Triton attention backend on {dev} (compute capability {cap_str}); native FP8 (fp8e4nv) requires SM89+. Re-run with --kv-cache-dtype {suggested}.",
+    "bfloat16 KV cache is not supported on {dev} (compute capability {cap_str}); bfloat16 requires SM80+. Re-run with --kv-cache-dtype float16."
+  ],
+  "count": 0,
+  "curation": "Ported from rules/vllm-v0.29/dtype_incompatible.json (rule_version 2, mechanism_verified) to vLLM v0.30.0: every cited line re-found in the pinned v0.30.0 source. A hypothesis on v0.30.0 until a v0.30.0 boot proves it; the v0.29.0 proof does not carry over. The source scanner must not overwrite this file. _FLOAT16_NOT_SUPPORTED_MODELS (config/model.py:2252-2257) lists the same four model types.",
+  "replaces": []
+}

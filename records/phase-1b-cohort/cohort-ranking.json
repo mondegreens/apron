@@ -1,0 +1,343 @@
+{
+  "inputs": {
+    "candidates": [
+      {
+        "model_id": "Qwen/Qwen3-1.7B",
+        "gpu_sku": "NVIDIA GeForce RTX 4090",
+        "size_class": "small",
+        "hardware_class": "consumer",
+        "mechanism": "autoregressive_decode",
+        "weight_gb": 4.06,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "gqa"
+        ]
+      },
+      {
+        "model_id": "Qwen/Qwen3-1.7B",
+        "gpu_sku": "NVIDIA L4",
+        "size_class": "small",
+        "hardware_class": "datacenter",
+        "mechanism": "autoregressive_decode",
+        "weight_gb": 4.06,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "gqa"
+        ]
+      },
+      {
+        "model_id": "google/gemma-2-2b-it",
+        "gpu_sku": "NVIDIA GeForce RTX 4090",
+        "size_class": "small",
+        "hardware_class": "consumer",
+        "mechanism": "autoregressive_decode",
+        "weight_gb": 5.23,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": true,
+        "features": [
+          "gqa",
+          "sliding_window"
+        ]
+      },
+      {
+        "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+        "gpu_sku": "NVIDIA GeForce RTX 4090",
+        "size_class": "mid",
+        "hardware_class": "consumer",
+        "mechanism": "autoregressive_decode",
+        "weight_gb": 16.06,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": true,
+        "features": [
+          "gqa"
+        ]
+      },
+      {
+        "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+        "gpu_sku": "NVIDIA GeForce RTX 4090",
+        "size_class": "mid",
+        "hardware_class": "consumer",
+        "mechanism": "autoregressive_decode",
+        "weight_gb": 14.5,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "gqa",
+          "sliding_window"
+        ]
+      },
+      {
+        "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+        "gpu_sku": "NVIDIA L4",
+        "size_class": "mid",
+        "hardware_class": "datacenter",
+        "mechanism": "autoregressive_decode",
+        "weight_gb": 14.5,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "gqa",
+          "sliding_window"
+        ]
+      },
+      {
+        "model_id": "Qwen/Qwen3-32B",
+        "gpu_sku": "NVIDIA A100 80GB PCIe",
+        "size_class": "large",
+        "hardware_class": "datacenter",
+        "mechanism": "autoregressive_decode",
+        "weight_gb": 65.52,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "gqa"
+        ]
+      },
+      {
+        "model_id": "Qwen/Qwen3-32B",
+        "gpu_sku": "NVIDIA H100 80GB HBM3",
+        "size_class": "large",
+        "hardware_class": "datacenter",
+        "mechanism": "autoregressive_decode",
+        "weight_gb": 65.52,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "gqa"
+        ]
+      },
+      {
+        "model_id": "Qwen/Qwen3-32B",
+        "gpu_sku": "NVIDIA GeForce RTX 4090",
+        "size_class": "large",
+        "hardware_class": "consumer",
+        "mechanism": "autoregressive_decode",
+        "weight_gb": 65.52,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": true,
+        "gated": false,
+        "features": [
+          "gqa"
+        ]
+      },
+      {
+        "model_id": "deepseek-ai/DeepSeek-V2-Lite",
+        "gpu_sku": "NVIDIA A100 80GB PCIe",
+        "size_class": "large",
+        "hardware_class": "datacenter",
+        "mechanism": "mla_decode",
+        "weight_gb": 31.41,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "mla",
+          "moe"
+        ]
+      },
+      {
+        "model_id": "JunHowie/Qwen3-8B-GPTQ-Int4",
+        "gpu_sku": "NVIDIA GeForce RTX 4090",
+        "size_class": "mid",
+        "hardware_class": "consumer",
+        "mechanism": "autoregressive_decode",
+        "weight_gb": 6.1,
+        "gpu_count": 1,
+        "quantized": true,
+        "prediction_error": false,
+        "gated": false,
+        "features": [
+          "gqa",
+          "gptq_int4"
+        ]
+      },
+      {
+        "model_id": "state-spaces/mamba-2.8b-hf",
+        "gpu_sku": "NVIDIA GeForce RTX 4090",
+        "size_class": "mid",
+        "hardware_class": "consumer",
+        "mechanism": "unknown",
+        "weight_gb": 11.07,
+        "gpu_count": 1,
+        "quantized": false,
+        "prediction_error": true,
+        "gated": false,
+        "features": [
+          "ssm"
+        ]
+      }
+    ],
+    "existing": {
+      "sizes": [],
+      "hardware": [],
+      "mechanisms": [],
+      "features": [],
+      "quantized": false,
+      "prediction_error": false,
+      "models": [],
+      "gpus": []
+    },
+    "measured": [],
+    "remaining_budget": 93.130435,
+    "rates": {
+      "NVIDIA RTX A5000": 0.27,
+      "NVIDIA L4": 0.49,
+      "NVIDIA GeForce RTX 3090": 0.5,
+      "NVIDIA RTX A6000": 0.53,
+      "NVIDIA GeForce RTX 4090": 0.74,
+      "NVIDIA L40": 0.82,
+      "NVIDIA A100 80GB PCIe": 1.59,
+      "NVIDIA A100-SXM4-80GB": 1.59,
+      "NVIDIA H100 80GB HBM3": 3.49,
+      "NVIDIA B200": 6.79
+    }
+  },
+  "ranked": [
+    {
+      "key": "JunHowie/Qwen3-8B-GPTQ-Int4@NVIDIA GeForce RTX 4090x1",
+      "cost": 0.6045,
+      "obligations": [
+        "size:mid",
+        "hardware:consumer",
+        "mechanism:autoregressive_decode",
+        "quantization",
+        "new_model",
+        "new_gpu"
+      ]
+    },
+    {
+      "key": "deepseek-ai/DeepSeek-V2-Lite@NVIDIA A100 80GB PCIex1",
+      "cost": 1.6757,
+      "obligations": [
+        "size:large",
+        "hardware:datacenter",
+        "mechanism:mla_decode",
+        "new_model",
+        "new_gpu"
+      ]
+    },
+    {
+      "key": "state-spaces/mamba-2.8b-hf@NVIDIA GeForce RTX 4090x1",
+      "cost": 0.0,
+      "obligations": [
+        "mechanism:unknown",
+        "prediction_error",
+        "new_model"
+      ]
+    },
+    {
+      "key": "Qwen/Qwen3-1.7B@NVIDIA L4x1",
+      "cost": 0.3159,
+      "obligations": [
+        "size:small",
+        "new_model",
+        "new_gpu"
+      ]
+    },
+    {
+      "key": "Qwen/Qwen3-32B@NVIDIA H100 80GB HBM3x1",
+      "cost": 4.0088,
+      "obligations": [
+        "new_model",
+        "new_gpu"
+      ]
+    },
+    {
+      "key": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA L4x1",
+      "cost": 0.4117,
+      "obligations": [
+        "new_model"
+      ]
+    },
+    {
+      "key": "google/gemma-2-2b-it@NVIDIA GeForce RTX 4090x1",
+      "cost": 0.4794,
+      "obligations": [
+        "new_model"
+      ]
+    },
+    {
+      "key": "meta-llama/Llama-3.1-8B-Instruct@NVIDIA GeForce RTX 4090x1",
+      "cost": 0.625,
+      "obligations": [
+        "new_model"
+      ]
+    },
+    {
+      "key": "Qwen/Qwen3-32B@NVIDIA GeForce RTX 4090x1",
+      "cost": 0.0,
+      "obligations": []
+    },
+    {
+      "key": "Qwen/Qwen3-1.7B@NVIDIA GeForce RTX 4090x1",
+      "cost": 0.477,
+      "obligations": []
+    },
+    {
+      "key": "mistralai/Mistral-7B-Instruct-v0.3@NVIDIA GeForce RTX 4090x1",
+      "cost": 0.6218,
+      "obligations": []
+    },
+    {
+      "key": "Qwen/Qwen3-32B@NVIDIA A100 80GB PCIex1",
+      "cost": 1.8264,
+      "obligations": []
+    }
+  ],
+  "skipped": [],
+  "authorization": {
+    "schema_version": 1,
+    "permitted_action_classes": [
+      "gpu_execution",
+      "diagnosis_classification"
+    ],
+    "permitted_providers": [
+      "runpod"
+    ],
+    "permitted_accounts": [],
+    "credential_scopes": [
+      "runpod:pods",
+      "anthropic:messages",
+      "huggingface:read"
+    ],
+    "task_data_destinations": [
+      "api.anthropic.com"
+    ],
+    "hard_target_constraints": {
+      "cloud_type": "SECURE"
+    },
+    "maximum_spend": 100.0,
+    "baseline_allocation_digest": null,
+    "contributed_pool_digest": null,
+    "runtime_rules": {},
+    "lifecycle_rules": {},
+    "teardown_rules": {
+      "orphan_max_age_seconds": "3600",
+      "atexit": "terminate"
+    },
+    "security_rules": {},
+    "data_rules": {},
+    "publication_scope": null,
+    "adaptation_rules": {}
+  }
+}

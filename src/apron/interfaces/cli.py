@@ -7,6 +7,7 @@ that imports concrete adapters. Phase 1a: hardwired adapter instances.
 from __future__ import annotations
 
 import json
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -28,6 +29,7 @@ from apron.application.orchestration.plan_pipeline import run_plan_pipeline
 from apron.domain.ports import UuidIdGenerator, WallClock
 from apron.domain.schemas.primitives import HardwareSpec
 
+logger = logging.getLogger(__name__)
 app = typer.Typer(name="apron", no_args_is_help=True)
 console = Console()
 
@@ -80,9 +82,13 @@ def plan(
     clock = WallClock()
     id_gen = UuidIdGenerator()
 
+    from pydantic import ValidationError
+
+    from apron.domain.schemas.authority import DecisionRequest
+
     try:
-        json.loads(request_file.read_text())
-    except (json.JSONDecodeError, OSError) as exc:
+        DecisionRequest.model_validate_json(request_file.read_text())
+    except (ValidationError, OSError) as exc:
         console.print(f"[red]Invalid request file: {exc}[/red]")
         raise typer.Exit(1) from None
 
@@ -273,22 +279,55 @@ def _run_verification(
         console.print("[bold]Step 6/7: Booting vLLM and profiling memory[/bold]")
         report = engine.verify(plan, target)
 
+        from apron.adapters.backends.runpod import CLOUD_TYPE
+        from apron.adapters.runner_image import RUNNER_IMAGE_DIGEST
+        from apron.application.orchestration.evidence import solution_fingerprint
+        from apron.domain.fingerprints import fingerprint_hex
+        from apron.domain.schemas.records import VerificationReport
+        from apron.domain.schemas.solutions import RequestedExecutionSpec
+
+        assert pipeline_result.model_spec is not None
+        requested = RequestedExecutionSpec(
+            provider=target.provider,
+            gpu_sku=selected["gpu_type_id"],
+            gpu_count=target.gpu_count,
+            cloud_type=CLOUD_TYPE,
+            image_digest=RUNNER_IMAGE_DIGEST,
+        )
+        solution_fp = solution_fingerprint(pipeline_result.model_spec, plan, requested)
+
         store = _default_store()
-        report_record = {
-            **report,
-            "claim_scope": "memory",
-            "production_mode": False,
-            "reason": "verification",
-            "lifecycle": "observed",
-        }
-        digest = store.store(report_record)
+        report_record = VerificationReport.model_validate(
+            {
+                **report,
+                "operator": target.operator,
+                "provider": target.provider,
+                "solution_fingerprint": solution_fp,
+                "deployment_plan_digest": fingerprint_hex(plan),
+                "boot_outcome": "healthy",
+                "claim_scope": "memory",
+                "production_mode": False,
+                "reason": "verification",
+                "lifecycle": "observed",
+            }
+        )
+        digest = store.store(report_record.model_dump(mode="json"))
 
         _print_memory_profile(report, prediction)
         console.print(f"  Record: {digest[:24]}...")
 
         if task_suite_path is not None and task_suite_path.exists():
             console.print("[bold]Step 7/7: Running task suite[/bold]")
-            _run_task_suite(task_suite_path, plan_data, target, store)
+            _run_task_suite(
+                task_suite_path,
+                request=_cli_request(plan_data, model_id, budget_max_usd),
+                model_id=model_id,
+                solution_fp=solution_fp,
+                target=target,
+                store=store,
+                report_digest=digest,
+                chat_template=pipeline_result.chat_template,
+            )
         else:
             console.print("[dim]Step 7/7: Task suite — skipped (no --task-suite)[/dim]")
 
@@ -322,7 +361,9 @@ def _print_memory_profile(
         ("model_weight_memory", "weight_memory_bytes"),
         ("transient_peak_headroom", "activation_estimate_bytes"),
         ("non_pytorch_increase", "non_pytorch_overhead_bytes"),
-        ("cuda_graph_actual", "cuda_graph_estimate_bytes"),
+        # vLLM subtracts its estimate, not the capture's actual memory; so does
+        # the calculator (calculator.cuda_graph_estimate_bytes).
+        ("cuda_graph_estimate", "cuda_graph_estimate_bytes"),
         ("available_kv_cache_memory", "available_kv_cache_bytes"),
         ("persistent_consumption", "total_required_bytes"),
     ]
@@ -347,19 +388,72 @@ def _print_memory_profile(
     console.print(table)
 
 
+def _cli_request(plan_data: dict[str, Any], model_id: str, budget: float) -> Any:
+    """The accepted request for a CLI run: the file's DecisionRequest, or one
+    stating the CLI invocation when the file was a DeploymentPlan."""
+    from apron.domain.schemas.authority import DecisionRequest
+
+    if "objective" in plan_data:
+        return DecisionRequest.model_validate(plan_data)
+    return DecisionRequest(
+        objective=f"apron verify {model_id}",
+        budget_limit=budget,
+        permitted_providers=("runpod",),
+    )
+
+
+# The CLI's application and protocol when the caller supplies none: a direct
+# single-endpoint call scored by deterministic exact match.
+CLI_APPLICATION = {
+    "name": "apron-cli-direct",
+    "version": "1",
+    "prompt_template_revision": "{input}",
+}
+CLI_PROTOCOL_TEMPLATE = {
+    "harness": "deterministic_exact_match",
+    "harness_version": "0.1",
+    "scorer": "deterministic_exact_match",
+    "deterministic_checks": ["whitespace_normalized_exact_match"],
+    "sampling_temperature": 0.0,
+    "seeds": [42],
+    "aggregation_method": "pass_rate",
+}
+
+
 def _run_task_suite(
     task_suite_path: Path,
-    plan_data: dict[str, Any],
+    *,
+    request: Any,
+    model_id: str,
+    solution_fp: str,
     target: Any,
     store: Any,
+    report_digest: str,
+    chat_template: str | None = None,
 ) -> None:
-    """Execute the task suite against the running vLLM endpoint."""
+    """Execute the task suite and store one TaskAttemptRecord per case (F4)."""
     from apron.adapters.evaluations.deterministic_scorer import DeterministicScorer
+    from apron.application.orchestration.evidence import (
+        EvidenceContext,
+        build_task_attempt,
+        chat_template_kwargs,
+        scorer_input,
+    )
+    from apron.domain.schemas.tasks import ApplicationSpec, TaskSuiteSpec
 
-    task_suite = json.loads(task_suite_path.read_text())
+    task_suite = TaskSuiteSpec.model_validate_json(task_suite_path.read_text())
+    ctx = EvidenceContext.bind(
+        request=request,
+        task_suite=task_suite,
+        application=ApplicationSpec.model_validate(CLI_APPLICATION),
+        protocol_template=CLI_PROTOCOL_TEMPLATE,
+        solution_fp=solution_fp,
+    )
     scorer = DeterministicScorer()
-
-    if not scorer.accepts(task_suite):
+    evaluation_input = scorer_input(
+        ctx, model_id=model_id, chat_template_kwargs=chat_template_kwargs(chat_template)
+    )
+    if not scorer.accepts(evaluation_input):
         console.print("  [yellow]Scorer does not accept this task suite[/yellow]")
         return
 
@@ -368,21 +462,62 @@ def _run_task_suite(
         console.print("  [yellow]No endpoint URL available — skipping[/yellow]")
         return
 
-    model_id = plan_data.get("resource_allocation", {}).get("model_id", "")
-    protocol = scorer.prepare({**task_suite, "model_id": model_id, "endpoint": endpoint})
+    protocol = scorer.prepare({**evaluation_input, "endpoint": endpoint})
     attempts = scorer.execute(protocol, endpoint)
     results = scorer.collect(attempts)
+
+    for attempt in attempts:
+        record = build_task_attempt(
+            ctx,
+            attempt,
+            attempt_id=f"{solution_fp[4:16]}-{attempt.get('case_id', '')}-0",
+            trace_references=(report_digest,),
+        )
+        store.store(record.model_dump(mode="json"))
 
     console.print(f"  Cases: {results['total_attempts']}")
     console.print(f"  Passed: {results['passed']}")
     console.print(f"  Failed: {results['failed']}")
     console.print(f"  Pass rate: {results['pass_rate']:.0%}")
+    console.print(f"  Stored {len(attempts)} task attempt records")
 
     for attempt in attempts:
         status = "[green]PASS[/green]" if attempt.get("score") == 1 else "[red]FAIL[/red]"
         console.print(f"    {attempt.get('case_id', '?')}: {status}")
         if attempt.get("status") == "failed":
             console.print(f"      error: {attempt.get('error', '')}")
+
+
+def _load_request_file(path: Path) -> tuple[dict[str, Any], str, float | None]:
+    """Parse a DecisionRequest or DeploymentPlan file strictly.
+
+    Returns the validated document as a dict, the model it names (plans carry
+    ``resource_allocation.model_id``) and the request's budget limit.  A file
+    that is neither schema fails loudly with both validation errors — unknown
+    fields are never silently ignored (F2).
+    """
+    from pydantic import ValidationError
+
+    from apron.domain.schemas.authority import DecisionRequest
+    from apron.domain.schemas.solutions import DeploymentPlan
+
+    try:
+        raw = json.loads(path.read_text())
+    except (json.JSONDecodeError, OSError) as exc:
+        console.print(f"[red]Invalid request file: {exc}[/red]")
+        raise typer.Exit(1) from None
+    try:
+        request = DecisionRequest.model_validate(raw)
+        return request.model_dump(mode="json"), "", request.budget_limit
+    except ValidationError as request_error:
+        try:
+            plan = DeploymentPlan.model_validate(raw)
+        except ValidationError as plan_error:
+            console.print("[red]File is neither a DecisionRequest nor a DeploymentPlan:[/red]")
+            console.print(f"  DecisionRequest: {request_error}")
+            console.print(f"  DeploymentPlan: {plan_error}")
+            raise typer.Exit(1) from None
+    return plan.model_dump(mode="json"), plan.resource_allocation.get("model_id", ""), None
 
 
 # ---------------------------------------------------------------------------
@@ -404,16 +539,13 @@ def verify(
         console.print(f"[red]File not found: {request_file}[/red]")
         raise typer.Exit(1)
 
-    request_data = json.loads(request_file.read_text())
-
-    if not model:
-        alloc = request_data.get("resource_allocation", {})
-        model = request_data.get("model", alloc.get("model_id", ""))
+    request_data, model_from_file, budget_from_request = _load_request_file(request_file)
+    model = model or model_from_file
     if not model:
         console.print("[red]No model specified — use --model or include in request file[/red]")
         raise typer.Exit(1)
-
-    budget_from_request = request_data.get("budget", {}).get("max_usd", budget)
+    if budget_from_request is None:
+        budget_from_request = budget
 
     console.print("[bold]Verification Summary[/bold]")
     console.print(f"  Model: {model}")
@@ -455,11 +587,8 @@ def deploy(
         console.print(f"[red]File not found: {request_file}[/red]")
         raise typer.Exit(1)
 
-    request_data = json.loads(request_file.read_text())
-
-    if not model:
-        alloc = request_data.get("resource_allocation", {})
-        model = request_data.get("model", alloc.get("model_id", ""))
+    request_data, model_from_file, _ = _load_request_file(request_file)
+    model = model or model_from_file
 
     console.print("[bold]Deployment Summary[/bold]")
     console.print(f"  Model: {model}")
@@ -491,26 +620,64 @@ def run(command: list[str]) -> None:
         console.print("[red]No command provided[/red]")
         raise typer.Exit(1)
 
+    from apron.adapters.backends.rule_loader import load_rules
     from apron.adapters.backends.vllm_engine import VllmEngineAdapter
+    from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
+    from apron.domain.schemas.primitives import HardwareSpec
+    from apron.domain.schemas.solutions import DeploymentPlan
+
+    _MAX_BUFFER_LINES = 10_000
 
     engine = VllmEngineAdapter()
+    output_buffer: list[str] = []
 
-    process = subprocess.Popen(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-    )
+    try:
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+    except OSError as exc:
+        console.print(f"[red]Failed to start command: {exc}[/red]")
+        raise typer.Exit(1) from None
     assert process.stdout is not None
     for line in process.stdout:
         sys.stdout.write(line)
-        classification = engine.classify(line)
-        if classification["failure_class"] != "unknown":
-            console.print(f"[red]Detected: {classification['failure_class']}[/red]")
+        output_buffer.append(line)
+        if len(output_buffer) > _MAX_BUFFER_LINES:
+            output_buffer = output_buffer[-_MAX_BUFFER_LINES:]
 
     process.wait()
     if process.returncode != 0:
-        console.print(f"[red]Process exited with code {process.returncode}[/red]")
+        full_output = "".join(output_buffer)
+        rules = load_rules(_rules_dir(), "vllm", engine.engine_version)
+        hardware = HardwareSpec(gpu_sku="unknown", total_memory_bytes=0, compute_capability="0.0")
+        plan = DeploymentPlan()
+        model_config: dict[str, Any] = {}
+        served = _served_model(command)
+        if served is not None:
+            try:
+                model_config = _resolve_diagnosis_config(served)
+            except Exception as exc:
+                console.print(f"[yellow]config.json for {served} not resolved: {exc}[/yellow]")
+        try:
+            result = run_diagnosis_pipeline(
+                full_output, engine, plan, model_config, hardware, rules
+            )
+        except Exception:
+            logger.debug("Diagnosis pipeline error", exc_info=True)
+            console.print(f"[red]Process exited with code {process.returncode}[/red]")
+            raise typer.Exit(process.returncode) from None
+        if result.failure_class != "unknown":
+            console.print(f"[red]Diagnosis: {result.failure_class}[/red]")
+            console.print(f"  Label: {result.result_label}")
+            if result.corrected_plan is not None:
+                console.print(f"[green]Correction: {result.correction_strategy}[/green]")
+                if result.result_label == "Alternative with trade-offs":
+                    console.print("[yellow]  Correction reduces serving capacity[/yellow]")
+        else:
+            console.print(f"[red]Process exited with code {process.returncode}[/red]")
         raise typer.Exit(process.returncode)
 
 
@@ -570,6 +737,98 @@ def submit(
 
 
 # ---------------------------------------------------------------------------
+# MCP helpers
+# ---------------------------------------------------------------------------
+
+
+def _rules_dir() -> Path:
+    """Locate the rules directory — works from source checkout and pip install."""
+    import apron
+
+    pkg_dir = Path(apron.__file__).parent
+    pkg_rules = pkg_dir / "rules"
+    if pkg_rules.is_dir():
+        return pkg_rules
+    return Path(__file__).parents[3] / "rules"
+
+
+def _served_model(command: list[str]) -> str | None:
+    """The model argument of a ``vllm serve <model>`` command, if present."""
+    for i, part in enumerate(command[:-1]):
+        if part == "serve" and not command[i + 1].startswith("-"):
+            return command[i + 1]
+    return None
+
+
+def _resolve_diagnosis_config(model: str) -> dict[str, Any]:
+    """Resolve the model's ``config.json`` and select the fields diagnosis reads (F5)."""
+    from apron.application.orchestration.diagnosis_pipeline import diagnosis_model_config
+    from apron.domain.schemas.primitives import ArtifactLocator
+
+    resolver = _build_resolver()
+    observation = resolver.resolve(ArtifactLocator(source_kind="huggingface", uri=model))
+    content = resolver._download_file(model, "config.json", observation.resolved_revision)
+    if content is None:
+        raise ValueError("config.json not found")
+    return diagnosis_model_config(json.loads(content))
+
+
+def _diagnose(
+    error: str,
+    model: str,
+    gpu_sku: str = "unknown",
+    total_memory_bytes: int = 0,
+    compute_capability: str = "0.0",
+    tensor_parallel: int = 1,
+    dtype: str | None = None,
+    plan_digest: str | None = None,
+) -> dict[str, Any]:
+    """Run diagnosis pipeline with real context when available."""
+    from dataclasses import asdict
+
+    from pydantic import ValidationError
+
+    from apron.adapters.backends.rule_loader import load_rules
+    from apron.adapters.backends.vllm_engine import VllmEngineAdapter
+    from apron.application.orchestration.diagnosis_pipeline import run_diagnosis_pipeline
+    from apron.domain.schemas.migrations import load_record
+    from apron.domain.schemas.primitives import HardwareSpec
+    from apron.domain.schemas.solutions import DeploymentPlan
+
+    engine = VllmEngineAdapter()
+    rules = load_rules(_rules_dir(), "vllm", engine.engine_version)
+
+    hardware = HardwareSpec(
+        gpu_sku=gpu_sku,
+        total_memory_bytes=total_memory_bytes,
+        compute_capability=compute_capability,
+    )
+
+    plan = DeploymentPlan(tensor_parallel=tensor_parallel, dtype=dtype)
+
+    if plan_digest:
+        store = _default_store()
+        stored = store.retrieve(plan_digest)
+        if stored is None:
+            return {"error": f"plan {plan_digest} not found"}
+        try:
+            plan = load_record(DeploymentPlan, stored)
+        except ValidationError as exc:
+            return {"error": f"stored plan {plan_digest} is not a valid DeploymentPlan: {exc}"}
+
+    try:
+        model_config = _resolve_diagnosis_config(model)
+    except Exception as exc:
+        return {"error": f"could not resolve config.json for {model}: {exc}"}
+
+    result = run_diagnosis_pipeline(error, engine, plan, model_config, hardware, rules)
+    output = asdict(result)
+    if result.corrected_plan is not None:
+        output["corrected_plan"] = result.corrected_plan.model_dump(mode="json")
+    return output
+
+
+# ---------------------------------------------------------------------------
 # apron mcp
 # ---------------------------------------------------------------------------
 
@@ -577,58 +836,42 @@ def submit(
 @app.command("mcp")
 def mcp_server() -> None:
     """Start MCP server on stdio."""
-    import asyncio
+    from mcp.server.mcpserver import MCPServer
 
-    from mcp.server import Server  # type: ignore[import-untyped]
-    from mcp.server.stdio import stdio_server  # type: ignore[import-untyped]
-    from mcp.types import TextContent, Tool  # type: ignore[import-untyped]
+    server = MCPServer("apron")
 
-    server = Server("apron")
+    @server.tool(description="Retrieve a stored record")
+    async def apron_report(record_id: str, format: str = "json") -> str:
+        store = _default_store()
+        record = store.retrieve(record_id)
+        if record is None:
+            return json.dumps({"error": "Record not found"})
+        return json.dumps(record, indent=2)
 
-    @server.list_tools()  # type: ignore[misc]
-    async def list_tools() -> list[Tool]:
-        plan_schema: dict[str, Any] = {
-            "type": "object",
-            "properties": {
-                "request_file": {"type": "string"},
-                "model": {"type": "string"},
-                "target": {"type": "string"},
-            },
-            "required": ["request_file", "model"],
-        }
-        report_schema: dict[str, Any] = {
-            "type": "object",
-            "properties": {
-                "record_id": {"type": "string"},
-                "format": {"type": "string"},
-            },
-            "required": ["record_id"],
-        }
-        return [
-            Tool(
-                name="apron_plan",
-                description="Generate a deployment plan",
-                inputSchema=plan_schema,  # pyright: ignore[reportCallIssue]
-            ),
-            Tool(
-                name="apron_report",
-                description="Retrieve a stored record",
-                inputSchema=report_schema,  # pyright: ignore[reportCallIssue]
-            ),
-        ]
+    @server.tool(description="Diagnose a vLLM deployment failure and suggest correction")
+    async def apron_diagnose(
+        error: str,
+        model: str,
+        gpu_sku: str = "unknown",
+        total_memory_bytes: int = 0,
+        compute_capability: str = "0.0",
+        tensor_parallel: int = 1,
+        dtype: str | None = None,
+        plan_digest: str | None = None,
+    ) -> str:
+        import asyncio
 
-    @server.call_tool()  # type: ignore[misc]
-    async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
-        if name == "apron_report":
-            store = _default_store()
-            record = store.retrieve(arguments["record_id"])
-            if record is None:
-                return [TextContent(type="text", text=json.dumps({"error": "Record not found"}))]
-            return [TextContent(type="text", text=json.dumps(record, indent=2))]
-        return [TextContent(type="text", text=json.dumps({"error": f"Unknown tool: {name}"}))]
+        result = await asyncio.to_thread(
+            _diagnose,
+            error,
+            model,
+            gpu_sku,
+            total_memory_bytes,
+            compute_capability,
+            tensor_parallel,
+            dtype,
+            plan_digest,
+        )
+        return json.dumps(result, indent=2, default=str)
 
-    async def _run() -> None:
-        async with stdio_server() as (read, write):
-            await server.run(read, write, server.create_initialization_options())
-
-    asyncio.run(_run())
+    server.run(transport="stdio")

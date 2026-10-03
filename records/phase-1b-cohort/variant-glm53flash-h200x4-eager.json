@@ -1,0 +1,67 @@
+{
+  "base_solution": "122042ea2f378f3800be85605c652337274ae3dd50da9aedec28d83e37f70b6384db",
+  "changes": {
+    "enforce_eager": "true"
+  },
+  "gpu_sku": "NVIDIA H200",
+  "solution": "1220020ae7d2d05c32d463f731e77dc1253052215aa83ab92873aa0ccd4adfe5b252",
+  "result": {
+    "executed": {
+      "variant": {
+        "solution_fp": "1220020ae7d2d05c32d463f731e77dc1253052215aa83ab92873aa0ccd4adfe5b252",
+        "healthy": true,
+        "boot_report_digest": "1220106dee467e37adfbd9dc70016adaf0e36982c51536fe50ece890b7e14a0e55ad",
+        "failed_boot_digests": [],
+        "attempt_digests": [
+          "1220f824c53177cc1770fc0fe8587e80abaee1c854b63057e293642f761472fc4bff",
+          "122035be97143fba4299cb531d2c2f781dcf7604aa3b21a5c152fc9d8e599dbf27ef",
+          "1220ba3de426025b74269f051f26acc6c5447c8314ec6416dacfea70280e9638ef51",
+          "1220afa61de7eaa116a008b84c83c0ca61c2fa50420e291ed4d8994a0b7db2bc4339",
+          "1220a79c1c046ca511533c33b916e83041d31bb907911f3b8bc7bbb9665839477d75"
+        ],
+        "serving_digest": "1220a3bf063f050d412997213ddb8212a1176e5b16798131037914cb195a56019d50",
+        "log_tail": "",
+        "serving_log": "",
+        "harness_failures": [],
+        "cost": 13.617942,
+        "provider_reported_cost": null,
+        "token_check": {
+          "command": "for p in $(pgrep -f 'bin/[v]llm serve|[V]LLM::'); do n=$(tr '\\0' '\\n' < /proc/$p/environ | cut -d= -f1 | grep -c -E '^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)$'); echo \"$p $n\"; done",
+          "processes": {
+            "3074": 0,
+            "4013": 0,
+            "4395": 0,
+            "4456": 0,
+            "4576": 0,
+            "4693": 0
+          },
+          "token_free": true
+        }
+      }
+    },
+    "skipped": {},
+    "stopped": "cost overrun >50% on ['variant']",
+    "budget": {
+      "authorized": 200.0,
+      "spent": 107.12964,
+      "held": 0,
+      "remaining": 92.87036,
+      "open_holds": [],
+      "flags": [
+        "l0a3-run1:replayed:estimate",
+        "stage:Qwen/Qwen3-32B:replayed:estimate",
+        "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1:interrupted_in_provision:tvuknutqxlhbxz:23s_at_3.49_per_h",
+        "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1:interrupted_by_owner_stop:uv3q4ny9qmnsiz:377s_at_3.49_per_h",
+        "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3:stopped_to_fix_download_hang:ia4lxog3zt7yvq:~450s_at_0.24_per_h",
+        "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:replayed:provider_reported",
+        "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:settled_by_owner",
+        "zai-org/GLM-5.3-Flash@NVIDIA B200x2:interrupted_start: rate x rental 14:55:32-15:15:54, reconcile to the bill",
+        "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4:replayed:estimate",
+        "zai-org/GLM-5.3-Flash@NVIDIA B200x4:replayed:estimate"
+      ],
+      "overruns": [
+        "variant"
+      ]
+    }
+  }
+}

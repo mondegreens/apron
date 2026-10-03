@@ -1,0 +1,61 @@
+{
+  "model_id": "zai-org/GLM-5.3",
+  "architecture": "GlmMoeDsaForCausalLM",
+  "provider": "modal",
+  "gpu": "NVIDIA H200",
+  "gpu_count": 8,
+  "engine": "vllm",
+  "engine_version": "0.30.0",
+  "enforce_eager": true,
+  "max_model_len": 640,
+  "driver_version": "580.95.05",
+  "compute_capability": "9.0",
+  "pytorch_version": "2.13.0+cu130",
+  "cuda_version": "13.0",
+  "runner_image_digest": "sha256:36dde61da5524d9b2d8d8e931d6765d841d833dc19e44d5c572c45215bce84ba",
+  "memory_report": {
+    "weights_gib_per_gpu": 88.91,
+    "peak_activation_gib": 1.09,
+    "cuda_graph_gib": 0.0,
+    "non_kv_total_gib": 92.58,
+    "kv_cache_gib_per_gpu": 36.03,
+    "kv_cache_tokens": 417664,
+    "gpu_used_mib_per_gpu": 136979,
+    "gpu_total_mib_per_gpu": 143771
+  },
+  "task_results": {
+    "reasoning_1": {
+      "prompt": "What is 17 + 25? Answer with just the number.",
+      "expected": "42",
+      "answer": "42",
+      "passed": true
+    },
+    "json_1": {
+      "prompt": "Give the capital of France and the country it is in, as a JSON object with the keys city and country.",
+      "answer": "{\"city\": \"Paris\", \"country\": \"France\"}",
+      "passed": true
+    },
+    "tool_1": {
+      "status": "not_tested",
+      "reason": "tool-call-parser glm4 invalid; needs glm47 or glm45"
+    },
+    "needle_1": {
+      "status": "not_tested",
+      "reason": "max_model_len=640 cannot fit 32K context"
+    }
+  },
+  "serving_metrics": {
+    "ttft_requests": [
+      {"prompt_tokens": 24, "completion_tokens": 32, "ttft_s": 6.18, "total_s": 6.18},
+      {"prompt_tokens": 27, "completion_tokens": 32, "ttft_s": 7.23, "total_s": 7.23},
+      {"prompt_tokens": 23, "completion_tokens": 29, "ttft_s": 5.63, "total_s": 5.63}
+    ],
+    "benchmark_status": "not_possible",
+    "benchmark_reason": "max_model_len=640 too short for vllm bench serve with reasoning model"
+  },
+  "boot_time_minutes": 29.5,
+  "cold_start_notes": "DeepGEMM warmup 2335 kernels ~11 min, enforce_eager, no CUDA graphs",
+  "date": "2026-10-01",
+  "sandbox_id": "sb-EIgEz5dUBP9zjt5kMsvnYz",
+  "weights_source": "modal_volume:apron-models:/models/zai-org--GLM-5.3"
+}

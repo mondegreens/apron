@@ -1,0 +1,182 @@
+{
+  "schema_version": 4,
+  "engine": "vllm",
+  "engine_version": "v0.30.0",
+  "error_family": "multimodal_config",
+  "correction_spec": {
+    "action": "remove_field",
+    "field": "limit_mm_per_prompt"
+  },
+  "extraction_schema": {
+    "dumps": {
+      "type": "string"
+    },
+    "max_duration_s": {
+      "type": "string"
+    },
+    "duration_s": {
+      "type": "string"
+    },
+    "shape": {
+      "type": "string"
+    },
+    "sample_rate": {
+      "type": "string"
+    },
+    "metadata_duration_s": {
+      "type": "string"
+    },
+    "file_duration_s": {
+      "type": "string"
+    },
+    "native_sr": {
+      "type": "string"
+    },
+    "frames": {
+      "type": "string"
+    },
+    "channels": {
+      "type": "string"
+    },
+    "est_duration_s": {
+      "type": "string"
+    },
+    "est_sample_rate": {
+      "type": "string"
+    },
+    "est_num_channels": {
+      "type": "string"
+    },
+    "total_samples": {
+      "type": "string"
+    },
+    "sr": {
+      "type": "string"
+    },
+    "max_batch_size": {
+      "type": "string"
+    },
+    "min_tok": {
+      "type": "string"
+    },
+    "token_budgets": {
+      "type": "string"
+    }
+  },
+  "source_sites": [
+    {
+      "file": "config/compilation.py",
+      "line": 1051
+    },
+    {
+      "file": "config/model.py",
+      "line": 847
+    },
+    {
+      "file": "config/multimodal.py",
+      "line": 305
+    },
+    {
+      "file": "config/vllm.py",
+      "line": 1317
+    },
+    {
+      "file": "model_executor/models/chatglm.py",
+      "line": 442
+    },
+    {
+      "file": "model_executor/models/cohere_asr.py",
+      "line": 2272
+    },
+    {
+      "file": "model_executor/models/cohere_asr.py",
+      "line": 2278
+    },
+    {
+      "file": "model_executor/models/granite_speech.py",
+      "line": 666
+    },
+    {
+      "file": "model_executor/models/llava_onevision2.py",
+      "line": 253
+    },
+    {
+      "file": "model_executor/models/muse_glimmer.py",
+      "line": 1546
+    },
+    {
+      "file": "model_executor/models/muse_glimmer.py",
+      "line": 1551
+    },
+    {
+      "file": "model_executor/models/muse_glimmer.py",
+      "line": 1569
+    },
+    {
+      "file": "model_executor/models/muse_glimmer.py",
+      "line": 1574
+    },
+    {
+      "file": "models/deepseek_v4/vl_stub.py",
+      "line": 11
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 376
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 336
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 368
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 129
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 218
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 228
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 323
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 169
+    },
+    {
+      "file": "multimodal/media/audio.py",
+      "line": 180
+    },
+    {
+      "file": "transformers_utils/processors/cohere_asr.py",
+      "line": 72
+    },
+    {
+      "file": "transformers_utils/processors/nano_nemotron_vl.py",
+      "line": 807
+    },
+    {
+      "file": "v1/worker/encoder_cudagraph.py",
+      "line": 116
+    }
+  ],
+  "examples": [
+    "encoder_cudagraph_max_vision_items_per_batch must be non-negative (0 = auto-infer)",
+    "Cannot use --renderer-num-workers > 1 with the multimodal processor cache enabled for pooling models. Pooling preprocessing runs on the renderer workers, and the cache is not thread-safe. Please set -",
+    "'mm_shm_cache_max_object_size_mb' should only be set when 'mm_processor_cache_type' is 'shm'.",
+    "--language-model-only is incompatible with cudagraph_mm_encoder=True, since it disables all multimodal inputs and the multimodal encoder is never run. Please disable one of them.",
+    "The configuration of this model indicates that it supports vision inputs, but you instantiated the text-only version of this model. Please use the vision model by setting `--hf-overrides '{json.dumps}"
+  ],
+  "status": "hypothesis",
+  "count": 0,
+  "rule_version": 1
+}

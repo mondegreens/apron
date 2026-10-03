@@ -19,7 +19,7 @@ from apron.domain.schemas.primitives import ArtifactLocator
 
 
 class ArtifactSpec(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     identity: Annotated[ArtifactIdentity, IDENTITY]
@@ -41,42 +41,42 @@ class ArtifactSpec(BaseModel):
 
 
 class PublishedByOwner(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     relation: Annotated[Literal["published_by_owner"], IDENTITY]
     publisher: Annotated[str, IDENTITY]
     artifact_digest: Annotated[str, IDENTITY]
 
 
 class ClaimedDerivedFrom(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     relation: Annotated[Literal["claimed_derived_from"], IDENTITY]
     source_artifact_digest: Annotated[str, IDENTITY]
     claim_basis: Annotated[str, IDENTITY]
 
 
 class ReproduciblyDerivedFrom(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     relation: Annotated[Literal["reproducibly_derived_from"], IDENTITY]
     source_artifact_digest: Annotated[str, IDENTITY]
     transform_spec_digest: Annotated[str, IDENTITY]
 
 
 class StructurallyCompatibleWith(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     relation: Annotated[Literal["structurally_compatible_with"], IDENTITY]
     other_artifact_digest: Annotated[str, IDENTITY]
     matching_criteria: Annotated[str, IDENTITY]
 
 
 class QualityComparedWith(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     relation: Annotated[Literal["quality_compared_with"], IDENTITY]
     other_artifact_digest: Annotated[str, IDENTITY]
     task_protocol_digest: Annotated[str, IDENTITY]
 
 
 class TokenizerCompatibleWith(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
     relation: Annotated[Literal["tokenizer_compatible_with"], IDENTITY]
     other_artifact_digest: Annotated[str, IDENTITY]
     tokenizer_hash: Annotated[str, IDENTITY]
@@ -99,7 +99,7 @@ ArtifactRelation = Annotated[
 
 
 class ExecutionSpec(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     engine_image_digest: Annotated[str, IDENTITY]
@@ -114,7 +114,7 @@ class ExecutionSpec(BaseModel):
 
 
 class ModelSpec(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     repository: Annotated[str | None, IDENTITY] = None
@@ -135,7 +135,7 @@ class ModelSpec(BaseModel):
 
 
 class QualityEvidence(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     task_attempt_fingerprints: Annotated[tuple[FingerprintHex, ...], IDENTITY]
@@ -150,7 +150,7 @@ class QualityEvidence(BaseModel):
 
 
 class CompatibilityEvidence(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     schema_version: Annotated[int, DISPLAY] = 1
     candidate_fingerprint: Annotated[FingerprintHex, IDENTITY]

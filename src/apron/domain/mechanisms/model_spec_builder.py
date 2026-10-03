@@ -22,9 +22,60 @@ ARCHITECTURE_MECHANISMS: dict[str, str] = {
 }
 
 
+UNKNOWN_MECHANISM = "unknown"
+
+
+def _is_attention_free(config: dict[str, Any]) -> bool:
+    """No attention heads declared: a state-space (Mamba) or other non-attention model.
+
+    INV-32: such a model is not ``autoregressive_decode`` even though its
+    architecture name ends in ``ForCausalLM``.  A Mamba-1 config is
+    ``ssm_decode``; any other attention-free model is an explicit unknown.
+    """
+    return not config.get("num_attention_heads")
+
+
+# Attention shapes the calculator does not count: a sparse-attention indexer
+# (DeepSeek V3.2 / GLM-5 DSA: index_topk; MiniMax-M3: sparse_attention_config),
+# compressed KV (DeepSeek V4: compress_ratios), and per-layer kinds other than
+# full or sliding attention (linear attention, Mamba).  vLLM pages each with its
+# own KV spec, so a plain estimate would be confidently wrong.  Models whose
+# layout layered.py reads (``family``: DeepSeek V4 / V4.1, Qwen4Exp, GLM5Next,
+# GLM-5.x DSA and MiniMax-M3 among them, when their configs carry every field
+# it reads) are ``layered_decode`` before this check; anything else with these
+# fields stays unknown.
+_UNMODELLED_ATTENTION_FIELDS = ("index_topk", "compress_ratios", "sparse_attention_config")
+_MODELLED_LAYER_TYPES = frozenset({"full_attention", "sliding_attention"})
+
+
+def unmodelled_attention(config: dict[str, Any]) -> str | None:
+    """The config field that names an attention layout the calculator does
+    not model, or None."""
+    from apron.domain.mechanisms.layered import text_config
+
+    for source in (config, text_config(config)):
+        for key in _UNMODELLED_ATTENTION_FIELDS:
+            if source.get(key):
+                return key
+        kinds = source.get("layer_types")
+        if isinstance(kinds, list) and not set(kinds) <= _MODELLED_LAYER_TYPES:
+            return "layer_types"
+        for key in ("linear_num_value_heads", "hybrid_override_pattern", "layers_block_type"):
+            if source.get(key):
+                return key
+    return None
+
+
 def _has_mla_fields(config: dict[str, Any]) -> bool:
     """Detect Multi-Latent Attention from config.json fields."""
     return config.get("kv_lora_rank") is not None and config.get("qk_rope_head_dim") is not None
+
+
+def _has_mamba1_state_fields(config: dict[str, Any]) -> bool:
+    """A Mamba-1 state-space model: the fields vLLM sizes its state from
+    (model_executor/models/mamba.py:234-245: intermediate_size, state_size,
+    conv_kernel)."""
+    return all(config.get(k) for k in ("intermediate_size", "state_size", "conv_kernel"))
 
 
 def _infer_mechanism(architecture: str, config: dict[str, Any]) -> str:
@@ -32,12 +83,14 @@ def _infer_mechanism(architecture: str, config: dict[str, Any]) -> str:
         return "mla_decode"
     for suffix, mechanism in ARCHITECTURE_MECHANISMS.items():
         if architecture.endswith(suffix):
+            if mechanism == "autoregressive_decode" and _is_attention_free(config):
+                return "ssm_decode" if _has_mamba1_state_fields(config) else UNKNOWN_MECHANISM
             return mechanism
     return architecture
 
 
 def _infer_dtype_map(config: dict[str, Any]) -> dict[str, str]:
-    torch_dtype = config.get("torch_dtype", "bfloat16")
+    torch_dtype = config.get("torch_dtype") or config.get("dtype") or "bfloat16"
     return {"decoder": torch_dtype}
 
 
@@ -49,6 +102,7 @@ def build_model_spec(
     license_id: str | None = None,
     total_weight_bytes: int | None = None,
     files: tuple[str, ...] = (),
+    unmodelled_architectures: frozenset[str] = frozenset(),
 ) -> ModelSpec:
     """Construct a ModelSpec from config.json fields.
 
@@ -57,7 +111,18 @@ def build_model_spec(
     """
     architectures = config.get("architectures", [])
     primary_arch = architectures[0] if architectures else "UnknownArchitecture"
-    mechanism = _infer_mechanism(primary_arch, config)
+    # An architecture the engine runs with state the calculator does not model
+    # (hybrid attention + Mamba/linear attention) is an explicit unknown, never
+    # a plain-attention estimate: KV for every layer would be wrong.
+    from apron.domain.mechanisms.layered import family
+
+    if family(config) is not None:
+        # Per-layer caches the calculator counts as vLLM pages them (layered.py).
+        mechanism = "layered_decode"
+    elif primary_arch in unmodelled_architectures or unmodelled_attention(config):
+        mechanism = UNKNOWN_MECHANISM
+    else:
+        mechanism = _infer_mechanism(primary_arch, config)
 
     components: list[ComponentMechanism] = [
         ComponentMechanism(mechanism=mechanism, role="decoder"),

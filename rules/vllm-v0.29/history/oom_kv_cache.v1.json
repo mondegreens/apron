@@ -1,0 +1,38 @@
+{
+  "schema_version": 4,
+  "engine": "vllm",
+  "engine_version": "v0.29.0",
+  "error_family": "oom_kv_cache",
+  "rule_version": 1,
+  "correction_strategy": "reduce_memory_pressure",
+  "extraction_schema": {
+    "estimated_max_model_len": {
+      "type": "int",
+      "source": "v1/core/kv_cache_utils.py:876"
+    },
+    "max_num_seqs_attempted": {
+      "type": "int",
+      "source": "v1/worker/gpu_model_runner.py:6373 ('when warming up sampler with {num_reqs} dummy requests')"
+    }
+  },
+  "source_sites": [
+    {
+      "file": "v1/core/kv_cache_utils.py",
+      "line": 879
+    },
+    {
+      "file": "v1/worker/gpu_model_runner.py",
+      "line": 6372
+    }
+  ],
+  "examples": [
+    "To serve at least one request with the model's max seq len ({max_model_len}), ({needed} GiB KV cache is needed, which is larger than the available KV cache memory ({available} GiB). Based on the available memory, the estimated maximum model length is {estimated_max_len}. Try increasing `gpu_memory_utilization` ... or decreasing `max_model_len` when initializing the engine.",
+    "CUDA out of memory occurred when warming up sampler with {num_reqs} dummy requests. Please try lowering `max_num_seqs` or `gpu_memory_utilization` when initializing the engine."
+  ],
+  "status": "hypothesis",
+  "count": 2,
+  "curation": "Hand-curated for the Phase 1b §10 fix proof: typed fields, each citing the vLLM v0.29.0 line that prints it. The source scanner must not overwrite this file.",
+  "replaces": [
+    "oom"
+  ]
+}
