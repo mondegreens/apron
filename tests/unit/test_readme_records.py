@@ -133,7 +133,7 @@ def test_every_boot_lands_in_one_row_or_the_broken_count(synthetic: CohortRun) -
     assert table["not_rendered"] == []
 
 
-def test_a_failed_boot_is_a_row_with_its_error(synthetic: CohortRun) -> None:
+def test_a_failed_boot_keeps_its_error_but_stays_off_the_readme(synthetic: CohortRun) -> None:
     rec = synthetic.records
     digest, healthy = next(iter(rec.measured().items()))
     entry = rec.solutions[healthy.solution_fingerprint or ""]
@@ -166,8 +166,8 @@ def test_a_failed_boot_is_a_row_with_its_error(synthetic: CohortRun) -> None:
     assert row["measured_weight_bytes"] is None and row["kv_cache_tokens"] is None
     assert row["vllm"] == engine_version(entry.requested_execution.image_digest, None)
     text = render_readme({"records_table": table}, reports_href="records", fixes_href="post.md")
-    assert "failed: model error" in text
-    assert "`ValueError: max_num_seqs (1024) exceeds available cache blocks`" in text
+    assert "acme/Failing-7B" not in text  # the front page shows booted rows only
+    assert "failed" not in text
     assert digest  # the healthy boot it was copied from is still its own row
 
 
