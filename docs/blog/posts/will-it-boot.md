@@ -6,9 +6,10 @@ description: >-
   Fourteen open models, from one RTX 4090 to eight H200s: Apron predicted their
   memory before renting the GPU, then booted each one on vLLM and measured.
 image: blog/img/will-it-boot/will-it-boot-header-1200x630.jpg
+slug: i-know-you-run-models-will-it-boot
 ---
 
-# I know you run models. Will it boot?
+# I know you run LLMs. Will it boot?
 
 ![Cartoon in a boxing ring: the author, in an orange apron, holds a measuring tape up to a giant muscular robot made of glowing network layers and servers, while a small worried graphics card in red boxing gloves looks up at it. A crowd cheers and cameras flash.](img/will-it-boot/will-it-boot-header.jpg)
 
