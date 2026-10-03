@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{#- Link previews (Open Graph, X): a page that sets `image` in its front
+    matter (a path from the docs root) gets it as the preview card, with its
+    title and description. -#}
+{% block extrahead %}
+  {% if page and page.meta and page.meta.image %}
+    {% set preview = config.site_url ~ page.meta.image %}
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ page.title }}">
+    {% if page.meta.description %}
+      <meta property="og:description" content="{{ page.meta.description }}">
+      <meta name="twitter:description" content="{{ page.meta.description }}">
+    {% endif %}
+    <meta property="og:url" content="{{ config.site_url ~ page.url }}">
+    <meta property="og:image" content="{{ preview }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ page.title }}">
+    <meta name="twitter:image" content="{{ preview }}">
+  {% endif %}
+{% endblock %}

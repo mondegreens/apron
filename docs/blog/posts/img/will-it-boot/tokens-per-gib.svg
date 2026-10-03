@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 452" width="760" height="452" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" role="img">
+<title>Attention layout, not model size, decides how many tokens fit</title>
+
+<style>
+  .s { fill: #fcfcfb } .t1 { fill: #0b0b0b } .t2 { fill: #52514e } .t3 { fill: #8a8984 }
+  .grid { stroke: #e6e5e1 } .axis { stroke: #c9c8c2 } .band { fill: #f0efec }
+  .c1 { fill: #2a78d6 } .c2 { fill: #eb6834 } .c3 { fill: #1baf7a } .free { fill: #e6e5e1 }
+  .l1 { stroke: #2a78d6 } .l2 { stroke: #eb6834 } .ring { stroke: #fcfcfb }
+  @media (prefers-color-scheme: dark) {
+    .s { fill: #1a1a19 } .t1 { fill: #ffffff } .t2 { fill: #c3c2b7 } .t3 { fill: #8f8e86 }
+    .grid { stroke: #2e2e2c } .axis { stroke: #4a4a46 } .band { fill: #262624 }
+    .c1 { fill: #3987e5 } .c2 { fill: #d95926 } .c3 { fill: #199e70 } .free { fill: #383835 }
+    .l1 { stroke: #3987e5 } .l2 { stroke: #d95926 } .ring { stroke: #1a1a19 }
+  }
+</style>
+<rect width="760" height="452" rx="8" class="s"/>
+<text x="24.0" y="34.0" class="t1" font-size="19" font-weight="650" text-anchor="start">Attention layout, not model size, decides how many tokens fit</text>
+<text x="24.0" y="56.0" class="t2" font-size="13" font-weight="400" text-anchor="start">Single-GPU boots: vLLM&#x27;s KV pool in tokens divided by its size in GiB. Both measured.</text>
+<line x1="480.0" x2="480.0" y1="84" y2="386" class="grid" stroke-width="1"/>
+<line x1="423.2" x2="423.2" y1="84" y2="386" class="grid" stroke-width="1"/>
+<line x1="366.4" x2="366.4" y1="84" y2="386" class="grid" stroke-width="1"/>
+<line x1="309.6" x2="309.6" y1="84" y2="386" class="grid" stroke-width="1"/>
+<line x1="252.8" x2="252.8" y1="84" y2="386" class="grid" stroke-width="1"/>
+<line x1="196.0" x2="196.0" y1="84" y2="386" class="grid" stroke-width="1"/>
+<text x="24.0" y="98.0" class="t2" font-size="12" font-weight="600" text-anchor="start">Attention only</text>
+<text x="184.0" y="129.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Gemma 4 31B</text>
+<path class="c1" d="M196.0,116.0 h9.2 a4,4 0 0 1 4,4 v10.0 a4,4 0 0 1 -4,4 h-9.2 z"/>
+<text x="219.2" y="129.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">1,165  ·  sliding + global, 512-wide heads</text>
+<text x="184.0" y="159.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">gpt-oss-120b</text>
+<path class="c1" d="M196.0,146.0 h159.3 a4,4 0 0 1 4,4 v10.0 a4,4 0 0 1 -4,4 h-159.3 z"/>
+<text x="369.3" y="159.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">14,377  ·  sliding + full attention</text>
+<text x="184.0" y="189.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Muse-Glimmer-30B</text>
+<path class="c1" d="M196.0,176.0 h220.8 a4,4 0 0 1 4,4 v10.0 a4,4 0 0 1 -4,4 h-220.8 z"/>
+<text x="430.8" y="189.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">19,789  ·  sliding + full attention</text>
+<text x="184.0" y="219.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">GLM-4.7-Flash</text>
+<path class="c1" d="M196.0,206.0 h221.4 a4,4 0 0 1 4,4 v10.0 a4,4 0 0 1 -4,4 h-221.4 z"/>
+<text x="431.4" y="219.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">19,838  ·  multi-head latent attention</text>
+<text x="184.0" y="249.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">gpt-oss-20b</text>
+<path class="c1" d="M196.0,236.0 h241.0 a4,4 0 0 1 4,4 v10.0 a4,4 0 0 1 -4,4 h-241.0 z"/>
+<text x="451.0" y="249.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">21,570  ·  sliding + full attention</text>
+<text x="24.0" y="284.0" class="t2" font-size="12" font-weight="600" text-anchor="start">Hybrids: the same pool also holds a fixed state per request</text>
+<text x="184.0" y="315.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Qwen3.8-27B</text>
+<path class="c1" d="M196.0,302.0 h17.7 a4,4 0 0 1 4,4 v10.0 a4,4 0 0 1 -4,4 h-17.7 z"/>
+<text x="227.7" y="315.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">1,907  ·  gated delta-net + attention</text>
+<text x="184.0" y="345.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Qwen3.6-35B-A3B FP8</text>
+<path class="c1" d="M196.0,332.0 h47.5 a4,4 0 0 1 4,4 v10.0 a4,4 0 0 1 -4,4 h-47.5 z"/>
+<text x="257.5" y="345.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">4,536  ·  gated delta-net + attention</text>
+<text x="184.0" y="375.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Nemotron-3.5-Lightning</text>
+<path class="c1" d="M196.0,362.0 h63.3 a4,4 0 0 1 4,4 v10.0 a4,4 0 0 1 -4,4 h-63.3 z"/>
+<text x="273.3" y="375.5" class="t2" font-size="11.5" font-weight="400" text-anchor="start">5,923  ·  Mamba + attention</text>
+<text x="196.0" y="402.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">0</text>
+<text x="252.8" y="402.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">5,000</text>
+<text x="309.6" y="402.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">10,000</text>
+<text x="366.4" y="402.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">15,000</text>
+<text x="423.2" y="402.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">20,000</text>
+<text x="480.0" y="402.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">25,000</text>
+<text x="338.0" y="420.0" class="t2" font-size="12" font-weight="400" text-anchor="middle">tokens per GiB of KV cache</text>
+<text x="24.0" y="436.0" class="t3" font-size="11.5" font-weight="400" text-anchor="start">On the same H100, Gemma 4 31B had 8.6 GiB of KV cache for 9,986 tokens; GLM-4.7-Flash 8.5 GiB for 169,216.</text>
+</svg>

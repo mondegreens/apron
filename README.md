@@ -40,7 +40,7 @@ Task evaluation runs through [Inspect AI](https://github.com/UKGovernmentBEIS/in
 
 ## Where a contribution lands now
 
-- **A challenge to a decision.** Every ADR records its context and the reasoning behind the decision. Open a challenge in [Discussions](../../discussions); amendments pass by lazy consensus.
+- **A challenge to a decision.** Every ADR records its context and the reasoning behind the decision. Open a challenge in [Discussions](https://github.com/mondegreens/apron/discussions); amendments pass by lazy consensus.
 - **A check of the dispatch proof** against the vLLM source at the commit it pins. It is a claim about code and can be wrong.
 - **A deployment failure** for the knowledge base: the traceback, the exact artifact, the engine tag and the GPU. It enters the rule table as a hypothesis until a proving record exists.
 - **Later, an adapter.** When the conformance suites ship, the reference adapter is the copy target and the suite is the acceptance test, run in your repository first.
@@ -49,4 +49,4 @@ AI-assisted work is welcome; say which tool, explain the change yourself, and an
 
 ## Contact
 
-Maintained by Vlad Ryzhkov. Design challenges and questions go to [Discussions](../../discussions), not Issues.
+Maintained by Vlad Ryzhkov. Design challenges and questions go to [Discussions](https://github.com/mondegreens/apron/discussions), not Issues.

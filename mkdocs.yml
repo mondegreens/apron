@@ -1,14 +1,16 @@
 site_name: Apron
-site_url: https://apron.dev
+site_url: https://mondegreens.github.io/apron/
 site_description: Decision and evidence system for LLM inference deployment
 repo_url: https://github.com/mondegreens/apron
 repo_name: mondegreens/apron
 
 theme:
   name: material
+  custom_dir: overrides
 
 plugins:
   - search
+  - blog
   - mkdocstrings:
       handlers:
         python:
@@ -29,6 +31,8 @@ nav:
   - Failure Knowledge Base: failure-knowledge-base.md
   - Distribution: distribution.md
   - Architecture Dispatch Proof: architecture-dispatch-proof.md
+  - Findings:
+      - blog/index.md
   - Architecture Decision Records:
       - ADR-001 Execution Environment: adr/ADR-001-execution-environment.md
       - ADR-002 External Evidence: adr/ADR-002-external-evidence-and-interop.md
