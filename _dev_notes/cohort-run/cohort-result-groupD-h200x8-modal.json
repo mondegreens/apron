@@ -1,0 +1,81 @@
+{
+  "executed": {
+    "MiniMaxAI/MiniMax-M3@NVIDIA H200x8": {
+      "solution_fp": "12202d593393168c8ed3abd4bad36d097d157a3bf0a068d5d71285bb7ee5b0e2ada5",
+      "healthy": false,
+      "boot_report_digest": null,
+      "failed_boot_digests": [
+        "12200498294136f25f4b600bf5cbcbad450e87d48585d19472cabce90b6f8da04957",
+        "122056e8ee68e3d6473f2b3b9e1578b48ccd3438ace388da849e3ac4903fff40efe1"
+      ],
+      "attempt_digests": [],
+      "serving_digest": null,
+      "log_tail": "",
+      "serving_log": "",
+      "harness_failures": [
+        "harness:download",
+        "harness:download"
+      ],
+      "cost": 73.732868,
+      "provider_reported_cost": null,
+      "token_check": null
+    }
+  },
+  "prediction_errors": {},
+  "skipped": {
+    "zai-org/GLM-5.3@NVIDIA H200x8": "already measured"
+  },
+  "stopped": null,
+  "budget": {
+    "authorized": 400.0,
+    "spent": 244.596597,
+    "held": 0,
+    "remaining": 155.403403,
+    "open_holds": [],
+    "flags": [
+      "l0a3-run1:replayed:estimate",
+      "stage:Qwen/Qwen3-32B:replayed:estimate",
+      "meta-models/Muse-Glimmer-30B@NVIDIA H100 80GB HBM3x1:interrupted_in_provision:tvuknutqxlhbxz:23s_at_3.49_per_h",
+      "Qwen/Qwen3.8-27B@NVIDIA H100 80GB HBM3x1:interrupted_by_owner_stop:uv3q4ny9qmnsiz:377s_at_3.49_per_h",
+      "stage:zai-org/GLM-5.3,deepseek-ai/DeepSeek-V4-Pro-0813,MiniMaxAI/MiniMax-M3:stopped_to_fix_download_hang:ia4lxog3zt7yvq:~450s_at_0.24_per_h",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:replayed:provider_reported",
+      "stage:Qwen/Qwen3.8-Flash-Next,deepseek-ai/DeepSeek-V4-Flash-0731,zai-org/GLM-5.3:settled_by_owner",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x2:interrupted_start: rate x rental 14:55:32-15:15:54, reconcile to the bill",
+      "deepseek-ai/DeepSeek-V4.1-Flash@NVIDIA B200x4:replayed:estimate",
+      "zai-org/GLM-5.3-Flash@NVIDIA B200x4:replayed:estimate",
+      "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H200x4:replayed:provider_reported",
+      "deepseek-ai/DeepSeek-V4-Flash-0731@NVIDIA H200x4:settled_by_owner"
+    ],
+    "overruns": []
+  },
+  "decision_report": {
+    "schema_version": 1,
+    "decision_request_digest": "1220dff2ca4d1def5112e4d2e3b4049770ad435cd103a89bd1859443d5d7c8fdff48",
+    "candidates": [
+      {
+        "solution_fingerprint": "12202d593393168c8ed3abd4bad36d097d157a3bf0a068d5d71285bb7ee5b0e2ada5",
+        "qualification_status": "identity_resolved",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"1220fa1a79a11706\"}, \"stopped_at\": \"identity_resolved\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      },
+      {
+        "solution_fingerprint": "1220d76a47982424e695cbdc927653bd35c47fd3ca3291ae1c7cabf489e8ac16a336",
+        "qualification_status": "serving_verified",
+        "qualification_graph_state": "{\"capability_eligible\": {\"passed\": true}, \"identity_resolved\": {\"passed\": true, \"artifact_identity\": \"12203754893e9419\"}, \"task_evaluated\": {\"passed\": true, \"evidence\": [\"122030b6a09ab12621b7b048163917b77cfda84ba7be68c7a53b1d373713184b5f4a\", \"122046eed2fbbb26e036a285bd851fea4961dedcb9fe6d52e73be3038e3784fac972\", \"122048e239b9e5f0946a473d03fed36813a3519b0b3ba6c292da1798f88a57c137e7\", \"1220ca5f1837491f457ba3b2ca4c8da6ab0c17867802246eed4cee8e48d791f3e3a8\", \"1220fec5b935262af36322b061618da01967f1b5a960991886c7064455b84a0132c9\"], \"detail\": [\"accepted 4/4\", \"skipped image-1\"]}, \"serving_verified\": {\"passed\": true, \"evidence\": [\"122087a2d78f66c838160dce0a8ef8a6ac05b9d5d7338accf0add9dbd4c12b3160e1\"], \"detail\": [\"pass\", \"p99_ttft_ms 1534.6 within SLO 2000.0\", \"p99_tpot_ms 19.5 within SLO 100.0\"]}, \"stopped_at\": \"serving_verified\"}",
+        "rejection_reason": null,
+        "evidence_state": null,
+        "evaluation_coverage": null,
+        "economics": null,
+        "trade_off": null
+      }
+    ],
+    "outcome_economics": null,
+    "uncertainty": null,
+    "disclosed_comparable_set": [],
+    "exclusions": []
+  }
+}

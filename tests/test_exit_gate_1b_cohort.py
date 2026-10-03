@@ -643,16 +643,28 @@ def check_selection(run: GateRun) -> list[str]:
     if record is None:
         return ["no cohort ranking on record (cohort-ranking.json)"]
     problems: list[str] = []
-    auth = record.get("authorization") or {}
-    providers = set(auth.get("permitted_providers") or ())
-    cloud = (auth.get("hard_target_constraints") or {}).get("cloud_type")
+
+    def bounds(ranking: dict[str, Any]) -> tuple[set[str], str | None]:
+        auth = ranking.get("authorization") or {}
+        cloud = (auth.get("hard_target_constraints") or {}).get("cloud_type")
+        return set(auth.get("permitted_providers") or ()), cloud
+
+    providers, cloud = bounds(record)
     if not providers or not cloud:
         problems.append("ranking carries no authorization (providers, cloud type)")
+    # An execution answers to the authorization of the rankings that chose it
+    # (group D ran on Modal under its own envelope, approved by the owner on
+    # 2026-10-01); one no ranking chose answers to the first ranking's.
+    chose: dict[str, list[tuple[set[str], str | None]]] = {}
+    for ranking in (record, *run.later_rankings):
+        for r in ranking["ranked"]:
+            chose.setdefault(r["key"], []).append(bounds(ranking))
     for e in run.records.solutions.values():
         req = e.requested_execution
-        if providers and req.provider not in providers:
+        envelopes = chose.get(e.label) or [(providers, cloud)]
+        if not any(p and req.provider in p for p, _ in envelopes):
             problems.append(f"{e.label}: provider {req.provider} outside authorization")
-        if cloud and req.cloud_type != cloud:
+        if not any(c and req.cloud_type == c for _, c in envelopes):
             problems.append(f"{e.label}: cloud {req.cloud_type} outside authorization")
     chosen: set[str] = set()
     for n, ranking in enumerate((record, *run.later_rankings)):
