@@ -2,6 +2,13 @@ version: 2
 updates:
   - package-ecosystem: uv
     directory: /
+    # The Apron Runner image is pinned (every record names its digest) and
+    # changes only with a deliberate runner release; zensical is pinned so
+    # the blog builds.
+    exclude-paths:
+      - docker/**
+    ignore:
+      - dependency-name: zensical
     schedule:
       interval: weekly
     groups:
