@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 652" width="760" height="652" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" role="img">
+<title>Time to first token: typical request and slowest request</title>
+
+<style>
+  .s { fill: #fcfcfb } .t1 { fill: #0b0b0b } .t2 { fill: #52514e } .t3 { fill: #8a8984 }
+  .grid { stroke: #e6e5e1 } .axis { stroke: #c9c8c2 } .band { fill: #f0efec }
+  .c1 { fill: #2a78d6 } .c2 { fill: #eb6834 } .c3 { fill: #1baf7a } .free { fill: #e6e5e1 }
+  .l1 { stroke: #2a78d6 } .l2 { stroke: #eb6834 } .ring { stroke: #fcfcfb }
+  @media (prefers-color-scheme: dark) {
+    .s { fill: #1a1a19 } .t1 { fill: #ffffff } .t2 { fill: #c3c2b7 } .t3 { fill: #8f8e86 }
+    .grid { stroke: #2e2e2c } .axis { stroke: #4a4a46 } .band { fill: #262624 }
+    .c1 { fill: #3987e5 } .c2 { fill: #d95926 } .c3 { fill: #199e70 } .free { fill: #383835 }
+    .l1 { stroke: #3987e5 } .l2 { stroke: #d95926 } .ring { stroke: #1a1a19 }
+  }
+</style>
+<rect width="760" height="652" rx="8" class="s"/>
+<text x="24.0" y="34.0" class="t1" font-size="19" font-weight="650" text-anchor="start">Time to first token: typical request and slowest request</text>
+<text x="24.0" y="56.0" class="t2" font-size="13" font-weight="400" text-anchor="start">50 requests, 512 tokens in, 128 out, 4 at a time. Not a ranking: the hardware differs by group.</text>
+<line x1="520.0" x2="520.0" y1="116" y2="586" class="grid" stroke-width="1"/>
+<line x1="446.4" x2="446.4" y1="116" y2="586" class="grid" stroke-width="1"/>
+<line x1="379.2" x2="379.2" y1="116" y2="586" class="grid" stroke-width="1"/>
+<line x1="305.6" x2="305.6" y1="116" y2="586" class="grid" stroke-width="1"/>
+<line x1="238.4" x2="238.4" y1="116" y2="586" class="grid" stroke-width="1"/>
+<line x1="196.0" x2="196.0" y1="116" y2="586" class="grid" stroke-width="1"/>
+<circle cx="30.0" cy="82.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="42.0" y="86.5" class="t2" font-size="12" font-weight="400" text-anchor="start">median (p50)</text>
+<circle cx="150.0" cy="82.0" r="5" class="c2 ring" stroke-width="2"/>
+<text x="162.0" y="86.5" class="t2" font-size="12" font-weight="400" text-anchor="start">slowest 1% (p99)</text>
+<text x="534.0" y="86.5" class="t2" font-size="12" font-weight="600" text-anchor="start">decode, tokens/s per user</text>
+<text x="24.0" y="130.0" class="t2" font-size="12" font-weight="600" text-anchor="start">1 × RTX 4090 (24 GB)</text>
+<text x="184.0" y="158.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">gpt-oss-20b</text>
+<line x1="248.4" x2="249.4" y1="154.0" y2="154.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="249.4" cy="154.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="248.4" cy="154.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="158.5" class="t1" font-size="12" font-weight="400" text-anchor="start">131</text>
+<text x="24.0" y="190.0" class="t2" font-size="12" font-weight="600" text-anchor="start">1 × H100 80 GB</text>
+<text x="184.0" y="218.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">gpt-oss-120b</text>
+<line x1="234.3" x2="429.9" y1="214.0" y2="214.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="429.9" cy="214.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="234.3" cy="214.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="218.5" class="t1" font-size="12" font-weight="400" text-anchor="start">152</text>
+<text x="184.0" y="242.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Gemma 4 31B</text>
+<line x1="280.7" x2="282.0" y1="238.0" y2="238.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="282.0" cy="238.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="280.7" cy="238.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="242.5" class="t1" font-size="12" font-weight="400" text-anchor="start">40</text>
+<text x="184.0" y="266.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Muse-Glimmer-30B</text>
+<line x1="271.0" x2="272.6" y1="262.0" y2="262.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="272.6" cy="262.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="271.0" cy="262.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="266.5" class="t1" font-size="12" font-weight="400" text-anchor="start">46</text>
+<text x="184.0" y="290.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">GLM-4.7-Flash</text>
+<line x1="219.1" x2="396.4" y1="286.0" y2="286.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="396.4" cy="286.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="219.1" cy="286.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="290.5" class="t1" font-size="12" font-weight="400" text-anchor="start">120</text>
+<text x="184.0" y="314.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Qwen3.8-27B</text>
+<line x1="275.6" x2="278.0" y1="310.0" y2="310.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="278.0" cy="310.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="275.6" cy="310.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="314.5" class="t1" font-size="12" font-weight="400" text-anchor="start">47</text>
+<text x="184.0" y="338.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Qwen3.6-35B-A3B FP8</text>
+<line x1="251.3" x2="259.4" y1="334.0" y2="334.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="259.4" cy="334.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="251.3" cy="334.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="338.5" class="t1" font-size="12" font-weight="400" text-anchor="start">192</text>
+<text x="184.0" y="362.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Nemotron-3.5-Lightning</text>
+<line x1="217.9" x2="349.5" y1="358.0" y2="358.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="349.5" cy="358.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="217.9" cy="358.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="362.5" class="t1" font-size="12" font-weight="400" text-anchor="start">162</text>
+<text x="24.0" y="394.0" class="t2" font-size="12" font-weight="600" text-anchor="start">4 × H200</text>
+<text x="184.0" y="422.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">GLM-5.3-Flash</text>
+<line x1="317.3" x2="319.5" y1="418.0" y2="418.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="319.5" cy="418.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="317.3" cy="418.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="422.5" class="t1" font-size="12" font-weight="400" text-anchor="start">9</text>
+<text x="184.0" y="446.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">Qwen3.8-Flash-Next</text>
+<line x1="292.0" x2="432.0" y1="442.0" y2="442.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="432.0" cy="442.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="292.0" cy="442.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="446.5" class="t1" font-size="12" font-weight="400" text-anchor="start">82</text>
+<text x="184.0" y="470.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">DeepSeek-V4-Flash</text>
+<line x1="330.5" x2="482.6" y1="466.0" y2="466.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="482.6" cy="466.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="330.5" cy="466.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="470.5" class="t1" font-size="12" font-weight="400" text-anchor="start">80</text>
+<text x="184.0" y="494.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">DeepSeek-V4.1-Flash</text>
+<line x1="353.6" x2="361.4" y1="490.0" y2="490.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="361.4" cy="490.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="353.6" cy="490.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="494.5" class="t1" font-size="12" font-weight="400" text-anchor="start">64</text>
+<text x="24.0" y="526.0" class="t2" font-size="12" font-weight="600" text-anchor="start">8 × H200</text>
+<text x="184.0" y="554.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">GLM-5.3</text>
+<line x1="325.8" x2="405.4" y1="550.0" y2="550.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="405.4" cy="550.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="325.8" cy="550.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="554.5" class="t1" font-size="12" font-weight="400" text-anchor="start">83</text>
+<text x="184.0" y="578.5" class="t1" font-size="12.5" font-weight="400" text-anchor="end">DeepSeek-V4-Pro</text>
+<line x1="311.8" x2="512.6" y1="574.0" y2="574.0" class="l1" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+<circle cx="512.6" cy="574.0" r="5" class="c2 ring" stroke-width="2"/>
+<circle cx="311.8" cy="574.0" r="5" class="c1 ring" stroke-width="2"/>
+<text x="534.0" y="578.5" class="t1" font-size="12" font-weight="400" text-anchor="start">82</text>
+<text x="196.0" y="602.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">50 ms</text>
+<text x="238.4" y="602.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">0.1 s</text>
+<text x="305.6" y="602.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">0.3 s</text>
+<text x="379.2" y="602.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">1 s</text>
+<text x="446.4" y="602.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">3 s</text>
+<text x="520.0" y="602.0" class="t2" font-size="11.5" font-weight="400" text-anchor="middle">10 s</text>
+<line x1="421.6" x2="421.6" y1="116" y2="586" class="axis" stroke-width="1"/>
+<text x="425.6" y="126.0" class="t3" font-size="11" font-weight="400" text-anchor="start">2 s target</text>
+<text x="358.0" y="620.0" class="t2" font-size="12" font-weight="400" text-anchor="middle">time to first token (log scale)</text>
+<text x="24.0" y="636.0" class="t3" font-size="11.5" font-weight="400" text-anchor="start">Decode speed per user = 1000 / median time per output token. With 50 requests, p99 is the slowest one or two.</text>
+</svg>
