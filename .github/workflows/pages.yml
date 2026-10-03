@@ -7,7 +7,11 @@ on:
       - "docs/**"
       - "mkdocs.yml"
       - "src/apron/**"
+      - "overrides/**"
+      - "pyproject.toml"
+      - "uv.lock"
       - ".github/workflows/pages.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
