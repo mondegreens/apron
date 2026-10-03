@@ -183,6 +183,21 @@ def test_a_record_without_a_solution_is_listed_not_dropped(synthetic: CohortRun)
     assert f"`{orphan_digest[:16]}`" in text and "Not rendered" in text
 
 
+def test_readme_shows_no_cost_and_omits_listed_models(synthetic: CohortRun) -> None:
+    table = build_findings(synthetic, authorized=100.0)["records_table"]
+    model = table["rows"][0]["model"]
+    text = render_readme({"records_table": table}, reports_href="r", fixes_href="p.md")
+    assert model in text
+    assert "Cost" not in text and "$" not in text
+    omitted = render_readme(
+        {"records_table": table},
+        reports_href="r",
+        fixes_href="p.md",
+        omit_models=frozenset({model}),
+    )
+    assert model not in omitted
+
+
 def test_planned_models_are_labelled_predicted(synthetic: CohortRun) -> None:
     plan = {
         "models": [
