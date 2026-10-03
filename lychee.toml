@@ -1,0 +1,16 @@
+# Link checking for the `docs` prek hook (lychee reads this file from the repo root).
+
+exclude = [
+  # Academic publishers answer automated checkers with 400/403 while serving
+  # the same URL to browsers; the links in docs/failure-knowledge-base.md are
+  # valid citations.
+  '^https://www\.researchgate\.net/',
+  '^https://www\.sciencedirect\.com/',
+]
+
+exclude_path = [
+  # Pinned third-party documents, byte-identical to upstream (sha256 in each
+  # provenance.json, checked by tests/unit/test_strict_schemas.py). Their
+  # relative links point into the upstream repositories and cannot be edited here.
+  "tests/fixtures/external-formats",
+]
