@@ -8,7 +8,7 @@ compares it with the ledger pod by pod, and:
 - appends a signed ``correct`` for every pod whose ledger amount differs from
   the bill by a hundredth of a cent or more (label ``reconcile:correct:<pod>``;
   a later run corrects only what is still off);
-- writes ``_dev_notes/cohort-run/billing-reconciliation.json``: every pod's
+- writes ``records/phase-1b-cohort/billing-reconciliation.json``: every pod's
   ledger and billed amounts, the mismatches, and the pods not billed yet.
 
 Read-only against RunPod.  Re-run after billing posts (it lags by minutes).

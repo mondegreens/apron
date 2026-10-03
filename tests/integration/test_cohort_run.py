@@ -10,7 +10,7 @@ These SPEND MONEY on RunPod Secure.  Nothing runs unless all of these hold:
 
     APRON_COHORT_STEP=l0a3 uv run pytest tests/integration/test_cohort_run.py -m cohort -s
 
-Every record, the ledger and the events go to ``_dev_notes/cohort-run/``.
+Every record, the ledger and the events go to ``records/phase-1b-cohort/``.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ import pytest
 
 STEP = os.environ.get("APRON_COHORT_STEP", "")
 PROVIDER = os.environ.get("APRON_PROVIDER", "runpod")
-RUN_DIR = Path(__file__).parents[2] / "_dev_notes" / "cohort-run"
+RUN_DIR = Path(__file__).parents[2] / "records" / "phase-1b-cohort"
 
 _has_credentials = bool(os.environ.get("RUNPOD_API_KEY") or os.environ.get("MODAL_TOKEN_ID"))
 

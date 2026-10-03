@@ -44,4 +44,6 @@ site/
 _thoughts/
 
 # Raw RunPod pod logs (image pull lines); the start summary is in events.jsonl
-_dev_notes/cohort-run/pod-logs/
+records/phase-1b-cohort/pod-logs/
+# Working notes live in _thoughts/; the run's evidence is in records/.
+_dev_notes/

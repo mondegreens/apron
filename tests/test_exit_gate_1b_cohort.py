@@ -16,7 +16,7 @@ provider and engine in ``tests/unit/_cohort_fakes.py`` — and each check is
 shown to fail on a record doctored to break it.
 
 Real records (opt-in, ``@pytest.mark.cohort``): ``APRON_COHORT_GATE=1``
-runs the same checks over ``_dev_notes/cohort-run`` and ``rules/vllm-v0.29``.
+runs the same checks over ``records/phase-1b-cohort`` and ``rules/vllm-v0.29``.
 
 Item 6 (managed vs self-hosted under a recorded cost boundary, §9.3) is
 pending Part 3: the boundary fields do not exist in the schema yet.  Its test
@@ -1076,7 +1076,7 @@ def test_item_6_managed_vs_self_hosted_boundary() -> None:
 # Real records (opt-in)
 # ---------------------------------------------------------------------------
 
-REAL_RUN = REPO / "_dev_notes" / "cohort-run"
+REAL_RUN = REPO / "records" / "phase-1b-cohort"
 
 
 @pytest.mark.cohort

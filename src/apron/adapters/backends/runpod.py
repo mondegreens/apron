@@ -49,7 +49,7 @@ TEARDOWN_BACKOFF_SECONDS = (2, 4, 8)
 # (``PodStartAbandoned``).  Each abandoned host costs at most
 # runpod_logs.FIRST_LINE_WITHIN seconds of rent.
 START_ATTEMPTS = 3
-DEFAULT_LEAK_LOG = Path("_dev_notes/cohort-run/leaked_pods.json")
+DEFAULT_LEAK_LOG = Path("records/phase-1b-cohort/leaked_pods.json")
 
 # ``total_memory_bytes`` is the memory CUDA reports for one GPU
 # (``torch.cuda.get_device_properties(0).total_memory``), not the nominal size:
@@ -58,7 +58,7 @@ DEFAULT_LEAK_LOG = Path("_dev_notes/cohort-run/leaked_pods.json")
 # detected the GPU, the value is the byte count it detected: every stored
 # verification report's ``detected_hardware_fingerprint`` hashes a HardwareSpec
 # with that count, and the count is the one whose hash matches (search within
-# +-0.0051 GiB of the startup log's rounded total; ``_dev_notes/cohort-run/
+# +-0.0051 GiB of the startup log's rounded total; ``docs/traces/
 # kv-budget-residuals.md``).  The nominal sizes (80, 48, 24 GiB) over-stated the
 # requested memory by 0.44-1.77 GiB per GPU.  SKUs no pod has detected keep a
 # nominal or reported figure and say so.

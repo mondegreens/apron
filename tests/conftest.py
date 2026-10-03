@@ -24,7 +24,7 @@ def _no_test_writes_real_run_artifacts(
 ) -> None:
     """Point the real leaked-pods list at a temp file for every test.
 
-    ``_dev_notes/cohort-run/leaked_pods.json`` is a safety artifact; a test
+    ``records/phase-1b-cohort/leaked_pods.json`` is a safety artifact; a test
     that exercises a failed teardown must never append fake pods to it.
     """
     from apron.adapters.backends import runpod

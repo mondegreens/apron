@@ -4,7 +4,7 @@ A tag can be moved; a digest cannot.  Every pod, rendered compose file and
 execution fingerprint uses ``RUNNER_IMAGE`` (repository@sha256:…).  The tag is
 kept only as a human-readable label.  Resolved with the registry manifest
 API and ``docker manifest inspect`` (L0-A2); see
-``_dev_notes/cohort-run/image-digest.md``.
+``docs/traces/image-digest.md``.
 """
 
 from typing import NamedTuple

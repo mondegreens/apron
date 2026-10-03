@@ -2,7 +2,7 @@
 layers are not all alike: hybrid attention + recurrent state (Qwen3.5 gated
 delta net, NemotronH Mamba2) and mixed attention (Gemma 4 sliding + global).
 
-Traced from the pinned source (``_dev_notes/cohort-run/hybrid-memory-trace.md``
+Traced from the pinned source (``docs/traces/hybrid-memory-trace.md``
 and ``gemma4-memory-trace.md``; paths under ``.sources/vllm/vllm/``):
 
 - one page size for every layer: a state layer's page sets the attention
@@ -20,7 +20,7 @@ and ``gemma4-memory-trace.md``; paths under ``.sources/vllm/vllm/``):
   (``kv_cache_interface.py:883-895``).
 
 vLLM v0.30.0 pages six more layouts its own way (``kv_layout``; traced in
-``_dev_notes/cohort-run/deepseek-v4-kv-trace.md``,
+``docs/traces/deepseek-v4-kv-trace.md``,
 ``qwen4exp-glm5next-kv-trace.md`` and ``glm53-minimax-m3-kv-trace.md``, paths
 under ``.sources/vllm-v0.30.0/vllm/``): DeepSeek V4 / V4.1 and Qwen4Exp
 through the block-outermost *packed* grouping (``v1/core/kv_cache_utils.py:
@@ -1023,7 +1023,7 @@ def bytes_per_sequence(
 #
 # The safety buffer: available KV memory is predicted, not measured.  Over
 # every healthy cohort memory record (28 boots, vLLM v0.29.0 and v0.30.0, RTX
-# 4090 to H100; ``_dev_notes/cohort-run/kv-budget-residuals.md``,
+# 4090 to H100; ``docs/traces/kv-budget-residuals.md``,
 # ``scripts/kv_budget_residuals.py``) the prediction's largest excess over
 # vLLM's figure, once a held compile segment is set apart, is
 # KV_BUDGET_SAFETY_BUFFER_BYTES: GLM-4.7-Flash on an H100, whose MLA CUDA-graph

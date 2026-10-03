@@ -30,7 +30,7 @@ from apron.application.orchestration.scheduler import run_cost
 from apron.interfaces.cohort_root import load_cohort_run, load_seed
 
 REPO = Path(__file__).resolve().parents[2]
-RUN = REPO / "_dev_notes" / "cohort-run"
+RUN = REPO / "records" / "phase-1b-cohort"
 
 
 def _runs() -> list[str]:

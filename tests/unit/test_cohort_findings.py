@@ -3,7 +3,7 @@
 Over a synthetic run (``_synthetic_run``): every row's numbers are the stored
 records' values and every cited digest resolves in the record store.  Over
 the committed files: the post's tables and the findings JSON equal what
-``scripts/cohort_findings.py`` generates from ``_dev_notes/cohort-run`` —
+``scripts/cohort_findings.py`` generates from ``records/phase-1b-cohort`` —
 the test that fails if the post's tables differ from the records.
 """
 

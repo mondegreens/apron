@@ -55,7 +55,7 @@ KV_UNDER_PREDICTION = int(0.257 * GIB) + LOG_ROUNDING
 
 # What vLLM v0.30.0 logged on an H100 (TP 1, bf16, utilization 0.9, max_model_len
 # 640, the engine's default batch): available KV memory and the profiled torch
-# peak, from the healthy memory reports in _dev_notes/cohort-run/records.
+# peak, from the healthy memory reports in records/phase-1b-cohort/records.
 MEASURED = {
     # report 12208654b66bdeae...
     "Qwen/Qwen3.6-35B-A3B-FP8": (34_821_447_352, 2_061_584_302),

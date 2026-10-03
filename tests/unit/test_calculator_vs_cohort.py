@@ -1,7 +1,7 @@
 """The calculator's weight prediction against every measured cohort record.
 
 Measured: vLLM's per-rank "model weights" figure in the stored boot reports
-(``_dev_notes/cohort-run/records``).  Predicted: the checkpoint's stored bytes
+(``records/phase-1b-cohort/records``).  Predicted: the checkpoint's stored bytes
 (``tests/fixtures/cohort/weight-bytes.json``, recorded from the safetensors
 headers at the solution's revision by ``scripts/record_weight_bytes.py``)
 through the same resolution and per-GPU sharding the planner uses.
@@ -21,7 +21,7 @@ from apron.interfaces.cohort_root import load_cohort_run
 
 REPO = Path(__file__).resolve().parents[2]
 FIXTURE = REPO / "tests" / "fixtures" / "cohort" / "weight-bytes.json"
-RUN = REPO / "_dev_notes" / "cohort-run"
+RUN = REPO / "records" / "phase-1b-cohort"
 # The FP8 checkpoint lands 5.4% under (0.70 vs 0.74 GiB); every other point
 # within 1.5%.  Before the L5 fixes: +17% (tied lm_head), -22% (FP8), +100% (TP 2).
 # GLM-5.3-Flash on 2x B200: 150.28 GiB against 152.10 measured (-1.2%), the
@@ -214,7 +214,7 @@ def test_mamba_state_matches_the_pool_vllm_reports(
 # estimate (calculator.py, "The KV budget").  Each healthy memory record is
 # predicted as it booted (cohort_root.recorded_prediction; recorded configs in
 # tests/fixtures/cohort/configs.json).  Table and terms:
-# _dev_notes/cohort-run/kv-budget-residuals.md.
+# docs/traces/kv-budget-residuals.md.
 
 CONFIGS = REPO / "tests" / "fixtures" / "cohort" / "configs.json"
 _GIB = 1 << 30

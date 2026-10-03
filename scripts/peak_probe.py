@@ -3,10 +3,10 @@
 vLLM measures ``torch_peak_increase`` around ``profile_run``; two measured
 H100 values are not explained by source reading (GLM-4.7-Flash, gemma-4-31B-it).
 This driver boots each model with exactly the serve command the cohort used
-(rebuilt from ``_dev_notes/cohort-run/solutions.jsonl`` through the engine
+(rebuilt from ``records/phase-1b-cohort/solutions.jsonl`` through the engine
 adapter), with ``scripts/peak_probe/`` on ``PYTHONPATH`` so the probe records
 which tensors are alive at the peak, and saves the probe's JSON to
-``_dev_notes/cohort-run/peak-probe/``.
+``records/phase-1b-cohort/peak-probe/``.
 
 Without ``--run`` it only prints the plan (commands, estimate): nothing is
 created and nothing is spent.  With ``--run`` it spends money:

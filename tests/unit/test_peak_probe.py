@@ -22,7 +22,7 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[2]
 PROBE_DIR = REPO / "scripts" / "peak_probe"
-RUN_DIR = REPO / "_dev_notes" / "cohort-run"
+RUN_DIR = REPO / "records" / "phase-1b-cohort"
 RUNNER = "vllm.v1.worker.gpu.model_runner"
 
 
@@ -594,7 +594,7 @@ def test_each_model_keeps_the_image_it_was_recorded_on(
 
     real = next(
         json.loads(line)
-        for line in (REPO / "_dev_notes" / "cohort-run" / "solutions.jsonl")
+        for line in (REPO / "records" / "phase-1b-cohort" / "solutions.jsonl")
         .read_text()
         .splitlines()
         if line.strip()

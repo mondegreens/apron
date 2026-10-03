@@ -508,7 +508,7 @@ def _forward_live_bytes(
 
     Each term is a named tensor with a config shape; *how many* of a shape
     are live at once is a property of the compiled graph, read from the GPU
-    memory-history probe (``_dev_notes/cohort-run/peak-probe``) and marked
+    memory-history probe (``records/phase-1b-cohort/peak-probe``) and marked
     "observed".  0 when the config lacks the fields a branch needs.
     """
     hidden = int(metadata["hidden_size"])
@@ -775,7 +775,7 @@ def _apply_sliding_window(
 # ("non-torch" below), and the CUDA-graph estimate is subtracted too
 # (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS defaults to 1, envs.py:2105 / 2109).
 # Every cohort record satisfies this identity to the log's 0.01 GiB; the terms
-# per record are in ``_dev_notes/cohort-run/kv-budget-residuals.md``.
+# per record are in ``docs/traces/kv-budget-residuals.md``.
 
 # Measured per GPU class over every healthy cohort record (medians over the 25
 # distinct boots; ranges in kv-budget-residuals.md).  "sm90": the H100 boots;

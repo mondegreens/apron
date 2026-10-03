@@ -1,7 +1,7 @@
 """Per-layer caches counted as vLLM v0.29.0 pages them (domain/mechanisms/layered.py).
 
 Expected bytes are the ones traced from the pinned source
-(_dev_notes/cohort-run/hybrid-memory-trace.md, gemma4-memory-trace.md) with the
+(docs/traces/hybrid-memory-trace.md, gemma4-memory-trace.md) with the
 configs of Qwen/Qwen3.8-27B, Qwen/Qwen3.6-35B-A3B-FP8,
 nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4 and google/gemma-4-31B-it (read
 2026-09-27; only the fields the formulas use are copied here).
@@ -176,7 +176,7 @@ def test_attention_the_calculator_does_not_count_is_an_explicit_unknown() -> Non
 
 # ---------------------------------------------------------------------------
 # vLLM v0.30.0 layouts: DeepSeek V4 / V4.1, Qwen4Exp, GLM5Next.  Expected
-# numbers from _dev_notes/cohort-run/deepseek-v4-kv-trace.md and
+# numbers from docs/traces/deepseek-v4-kv-trace.md and
 # qwen4exp-glm5next-kv-trace.md, where vLLM's own grouping functions
 # (kv_cache_utils.py) were run on the specs the model code builds.  Configs
 # as recorded with the safetensors headers (scripts/record_tensor_headers.py).
@@ -416,7 +416,7 @@ def test_trtllm_padding_follows_the_backend_gates() -> None:
 # full-attention spec on one block size, one group of all of them
 # (UniformTypeKVCacheSpecs).  Expected numbers from vLLM's own get_kv_cache_groups
 # and accounting run on the specs the model code builds
-# (_dev_notes/cohort-run/glm53-minimax-m3-kv-trace.md).
+# (docs/traces/glm53-minimax-m3-kv-trace.md).
 # ---------------------------------------------------------------------------
 
 

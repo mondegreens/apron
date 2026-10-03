@@ -6,7 +6,7 @@ carries the measured terms.  For each healthy memory record this prints what the
 calculator predicts for the plan as it booted (``cohort_root.recorded_prediction``:
 recorded configs and weight bytes, no network) against the measurement, term by
 term, and the compile segment vLLM may hold on top (``compile_segment_bytes``).
-The table in ``_dev_notes/cohort-run/kv-budget-residuals.md`` is this output.
+The table in ``docs/traces/kv-budget-residuals.md`` is this output.
 
     uv run python scripts/kv_budget_residuals.py            # the table
     uv run python scripts/kv_budget_residuals.py --configs  # re-record the configs

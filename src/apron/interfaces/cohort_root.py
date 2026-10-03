@@ -96,7 +96,7 @@ if TYPE_CHECKING:
     from apron.domain.ports import Clock, IdGenerator
 
 REPO = Path(__file__).resolve().parents[3]
-RUN_DIR = REPO / "_dev_notes" / "cohort-run"
+RUN_DIR = REPO / "records" / "phase-1b-cohort"
 FIXTURES = REPO / "tests" / "fixtures" / "phase-1a-run"
 SEED = REPO / "cohort" / "phase-1b-seed.json"
 # Phase 1b's scoring rule: Phase 1a's whitespace-normalized exact match, plus a

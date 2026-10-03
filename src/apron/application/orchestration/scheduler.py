@@ -42,7 +42,7 @@ LOAD_GB_PER_MINUTE = 11.5
 # Task suite and serving measurement: 4.2 min for suite v3, the slowest.
 EVALUATION_MINUTES = 5.0
 # Every pod pulls the 9.1 GiB runner image first: 9 min (L0-A) and 13 min
-# (L0-A3) from pod creation to SSH, 2026-09-26 (_dev_notes/cohort-run/notebook.md);
+# (L0-A3) from pod creation to SSH, 2026-09-26 (the run notebook);
 # 3.8-6.5 min to the first container line since (events.jsonl "provisioned").
 # The slowest is used.
 IMAGE_PULL_MINUTES = 13.0

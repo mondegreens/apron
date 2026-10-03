@@ -4,7 +4,7 @@ For every model in ``cohort/modern-models.json`` on its proposed GPU and
 count: the production plan pipeline (config and safetensors headers from the
 Hub, the mechanism, the calculator, the load check), exactly as a cohort run
 plans it — no pod, no paid call.  Writes
-``_dev_notes/cohort-run/modern-predictions.json``: what Apron can say before
+``records/phase-1b-cohort/modern-predictions.json``: what Apron can say before
 paying, and where it says "unknown".
 
     uv run python scripts/modern_predictions.py

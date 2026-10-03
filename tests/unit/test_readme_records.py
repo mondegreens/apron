@@ -2,7 +2,7 @@
 
 Over the committed files: the section between ``<!-- records:start -->`` and
 ``<!-- records:end -->`` in README.md equals what ``scripts/cohort_findings.py``
-generates from ``_dev_notes/cohort-run``, and every record it links exists.
+generates from ``records/phase-1b-cohort``, and every record it links exists.
 Over a synthetic run: each row's numbers are its records' values, every
 boot lands in exactly one row or in the broken-on-purpose count, and a
 record without a solution is listed as not rendered, never dropped.

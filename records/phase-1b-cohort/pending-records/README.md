@@ -3,7 +3,7 @@
 Records the cohort measured that the calculator cannot yet explain. They are
 real measurements, kept verbatim; they sit here, outside `records/`, only
 because `tests/unit/test_calculator_vs_cohort.py` fails on them until the
-calculator is fixed. Move each back into `_dev_notes/cohort-run/records/<kind>/` in the commit that
+calculator is fixed. Move each back into `records/phase-1b-cohort/records/<kind>/` in the commit that
 makes the calculator match it. Never widen a tolerance to admit one.
 
 | Record | What | Why it waits |

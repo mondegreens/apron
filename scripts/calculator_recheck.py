@@ -5,7 +5,7 @@ the stored PlanningClaim predicted when the run planned it, what the current
 calculator predicts for the same checkpoint and GPU (stored bytes from
 ``tests/fixtures/cohort/weight-bytes.json``, recorded from the safetensors
 headers at the solution's revision), and what vLLM measured.  GPU-free, no
-network.  Writes ``_dev_notes/cohort-run/calculator-recheck.json``, which the
+network.  Writes ``records/phase-1b-cohort/calculator-recheck.json``, which the
 findings render.
 
     uv run python scripts/calculator_recheck.py

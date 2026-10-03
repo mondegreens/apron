@@ -2,7 +2,7 @@
 
 Planned from recorded config.json and safetensors headers
 (tests/fixtures/cohort/headers, scripts/record_tensor_headers.py), no network.
-Per GPU on an H200, group C at TP 4 from _dev_notes/cohort-run/deepseek-v4-kv-trace.md
+Per GPU on an H200, group C at TP 4 from docs/traces/deepseek-v4-kv-trace.md
 and qwen4exp-glm5next-kv-trace.md: the ``mtp.*`` layers the loaders drop are
 not weights, the n-gram tables vLLM keeps in pinned host memory are host RAM,
 DeepSeek's replicated projections sit whole on every rank, and V4.1's MXFP4
@@ -191,7 +191,7 @@ def test_replicated_weights_are_whole_on_every_rank() -> None:
     assert tp8["weight_memory_bytes"] / GIB == pytest.approx(19.24, abs=0.01)
 
 
-# Group D at TP 8 on an H200 (_dev_notes/cohort-run/glm53-minimax-m3-kv-trace.md):
+# Group D at TP 8 on an H200 (docs/traces/glm53-minimax-m3-kv-trace.md):
 # model -> (GPU weights per GPU, mtp bytes, replicated bytes, KV-head bytes)
 EXPECTED_D = {
     # (loaded - MTP layer 78 - replicated) / 8 + replicated = 88.20 GiB.

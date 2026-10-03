@@ -1,7 +1,7 @@
 """The startup-peak (activation) estimate, term by term.
 
 The expected byte counts are the allocations the GPU memory-history probe
-recorded at the profile run's peak (``_dev_notes/cohort-run/peak-probe``,
+recorded at the profile run's peak (``records/phase-1b-cohort/peak-probe``,
 vLLM v0.29.0, H100, 2026-09-28): each term below is one named tensor there.
 """
 

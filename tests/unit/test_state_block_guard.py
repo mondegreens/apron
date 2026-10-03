@@ -452,7 +452,7 @@ def test_v30_rule_names_the_verification_report_it_came_from() -> None:
     report = "1220be1b1f6ceab3adcfac8e4e200c754c4c2d3f22e5ef2e70ba7fc05e864522d7f6"
     assert report in rule["curation"]
     assert OBSERVED.removeprefix("ValueError: ") in rule["examples"]
-    path = REPO / "_dev_notes" / "cohort-run" / "records" / "verification-reports"
+    path = REPO / "records" / "phase-1b-cohort" / "records" / "verification-reports"
     if (path / f"{report}.json").exists():
         log = json.loads((path / f"{report}.json").read_text())["log_tail"]
         assert OBSERVED in log
