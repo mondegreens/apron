@@ -165,7 +165,7 @@ def test_a_failed_boot_keeps_its_error_but_stays_off_the_readme(synthetic: Cohor
     assert row["error"] == "ValueError: max_num_seqs (1024) exceeds available cache blocks"
     assert row["measured_weight_bytes"] is None and row["kv_cache_tokens"] is None
     assert row["vllm"] == engine_version(entry.requested_execution.image_digest, None)
-    text = render_readme({"records_table": table}, reports_href="records", fixes_href="post.md")
+    text = render_readme({"records_table": table}, reports_href="records")
     assert "acme/Failing-7B" not in text  # the front page shows booted rows only
     assert "failed" not in text
     assert digest  # the healthy boot it was copied from is still its own row
@@ -179,20 +179,19 @@ def test_a_record_without_a_solution_is_listed_not_dropped(synthetic: CohortRun)
     records = replace(rec, reports={**rec.reports, orphan_digest: orphan})
     table = build_findings(replace(synthetic, records=records), authorized=100.0)["records_table"]
     assert table["not_rendered"] == [orphan_digest]
-    text = render_readme({"records_table": table}, reports_href="r", fixes_href="p.md")
-    assert f"`{orphan_digest[:16]}`" in text and "Not rendered" in text
+    text = render_readme({"records_table": table}, reports_href="r")
+    assert orphan_digest[:16] not in text  # kept in the data, off the front page
 
 
 def test_readme_shows_no_cost_and_omits_listed_models(synthetic: CohortRun) -> None:
     table = build_findings(synthetic, authorized=100.0)["records_table"]
     model = table["rows"][0]["model"]
-    text = render_readme({"records_table": table}, reports_href="r", fixes_href="p.md")
+    text = render_readme({"records_table": table}, reports_href="r")
     assert model in text
     assert "Cost" not in text and "$" not in text
     omitted = render_readme(
         {"records_table": table},
         reports_href="r",
-        fixes_href="p.md",
         omit_models=frozenset({model}),
     )
     assert model not in omitted
@@ -219,7 +218,7 @@ def test_planned_models_are_labelled_predicted(synthetic: CohortRun) -> None:
     }
     table = build_findings(synthetic, authorized=100.0, modern=plan)["records_table"]
     assert [p["model"] for p in table["planned"]] == ["zai-org/GLM-5.3"]
-    text = render_readme({"records_table": table}, reports_href="r", fixes_href="p.md")
+    text = render_readme({"records_table": table}, reports_href="r")
     assert "Planned, not run yet (predicted before any GPU; nothing measured)" in text
     assert "zai-org/GLM-5.3 on H200 x8, vLLM v0.30.0: predicted 88.2 GiB weights" in text
 

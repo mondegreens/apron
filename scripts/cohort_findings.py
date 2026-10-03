@@ -40,7 +40,6 @@ from apron.interfaces.cohort_root import AUTHORIZED_USD, REPO, RULES_DIR, RUN_DI
 DATA = REPO / "docs" / "blog" / "posts" / "_data" / "cohort-findings.json"
 MODERN = REPO / "cohort" / "modern-models.json"
 README = REPO / "README.md"
-FIXES_POST = REPO / "docs" / "blog" / "posts" / "phase-1b-cohort-findings.md"
 # Models the README table leaves out; their records stay stored.  MiniMax-M3
 # never booted: the harness failed before vLLM started.
 README_OMITTED = frozenset({"MiniMaxAI/MiniMax-M3"})
@@ -73,7 +72,6 @@ def generate(run_dir: Path, rules_dir: Path) -> tuple[str, dict[str, str], str]:
     readme = render_readme(
         findings,
         reports_href=_href(run_dir / "records" / "verification-reports"),
-        fixes_href=_href(FIXES_POST),
         omit_models=README_OMITTED,
     )
     return data, render_tables(findings), readme
