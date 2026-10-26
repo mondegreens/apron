@@ -4,6 +4,19 @@
 
 <p align="center">Which LLM to run for a given task, on which API or GPU, with what configuration, backed by evidence.</p>
 
+## Start here
+
+Apron connects LLM inference planning with evidence about model compatibility, GPU memory, serving configuration, and workload outcomes.
+
+- **Inspect a result:** [measured deployment records](#measured-records), with predictions beside observations.
+- **Read the implementation:** [Python source](src/apron/) and [tests](tests/).
+- **Understand the design:** [product definition](docs/product-definition.md), [architecture](docs/target-architecture.md), and [decision records](docs/adr/).
+- **Check the scope:** a memory prediction, a healthy boot, and a serving result establish different things. Each record keeps its own scope and execution context.
+
+**Project stage:** early implementation. The package names on PyPI are placeholders; use the repository for the current code and evidence. The status note below describes the completed phases and current work.
+
+## Overview
+
 Apron is a decision and evidence system for LLM inference. You give it a task the model has to perform, a quality floor, a latency or throughput target and a data policy. It returns the solution that reproduces that outcome: a managed model API, an open-weight model self-hosted on an inference engine such as vLLM, or a compound system that routes between several of either. The answer names the exact checkpoint and quantization, the engine version, the GPU or provider and the serving configuration. It carries the evidence that produced it and reports the cost per accepted result rather than per token. Every number states how it is known. The interfaces are a CLI, an MCP server in the same package so a coding agent gets a version-pinned answer instead of a guess, and a GitHub Action that re-checks a repository's deployment when a model or engine version changes.
 
 > [!IMPORTANT]
@@ -89,4 +102,4 @@ AI-assisted work is welcome; say which tool, explain the change yourself, and an
 
 ## Contact
 
-Maintained by Vlad Ryzhkov. Design challenges and questions go to [Discussions](https://github.com/mondegreens/apron/discussions), not Issues.
+Maintained by [Vlad Ryzhkov](https://github.com/data-mission). Design challenges and questions go to [Discussions](https://github.com/mondegreens/apron/discussions), not Issues.
