@@ -3,7 +3,7 @@
 # When updating vLLM version: checkout the new tag, re-read requirements,
 # update every pin below. Do not hand-edit individual versions.
 
-vllm==0.30.0
+vllm==0.32.0
 
 # --- common.txt (v0.30.0) ---
 regex
